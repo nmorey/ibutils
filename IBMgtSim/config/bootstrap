@@ -1,0 +1,7 @@
+#!/bin/sh 
+DIR=`cd ${0%*/*};pwd`
+\rm -rf ../autom4te.cache
+aclocal -I config
+$DIR/libtoolize --automake
+automake --add-missing --gnu
+autoconf

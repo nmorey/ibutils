@@ -1,0 +1,35 @@
+                             FABRIC UTILS 
+                            --------------
+
+This package provides a set of utilities that is based on a common 
+data model to hold a complete fabric at both the system and node levels.
+
+fabric_sim:
+-----------
+Provide means to define a fabric from a cabling scheme file holding
+both cables definition and systems types. Then it runs OpenSM like
+algorithm for LID assignment, MinHOP  tables generation and finally 
+routing. Some statistics are provided. The fabric is checked for 
+credit loops that might cause dead locks.
+
+E.g.: 
+fabric_sim -v Clusters/FullCbbTwoSpines.cables H1/U1000 1
+
+fabric_tr: 
+-----------
+Traces a direct route through the fabric while printing the path
+information at both node and system levels.
+
+E.g.: 
+fabric_tr Clusters/VaTech.cables OSM/U1000 1 0,1,5,5,2,3,4,5,5,1,3,3,5,5,6,4,1
+
+
+osm_check:
+-----------
+Checks some OpenSM routing attributes.
+Given OpenSM fdb file (default /tmp/osm.fdbs) and subnet links file 
+(/tmp/subnt.lst) - trace routes from every CA to every othr CA.
+Also analyze the fabric routing for credit loops.
+
+E.g.: 
+osm_check -s Clusters/subnet.lst -f Clusters/osm.fdbs

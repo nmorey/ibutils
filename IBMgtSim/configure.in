@@ -1,0 +1,97 @@
+dnl Process this file with autoconf to produce a configure script.
+
+AC_INIT(src/sim.h)
+
+dnl use local config dir for extras
+AC_CONFIG_AUX_DIR(config)
+
+dnl Defines the Language
+AC_LANG_CPLUSPLUS
+
+dnl we use auto cheader
+AM_CONFIG_HEADER(config.h)
+
+dnl Auto make
+AM_INIT_AUTOMAKE(ibmgtsim,1.0)
+
+dnl Provides control over re-making of all auto files
+dnl We also use it to define swig dependencies so end
+dnl users do not see them.
+AM_MAINTAINER_MODE
+
+dnl Required for cases make defines a MAKE=make ??? Why
+AC_PROG_MAKE_SET
+
+dnl save the cflags befor calling AC_PROG_CXX and reevert after 
+dnl to avoid the -g -O2 
+save_cflags="$CFLAGS"
+save_cxxflags="$CXXFLAGS"
+
+dnl Checks for programs.
+AC_PROG_CXX
+AC_PROG_CPP
+AC_PROG_INSTALL
+AC_PROG_LN_S
+AC_PROG_MAKE_SET
+MLX_PROG_SWIG(1.1.5, eq)
+
+dnl revert CFLAGS
+CFLAGS="$save_cfalgs"
+CXXFLAGS="$save_cxxflags"
+
+dnl We will use libtool for making ...
+AC_PROG_LIBTOOL
+
+dnl Get the TCL defs: TCL_LIBS TCL_CPPFLAGS
+MLX_LANG_TCL
+
+dnl Checks for libraries.
+
+dnl Checks for header files.
+AC_HEADER_STDC
+AC_CHECK_HEADERS([inttypes.h stdlib.h string.h])
+
+dnl Checks for typedefs, structures, and compiler characteristics.
+dnl AC_HEADER_STDBOOL
+
+dnl For CPP there is absolutly no need for CONST etc
+dnl moreover we mst somehow remoev them from the autoheader
+dnl AC_C_CONST
+dnl AC_C_INLINE
+AC_LANG_CPLUSPLUS
+AC_TYPE_SIZE_T
+
+dnl Checks for library functions.
+dnl AC_FUNC_MALLOC
+dnl AC_FUNC_REALLOC
+AC_CHECK_FUNCS([strchr strstr strtol strtoull regcomp regexec])
+
+dnl Define an input config option to control debug compile
+AC_ARG_ENABLE(debug,
+[  --enable-debug    Turn on debugging],
+[case "${enableval}" in
+  yes) debug=true ;;
+  no)  debug=false ;;
+  *) AC_MSG_ERROR(bad value ${enableval} for --enable-debug) ;;
+esac],[debug=false])
+AM_CONDITIONAL(DEBUG, test x$debug = xtrue)
+
+dnl Define an input config option to allow the simulator know where 
+dnl the IBDM is installed. This should point to one directory above 
+dnl the include/ibdm directory holding Fabric.h
+AC_ARG_WITH(ibdm,
+[  --with-ibdm=<dir> Let IBMgtSim know where to find IBDM],
+AC_MSG_NOTICE(Using IBDM=$with_ibdm),
+with_ibdm="/usr")
+AC_SUBST(with_ibdm)
+AC_CHECK_FILE($with_ibdm/include/ibdm/Fabric.h,,
+   AC_MSG_ERROR([ could not find $with_ibdm/include/ibdm/Fabric.h.]))
+
+dnl Define an input config option to allow the simulator know where 
+dnl the OSM is installed. This should point to one directory above 
+dnl the include directory holding opensm/osm_build_id.h
+OPENIB_APP_OSM
+
+dnl Create the following Makefiles
+AC_OUTPUT(Makefile src/Makefile utils/Makefile)
+

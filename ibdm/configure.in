@@ -1,0 +1,96 @@
+dnl Process this file with autoconf to produce a configure script.
+
+AC_INIT(datamodel/Fabric.h)
+
+dnl use local config dir for extras
+AC_CONFIG_AUX_DIR(config)
+
+dnl Defines the Language
+AC_LANG_CPLUSPLUS
+
+dnl we use auto cheader
+AM_CONFIG_HEADER(config.h)
+
+dnl Auto make
+AM_INIT_AUTOMAKE(ibdm,1.0)
+
+dnl Provides control over re-making of all auto files
+dnl We also use it to define swig dependencies so end
+dnl users do not see them.
+AM_MAINTAINER_MODE
+
+dnl Required for cases make defines a MAKE=make ??? Why
+AC_PROG_MAKE_SET
+
+dnl Checks for programs.
+AC_PROG_CXX
+AC_PROG_CPP
+AC_PROG_INSTALL
+AC_PROG_LN_S
+AC_PROG_MAKE_SET
+MLX_PROG_SWIG(1.1.5, eq)
+AM_PROG_LEX 
+AC_PROG_YACC
+
+dnl We will use libtool for making ...
+AC_PROG_LIBTOOL
+
+
+dnl Get the TCL defs: TCL_LIBS TCL_CPPFLAGS
+MLX_LANG_TCL
+
+dnl Checks for libraries.
+
+dnl Checks for header files.
+AC_HEADER_STDC
+AC_CHECK_HEADERS([inttypes.h stdlib.h string.h])
+
+dnl Checks for typedefs, structures, and compiler characteristics.
+dnl AC_HEADER_STDBOOL
+
+dnl For CPP there is absolutly no need for CONST etc
+dnl moreover we mst somehow remoev them from the autoheader
+dnl AC_C_CONST
+dnl AC_C_INLINE
+AC_LANG_CPLUSPLUS
+AC_TYPE_SIZE_T
+
+dnl Checks for library functions.
+dnl AC_FUNC_MALLOC
+dnl AC_FUNC_REALLOC
+AC_CHECK_FUNCS([strchr strstr strtol strtoull regcomp regexec])
+AC_REPLACE_FUNCS(memset)
+dnl The alternate impl is problematic 
+dnl - So I cant use ez_INCLUDED_REGEX([replace/regex.c])
+
+dnl Just in case that the current version does not support the 
+dnl usage of LTLIBOBJS
+
+dnl Xsed="sed -e s/^X//"
+dnl LTLIBOBJS=`echo X"$LIBOBJS"|\
+dnl           [$Xsed -e "s,\.[^.]* ,.lo ,g;s,\.[^.]*$,.lo,"]`
+dnl AC_SUBST(LTLIBOBJS)
+
+dnl Define an input config option to control debug compile
+AC_ARG_ENABLE(debug,
+[  --enable-debug    Turn on debugging],
+[case "${enableval}" in
+  yes) debug=true ;;
+  no)  debug=false ;;
+  *) AC_MSG_ERROR(bad value ${enableval} for --enable-debug) ;;
+esac],[debug=false])
+AM_CONDITIONAL(DEBUG, test x$debug = xtrue)
+
+dnl Define an input config option to control final package prefix:
+dnl We compile and install in one dir - but we know eventually we 
+dnl will be moved to FINAL_PREFIX
+AC_ARG_WITH(final-prefix,
+[  --with-final-prefix=<dir>  Let IBDM know it will eventually be moved there],
+AC_SUBST(with_final_prefix)
+AC_MSG_NOTICE(Using FINAL_PREFIX=$with_final_prefix)
+,[final_prefix=""])
+AM_CONDITIONAL(USE_FINAL_PREFIX, test x$with_final_prefix != x)
+
+dnl Create the following Makefiles
+AC_OUTPUT(Makefile replace/Makefile ibnl/Makefile src/Makefile datamodel/Makefile Clusters/Makefile)
+

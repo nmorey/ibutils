@@ -1,0 +1,723 @@
+#!/bin/sh
+# the next line restarts using tclsh \
+exec ibmssh "$0" "$@"
+
+#--
+# Copyright (c) 2004 Mellanox Technologies LTD. All rights reserved.
+#
+# This software is available to you under a choice of one of two
+# licenses.  You may choose to be licensed under the terms of the GNU
+# General Public License (GPL) Version 2, available from the file
+# COPYING in the main directory of this source tree, or the
+# OpenIB.org BSD license below:
+#
+#     Redistribution and use in source and binary forms, with or
+#     without modification, are permitted provided that the following
+#     conditions are met:
+#
+#      - Redistributions of source code must retain the above
+#        copyright notice, this list of conditions and the following
+#        disclaimer.
+#
+#      - Redistributions in binary form must reproduce the above
+#        copyright notice, this list of conditions and the following
+#        disclaimer in the documentation and/or other materials
+#        provided with the distribution.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+# NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
+# BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+# ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+# CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#
+#############################################################################
+# Id ..........$Id: RunSimTest,v 1.1 2005/03/20 11:17:42 eitan Exp $
+# Revision.....$Revision: 1.1 $
+# Date.........$Date: 2005/03/20 11:17:42 $
+# Author.......$Author: eitan $
+#EOH#########################################################################
+
+set ToolUsage {[-h] [-o osm-path][-f flow-file][-c checker-file] -t topology [-n osm-node-name][-p osm-port-num]}
+
+set ToolUsage "Usage: $argv0 $ToolUsage"
+
+set version "1.0"
+
+proc Usage {} {
+	global ToolUsage
+
+	puts "$ToolUsage"
+}
+
+##############################################################################
+
+proc Help {} {
+	global ToolUsage
+	global version
+	
+	puts "
+         Tests over the Simulator
+        --------------------------
+
+  $ToolUsage
+
+  The test flow starts the simulator and runs the the given test flow
+  on top of it. Then it runs the test flow. The default test flow starts
+  OpenSM and wait for Subnet-Up event. User given flow can make use fo the 
+  provided facilities for starting OpenSM and tracking it events.
+
+  Command Line Arguments (required):
+    -t topology = a topology file describing the fabric.
+
+  Command Line Options:                                          
+   -f flow-file = a tcl file sourced by the sim after the fabric is setup.
+      See following discussion about the provided API and global variables 
+      that are available for the flow.
+   -c checker-file = a tcl file defining when osm completed and what 
+      checks are requierd to validate it's outputs. The procedure named 
+      'checker' is invoked by the test flow to start the checking flow.
+      (the default flow waits for OpenSM to complete setup the fabric and   
+      run ibdmchk).
+
+   -o osm-path = Full path to OpenSM (/usr/mellanox/osm-sim/bin/opensm).
+   -n osm-node = Topology file node name the SM runs on (default H-1/U1).
+   -p port-num = Port number the SM attaches to (default 1).
+
+   -h - help.
+    
+
+  Provided and Required Flow file API:
+  ------------------------------------
+
+  Several utilities are provided by this main test running utility:
+
+  1. startOsmLogAnalyzer <osmLogFileName>
+     starts a tracker and analyzer of the OpenSM log file provided.
+     The tracker will invoke callbacks registered in the global variable:
+     osmLogCallbacks(<osmLogFileName>)
+
+  2. waitForOsmEvent <eventsVarName> <lastEventLogLenVarName> <osmLogFileName>
+     This is a 
+
+ $version                               
+
+	"
+}
+
+##############################################################################
+#
+# OpenSM log file analyzer 
+# 
+# Continuously monitor the OpenSM log file and generate a log of all the 
+# events reported in teh log file.
+# 
+# On any event - it scans through the list of callbacks to be invoked 
+# and calls them acordingly. The list of callabcks is in osmLogCallbacks(logFile)
+#
+# The log fo all events is accoumulated in the global list:
+# osmEventLog(logFile)
+# 
+# The format of the event log list entry is:
+# <eventType> <time> <full line>
+#
+# <eventType> = SubnetUp, Standby, ERR, ErrorsInInitialization, ReportNoice, ....
+# <time> = the local time in tracker.
+# <full line> = the complete log file line.
+#
+
+proc startOsmLogAnalyzer {logFileName} {
+   global osmEventLog osmTrackerPipes
+   
+   # clear the log
+   set osmEventLog($logFileName) {}
+
+   # Open Up the OpenSM Log file
+   set logFile [open "| tail -F $logFileName" r+]
+   lappend osmTrackerPipes $logFile
+   fconfigure $logFile -buffering none -blocking 0
+   fileevent $logFile readable [list osmLogAnalyzerEvent $logFile $logFileName]
+}
+
+proc osmLogAnalyzerEvent {logFile logFileName} {
+   global osmEventLog osmLogCallbacks
+
+   if {[eof $logFile]} {
+      puts "-I- EOF on OpenSM Pipe"
+      fileevent $logFile readable {}
+      close $logFile
+      return
+   }
+
+   # actually read and analyze
+   while {[gets $logFile sLine] >= 0} {
+      set event ""
+      if {[regexp {SUBNET UP} $sLine]} {
+         set event SubnetUp
+         set data {}
+      } elseif {[regexp { ERR } $sLine]} {
+         set event ERR
+         set data $sLine
+      } elseif {[regexp {STANDBY} $sLine]} {
+         set event STANDBY
+         set data {}
+      }
+      
+      if {$event != ""} {
+         puts "-I- OpenSM Event:$event $data"
+         lappend osmEventLog($logFileName) [list $event [clock seconds] $sLine]
+         
+         if {[info exists osmLogCallbacks($logFileName)]} {
+            foreach cb $osmLogCallbacks($logFileName) {
+               if {[catch {eval "$cb"} e]} {
+                  puts $errorInfo
+               }
+            }
+         }
+      }
+   }
+}
+
+proc waitForOsmEvent {eventsVarName lastEventLogLenVarName logFile} {
+   global osmEventLog osmLogCallbacks
+   
+   upvar #0 $lastEventLogLenVarName lastEventLogLen
+   upvar #0 $eventsVarName events
+   
+   if {[llength $osmEventLog($logFile)] > $lastEventLogLen} {
+      set prevLen $lastEventLogLen
+      set lastEventLogLen [llength $osmEventLog($logFile)]
+      puts "-I- New [expr $lastEventLogLen - $prevLen] events of $logFile"
+      set events [lrange $osmEventLog($logFile) $prevLen end]
+      return 
+   }
+   puts "-I- No new event or $logFile"
+   set events {}
+   return
+}
+
+# wait for the SM with the given log to be either dead or in subnet up
+proc osmWaitForUpOrDead {osmLog} {
+   global osmUpOrDeadEvents osmUpOrDeadLogLen
+   global osmLogCallbacks
+   
+   # wait for OpenSM to complete setting up the fabric
+   set osmUpOrDeadLogLen 0
+   set osmLogCallbacks($osmLog) \
+      "{waitForOsmEvent osmUpOrDeadEvents osmUpOrDeadLogLen $osmLog}"
+   
+   puts "-I- Waiting for OpenSM subnet up ..."
+   set done 0
+   while {$done == 0} {
+      vwait osmUpOrDeadEvents
+      foreach event $osmUpOrDeadEvents {
+         if {[lindex $event 0] == "exit"} {
+            set exitCode 1
+            set done 1
+         } elseif {[lindex $event 0] == "SubnetUp"} {
+            set done 1
+            set exitCode 0
+         }
+      }
+   }
+   return $exitCode
+}
+
+proc osmTrackProcess {osmPId logFile} {
+   global osmEventLog osmLogCallbacks
+
+   # wait for OpenSM to exit
+   set isAlive 0
+   catch {set isAlive [exec ps -p $osmPId | wc -l]}
+   if {$isAlive < 2}  {
+      
+      puts "-I- OpenSM with log:$logFile died"
+      
+      lappend osmEventLog($logFile) [list exit [clock seconds] none]
+      
+      if {[info exists osmLogCallbacks($logFile)]} {
+         foreach cb $osmLogCallbacks($logFile) {
+            eval $cb
+         }
+      }
+   } else {
+      after 1200 [list osmTrackProcess $osmPId $logFile]
+   }
+}
+
+##############################################################################
+# 
+# Start up the test applications
+# This is the default flow that will start OpenSM only in 0x43 verbosity
+# Return a list of process ids it started (to eb killed on exit)
+#
+proc runner {simDir osmPath osmPortGuid} { 
+   set osmStdOutLog [file join $simDir osm.stdout.log]
+   set osmLog [file join $simDir osm.log]
+
+
+   puts "-I- Starting: $osmPath -D 0x43 -g $osmPortGuid  ..."
+   set osmPId [exec $osmPath -D 0x43 -f $osmLog -g $osmPortGuid > $osmStdOutLog &]
+
+   # start a tracker on the log file and process:
+   startOsmLogAnalyzer $osmLog
+
+   after 1000 [list osmTrackProcess $osmPId $osmLog]
+
+   return $osmPId
+}
+
+##############################################################################
+#
+# Check for the test results
+# Return the exit code
+proc checker {simDir osmPath osmPortGuid} {
+
+   set ibdmchkLog [file join $simDir ibdmchk.log]
+ 
+   set osmLog [file join $simDir osm.log]
+   set exitCode [osmWaitForUpOrDead $osmLog]
+   if {$exitCode == 0} {
+      if {[catch {set res [exec ibdmchk > $ibdmchkLog]} e]} {
+         puts $e
+         set exitCode 1
+      } else {
+         puts "-I- ibdmchk completed successfuly"
+         set exitCode 0
+      }
+   }
+   return $exitCode
+} 
+
+##############################################################################
+# 
+# Exit the test flow killing OpenSM and the Simulator
+#
+proc exitTestFlow {pidList simPipeId exitCode} {
+   global simDir
+   global simCtrlSock osmTrackerPipes
+
+   puts "-I- Closing Sub Processes ... "
+   foreach pId $pidList {
+      catch {exec kill -9 $pId}
+   }
+   
+   set subProcesses [exec ps --ppid [pid] -o pid]
+   foreach p $subProcesses {
+      catch {exec kill $p}
+   }
+
+   after 5000
+   puts "-I- Closing Pipes ..."
+   foreach logPipe [array names osmTrackerPipes] {
+      catch {fileevent $logPipe readable {}; close $logPipe}
+   }
+
+   puts "-I- Closing SIM ... "
+   set srvData [exec cat [file join $simDir ibmgtsim.server]]
+   puts $simCtrlSock "exit"
+
+   #catch {exec ibmsquit [lindex $srvData 0] [lindex $srvData 1]}
+   
+   puts "-I- Status = $exitCode"
+   if {$exitCode == 0} {
+      exec rm -rf $simDir
+   } else {
+      puts "-I- Simulation dir left intact:$simDir"
+   }
+   exit $exitCode
+}
+
+##############################################################################
+# 
+# Wait for the simulator to report it is ready to serve
+#
+proc waitForSimReady {pipeId} {
+   while {[gets $pipeId sLine] >= 0} {
+      if {$sLine == "-I- Ready to serve"} {
+         puts "-I- Simulator Ready"
+         return 1
+      }
+   }
+   error "Simulator died"
+}
+
+##############################################################################
+# 
+# Connect to the simulator control server
+#
+# define the global simCtrlSock
+proc connToSimControlServer {simDir} {
+   global simCtrlSock
+   set simCtrlFile [file join $simDir ibmgtsim.ctrl.server]
+   if {![file readable $simCtrlFile]} {
+      error "-E- No control server file found" 
+   }
+   
+   set f [open $simCtrlFile r]
+   gets $f sLine
+   if {[llength $sLine] != 2} {
+      error "-E- Bad format for $simCtrlFile got:$sLine"
+   }
+   close $f
+
+   set srvHost [lindex $sLine 0]
+   set srvPort [lindex $sLine 1]
+   
+   puts "-I- Connecting to the simulator control server:$srvHost port:$srvPort "
+   set simCtrlSock [socket $srvHost $srvPort]
+   puts "-I- Connected to the simulator control server"
+   fconfigure $simCtrlSock -buffering line -blocking 1
+
+   return $simCtrlSock
+}
+
+##############################################################################
+# 
+# Obtain the first node info
+#
+proc getSMNodeInfo {simDir nodeName} {
+   global getSMNodeInfo_DB
+
+   if {![info exists getSMNodeInfo_DB]} {
+      # open up the ibmgtsim.guids.txt
+      set f [open [file join $simDir ibmgtsim.guids.txt]]
+      set lineNum 0
+      set autoLid 0
+      while {[gets $f sLine] >= 0 } {
+         incr lineNum
+         if {[regexp {^NODE\s+(\S+)/U[0-9]\s+(\S+)} $sLine d1 n ng]} {
+            set getSMNodeInfo_DB($n) $ng
+         } elseif {[regexp {^PORT\s+(\S+)/P([0-9]+)\s+(\S+)} $sLine d1 n p pg]} {
+            set getSMNodeInfo_DB($n/P$p) [list $pg [incr autoLid]]
+         }
+      }
+      close $f
+      
+      puts "-I- Defined [llength [array names getSMNodeInfo_DB]] guids"
+   }
+   
+   # first look for the node name:
+   if {![info exists getSMNodeInfo_DB($nodeName)]} {
+      error "Fail to find any info about node:$nodeName"
+   }
+   
+   # return the node guid
+   set res $getSMNodeInfo_DB($nodeName)
+   
+   # followed by each port guid and lid:
+   foreach portName [lsort [array names getSMNodeInfo_DB $nodeName/P*]] {
+      lappend res $getSMNodeInfo_DB($portName)
+   }
+   return $res
+}
+
+##############################################################################
+# 
+# Get a TS port guid string of teh format 0000:ffff:1111:2222
+#
+proc getPortGuidStr {guid} {
+   set guidRex \
+      "0x(\[0-9a-fA-F\]{4})(\[0-9a-fA-F\]{4})(\[0-9a-fA-F\]{4})(\[0-9a-fA-F\]{4})"
+   if {![regexp $guidRex $guid d1 n1 n2 n3 n4]} {
+      error "Bad guid format:$guid"
+   }
+   return "$n1:$n2:$n3:$n4"
+}
+
+##############################################################################
+# 
+# Make a proc file system for the given node:
+#
+proc makeProcFSForNode {simDir nodeName {portNum 0} {portLid 0}} {
+   global osmPortGuid 
+
+   set nodeData [getSMNodeInfo $simDir $nodeName]
+   
+   puts "-I- Node $nodeName data: $nodeData"
+
+   set ng [lindex $nodeData 0]
+   set nodeGuidStr [getPortGuidStr $ng]
+
+   # we use the index into the nodeData...
+   if {$portNum == 0} {
+      set portNum 1
+   }
+   
+   # double check :
+   if {[llength $nodeData] < 2} {
+      error "expected 2 ports definition for HCA $nodeData"
+   }
+   
+   # Create the node dir
+   file mkdir [file join $simDir $nodeName ca1]
+   
+   # Node Info
+   set of [open [file join $simDir $nodeName ca1 info] w]
+   puts $of "name:          InfiniHost0
+provider:      tavor
+node GUID:     $nodeGuidStr
+ports:         2
+vendor ID:     0x2c9
+device ID:     0x5a44
+HW revision:   0xa1
+FW revision:   0x300020002
+"
+   close $of
+
+   # do the ports:
+   foreach portIdx {1 2} {
+      set portData [lindex $nodeData $portIdx]
+      set pg [lindex $portData 0]
+      
+      # the port guid we need should look like 0000:0000:0000:0000
+      set portGuidStr [getPortGuidStr $pg]
+
+      set lid [lindex $portData 1]
+
+      # use the given lid for the port
+      if {$portNum == $portIdx} {
+         set osmPortGuid $pg
+
+         if {$portLid != 0} {
+            set lid $portLid
+         }
+      }
+      
+      # Port1 
+      file mkdir [file join $simDir $nodeName ca1 port$portIdx]
+      
+      # port info
+      set of [open [file join $simDir $nodeName ca1 port$portIdx info] w]
+      puts $of "state:         INIT
+LID:           [format 0x%04x $lid]
+LMC:           0x0000
+SM LID:        0x0001
+SM SL:         0x0000
+Capabilities:  IsTrapSupported
+               IsAutomaticMigrationSupported
+               IsSLMappingSupported
+               IsLEDInfoSupported
+               IsSystemImageGUIDSupported
+               IsVendorClassSupported
+               IsCapabilityMaskNoticeSupported
+"
+
+      close $of
+
+      set of [open [file join $simDir $nodeName ca1 port$portIdx pkey_table] w]
+      puts $of {[  0] ffff}
+      close $of
+
+      set of [open [file join $simDir $nodeName ca1 port$portIdx gid_table] w]
+      puts $of "\[  0\] fe80:0000:0000:0000:$portGuidStr"
+      close $of
+   }
+}
+
+##############################################################################
+# 
+# Get Opt
+#
+set optind 0
+
+proc getopt { argslist optstring optret argret } {
+	global optind optindc
+	upvar $optret retvar
+	upvar $argret optarg
+	
+	# default settings for a normal return
+	set optarg ""
+	set retvar ""
+	set retval 0
+	
+	# check if we are in a single char mode or support long 
+	# option string
+	if {[string match "* *" $optstring]} {
+		set longOptMode 1
+	} else {
+		set longOptMode 0
+	}
+	
+	# check if we're past the end of the args list
+	if { $optind < [ llength $argslist ] } then {
+		
+		# if we got -- or an option that doesn't begin with -, return (skipping
+		# the --).  otherwise process the option arg.
+		switch -glob -- [ set arg [ lindex $argslist $optind ]] {
+			"--" {
+				incr optind
+			}
+			
+			"-*" {
+				# opt needs to return the name of the option 
+				regexp -- {-([^:]+):?} $arg d1 opt
+				incr optind
+
+				if {$longOptMode} {
+					# options are defined as words optionaly containing ":"
+					if { [ lsearch -regexp $optstring "^$opt:?\$" ] >= 0 } then {
+						set retvar $opt
+						set retval 1
+						if { [ lsearch -regexp $optstring "^$opt:\$" ] >= 0 } then {
+							if { $optind < [ llength $argslist ] } then {
+								set optarg [lindex $argslist $optind]
+								incr optind
+							} else {
+								set optarg "Option requires an argument -- $opt"
+								set retvar $optarg
+								set retval -1
+							}
+						}
+					} else {
+						set optarg "Illegal option -- $opt"
+						set retvar $optarg
+						set retval -1
+					}
+				} else {
+					# traditional single char options
+					if { [ string match "*$opt*" $optstring ] } then {
+						set retvar $opt
+						set retval 1
+						if { [ string match "*$opt:*" $optstring ] } then {
+							if { $optind < [ llength $argslist ] } then {
+								set optarg [lindex $argslist $optind]
+								incr optind
+							} else {
+								set optarg "Option requires an argument -- $opt"
+								set retvar $optarg
+								set retval -1
+							}
+						}
+					} else {
+						set optarg "Illegal option -- $opt"
+						set retvar $optarg
+						set retval -1
+					}
+				}
+			}
+		}
+	}
+	return $retval
+}
+
+##############################################################################
+# 
+# MAIN FLOW:
+#
+
+set pid [pid]
+
+set simulationFlowFile ""
+set checkerFlowFile ""
+set topologyFile ""
+set osmPath /usr/mellanox/osm-sim/bin/opensm
+set moduleVerbosityList {top 0xA7}
+set osmPortNum 1
+set osmNodeName "H-1"
+
+while { [ set err [ getopt $argv "hvV:o:f:c:t:n:p:" opt arg ]] } {
+	if { $err < 0 } then {
+		Usage
+		exit 2
+	} else {
+		switch -exact $opt {
+			h {Help; exit 0}
+			v {puts "";puts $version; puts ""; exit 0}
+			o {set osmPath $arg}
+			f {set simulationFlowFile $arg}
+			c {set checkerFlowFile $arg}
+         n {set osmNodeName $arg}
+         p {set osmPortNum $arg}
+			t {set topologyFile $arg}
+			V {set moduleVerbosityList "top $arg" }
+         default {
+            puts "-E- Unsupported option:$opt"
+            puts $ToolUsage
+            exit 1
+         }
+		}
+	}
+}
+
+# make sure we got a topology:
+if {$topologyFile == ""} {
+   puts "-E- Missing mandatory flag -t. Topology file was not defined."
+   Usage  
+   exit
+}
+
+# handle extra args
+set left_args [ lrange $argv $optind end ]
+if {[llength $left_args]} {
+    puts "-E- illegal parameter(s) used : $left_args"
+    Usage
+    exit 1
+}
+
+# track opened pipes 
+set osmTrackerPipes {}
+
+# define tmp directory to use:
+set tmpDir /tmp
+
+# Define the temporary directory:
+set simDir [file join $tmpDir ibmgtsim.$pid]
+set env(IBMGTSIM_DIR) $simDir
+file mkdir $simDir
+
+# if provided a flow file use it
+if {$checkerFlowFile != ""} {
+   source $checkerFlowFile
+}
+
+set simLog [file join $simDir sim.log]
+set simStdOutLog [file join $simDir sim.stdout.log]
+
+if {[catch {
+   # Start the Simulator 
+   if {$simulationFlowFile != ""} {
+      puts "-I- Calling IBMgtSim -V 0xffff -t $topologyFile -f $simulationFlowFile ..."
+      exec IBMgtSim -V 0xffff -t $topologyFile -f $simulationFlowFile -l $simLog > $simStdOutLog &
+   } else {
+      puts "-I- Calling IBMgtSim -V 0xffff -t $topologyFile ..."
+      exec IBMgtSim -V 0xffff -l $simLog -t $topologyFile > $simStdOutLog &
+   }
+   set sim [open "|tail -F $simStdOutLog" r+]
+
+   # wait for the simulator to report it is ready to serve
+   waitForSimReady $sim
+   
+   # connect to the server 
+   connToSimControlServer $simDir
+   
+   fconfigure $sim -buffering line -blocking 0
+
+   # make the node files for the OpenSM Node:
+   makeProcFSForNode $simDir $osmNodeName $osmPortNum 1 
+   
+   # set the node name for OpenSM
+   set env(IBMGTSIM_NODE) $osmNodeName
+   
+   # start OpenSM 
+   set osmPid [runner $simDir $osmPath $osmPortGuid]
+
+   # run the checker
+   set exitCode [checker $simDir $osmPath $osmPortGuid]
+   
+   # exit everything
+   exitTestFlow $osmPid $sim $exitCode
+} e]} {
+   if {[info exists sim]} {
+      close $sim
+   }
+   puts "-E- $errorInfo"
+
+   exitTestFlow $osmPid $sim 2
+
+   exit 1
+}
+
+

@@ -1,0 +1,502 @@
+/*
+ * Copyright (c) 2004 Mellanox Technologies LTD. All rights reserved.
+ *
+ * This software is available to you under a choice of one of two
+ * licenses.  You may choose to be licensed under the terms of the GNU
+ * General Public License (GPL) Version 2, available from the file
+ * COPYING in the main directory of this source tree, or the
+ * OpenIB.org BSD license below:
+ *
+ *     Redistribution and use in source and binary forms, with or
+ *     without modification, are permitted provided that the following
+ *     conditions are met:
+ *
+ *      - Redistributions of source code must retain the above
+ *        copyright notice, this list of conditions and the following
+ *        disclaimer.
+ *
+ *      - Redistributions in binary form must reproduce the above
+ *        copyright notice, this list of conditions and the following
+ *        disclaimer in the documentation and/or other materials
+ *        provided with the distribution.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
+ * BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+ * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ * $Id: Fabric.h,v 1.7 2005/02/23 21:08:37 eitan Exp $
+ */
+
+/*
+ * Fabric Utilities Project
+ * 
+ * Data Model Header file
+ *
+ */
+
+#ifndef IBDM_FABRIC_H
+#define IBDM_FABRIC_H
+
+#if HAVE_CONFIG_H
+#  include "config.h" 
+#endif
+
+#include <functional>
+#include <map>
+#include <set>
+#include <list>
+#include <vector>
+#include <fstream>
+#include <iostream>
+#include <sstream>
+#include <string>
+#include <stdio.h>
+
+#include <sys/types.h>
+#include <inttypes.h>
+
+#define IB_LID_UNASSIGNED 0
+#define IB_LFT_UNASSIGNED 255
+#define IB_HOP_UNASSIGNED 255
+
+#if __WORDSIZE == 64
+#define PRIx64 "lx"
+#else
+#define PRIx64 "llx"
+#endif
+using namespace std;
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// STL TYPEDEFS
+//
+// This section defines typedefs for all the STL containers used by the package
+
+// for comparing strings
+struct strless : public binary_function <string, string, bool> {
+  bool operator()(const string& x, const string& y) const {
+	 return (strcmp(x.c_str(), y.c_str()) < 0);
+  }
+};
+
+typedef vector<int, allocator<int> > vec_int;
+typedef vector<vec_int, allocator<vec_int> > vec_vec_int;
+typedef vector<uint8_t, allocator<uint8_t> > vec_byte;
+typedef vector<uint32_t, allocator<uint32_t> > vec_word;
+typedef vector<vec_byte, allocator<vec_byte> > vec_vec_byte;
+
+typedef vector<class IBPort *, allocator<class IBPort *> > vec_pport;
+typedef map< string, class IBSysPort *, strless, allocator<class IBSysPort *> > map_str_psysport;
+typedef map< string, class IBNode *, strless, allocator<class IBNode *> > map_str_pnode;
+typedef map< string, class IBSystem *, strless, allocator<class IBSystem *> > map_str_psys;
+typedef map< uint64_t, class IBPort *, less<uint64_t>, allocator<class IBPort*> > map_guid_pport;
+typedef map< uint64_t, class IBNode *, less<uint64_t>, allocator<class IBNode*> > map_guid_pnode;
+typedef map< uint64_t, class IBSystem *, less<uint64_t>, allocator<class IBSystem*> > map_guid_psys;
+typedef list<class IBNode *, allocator<class IBNode *> > list_pnode;
+typedef list<class IBSystem *, allocator<class IBSystem *> > list_psystem;
+typedef list<int, allocator< int> > list_int;
+typedef list<char *, allocator< char *> > list_charp;
+typedef list<string , allocator< string > > list_str;
+typedef map< IBNode *, int, less< IBNode *> > map_pnode_int;
+typedef map< IBSystem *, int, less< IBSystem *> > map_psystem_int;
+typedef set< uint16_t, less< uint16_t > > set_uint16;
+
+///////////////////////////////////////////////////////////////////////////////
+
+//
+// CONSTANTS
+//
+#define FABU_LOG_NONE 0x0
+#define FABU_LOG_ERROR 0x1
+#define FABU_LOG_INFO 0x2
+#define FABU_LOG_VERBOSE 0x4
+
+// 
+// GLOBALS
+//
+
+// Log level shold be part of the "main" module
+extern uint8_t FabricUtilsVerboseLevel;
+
+///////////////////////////////////////////////////////////////////////////////
+
+// We only recognize CA or SW nodes
+typedef enum {IB_UNKNOWN_NODE_TYPE, IB_SW_NODE, IB_CA_NODE} IBNodeType;
+typedef enum {IB_UNKNOWN_LINK_WIDTH = 0, 
+              IB_LINK_WIDTH_1X = 1,
+              IB_LINK_WIDTH_4X = 2,
+              IB_LINK_WIDTH_8X = 4,
+              IB_LINK_WIDTH_12X =8,
+} IBLinkWidth;
+
+static inline IBLinkWidth char2width( const char *w) 
+{
+  if (!w || (*w == '\0')) return IB_UNKNOWN_LINK_WIDTH;
+  if (!strcmp(w,"1x")) return IB_LINK_WIDTH_1X;
+  if (!strcmp(w,"4x")) return IB_LINK_WIDTH_4X;
+  if (!strcmp(w,"8x")) return IB_LINK_WIDTH_8X;
+  if (!strcmp(w,"12x")) return IB_LINK_WIDTH_12X;
+  return IB_UNKNOWN_LINK_WIDTH;
+};
+
+static inline char * width2char( const IBLinkWidth w) 
+{
+  switch (w) 
+  {
+  case IB_LINK_WIDTH_1X: return("1x"); break;
+  case IB_LINK_WIDTH_4X: return("4x"); break;
+  case IB_LINK_WIDTH_8X: return("8x"); break;
+  case IB_LINK_WIDTH_12X: return("12x"); break;
+  default: return("UNKNOWN");
+  }
+};
+
+typedef enum {IB_UNKNOWN_LINK_SPEED = 0, 
+              IB_LINK_SPEED_2_5 = 1,
+              IB_LINK_SPEED_5   = 2,
+              IB_LINK_SPEED_10  = 4,
+} IBLinkSpeed;
+
+static inline char * speed2char( const IBLinkSpeed s) 
+{
+  switch (s)
+  {
+  case IB_LINK_SPEED_2_5: return("2.5"); break;
+  case IB_LINK_SPEED_5:   return("5"); break;
+  case IB_LINK_SPEED_10:  return("10"); break;
+  default: return("UNKNOWN");
+  }
+};
+
+static inline IBLinkSpeed char2speed( const char *s) 
+{
+  if (!s || (*s == '\0')) return IB_UNKNOWN_LINK_SPEED;
+  if (!strcmp(s,"2.5")) return IB_LINK_SPEED_2_5;
+  if (!strcmp(s,"5"))   return IB_LINK_SPEED_5;
+  if (!strcmp(s,"10"))  return IB_LINK_SPEED_10;
+  return IB_UNKNOWN_LINK_SPEED;
+};
+
+static inline string guid2str(uint64_t guid) {
+  char buff[18];
+  sprintf(buff, "0x%016" PRIx64 , guid);
+  //  string res(buff);
+  return buff;
+};
+
+// 
+// IB Port class. 
+// This is not the "End Node" but the physical port of
+// a node.
+// 
+class IBPort {
+  uint64_t        guid;           // The port GUID (on SW only on Port0)
+ public:
+  class IBPort    * p_remotePort; // Port connected on the other side of link
+  class IBSysPort * p_sysPort;    // The system port (if any) connected to
+  class IBNode    * p_node;       // The node the port is part of.
+  int			      num;            // Physical ports are identified by number.
+  unsigned int	   base_lid;       // The base lid assigned to the port.
+  IBLinkWidth     width;          // The link width of the port
+  IBLinkSpeed     speed;          // The link speed of the port
+  
+  // constructor
+  IBPort(IBNode *p_nodePtr, int number);
+  
+  // destructor:
+  ~IBPort();
+
+  // get the port name
+  string getName();
+
+  // connect the port to another node port
+  void connect (IBPort *p_otherPort,
+                IBLinkWidth w = IB_LINK_WIDTH_4X,
+                IBLinkSpeed s = IB_LINK_SPEED_2_5);
+
+  inline uint64_t guid_get() {return guid;};
+  void guid_set(uint64_t g);
+
+};
+
+// 
+// Private App Data
+// 
+typedef union _PrivateAppData {
+  void    *ptr;
+  uint64_t val;
+} PrivateAppData;
+
+// 
+// IB Node class
+// 
+class IBNode {
+  uint64_t guid;
+ public:
+  string			   name;         // Name of the node (instance name of the chip)
+  IBNodeType 		type;      // Either a CA or SW
+  uint16_t        devId;     // The device ID of the node
+  uint16_t        revId;     // The device revision Id.
+  uint16_t        vendId;    // The device Vendor ID.
+  class IBSystem *p_system;  // What system we belong to
+  class IBFabric *p_fabric;  // What fabric we belong to.
+  unsigned int	   numPorts;  // Number of physical ports 
+  string          attributes;// Comma-sep string of arbitrary attributes k=v
+  vec_pport		   Ports;     // Vector of all the ports
+  vec_vec_byte		MinHopsTable; // Table describing minimal hop count through 
+                                // each port to each target lid
+  vec_byte        LFT;       // The LFT of this node (for switches only)
+  vec_word        MFT;       // The Multicast forwarding table 
+  PrivateAppData  appData1;  // Application Private Data #1 
+  PrivateAppData  appData2;  // Application Private Data #2
+  
+  // Constractor
+  IBNode(string n, class IBFabric *p_fab, class IBSystem *p_sys, 
+         IBNodeType t, int np);
+
+  ~IBNode();
+
+  // create a new port by name if required to
+  inline IBPort *makePort (unsigned int num) {
+	 if ((num < 1) || (num > numPorts)) {
+		cout << "-E- Given port number out of range: 1 < " << num
+           << " < " << numPorts << endl;
+		return NULL;
+	 } 
+	 if (! Ports[num - 1]) {
+		Ports[num - 1] = new IBPort(this, num);
+	 } 
+	 return Ports[num - 1];
+  }
+
+  // get a port by number num = 1..N:
+  inline IBPort *getPort(unsigned int num) {
+	 if (Ports.size() < num - 1) 
+		return NULL;
+	 else 
+		return Ports[num - 1];
+  }
+
+  inline uint64_t guid_get() {return guid;};
+  void guid_set(uint64_t g);
+
+  // Set the min hop for the given port (* is all) lid pair
+  void setHops (IBPort *p_port, unsigned int lid, int hops);
+
+  // Get the min number of hops defined for the given port or all
+  int getHops (IBPort *p_port, unsigned int lid);
+	
+  // Report Hop Table of the given node
+  void repHopTable ();
+  // Scan the node ports and find the first port 
+  // with min hop to the lid
+  IBPort *getFirstMinHopPort(unsigned int lid);
+
+  // Set the Linear Forwarding Table:
+  void setLFTPortForLid (unsigned int lid, unsigned int portNum);
+	
+  // Get the LFT for a given lid
+  int getLFTPortForLid (unsigned int lid);
+
+  // Set the Multicast FDB table 
+  void setMFTPortForMLid(unsigned int lid, unsigned int portNum);
+  
+  // Get the list of ports for the givan MLID from the MFT
+  list_int getMFTPortsForMLid(unsigned int lid);
+
+}; // Class IBNode
+
+//
+// System Port Class
+// The System Port is a front pannel entity.
+// 
+class IBSysPort {
+ public:
+  string			   name;              // The front pannel name of the port
+  class IBSysPort	*p_remoteSysPort;  // If connected the other side sys port
+  class IBSystem	*p_system;         // System it benongs to
+  class IBPort	   *p_nodePort;       // The node port it connects to.
+  
+  // Constructor
+  IBSysPort(string n, class IBSystem *p_sys);
+
+  ~IBSysPort();
+  
+  // connect two SysPorts
+  void connect (IBSysPort *p_otherSysPort,
+                IBLinkWidth width = IB_LINK_WIDTH_4X,
+                IBLinkSpeed speed = IB_LINK_SPEED_2_5);
+};
+
+// 
+// IB System Class
+// This is normally derived into a system specific class
+//
+class IBSystem {
+  uint64_t        guid;
+ public:
+  string			   name;       // the "host" name of the system
+  string			   type;       // what is the type i.e. Cougar, Buffalo etc
+  class IBFabric  *p_fabric;  // fabric belongs to
+  map_str_psysport PortByName;// A map provising pointer to the SysPort by name
+  map_str_pnode    NodeByName;// All the nodes belonging to this system.
+  // Default Constractor - empty need to be overwritten
+  IBSystem() {} ;
+  // Destructor must be virtual 
+  virtual ~IBSystem();
+
+  // Constractor
+  IBSystem(string n, class IBFabric *p_fab, string t);
+
+  inline uint64_t guid_get() {return guid;};
+  void guid_set(uint64_t g);
+
+  // Get a string with all the System Port Names (even if not connected)
+  virtual list_str getAllSysPortNames();
+
+  // Get a Sys Port by name
+  IBSysPort *getSysPort(string name);
+
+  inline IBNode *getNode(string nName) {
+    map_str_pnode::iterator nI = NodeByName.find(nName);
+    if (nI != NodeByName.end()) {
+      return (*nI).second;
+    } else {
+      return NULL;
+    }
+  };
+
+  // make sure we got the port defined (so define it if not)
+  virtual IBSysPort *makeSysPort (string pName);
+
+  // get the node port for the given sys port by name
+  virtual IBPort *getSysPortNodePortByName (string sysPortName);
+
+  // Remove a sub module of the system
+  int removeBoard (string boardName);
+
+  // parse confinguration string into a vector
+  void cfg2Vector(const string& cfg,
+                  vector<string>& boardCfgs,
+                  int numBoards);
+};
+
+// 
+// IB Fabric Class
+// The entire fabric
+//
+class IBFabric {
+ public:
+  map_str_pnode  NodeByName;   // Provide the node pointer by its name
+  map_guid_pnode NodeByGuid;   // Provides the node by guid
+  map_str_psys   SystemByName; // Provide the system pointer by its name
+  map_guid_psys  SystemByGuid; // Provides the system by guid
+  map_guid_pport PortByGuid;   // Provides the port by guid
+  vec_pport      PortByLid;    // Pointer to the Port by its lid
+  unsigned int   minLid;       // Track min lid used.
+  unsigned int   maxLid;       // Track max lid used.
+  unsigned int   lmc;          // LMC value used
+  uint8_t        defAllPorts;  // If not zero all ports (unconn) are declared
+  uint8_t        subnCANames;  // The Subnet.lst has host names for CA's
+  set_uint16     mcGroups;     // A set of all active multicast groups
+
+  // Constructor
+  IBFabric() {
+    maxLid = 0;
+    defAllPorts = 1;
+    subnCANames = 1;
+    lmc = 0;
+    minLid = 0;
+  };
+
+  // Destructor
+  ~IBFabric();
+
+  // get the node by its name (create one of does not exist)
+  IBNode *makeNode (string n, 
+						  IBSystem *p_sys, 
+						  IBNodeType type, 
+						  unsigned int numPorts);
+		
+  // get port by guid:
+  IBPort *getPortByGuid (uint64_t guid);
+  
+  // get the node by its name
+  IBNode *getNode (string name);
+  IBNode *getNodeByGuid (uint64_t guid);
+
+  // return the list of node pointers matching the required type
+  list_pnode *getNodesByType (IBNodeType type);
+
+  // crate a new generic system - basically an empty contaner for nodes...  
+  IBSystem *makeGenericSystem (string name);
+
+  // crate a new system - the type must have a pre-red SysDef
+  IBSystem *makeSystem (string name, string type, string cfg = "");
+
+  // get a system by name
+  IBSystem *getSystem(string name);
+  IBSystem *getSystemByGuid(uint64_t guid);
+
+  // Add a cable connection
+  int addCable (string t1, string n1, string p1, 
+                string t2, string n2, string p2,
+                IBLinkWidth width, IBLinkSpeed speed);
+	
+  // Parse the cables file and build the fabric
+  int parseCables (string fn);
+
+  // Parse Topology File
+  int parseTopology (string fn);
+
+  // Add a link into the fabric - this will create system
+  // and nodes as required.
+  int addLink(string type1, int numPorts1, uint64_t sysGuid1, 
+				  uint64_t nodeGuid1,  uint64_t portGuid1, 
+				  int vend1, int devId1, int rev1, string desc1, 
+				  int lid1, int portNum1,
+				  string type2, int numPorts2, uint64_t sysGuid2,
+				  uint64_t nodeGuid2,  uint64_t portGuid2, 
+				  int vend2, int devId2, int rev2, string desc2, 
+				  int lid2, int portNum2,
+              IBLinkWidth width, IBLinkSpeed speed);
+
+  // Parse the OpenSM subnet.lst file and build the fabric from it.
+  int parseSubnetLinks (string fn);
+
+  // Parse OpenSM FDB dump file
+  int parseFdbFile(string fn);
+
+  // Parse an OpenSM MCFDBs file and set the MFT table accordingly
+  int IBFabric::parseMCFdbFile(string fn);
+
+  // set a lid port
+  inline void setLidPort (unsigned int lid, IBPort *p_port) {
+	 if ( PortByLid.empty() || (PortByLid.size() < lid + 1)) 
+		for (unsigned int i = PortByLid.size(); i < lid + 1; i++) 
+		  PortByLid.push_back(NULL);
+	 
+	 PortByLid[lid] = p_port;
+    if (maxLid < lid) maxLid = lid;
+  };
+	
+  // get a port by lid
+  inline IBPort *getPortByLid (unsigned int lid) {
+	 if ( PortByLid.empty() || (PortByLid.size() < lid + 1)) 
+		return NULL;
+	 return (PortByLid[lid]);
+  };
+
+  // dump out the contents of teh entire fabric
+  void dump(ostream &sout);
+
+ private:
+  int parseSubnetLine(char *line);
+};
+
+#endif /* IBDM_FABRIC_H */

@@ -1,0 +1,6 @@
+#!/bin/sh 
+DIR=`cd ${0%*/*};pwd`
+aclocal -I config
+$DIR/libtoolize --automake
+automake --add-missing --gnu
+autoconf

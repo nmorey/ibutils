@@ -1,0 +1,57 @@
+HOWTO BUILD
+-----------
+
+1. bootstrap:
+   In a fresh CVS co directory (cvs co IBMgtSim) you need to run ./config/bootstrap
+   Make sure the autoconf -V is version 2.59 or newer.
+
+2. configure:
+   ./configure --with-osm=<opensm install path> --prefix=<where ever you want> 
+
+   Optionally you can add:
+   --enable-debug --enable-maintainer-mode 
+
+   If there there is no IBADM installed on the machine you will need to provide:
+   --with-ibdm=<where ever you did install it>
+
+   NOTE: the pointer to the osm install path can be to any osm (not just the one 
+   supporting the simulator. e.g. /usr
+   
+   Example:
+    ./configure --enable-debug --enable-maintainer-mode \
+        --with-osm=/home/eitan/SW/osm/linuxuser/bin/x86/2.6.5/debug \
+        --prefix=/home/eitan/SW/cvsroot/IBMgtSim/usr \
+        --with-ibdm=/home/eitan/SW/ibadm_build/usr
+
+3. make:
+   export PATH=$PATH://mswg/projects/ibadm/BINS/i686/bin
+
+   simply 'make'
+
+4. install:
+   make install
+
+5. run the server:
+   setenv IBMGTSIM_DIR <some dir used by the server and its clients>
+   set path = ($path <prefix>/bin)
+   usr/bin/IBMgtSim -t <topology-file> 
+   See more options using -h.
+
+6. create some dummy /proc file system for some nodes:
+   usr/bin/mkSimNodeDir -n <host-name(H-1)> -g $IBMGTSIM_DIR/ibmgtsim.guids.txt
+
+7. to run OpenSM with the simulator:
+   OpenSM with support for a special vendor - i.e. the simulator
+   should be built separatly. To do that you need to provide the 
+   -b sim to the OpenSM install script and also define IBMGTSIMHOME
+   pointing to the prefix where the simulator was installed (above the bin
+   dir). 
+
+   setenv IBMGTSIM_DIR <some dir used by the server and its clients>
+   setenv IBMGTSIM_NODE <one of the node names you generated /proc for>
+
+   Invoke OpenSM ...
+
+8. to run IBADM on top of the simulator (no obbs yet)
+   Need to make a link for the libosmv_sim.so  named libosmv_ts.so and
+   put the directory this link is in - in the LD_LIBRARY_PATH .
