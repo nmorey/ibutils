@@ -29,7 +29,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
- * $Id: Fabric.cpp,v 1.9 2005/02/23 21:08:37 eitan Exp $
+ * $Id: Fabric.cpp,v 1.13 2005/06/08 06:35:17 eitan Exp $
  */
 
 /*
@@ -46,7 +46,7 @@ This file hodls implementation of the data model classes and methods
 #include <iomanip>
 
 // Track verbosity:
-uint8_t FabricUtilsVerboseLevel = 0x01;
+uint8_t FabricUtilsVerboseLevel = 0x1;
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -256,7 +256,7 @@ IBNode::setHops (IBPort *p_port, unsigned int lid, int hops) {
 // Report Min Hop Table of the current Node
 void 
 IBNode::repHopTable () {
-  cout << "-I- MinHopTable for Node" << name << "\n" << "=========================\n" <<endl;
+  cout << "-I- MinHopTable for Node:" << name << "\n" << "=========================\n" <<endl;
   if (MinHopsTable.empty()) {
     cout << "\tEmpty" << endl;
   } else {
@@ -268,18 +268,21 @@ IBNode::repHopTable () {
     for (int i = 1; i <= 3*Ports.size()+5; i++) cout << "-";
     cout << endl;
     for (int l = 1; l <= p_fabric->maxLid; l++) 
+    {
+      cout << setw(2) << l << "|";
+      for (int i=0; i <= Ports.size(); i++)
       {
-	cout << setw(2) << l << "|";
-	for (int i=0; i <= Ports.size(); i++)
-	  {
-	    int val=(int)MinHopsTable[l][i];
-	    if (val != 255) 
-	      cout << setw(2) << val << " " ;
-	    else
-	      cout << setw(2) << "-" << " " ;
-	  }
-	cout << endl;
+        int val=(int)MinHopsTable[l][i];
+        if (val != 255) 
+          cout << setw(2) << val << " " ;
+        else
+          cout << setw(2) << "-" << " " ;
       }
+      IBPort *p_port = p_fabric->getPortByLid(l);
+      if (p_port) 
+        cout << " " << p_port->p_node->name;
+      cout << endl;
+    }
     cout << endl;
   }
 } // Method repHopTable
@@ -1042,7 +1045,7 @@ IBFabric::parseCables (string fn) {
     if (p_rexRes) {
       delete p_rexRes; 
     } else {
-      cout << "-W- Ignoring line:" << sLine << endl;
+      cout << "-E- Bad syntax on line:" << sLine << endl;
     }
   }
 
@@ -1060,9 +1063,9 @@ IBFabric::parseTopology (string fn) {
   ifstream f(fn.c_str());
   char sLine[1024];
   string n1 = string(""), t1, p1, n2, t2, p2, cfg = string("");
-  regExp sysLine("^[ \t]*([^ \t]+)[ \t]+([^ \t]+)[ \t]*( CFG:(.*))?$");
+  regExp sysLine("^[ \t]*([^/ \t]+)[ \t]+([^/ \t]+)[ \t]*( CFG:(.*))?$");
   regExp sysModule("([^ \t,]+)(.*)");
-  regExp portLine("^[ \t]+([^ \t]+)[ \t]+-((4|8|12)[xX]-)?((2.5|5|10)G-)?[>]"
+  regExp portLine("^[ \t]+([^ \t]+)[ \t]+-((1|4|8|12)[xX]-)?((2.5|5|10)G-)?[>]"
                   "[ \t]+([^ \t]+)[ \t]+([^ \t]+)[ \t]+([^ \t]+)[ \t]*$");
   regExp ignoreLine("^[ \t]*#");
   regExp emptyLine("^[ \t]*$");
@@ -1587,9 +1590,11 @@ IBFabric::parseFdbFile(string fn) {
     p_rexRes = switchLine.apply(sLine);
     if (p_rexRes) {
       // Got a new switch - find the node:
-      p_node = getNode("node:" + p_rexRes->field(1));
+      uint64_t guid;
+      guid = strtoull(p_rexRes->field(1).c_str(), NULL, 16);
+      p_node = getNodeByGuid(guid);
       if (!p_node) {
-        cout << "-E- Fail to find node: node:" << p_rexRes->field(1) << endl;
+        cout << "-E- Fail to find node with guid:" << p_rexRes->field(1) << endl;
         anyErr++;
       } else {
         switches++;
@@ -1627,7 +1632,7 @@ IBFabric::parseFdbFile(string fn) {
 
 ///////////////////////////////////////////////////////////////////////////
 
-// Parse an OpenSM MCFDBs file and set teh MFT table accordingly
+// Parse an OpenSM MCFDBs file and set the MFT table accordingly
 int
 IBFabric::parseMCFdbFile(string fn) {
   ifstream f(fn.c_str());

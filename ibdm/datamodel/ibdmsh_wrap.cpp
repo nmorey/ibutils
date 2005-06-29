@@ -26,7 +26,7 @@
 #define SWIGTCL
 #define SWIGTCL8
 /*
- * $Header: /mswg/cvsroot/IBADM/ibdm/datamodel/ibdmsh_wrap.cpp,v 1.7 2005/03/07 12:13:31 eitan Exp $
+ * $Header: /b2/dmb/SWIG/SWIG1.0b3/swig_lib/tcl/RCS/swigtcl.cfg,v 1.1 1996/05/22 19:47:45 beazley Exp $
  * 
  * swigtcl.cfg
  *
@@ -35,13 +35,7 @@
  * files to work on Unix, Windows, and Macintosh.
  *
  * Revision History
- * $Log: ibdmsh_wrap.cpp,v $
- * Revision 1.7  2005/03/07 12:13:31  eitan
- * Updated Makefiel to avoid teh dependency on yacc/flex in
- * non maintainer mode.
- *
- * Added the ibnl_parser.h of prevuious run
- *
+ * $Log: swigtcl.cfg,v $
  * Revision 1.1  1996/05/22 19:47:45  beazley
  * Initial revision
  *
@@ -109,7 +103,7 @@ DllEntryPoint(HINSTANCE hInst, DWORD reason, LPVOID reserved)
 #endif
 
 /**************************************************************************
- * $Header: /mswg/cvsroot/IBADM/ibdm/datamodel/ibdmsh_wrap.cpp,v 1.7 2005/03/07 12:13:31 eitan Exp $
+ * $Header:$
  *
  * tcl8ptr.swg
  *
@@ -349,18 +343,6 @@ SWIGEXPORT(int,Ibdm_Init)(Tcl_Interp *);
 
   */
 
-  /*
-	 we provide our own constructor such that all IBFabrics are
-	 registered in teh global vector;
-  */
-  IBFabric *new_IBFabric() {
-	 IBFabric *p_fabric = new IBFabric();
-	 if (p_fabric) {
-		ibdm_fabrics.push_back(p_fabric);
-	 }
-	 return p_fabric;
-  }
-
   /* Given a fabric pointer return its idx (starting w 1) or 0 */
   int ibdmGetFabricIdxByPtr(IBFabric *p_fabric) {
 	 /* go over all fabrics and find it's index: */
@@ -379,6 +361,43 @@ SWIGEXPORT(int,Ibdm_Init)(Tcl_Interp *);
 		return NULL;
 	 }
 	 return ibdm_fabrics[idx - 1];
+  }
+
+  /*
+	 we provide our own constructor such that all IBFabrics are
+	 registered in teh global vector;
+  */
+  IBFabric *new_IBFabric(void) {
+	 IBFabric *p_fabric = new IBFabric();
+    int i;
+	 if (p_fabric) {
+      /* look for an open index in the vector of fabrics */
+      for (i = 0; i < ibdm_fabrics.size(); i++)
+      { 
+        if (ibdm_fabrics[i] == NULL) 
+        {
+          ibdm_fabrics[i] = p_fabric;
+          return p_fabric;
+        }
+      }
+      ibdm_fabrics.push_back(p_fabric);
+	 }
+	 return p_fabric;
+  }
+
+  /*
+	 we provide our own destructor such that teh deleted fabric is 
+    de-registered from the global fabrics vector
+  */
+  void delete_IBFabric(IBFabric *p_fabric) {
+    int idx = ibdmGetFabricIdxByPtr(p_fabric);
+    if (! idx) {
+      printf("ERROR: Fabric idx:%p does not exist in the global vector!\n",
+             p_fabric);
+    } else {
+      ibdm_fabrics[idx-1] = NULL;
+    }
+    delete p_fabric;
   }
 
   /* Given the Object Pointer and Type provide it's TCL name */
@@ -539,7 +558,9 @@ SWIGEXPORT(int,Ibdm_Init)(Tcl_Interp *);
 	 }
 	 return TCL_OK;
   }
-  
+
+
+#define new_uint64_t uint64_t
 static int  _wrap_const_IB_UNKNOWN_NODE_TYPE = IB_UNKNOWN_NODE_TYPE;
 static int  _wrap_const_IB_SW_NODE = IB_SW_NODE;
 static int  _wrap_const_IB_CA_NODE = IB_CA_NODE;
@@ -635,6 +656,97 @@ static int _wrap_new_IBFabric(ClientData clientData, Tcl_Interp *interp, int obj
   if (_result)
 	 ibdmGetObjTclNameByPtr(tcl_result, _result, "IBFabric *");
 }
+    return TCL_OK;
+}
+static int _wrap_delete_IBFabric(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    IBFabric * _arg0;
+    Tcl_Obj * tcl_result;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. delete_IBFabric p_fabric ",-1);
+        return TCL_ERROR;
+    }
+{
+  
+  void *ptr;
+  if (ibdmGetObjPtrByTclName(objv[1], &ptr) != TCL_OK) {
+	 char err[128];
+	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
+	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+  }
+	 
+  _arg0 = (IBFabric *)ptr;
+}
+{
+  /* the format is always: <type>:<idx>[:<name>] */
+  
+  // get the type from the given source 
+  char buf[128];
+  strcpy(buf, Tcl_GetStringFromObj(objv[1],0));
+  char *colonIdx = index(buf,':');
+  if (!colonIdx) {
+	 char err[128];
+	 sprintf(err, "-E- Bad formatted ibdm object:%s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;
+  }
+  *colonIdx = '\0';
+
+  if (!strcmp("IBFabric ", "IBFabric ")) {
+	if (strcmp(buf, "fabric")) {
+	 char err[256];
+	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+	}	
+  } else if (!strcmp("IBFabric ", "IBSystem ")) {
+	if (strcmp(buf, "system")) {
+	 char err[256];
+	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+	}
+  } else if (!strcmp("IBFabric ", "IBSysPort ")) {
+	if (strcmp(buf, "sysport")) {
+	 char err[256];
+	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+	}
+  } else if (!strcmp("IBFabric ", "IBNode ")) {
+	if (strcmp(buf, "node")) {
+	 char err[256];
+	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+	}
+  } else if (!strcmp("IBFabric ", "IBPort ")) {
+	if (strcmp(buf, "port")) {
+	 char err[256];
+	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+	}
+  } else {
+	 char err[256];
+	 sprintf(err, "-E- basetype 'IBFabric ' is unknown");
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+  }
+}
+{ 
+  ibdm_tcl_error = 0;
+      delete_IBFabric(_arg0);
+; 
+  if (ibdm_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
     return TCL_OK;
 }
 static int _wrap_ibdmAssignLids(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
@@ -2023,6 +2135,99 @@ static int _wrap_ibdmBuildMergedFabric(ClientData clientData, Tcl_Interp *interp
 { 
   ibdm_tcl_error = 0;
       _result = (int )TopoMergeDiscAndSpecFabrics(_arg0,_arg1,_arg2);
+; 
+  if (ibdm_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+    Tcl_SetIntObj(tcl_result,(long) _result);
+    return TCL_OK;
+}
+static int _wrap_ibdmCheckMulticastGroups(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    int  _result;
+    IBFabric * _arg0;
+    Tcl_Obj * tcl_result;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ibdmCheckMulticastGroups p_fabric ",-1);
+        return TCL_ERROR;
+    }
+{
+  
+  void *ptr;
+  if (ibdmGetObjPtrByTclName(objv[1], &ptr) != TCL_OK) {
+	 char err[128];
+	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
+	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+  }
+	 
+  _arg0 = (IBFabric *)ptr;
+}
+{
+  /* the format is always: <type>:<idx>[:<name>] */
+  
+  // get the type from the given source 
+  char buf[128];
+  strcpy(buf, Tcl_GetStringFromObj(objv[1],0));
+  char *colonIdx = index(buf,':');
+  if (!colonIdx) {
+	 char err[128];
+	 sprintf(err, "-E- Bad formatted ibdm object:%s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;
+  }
+  *colonIdx = '\0';
+
+  if (!strcmp("IBFabric ", "IBFabric ")) {
+	if (strcmp(buf, "fabric")) {
+	 char err[256];
+	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+	}	
+  } else if (!strcmp("IBFabric ", "IBSystem ")) {
+	if (strcmp(buf, "system")) {
+	 char err[256];
+	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+	}
+  } else if (!strcmp("IBFabric ", "IBSysPort ")) {
+	if (strcmp(buf, "sysport")) {
+	 char err[256];
+	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+	}
+  } else if (!strcmp("IBFabric ", "IBNode ")) {
+	if (strcmp(buf, "node")) {
+	 char err[256];
+	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+	}
+  } else if (!strcmp("IBFabric ", "IBPort ")) {
+	if (strcmp(buf, "port")) {
+	 char err[256];
+	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+	}
+  } else {
+	 char err[256];
+	 sprintf(err, "-E- basetype 'IBFabric ' is unknown");
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+  }
+}
+{ 
+  ibdm_tcl_error = 0;
+      _result = (int )SubnMgtCheckFabricMCGrps(_arg0);
 ; 
   if (ibdm_tcl_error) { 
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
@@ -3708,7 +3913,7 @@ static int _wrap_new_IBPort(ClientData clientData, Tcl_Interp *interp, int objc,
 #define IBPort_guid_get(_swigobj)  (_swigobj->guid_get())
 static int _wrap_IBPort_guid_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
 
-    uint64_t * _result;
+    new_uint64_t * _result;
     IBPort * _arg0;
     Tcl_Obj * tcl_result;
 
@@ -3789,7 +3994,7 @@ static int _wrap_IBPort_guid_get(ClientData clientData, Tcl_Interp *interp, int 
 }
 { 
   ibdm_tcl_error = 0;
-      _result = new uint64_t (IBPort_guid_get(_arg0));
+      _result = new new_uint64_t (IBPort_guid_get(_arg0));
 ; 
   if (ibdm_tcl_error) { 
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
@@ -3798,8 +4003,10 @@ static int _wrap_IBPort_guid_get(ClientData clientData, Tcl_Interp *interp, int 
 }    tcl_result = Tcl_GetObjResult(interp);
 {
   char buff[20];
+  /* new_uint64_t tcl8 out */
   sprintf(buff, "0x%016" PRIx64, *_result);
   Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+  delete _result;
 }
     return TCL_OK;
 }
@@ -4180,26 +4387,26 @@ static int _wrap_IBPort_connect(ClientData clientData, Tcl_Interp *interp, int o
 /* methodcmd8.swg : Tcl8.x method invocation */
 
 static int TclIBPortMethodCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST _objv[]) {
-    int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
-    char *_str;
-    int rcode;
-    Tcl_Obj **objv;
-    Tcl_Obj *oldarg,*tcl_result,*obj;
-    int length;
-    char c;
+  int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
+  char *_str;
+  int rcode;
+  Tcl_Obj **objv;
+  Tcl_Obj *oldarg,*tcl_result,*obj;
+  int length;
+  char c;
 
-    tcl_result = Tcl_GetObjResult(interp);
-    objv = (Tcl_Obj **) _objv; 
-    if (objc < 2) {
-        Tcl_SetStringObj(tcl_result,"IBPort methods : { cget configure guid_get guid_set getName connect  }",-1);
-        return TCL_ERROR;
-    }
-    obj = Tcl_NewObj();
-    SWIG_SetPointerObj(obj,(void *) clientData,"_IBPort_p");
-    _str = Tcl_GetStringFromObj(objv[1],&length);
-    c = *_str;
-    if (0);
-    if (strcmp(_str,"guid_get") == 0) {
+  tcl_result = Tcl_GetObjResult(interp);
+  objv = (Tcl_Obj **) _objv; 
+  if (objc < 2) {
+    Tcl_SetStringObj(tcl_result,"IBPort methods : { dump cget configure guid_get guid_set getName connect  }",-1);
+    return TCL_ERROR;
+  }
+  obj = Tcl_NewObj();
+  SWIG_SetPointerObj(obj,(void *) clientData,"_IBPort_p");
+  _str = Tcl_GetStringFromObj(objv[1],&length);
+  c = *_str;
+  if (0);
+      if (strcmp(_str,"guid_get") == 0) {
         cmd = _wrap_IBPort_guid_get;
     }    else if (strcmp(_str,"guid_set") == 0) {
         cmd = _wrap_IBPort_guid_set;
@@ -4212,8 +4419,8 @@ static int TclIBPortMethodCmd(ClientData clientData, Tcl_Interp *interp, int obj
       int i = 2;
       cmd = 0;
       while (i+1 < objc) {
-	_str = Tcl_GetStringFromObj(objv[i],&length);
-                if (strcmp(_str,"-p_remotePort") == 0) {
+        _str = Tcl_GetStringFromObj(objv[i],&length);
+                        if (strcmp(_str,"-p_remotePort") == 0) {
                     cmd = _wrap_IBPort_p_remotePort_set;
                 }  else if (strcmp(_str,"-p_sysPort") == 0) {
                     cmd = _wrap_IBPort_p_sysPort_set;
@@ -4228,29 +4435,29 @@ static int TclIBPortMethodCmd(ClientData clientData, Tcl_Interp *interp, int obj
                 }  else if (strcmp(_str,"-speed") == 0) {
                     cmd = _wrap_IBPort_speed_set;
                 } 
-	   if (cmd) {
-	     oldarg = objv[i];
-	     objv[i] = obj;
-	     rcode = (*cmd)(clientData,interp,3,&objv[i-1]);
-	     objv[i] = oldarg;
-	     if (rcode == TCL_ERROR) return rcode;
-	     cmd = 0;
-	   } else {
-	     Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be { -p_remotePort -p_sysPort -p_node -num -base_lid -width -speed  }",-1);
-	     return TCL_ERROR;
-	   }
-	i+=2;
+          if (cmd) {
+            oldarg = objv[i];
+            objv[i] = obj;
+            rcode = (*cmd)(clientData,interp,3,&objv[i-1]);
+            objv[i] = oldarg;
+            if (rcode == TCL_ERROR) return rcode;
+            cmd = 0;
+          } else {
+            Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be { -p_remotePort -p_sysPort -p_node -num -base_lid -width -speed  }",-1);
+            return TCL_ERROR;
+          }
+        i+=2;
       }
       if ((i < objc) || (i == 2)) {
-	Tcl_SetStringObj(tcl_result,"{ -p_remotePort -p_sysPort -p_node -num -base_lid -width -speed  }",-1);
-	return TCL_ERROR;
+        Tcl_SetStringObj(tcl_result,"{ -p_remotePort -p_sysPort -p_node -num -base_lid -width -speed  }",-1);
+        return TCL_ERROR;
       }
       return TCL_OK;
     } else if ((c == 'c') && (strncmp(_str,"cget",length) == 0) && (length >= 2)) {
-            if (objc == 3) {
-	      _str = Tcl_GetStringFromObj(objv[2],&length);
-	      if (0) {}
-                if (strcmp(_str,"-p_remotePort") == 0) {
+      if (objc == 3) {
+        _str = Tcl_GetStringFromObj(objv[2],&length);
+        if (0) {}
+                        if (strcmp(_str,"-p_remotePort") == 0) {
                     cmd = _wrap_IBPort_p_remotePort_get;
                 }  else if (strcmp(_str,"-p_sysPort") == 0) {
                     cmd = _wrap_IBPort_p_sysPort_get;
@@ -4265,34 +4472,95 @@ static int TclIBPortMethodCmd(ClientData clientData, Tcl_Interp *interp, int obj
                 }  else if (strcmp(_str,"-speed") == 0) {
                     cmd = _wrap_IBPort_speed_get;
                 } 
-	      else if (strcmp(_str,"-this") == 0) {
-                   SWIG_SetPointerObj(tcl_result,(void *) clientData, "_IBPort_p");
-                   return TCL_OK;
-	      }
-	      if (cmd) {
-		oldarg = objv[2];
-		objv[2] = obj;
-		rcode = (*cmd)(clientData,interp,objc-1,&objv[1]);
-		objv[2] = oldarg;
-		return rcode;
-	      } else {
-		Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this -p_remotePort -p_sysPort -p_node -num -base_lid -width -speed  }",-1);
-		return TCL_ERROR;
-	      }
-	    } else {
-	      Tcl_SetStringObj(tcl_result,"{ -this -p_remotePort -p_sysPort -p_node -num -base_lid -width -speed  }", -1);
-	      return TCL_ERROR;
-	    }
-    }
-    if (!cmd) {
-        Tcl_SetStringObj(tcl_result,"Invalid Method. Must be { cget configure guid_get guid_set getName connect }",-1);
+          else if (strcmp(_str,"-this") == 0) {
+            SWIG_SetPointerObj(tcl_result,(void *) clientData, "_IBPort_p");
+            return TCL_OK;
+          }
+        if (cmd) {
+          oldarg = objv[2];
+          objv[2] = obj;
+          rcode = (*cmd)(clientData,interp,objc-1,&objv[1]);
+          objv[2] = oldarg;
+          return rcode;
+        } else {
+          Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this -p_remotePort -p_sysPort -p_node -num -base_lid -width -speed  }",-1);
+          return TCL_ERROR;
+        }
+      } else {
+        Tcl_SetStringObj(tcl_result,"{ -this -p_remotePort -p_sysPort -p_node -num -base_lid -width -speed  }", -1);
         return TCL_ERROR;
+      }
+    } else if ((c == 'd') && (strncmp(_str,"dump",length) == 0) && (length >= 2)) {
+      if (objc == 2) {
+        Tcl_Obj *pDumpObj;
+        pDumpObj = Tcl_NewStringObj("",-1);
+        Tcl_IncrRefCount(pDumpObj);
+                cmd = _wrap_IBPort_p_remotePort_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-p_remotePort ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_IBPort_p_sysPort_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-p_sysPort ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_IBPort_p_node_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-p_node ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_IBPort_num_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-num ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_IBPort_base_lid_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-base_lid ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_IBPort_width_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-width ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_IBPort_speed_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-speed ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+
+        Tcl_DecrRefCount(pDumpObj);
+        return TCL_OK;
+      } else {
+        Tcl_SetStringObj(tcl_result,"no parameters are allowed for dump", -1);
+        return TCL_ERROR;
+      }
     }
-    oldarg = objv[1];
-    objv[1] = obj;
-    rcode = (*cmd)(clientData,interp,objc,objv);
-    objv[1] = oldarg;
-    return rcode;
+  if (!cmd) {
+    Tcl_SetStringObj(tcl_result,"Invalid Method. Must be { dump cget configure guid_get guid_set getName connect }",-1);
+    return TCL_ERROR;
+  }
+  oldarg = objv[1];
+  objv[1] = obj;
+  rcode = (*cmd)(clientData,interp,objc,objv);
+  objv[1] = oldarg;
+  return rcode;
 }
 
 
@@ -6181,7 +6449,7 @@ static int _wrap_IBNode_LFT_get(ClientData clientData, Tcl_Interp *interp, int o
 #define IBNode_guid_get(_swigobj)  (_swigobj->guid_get())
 static int _wrap_IBNode_guid_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
 
-    uint64_t * _result;
+    new_uint64_t * _result;
     IBNode * _arg0;
     Tcl_Obj * tcl_result;
 
@@ -6262,7 +6530,7 @@ static int _wrap_IBNode_guid_get(ClientData clientData, Tcl_Interp *interp, int 
 }
 { 
   ibdm_tcl_error = 0;
-      _result = new uint64_t (IBNode_guid_get(_arg0));
+      _result = new new_uint64_t (IBNode_guid_get(_arg0));
 ; 
   if (ibdm_tcl_error) { 
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
@@ -6271,8 +6539,10 @@ static int _wrap_IBNode_guid_get(ClientData clientData, Tcl_Interp *interp, int 
 }    tcl_result = Tcl_GetObjResult(interp);
 {
   char buff[20];
+  /* new_uint64_t tcl8 out */
   sprintf(buff, "0x%016" PRIx64, *_result);
   Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+  delete _result;
 }
     return TCL_OK;
 }
@@ -7484,6 +7754,98 @@ static int _wrap_IBNode_getLFTPortForLid(ClientData clientData, Tcl_Interp *inte
     Tcl_SetIntObj(tcl_result,(long) _result);
     return TCL_OK;
 }
+#define IBNode_repHopTable(_swigobj)  (_swigobj->repHopTable())
+static int _wrap_IBNode_repHopTable(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    IBNode * _arg0;
+    Tcl_Obj * tcl_result;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. IBNode_repHopTable { IBNode * } ",-1);
+        return TCL_ERROR;
+    }
+{
+  
+  void *ptr;
+  if (ibdmGetObjPtrByTclName(objv[1], &ptr) != TCL_OK) {
+	 char err[128];
+	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
+	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+  }
+	 
+  _arg0 = (IBNode *)ptr;
+}
+{
+  /* the format is always: <type>:<idx>[:<name>] */
+  
+  // get the type from the given source 
+  char buf[128];
+  strcpy(buf, Tcl_GetStringFromObj(objv[1],0));
+  char *colonIdx = index(buf,':');
+  if (!colonIdx) {
+	 char err[128];
+	 sprintf(err, "-E- Bad formatted ibdm object:%s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;
+  }
+  *colonIdx = '\0';
+
+  if (!strcmp("IBNode ", "IBFabric ")) {
+	if (strcmp(buf, "fabric")) {
+	 char err[256];
+	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+	}	
+  } else if (!strcmp("IBNode ", "IBSystem ")) {
+	if (strcmp(buf, "system")) {
+	 char err[256];
+	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+	}
+  } else if (!strcmp("IBNode ", "IBSysPort ")) {
+	if (strcmp(buf, "sysport")) {
+	 char err[256];
+	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+	}
+  } else if (!strcmp("IBNode ", "IBNode ")) {
+	if (strcmp(buf, "node")) {
+	 char err[256];
+	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+	}
+  } else if (!strcmp("IBNode ", "IBPort ")) {
+	if (strcmp(buf, "port")) {
+	 char err[256];
+	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+	}
+  } else {
+	 char err[256];
+	 sprintf(err, "-E- basetype 'IBNode ' is unknown");
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+  }
+}
+{ 
+  ibdm_tcl_error = 0;
+      IBNode_repHopTable(_arg0);
+; 
+  if (ibdm_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+    return TCL_OK;
+}
 /* delcmd.swg : Tcl object deletion method */
 
 static void TclDeleteIBNode(ClientData clientData) {
@@ -7493,26 +7855,26 @@ static void TclDeleteIBNode(ClientData clientData) {
 /* methodcmd8.swg : Tcl8.x method invocation */
 
 static int TclIBNodeMethodCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST _objv[]) {
-    int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
-    char *_str;
-    int rcode;
-    Tcl_Obj **objv;
-    Tcl_Obj *oldarg,*tcl_result,*obj;
-    int length;
-    char c;
+  int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
+  char *_str;
+  int rcode;
+  Tcl_Obj **objv;
+  Tcl_Obj *oldarg,*tcl_result,*obj;
+  int length;
+  char c;
 
-    tcl_result = Tcl_GetObjResult(interp);
-    objv = (Tcl_Obj **) _objv; 
-    if (objc < 2) {
-        Tcl_SetStringObj(tcl_result,"IBNode methods : { cget configure guid_get guid_set makePort getPort setHops getHops getFirstMinHopPort setLFTPortForLid getLFTPortForLid  }",-1);
-        return TCL_ERROR;
-    }
-    obj = Tcl_NewObj();
-    SWIG_SetPointerObj(obj,(void *) clientData,"_IBNode_p");
-    _str = Tcl_GetStringFromObj(objv[1],&length);
-    c = *_str;
-    if (0);
-    if (strcmp(_str,"guid_get") == 0) {
+  tcl_result = Tcl_GetObjResult(interp);
+  objv = (Tcl_Obj **) _objv; 
+  if (objc < 2) {
+    Tcl_SetStringObj(tcl_result,"IBNode methods : { dump cget configure guid_get guid_set makePort getPort setHops getHops getFirstMinHopPort setLFTPortForLid getLFTPortForLid repHopTable  }",-1);
+    return TCL_ERROR;
+  }
+  obj = Tcl_NewObj();
+  SWIG_SetPointerObj(obj,(void *) clientData,"_IBNode_p");
+  _str = Tcl_GetStringFromObj(objv[1],&length);
+  c = *_str;
+  if (0);
+      if (strcmp(_str,"guid_get") == 0) {
         cmd = _wrap_IBNode_guid_get;
     }    else if (strcmp(_str,"guid_set") == 0) {
         cmd = _wrap_IBNode_guid_set;
@@ -7530,13 +7892,15 @@ static int TclIBNodeMethodCmd(ClientData clientData, Tcl_Interp *interp, int obj
         cmd = _wrap_IBNode_setLFTPortForLid;
     }    else if (strcmp(_str,"getLFTPortForLid") == 0) {
         cmd = _wrap_IBNode_getLFTPortForLid;
+    }    else if (strcmp(_str,"repHopTable") == 0) {
+        cmd = _wrap_IBNode_repHopTable;
     }
     else if ((c == 'c') && (strncmp(_str,"configure",length) == 0) && (length >= 2)) {
       int i = 2;
       cmd = 0;
       while (i+1 < objc) {
-	_str = Tcl_GetStringFromObj(objv[i],&length);
-                if (strcmp(_str,"-name") == 0) {
+        _str = Tcl_GetStringFromObj(objv[i],&length);
+                        if (strcmp(_str,"-name") == 0) {
                     cmd = _wrap_IBNode_name_set;
                 }  else if (strcmp(_str,"-type") == 0) {
                     cmd = _wrap_IBNode_type_set;
@@ -7549,29 +7913,29 @@ static int TclIBNodeMethodCmd(ClientData clientData, Tcl_Interp *interp, int obj
                 }  else if (strcmp(_str,"-attributes") == 0) {
                     cmd = _wrap_IBNode_attributes_set;
                 } 
-	   if (cmd) {
-	     oldarg = objv[i];
-	     objv[i] = obj;
-	     rcode = (*cmd)(clientData,interp,3,&objv[i-1]);
-	     objv[i] = oldarg;
-	     if (rcode == TCL_ERROR) return rcode;
-	     cmd = 0;
-	   } else {
-	     Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be { -name -type -devId -revId -vendId -attributes  }",-1);
-	     return TCL_ERROR;
-	   }
-	i+=2;
+          if (cmd) {
+            oldarg = objv[i];
+            objv[i] = obj;
+            rcode = (*cmd)(clientData,interp,3,&objv[i-1]);
+            objv[i] = oldarg;
+            if (rcode == TCL_ERROR) return rcode;
+            cmd = 0;
+          } else {
+            Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be { -name -type -devId -revId -vendId -attributes  }",-1);
+            return TCL_ERROR;
+          }
+        i+=2;
       }
       if ((i < objc) || (i == 2)) {
-	Tcl_SetStringObj(tcl_result,"{ -name -type -devId -revId -vendId -attributes  }",-1);
-	return TCL_ERROR;
+        Tcl_SetStringObj(tcl_result,"{ -name -type -devId -revId -vendId -attributes  }",-1);
+        return TCL_ERROR;
       }
       return TCL_OK;
     } else if ((c == 'c') && (strncmp(_str,"cget",length) == 0) && (length >= 2)) {
-            if (objc == 3) {
-	      _str = Tcl_GetStringFromObj(objv[2],&length);
-	      if (0) {}
-                if (strcmp(_str,"-name") == 0) {
+      if (objc == 3) {
+        _str = Tcl_GetStringFromObj(objv[2],&length);
+        if (0) {}
+                        if (strcmp(_str,"-name") == 0) {
                     cmd = _wrap_IBNode_name_get;
                 }  else if (strcmp(_str,"-type") == 0) {
                     cmd = _wrap_IBNode_type_get;
@@ -7596,34 +7960,130 @@ static int TclIBNodeMethodCmd(ClientData clientData, Tcl_Interp *interp, int obj
                 }  else if (strcmp(_str,"-LFT") == 0) {
                     cmd = _wrap_IBNode_LFT_get;
                 } 
-	      else if (strcmp(_str,"-this") == 0) {
-                   SWIG_SetPointerObj(tcl_result,(void *) clientData, "_IBNode_p");
-                   return TCL_OK;
-	      }
-	      if (cmd) {
-		oldarg = objv[2];
-		objv[2] = obj;
-		rcode = (*cmd)(clientData,interp,objc-1,&objv[1]);
-		objv[2] = oldarg;
-		return rcode;
-	      } else {
-		Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this -name -type -devId -revId -vendId -attributes -p_system -p_fabric -numPorts -Ports -MinHopsTable -LFT  }",-1);
-		return TCL_ERROR;
-	      }
-	    } else {
-	      Tcl_SetStringObj(tcl_result,"{ -this -name -type -devId -revId -vendId -attributes -p_system -p_fabric -numPorts -Ports -MinHopsTable -LFT  }", -1);
-	      return TCL_ERROR;
-	    }
-    }
-    if (!cmd) {
-        Tcl_SetStringObj(tcl_result,"Invalid Method. Must be { cget configure guid_get guid_set makePort getPort setHops getHops getFirstMinHopPort setLFTPortForLid getLFTPortForLid }",-1);
+          else if (strcmp(_str,"-this") == 0) {
+            SWIG_SetPointerObj(tcl_result,(void *) clientData, "_IBNode_p");
+            return TCL_OK;
+          }
+        if (cmd) {
+          oldarg = objv[2];
+          objv[2] = obj;
+          rcode = (*cmd)(clientData,interp,objc-1,&objv[1]);
+          objv[2] = oldarg;
+          return rcode;
+        } else {
+          Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this -name -type -devId -revId -vendId -attributes -p_system -p_fabric -numPorts -Ports -MinHopsTable -LFT  }",-1);
+          return TCL_ERROR;
+        }
+      } else {
+        Tcl_SetStringObj(tcl_result,"{ -this -name -type -devId -revId -vendId -attributes -p_system -p_fabric -numPorts -Ports -MinHopsTable -LFT  }", -1);
         return TCL_ERROR;
+      }
+    } else if ((c == 'd') && (strncmp(_str,"dump",length) == 0) && (length >= 2)) {
+      if (objc == 2) {
+        Tcl_Obj *pDumpObj;
+        pDumpObj = Tcl_NewStringObj("",-1);
+        Tcl_IncrRefCount(pDumpObj);
+                cmd = _wrap_IBNode_name_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-name ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_IBNode_type_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-type ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_IBNode_devId_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-devId ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_IBNode_revId_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-revId ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_IBNode_vendId_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-vendId ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_IBNode_attributes_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-attributes ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_IBNode_p_system_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-p_system ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_IBNode_p_fabric_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-p_fabric ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_IBNode_numPorts_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-numPorts ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_IBNode_Ports_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-Ports ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_IBNode_MinHopsTable_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-MinHopsTable ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_IBNode_LFT_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-LFT ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+
+        Tcl_DecrRefCount(pDumpObj);
+        return TCL_OK;
+      } else {
+        Tcl_SetStringObj(tcl_result,"no parameters are allowed for dump", -1);
+        return TCL_ERROR;
+      }
     }
-    oldarg = objv[1];
-    objv[1] = obj;
-    rcode = (*cmd)(clientData,interp,objc,objv);
-    objv[1] = oldarg;
-    return rcode;
+  if (!cmd) {
+    Tcl_SetStringObj(tcl_result,"Invalid Method. Must be { dump cget configure guid_get guid_set makePort getPort setHops getHops getFirstMinHopPort setLFTPortForLid getLFTPortForLid repHopTable }",-1);
+    return TCL_ERROR;
+  }
+  oldarg = objv[1];
+  objv[1] = obj;
+  rcode = (*cmd)(clientData,interp,objc,objv);
+  objv[1] = oldarg;
+  return rcode;
 }
 
 
@@ -9081,34 +9541,34 @@ static void TclDeleteIBSysPort(ClientData clientData) {
 /* methodcmd8.swg : Tcl8.x method invocation */
 
 static int TclIBSysPortMethodCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST _objv[]) {
-    int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
-    char *_str;
-    int rcode;
-    Tcl_Obj **objv;
-    Tcl_Obj *oldarg,*tcl_result,*obj;
-    int length;
-    char c;
+  int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
+  char *_str;
+  int rcode;
+  Tcl_Obj **objv;
+  Tcl_Obj *oldarg,*tcl_result,*obj;
+  int length;
+  char c;
 
-    tcl_result = Tcl_GetObjResult(interp);
-    objv = (Tcl_Obj **) _objv; 
-    if (objc < 2) {
-        Tcl_SetStringObj(tcl_result,"IBSysPort methods : { cget configure connect  }",-1);
-        return TCL_ERROR;
-    }
-    obj = Tcl_NewObj();
-    SWIG_SetPointerObj(obj,(void *) clientData,"_IBSysPort_p");
-    _str = Tcl_GetStringFromObj(objv[1],&length);
-    c = *_str;
-    if (0);
-    if (strcmp(_str,"connect") == 0) {
+  tcl_result = Tcl_GetObjResult(interp);
+  objv = (Tcl_Obj **) _objv; 
+  if (objc < 2) {
+    Tcl_SetStringObj(tcl_result,"IBSysPort methods : { dump cget configure connect  }",-1);
+    return TCL_ERROR;
+  }
+  obj = Tcl_NewObj();
+  SWIG_SetPointerObj(obj,(void *) clientData,"_IBSysPort_p");
+  _str = Tcl_GetStringFromObj(objv[1],&length);
+  c = *_str;
+  if (0);
+      if (strcmp(_str,"connect") == 0) {
         cmd = _wrap_IBSysPort_connect;
     }
     else if ((c == 'c') && (strncmp(_str,"configure",length) == 0) && (length >= 2)) {
       int i = 2;
       cmd = 0;
       while (i+1 < objc) {
-	_str = Tcl_GetStringFromObj(objv[i],&length);
-                if (strcmp(_str,"-name") == 0) {
+        _str = Tcl_GetStringFromObj(objv[i],&length);
+                        if (strcmp(_str,"-name") == 0) {
                     cmd = _wrap_IBSysPort_name_set;
                 }  else if (strcmp(_str,"-p_remoteSysPort") == 0) {
                     cmd = _wrap_IBSysPort_p_remoteSysPort_set;
@@ -9117,29 +9577,29 @@ static int TclIBSysPortMethodCmd(ClientData clientData, Tcl_Interp *interp, int 
                 }  else if (strcmp(_str,"-p_nodePort") == 0) {
                     cmd = _wrap_IBSysPort_p_nodePort_set;
                 } 
-	   if (cmd) {
-	     oldarg = objv[i];
-	     objv[i] = obj;
-	     rcode = (*cmd)(clientData,interp,3,&objv[i-1]);
-	     objv[i] = oldarg;
-	     if (rcode == TCL_ERROR) return rcode;
-	     cmd = 0;
-	   } else {
-	     Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be { -name -p_remoteSysPort -p_system -p_nodePort  }",-1);
-	     return TCL_ERROR;
-	   }
-	i+=2;
+          if (cmd) {
+            oldarg = objv[i];
+            objv[i] = obj;
+            rcode = (*cmd)(clientData,interp,3,&objv[i-1]);
+            objv[i] = oldarg;
+            if (rcode == TCL_ERROR) return rcode;
+            cmd = 0;
+          } else {
+            Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be { -name -p_remoteSysPort -p_system -p_nodePort  }",-1);
+            return TCL_ERROR;
+          }
+        i+=2;
       }
       if ((i < objc) || (i == 2)) {
-	Tcl_SetStringObj(tcl_result,"{ -name -p_remoteSysPort -p_system -p_nodePort  }",-1);
-	return TCL_ERROR;
+        Tcl_SetStringObj(tcl_result,"{ -name -p_remoteSysPort -p_system -p_nodePort  }",-1);
+        return TCL_ERROR;
       }
       return TCL_OK;
     } else if ((c == 'c') && (strncmp(_str,"cget",length) == 0) && (length >= 2)) {
-            if (objc == 3) {
-	      _str = Tcl_GetStringFromObj(objv[2],&length);
-	      if (0) {}
-                if (strcmp(_str,"-name") == 0) {
+      if (objc == 3) {
+        _str = Tcl_GetStringFromObj(objv[2],&length);
+        if (0) {}
+                        if (strcmp(_str,"-name") == 0) {
                     cmd = _wrap_IBSysPort_name_get;
                 }  else if (strcmp(_str,"-p_remoteSysPort") == 0) {
                     cmd = _wrap_IBSysPort_p_remoteSysPort_get;
@@ -9148,34 +9608,74 @@ static int TclIBSysPortMethodCmd(ClientData clientData, Tcl_Interp *interp, int 
                 }  else if (strcmp(_str,"-p_nodePort") == 0) {
                     cmd = _wrap_IBSysPort_p_nodePort_get;
                 } 
-	      else if (strcmp(_str,"-this") == 0) {
-                   SWIG_SetPointerObj(tcl_result,(void *) clientData, "_IBSysPort_p");
-                   return TCL_OK;
-	      }
-	      if (cmd) {
-		oldarg = objv[2];
-		objv[2] = obj;
-		rcode = (*cmd)(clientData,interp,objc-1,&objv[1]);
-		objv[2] = oldarg;
-		return rcode;
-	      } else {
-		Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this -name -p_remoteSysPort -p_system -p_nodePort  }",-1);
-		return TCL_ERROR;
-	      }
-	    } else {
-	      Tcl_SetStringObj(tcl_result,"{ -this -name -p_remoteSysPort -p_system -p_nodePort  }", -1);
-	      return TCL_ERROR;
-	    }
-    }
-    if (!cmd) {
-        Tcl_SetStringObj(tcl_result,"Invalid Method. Must be { cget configure connect }",-1);
+          else if (strcmp(_str,"-this") == 0) {
+            SWIG_SetPointerObj(tcl_result,(void *) clientData, "_IBSysPort_p");
+            return TCL_OK;
+          }
+        if (cmd) {
+          oldarg = objv[2];
+          objv[2] = obj;
+          rcode = (*cmd)(clientData,interp,objc-1,&objv[1]);
+          objv[2] = oldarg;
+          return rcode;
+        } else {
+          Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this -name -p_remoteSysPort -p_system -p_nodePort  }",-1);
+          return TCL_ERROR;
+        }
+      } else {
+        Tcl_SetStringObj(tcl_result,"{ -this -name -p_remoteSysPort -p_system -p_nodePort  }", -1);
         return TCL_ERROR;
+      }
+    } else if ((c == 'd') && (strncmp(_str,"dump",length) == 0) && (length >= 2)) {
+      if (objc == 2) {
+        Tcl_Obj *pDumpObj;
+        pDumpObj = Tcl_NewStringObj("",-1);
+        Tcl_IncrRefCount(pDumpObj);
+                cmd = _wrap_IBSysPort_name_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-name ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_IBSysPort_p_remoteSysPort_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-p_remoteSysPort ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_IBSysPort_p_system_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-p_system ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_IBSysPort_p_nodePort_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-p_nodePort ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+
+        Tcl_DecrRefCount(pDumpObj);
+        return TCL_OK;
+      } else {
+        Tcl_SetStringObj(tcl_result,"no parameters are allowed for dump", -1);
+        return TCL_ERROR;
+      }
     }
-    oldarg = objv[1];
-    objv[1] = obj;
-    rcode = (*cmd)(clientData,interp,objc,objv);
-    objv[1] = oldarg;
-    return rcode;
+  if (!cmd) {
+    Tcl_SetStringObj(tcl_result,"Invalid Method. Must be { dump cget configure connect }",-1);
+    return TCL_ERROR;
+  }
+  oldarg = objv[1];
+  objv[1] = obj;
+  rcode = (*cmd)(clientData,interp,objc,objv);
+  objv[1] = oldarg;
+  return rcode;
 }
 
 
@@ -10353,7 +10853,7 @@ static int _wrap_delete_IBSystem(ClientData clientData, Tcl_Interp *interp, int 
 #define IBSystem_guid_get(_swigobj)  (_swigobj->guid_get())
 static int _wrap_IBSystem_guid_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
 
-    uint64_t * _result;
+    new_uint64_t * _result;
     IBSystem * _arg0;
     Tcl_Obj * tcl_result;
 
@@ -10434,7 +10934,7 @@ static int _wrap_IBSystem_guid_get(ClientData clientData, Tcl_Interp *interp, in
 }
 { 
   ibdm_tcl_error = 0;
-      _result = new uint64_t (IBSystem_guid_get(_arg0));
+      _result = new new_uint64_t (IBSystem_guid_get(_arg0));
 ; 
   if (ibdm_tcl_error) { 
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
@@ -10443,8 +10943,10 @@ static int _wrap_IBSystem_guid_get(ClientData clientData, Tcl_Interp *interp, in
 }    tcl_result = Tcl_GetObjResult(interp);
 {
   char buff[20];
+  /* new_uint64_t tcl8 out */
   sprintf(buff, "0x%016" PRIx64, *_result);
   Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+  delete _result;
 }
     return TCL_OK;
 }
@@ -10754,6 +11256,110 @@ static int _wrap_IBSystem_getSysPortNodePortByName(ClientData clientData, Tcl_In
 }
     return TCL_OK;
 }
+#define IBSystem_getSysPort(_swigobj,_swigarg0)  (_swigobj->getSysPort(_swigarg0))
+static int _wrap_IBSystem_getSysPort(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    IBSysPort * _result;
+    IBSystem * _arg0;
+    string * _arg1;
+    Tcl_Obj * tcl_result;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. IBSystem_getSysPort { IBSystem * } name ",-1);
+        return TCL_ERROR;
+    }
+{
+  
+  void *ptr;
+  if (ibdmGetObjPtrByTclName(objv[1], &ptr) != TCL_OK) {
+	 char err[128];
+	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
+	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+  }
+	 
+  _arg0 = (IBSystem *)ptr;
+}
+{
+  /* the format is always: <type>:<idx>[:<name>] */
+  
+  // get the type from the given source 
+  char buf[128];
+  strcpy(buf, Tcl_GetStringFromObj(objv[1],0));
+  char *colonIdx = index(buf,':');
+  if (!colonIdx) {
+	 char err[128];
+	 sprintf(err, "-E- Bad formatted ibdm object:%s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;
+  }
+  *colonIdx = '\0';
+
+  if (!strcmp("IBSystem ", "IBFabric ")) {
+	if (strcmp(buf, "fabric")) {
+	 char err[256];
+	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+	}	
+  } else if (!strcmp("IBSystem ", "IBSystem ")) {
+	if (strcmp(buf, "system")) {
+	 char err[256];
+	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+	}
+  } else if (!strcmp("IBSystem ", "IBSysPort ")) {
+	if (strcmp(buf, "sysport")) {
+	 char err[256];
+	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+	}
+  } else if (!strcmp("IBSystem ", "IBNode ")) {
+	if (strcmp(buf, "node")) {
+	 char err[256];
+	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+	}
+  } else if (!strcmp("IBSystem ", "IBPort ")) {
+	if (strcmp(buf, "port")) {
+	 char err[256];
+	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+	}
+  } else {
+	 char err[256];
+	 sprintf(err, "-E- basetype 'IBSystem ' is unknown");
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+  }
+}
+{
+  int len;
+  static string _arg1_tmp;
+  _arg1_tmp = string(Tcl_GetStringFromObj(objv[2],&len));
+  _arg1 = &_arg1_tmp;
+}
+{ 
+  ibdm_tcl_error = 0;
+      _result = (IBSysPort *)IBSystem_getSysPort(_arg0,*_arg1);
+; 
+  if (ibdm_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  if (_result)
+	 ibdmGetObjTclNameByPtr(tcl_result, _result, "IBSysPort *");
+}
+    return TCL_OK;
+}
 /* delcmd.swg : Tcl object deletion method */
 
 static void TclDeleteIBSystem(ClientData clientData) {
@@ -10763,26 +11369,26 @@ static void TclDeleteIBSystem(ClientData clientData) {
 /* methodcmd8.swg : Tcl8.x method invocation */
 
 static int TclIBSystemMethodCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST _objv[]) {
-    int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
-    char *_str;
-    int rcode;
-    Tcl_Obj **objv;
-    Tcl_Obj *oldarg,*tcl_result,*obj;
-    int length;
-    char c;
+  int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
+  char *_str;
+  int rcode;
+  Tcl_Obj **objv;
+  Tcl_Obj *oldarg,*tcl_result,*obj;
+  int length;
+  char c;
 
-    tcl_result = Tcl_GetObjResult(interp);
-    objv = (Tcl_Obj **) _objv; 
-    if (objc < 2) {
-        Tcl_SetStringObj(tcl_result,"IBSystem methods : { cget configure guid_get guid_set makeSysPort getSysPortNodePortByName  }",-1);
-        return TCL_ERROR;
-    }
-    obj = Tcl_NewObj();
-    SWIG_SetPointerObj(obj,(void *) clientData,"_IBSystem_p");
-    _str = Tcl_GetStringFromObj(objv[1],&length);
-    c = *_str;
-    if (0);
-    if (strcmp(_str,"guid_get") == 0) {
+  tcl_result = Tcl_GetObjResult(interp);
+  objv = (Tcl_Obj **) _objv; 
+  if (objc < 2) {
+    Tcl_SetStringObj(tcl_result,"IBSystem methods : { dump cget configure guid_get guid_set makeSysPort getSysPortNodePortByName getSysPort  }",-1);
+    return TCL_ERROR;
+  }
+  obj = Tcl_NewObj();
+  SWIG_SetPointerObj(obj,(void *) clientData,"_IBSystem_p");
+  _str = Tcl_GetStringFromObj(objv[1],&length);
+  c = *_str;
+  if (0);
+      if (strcmp(_str,"guid_get") == 0) {
         cmd = _wrap_IBSystem_guid_get;
     }    else if (strcmp(_str,"guid_set") == 0) {
         cmd = _wrap_IBSystem_guid_set;
@@ -10790,42 +11396,44 @@ static int TclIBSystemMethodCmd(ClientData clientData, Tcl_Interp *interp, int o
         cmd = _wrap_IBSystem_makeSysPort;
     }    else if (strcmp(_str,"getSysPortNodePortByName") == 0) {
         cmd = _wrap_IBSystem_getSysPortNodePortByName;
+    }    else if (strcmp(_str,"getSysPort") == 0) {
+        cmd = _wrap_IBSystem_getSysPort;
     }
     else if ((c == 'c') && (strncmp(_str,"configure",length) == 0) && (length >= 2)) {
       int i = 2;
       cmd = 0;
       while (i+1 < objc) {
-	_str = Tcl_GetStringFromObj(objv[i],&length);
-                if (strcmp(_str,"-name") == 0) {
+        _str = Tcl_GetStringFromObj(objv[i],&length);
+                        if (strcmp(_str,"-name") == 0) {
                     cmd = _wrap_IBSystem_name_set;
                 }  else if (strcmp(_str,"-type") == 0) {
                     cmd = _wrap_IBSystem_type_set;
                 }  else if (strcmp(_str,"-p_fabric") == 0) {
                     cmd = _wrap_IBSystem_p_fabric_set;
                 } 
-	   if (cmd) {
-	     oldarg = objv[i];
-	     objv[i] = obj;
-	     rcode = (*cmd)(clientData,interp,3,&objv[i-1]);
-	     objv[i] = oldarg;
-	     if (rcode == TCL_ERROR) return rcode;
-	     cmd = 0;
-	   } else {
-	     Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be { -name -type -p_fabric  }",-1);
-	     return TCL_ERROR;
-	   }
-	i+=2;
+          if (cmd) {
+            oldarg = objv[i];
+            objv[i] = obj;
+            rcode = (*cmd)(clientData,interp,3,&objv[i-1]);
+            objv[i] = oldarg;
+            if (rcode == TCL_ERROR) return rcode;
+            cmd = 0;
+          } else {
+            Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be { -name -type -p_fabric  }",-1);
+            return TCL_ERROR;
+          }
+        i+=2;
       }
       if ((i < objc) || (i == 2)) {
-	Tcl_SetStringObj(tcl_result,"{ -name -type -p_fabric  }",-1);
-	return TCL_ERROR;
+        Tcl_SetStringObj(tcl_result,"{ -name -type -p_fabric  }",-1);
+        return TCL_ERROR;
       }
       return TCL_OK;
     } else if ((c == 'c') && (strncmp(_str,"cget",length) == 0) && (length >= 2)) {
-            if (objc == 3) {
-	      _str = Tcl_GetStringFromObj(objv[2],&length);
-	      if (0) {}
-                if (strcmp(_str,"-name") == 0) {
+      if (objc == 3) {
+        _str = Tcl_GetStringFromObj(objv[2],&length);
+        if (0) {}
+                        if (strcmp(_str,"-name") == 0) {
                     cmd = _wrap_IBSystem_name_get;
                 }  else if (strcmp(_str,"-type") == 0) {
                     cmd = _wrap_IBSystem_type_get;
@@ -10836,34 +11444,81 @@ static int TclIBSystemMethodCmd(ClientData clientData, Tcl_Interp *interp, int o
                 }  else if (strcmp(_str,"-PortByName") == 0) {
                     cmd = _wrap_IBSystem_PortByName_get;
                 } 
-	      else if (strcmp(_str,"-this") == 0) {
-                   SWIG_SetPointerObj(tcl_result,(void *) clientData, "_IBSystem_p");
-                   return TCL_OK;
-	      }
-	      if (cmd) {
-		oldarg = objv[2];
-		objv[2] = obj;
-		rcode = (*cmd)(clientData,interp,objc-1,&objv[1]);
-		objv[2] = oldarg;
-		return rcode;
-	      } else {
-		Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this -name -type -p_fabric -NodeByName -PortByName  }",-1);
-		return TCL_ERROR;
-	      }
-	    } else {
-	      Tcl_SetStringObj(tcl_result,"{ -this -name -type -p_fabric -NodeByName -PortByName  }", -1);
-	      return TCL_ERROR;
-	    }
-    }
-    if (!cmd) {
-        Tcl_SetStringObj(tcl_result,"Invalid Method. Must be { cget configure guid_get guid_set makeSysPort getSysPortNodePortByName }",-1);
+          else if (strcmp(_str,"-this") == 0) {
+            SWIG_SetPointerObj(tcl_result,(void *) clientData, "_IBSystem_p");
+            return TCL_OK;
+          }
+        if (cmd) {
+          oldarg = objv[2];
+          objv[2] = obj;
+          rcode = (*cmd)(clientData,interp,objc-1,&objv[1]);
+          objv[2] = oldarg;
+          return rcode;
+        } else {
+          Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this -name -type -p_fabric -NodeByName -PortByName  }",-1);
+          return TCL_ERROR;
+        }
+      } else {
+        Tcl_SetStringObj(tcl_result,"{ -this -name -type -p_fabric -NodeByName -PortByName  }", -1);
         return TCL_ERROR;
+      }
+    } else if ((c == 'd') && (strncmp(_str,"dump",length) == 0) && (length >= 2)) {
+      if (objc == 2) {
+        Tcl_Obj *pDumpObj;
+        pDumpObj = Tcl_NewStringObj("",-1);
+        Tcl_IncrRefCount(pDumpObj);
+                cmd = _wrap_IBSystem_name_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-name ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_IBSystem_type_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-type ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_IBSystem_p_fabric_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-p_fabric ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_IBSystem_NodeByName_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-NodeByName ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_IBSystem_PortByName_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-PortByName ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+
+        Tcl_DecrRefCount(pDumpObj);
+        return TCL_OK;
+      } else {
+        Tcl_SetStringObj(tcl_result,"no parameters are allowed for dump", -1);
+        return TCL_ERROR;
+      }
     }
-    oldarg = objv[1];
-    objv[1] = obj;
-    rcode = (*cmd)(clientData,interp,objc,objv);
-    objv[1] = oldarg;
-    return rcode;
+  if (!cmd) {
+    Tcl_SetStringObj(tcl_result,"Invalid Method. Must be { dump cget configure guid_get guid_set makeSysPort getSysPortNodePortByName getSysPort }",-1);
+    return TCL_ERROR;
+  }
+  oldarg = objv[1];
+  objv[1] = obj;
+  rcode = (*cmd)(clientData,interp,objc,objv);
+  objv[1] = oldarg;
+  return rcode;
 }
 
 
@@ -12187,98 +12842,6 @@ static int _wrap_IBFabric_lmc_get(ClientData clientData, Tcl_Interp *interp, int
     Tcl_SetIntObj(tcl_result,(long) _result);
     return TCL_OK;
 }
-#define delete_IBFabric(_swigobj) (delete _swigobj)
-static int _wrap_delete_IBFabric(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
-
-    IBFabric * _arg0;
-    Tcl_Obj * tcl_result;
-
-    clientData = clientData; objv = objv;
-    tcl_result = Tcl_GetObjResult(interp);
-    if ((objc < 2) || (objc > 2)) {
-        Tcl_SetStringObj(tcl_result,"Wrong # args. delete_IBFabric { IBFabric * } ",-1);
-        return TCL_ERROR;
-    }
-{
-  
-  void *ptr;
-  if (ibdmGetObjPtrByTclName(objv[1], &ptr) != TCL_OK) {
-	 char err[128];
-	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
-	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	 
-  }
-	 
-  _arg0 = (IBFabric *)ptr;
-}
-{
-  /* the format is always: <type>:<idx>[:<name>] */
-  
-  // get the type from the given source 
-  char buf[128];
-  strcpy(buf, Tcl_GetStringFromObj(objv[1],0));
-  char *colonIdx = index(buf,':');
-  if (!colonIdx) {
-	 char err[128];
-	 sprintf(err, "-E- Bad formatted ibdm object:%s", buf);
-	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;
-  }
-  *colonIdx = '\0';
-
-  if (!strcmp("IBFabric ", "IBFabric ")) {
-	if (strcmp(buf, "fabric")) {
-	 char err[256];
-	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
-	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	 
-	}	
-  } else if (!strcmp("IBFabric ", "IBSystem ")) {
-	if (strcmp(buf, "system")) {
-	 char err[256];
-	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
-	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	 
-	}
-  } else if (!strcmp("IBFabric ", "IBSysPort ")) {
-	if (strcmp(buf, "sysport")) {
-	 char err[256];
-	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
-	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	 
-	}
-  } else if (!strcmp("IBFabric ", "IBNode ")) {
-	if (strcmp(buf, "node")) {
-	 char err[256];
-	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
-	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	 
-	}
-  } else if (!strcmp("IBFabric ", "IBPort ")) {
-	if (strcmp(buf, "port")) {
-	 char err[256];
-	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
-	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	 
-	}
-  } else {
-	 char err[256];
-	 sprintf(err, "-E- basetype 'IBFabric ' is unknown");
-	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	 
-  }
-}
-{ 
-  ibdm_tcl_error = 0;
-      delete_IBFabric(_arg0);
-; 
-  if (ibdm_tcl_error) { 
-	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR; 
-  }
-}    tcl_result = Tcl_GetObjResult(interp);
-    return TCL_OK;
-}
 #define IBFabric_makeNode(_swigobj,_swigarg0,_swigarg1,_swigarg2,_swigarg3)  (_swigobj->makeNode(_swigarg0,_swigarg1,_swigarg2,_swigarg3))
 static int _wrap_IBFabric_makeNode(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
 
@@ -12865,6 +13428,110 @@ static int _wrap_IBFabric_makeSystem(ClientData clientData, Tcl_Interp *interp, 
 { 
   ibdm_tcl_error = 0;
       _result = (IBSystem *)IBFabric_makeSystem(_arg0,*_arg1,*_arg2);
+; 
+  if (ibdm_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  if (_result)
+	 ibdmGetObjTclNameByPtr(tcl_result, _result, "IBSystem *");
+}
+    return TCL_OK;
+}
+#define IBFabric_getSystem(_swigobj,_swigarg0)  (_swigobj->getSystem(_swigarg0))
+static int _wrap_IBFabric_getSystem(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    IBSystem * _result;
+    IBFabric * _arg0;
+    string * _arg1;
+    Tcl_Obj * tcl_result;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. IBFabric_getSystem { IBFabric * } name ",-1);
+        return TCL_ERROR;
+    }
+{
+  
+  void *ptr;
+  if (ibdmGetObjPtrByTclName(objv[1], &ptr) != TCL_OK) {
+	 char err[128];
+	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
+	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+  }
+	 
+  _arg0 = (IBFabric *)ptr;
+}
+{
+  /* the format is always: <type>:<idx>[:<name>] */
+  
+  // get the type from the given source 
+  char buf[128];
+  strcpy(buf, Tcl_GetStringFromObj(objv[1],0));
+  char *colonIdx = index(buf,':');
+  if (!colonIdx) {
+	 char err[128];
+	 sprintf(err, "-E- Bad formatted ibdm object:%s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;
+  }
+  *colonIdx = '\0';
+
+  if (!strcmp("IBFabric ", "IBFabric ")) {
+	if (strcmp(buf, "fabric")) {
+	 char err[256];
+	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+	}	
+  } else if (!strcmp("IBFabric ", "IBSystem ")) {
+	if (strcmp(buf, "system")) {
+	 char err[256];
+	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+	}
+  } else if (!strcmp("IBFabric ", "IBSysPort ")) {
+	if (strcmp(buf, "sysport")) {
+	 char err[256];
+	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+	}
+  } else if (!strcmp("IBFabric ", "IBNode ")) {
+	if (strcmp(buf, "node")) {
+	 char err[256];
+	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+	}
+  } else if (!strcmp("IBFabric ", "IBPort ")) {
+	if (strcmp(buf, "port")) {
+	 char err[256];
+	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+	}
+  } else {
+	 char err[256];
+	 sprintf(err, "-E- basetype 'IBFabric ' is unknown");
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+  }
+}
+{
+  int len;
+  static string _arg1_tmp;
+  _arg1_tmp = string(Tcl_GetStringFromObj(objv[2],&len));
+  _arg1 = &_arg1_tmp;
+}
+{ 
+  ibdm_tcl_error = 0;
+      _result = (IBSystem *)IBFabric_getSystem(_arg0,*_arg1);
 ; 
   if (ibdm_tcl_error) { 
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
@@ -13951,6 +14618,107 @@ static int _wrap_IBFabric_parseFdbFile(ClientData clientData, Tcl_Interp *interp
     Tcl_SetIntObj(tcl_result,(long) _result);
     return TCL_OK;
 }
+#define IBFabric_parseMCFdbFile(_swigobj,_swigarg0)  (_swigobj->parseMCFdbFile(_swigarg0))
+static int _wrap_IBFabric_parseMCFdbFile(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    int  _result;
+    IBFabric * _arg0;
+    string * _arg1;
+    Tcl_Obj * tcl_result;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. IBFabric_parseMCFdbFile { IBFabric * } fn ",-1);
+        return TCL_ERROR;
+    }
+{
+  
+  void *ptr;
+  if (ibdmGetObjPtrByTclName(objv[1], &ptr) != TCL_OK) {
+	 char err[128];
+	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
+	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+  }
+	 
+  _arg0 = (IBFabric *)ptr;
+}
+{
+  /* the format is always: <type>:<idx>[:<name>] */
+  
+  // get the type from the given source 
+  char buf[128];
+  strcpy(buf, Tcl_GetStringFromObj(objv[1],0));
+  char *colonIdx = index(buf,':');
+  if (!colonIdx) {
+	 char err[128];
+	 sprintf(err, "-E- Bad formatted ibdm object:%s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;
+  }
+  *colonIdx = '\0';
+
+  if (!strcmp("IBFabric ", "IBFabric ")) {
+	if (strcmp(buf, "fabric")) {
+	 char err[256];
+	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+	}	
+  } else if (!strcmp("IBFabric ", "IBSystem ")) {
+	if (strcmp(buf, "system")) {
+	 char err[256];
+	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+	}
+  } else if (!strcmp("IBFabric ", "IBSysPort ")) {
+	if (strcmp(buf, "sysport")) {
+	 char err[256];
+	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+	}
+  } else if (!strcmp("IBFabric ", "IBNode ")) {
+	if (strcmp(buf, "node")) {
+	 char err[256];
+	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+	}
+  } else if (!strcmp("IBFabric ", "IBPort ")) {
+	if (strcmp(buf, "port")) {
+	 char err[256];
+	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+	}
+  } else {
+	 char err[256];
+	 sprintf(err, "-E- basetype 'IBFabric ' is unknown");
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+  }
+}
+{
+  int len;
+  static string _arg1_tmp;
+  _arg1_tmp = string(Tcl_GetStringFromObj(objv[2],&len));
+  _arg1 = &_arg1_tmp;
+}
+{ 
+  ibdm_tcl_error = 0;
+      _result = (int )IBFabric_parseMCFdbFile(_arg0,*_arg1);
+; 
+  if (ibdm_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+    Tcl_SetIntObj(tcl_result,(long) _result);
+    return TCL_OK;
+}
 #define IBFabric_setLidPort(_swigobj,_swigarg0,_swigarg1)  (_swigobj->setLidPort(_swigarg0,_swigarg1))
 static int _wrap_IBFabric_setLidPort(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
 
@@ -14218,35 +14986,29 @@ static int _wrap_IBFabric_getPortByLid(ClientData clientData, Tcl_Interp *interp
 }
     return TCL_OK;
 }
-/* delcmd.swg : Tcl object deletion method */
-
-static void TclDeleteIBFabric(ClientData clientData) {
-    delete_IBFabric((IBFabric *) clientData);
-}
-
 /* methodcmd8.swg : Tcl8.x method invocation */
 
 static int TclIBFabricMethodCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST _objv[]) {
-    int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
-    char *_str;
-    int rcode;
-    Tcl_Obj **objv;
-    Tcl_Obj *oldarg,*tcl_result,*obj;
-    int length;
-    char c;
+  int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
+  char *_str;
+  int rcode;
+  Tcl_Obj **objv;
+  Tcl_Obj *oldarg,*tcl_result,*obj;
+  int length;
+  char c;
 
-    tcl_result = Tcl_GetObjResult(interp);
-    objv = (Tcl_Obj **) _objv; 
-    if (objc < 2) {
-        Tcl_SetStringObj(tcl_result,"IBFabric methods : { cget configure makeNode getNode getNodesByType makeGenericSystem makeSystem getSystemByGuid getNodeByGuid getPortByGuid addCable parseCables parseTopology addLink parseSubnetLinks parseFdbFile setLidPort getPortByLid  }",-1);
-        return TCL_ERROR;
-    }
-    obj = Tcl_NewObj();
-    SWIG_SetPointerObj(obj,(void *) clientData,"_IBFabric_p");
-    _str = Tcl_GetStringFromObj(objv[1],&length);
-    c = *_str;
-    if (0);
-    if (strcmp(_str,"makeNode") == 0) {
+  tcl_result = Tcl_GetObjResult(interp);
+  objv = (Tcl_Obj **) _objv; 
+  if (objc < 2) {
+    Tcl_SetStringObj(tcl_result,"IBFabric methods : { dump cget configure makeNode getNode getNodesByType makeGenericSystem makeSystem getSystem getSystemByGuid getNodeByGuid getPortByGuid addCable parseCables parseTopology addLink parseSubnetLinks parseFdbFile parseMCFdbFile setLidPort getPortByLid  }",-1);
+    return TCL_ERROR;
+  }
+  obj = Tcl_NewObj();
+  SWIG_SetPointerObj(obj,(void *) clientData,"_IBFabric_p");
+  _str = Tcl_GetStringFromObj(objv[1],&length);
+  c = *_str;
+  if (0);
+      if (strcmp(_str,"makeNode") == 0) {
         cmd = _wrap_IBFabric_makeNode;
     }    else if (strcmp(_str,"getNode") == 0) {
         cmd = _wrap_IBFabric_getNode;
@@ -14256,6 +15018,8 @@ static int TclIBFabricMethodCmd(ClientData clientData, Tcl_Interp *interp, int o
         cmd = _wrap_IBFabric_makeGenericSystem;
     }    else if (strcmp(_str,"makeSystem") == 0) {
         cmd = _wrap_IBFabric_makeSystem;
+    }    else if (strcmp(_str,"getSystem") == 0) {
+        cmd = _wrap_IBFabric_getSystem;
     }    else if (strcmp(_str,"getSystemByGuid") == 0) {
         cmd = _wrap_IBFabric_getSystemByGuid;
     }    else if (strcmp(_str,"getNodeByGuid") == 0) {
@@ -14274,6 +15038,8 @@ static int TclIBFabricMethodCmd(ClientData clientData, Tcl_Interp *interp, int o
         cmd = _wrap_IBFabric_parseSubnetLinks;
     }    else if (strcmp(_str,"parseFdbFile") == 0) {
         cmd = _wrap_IBFabric_parseFdbFile;
+    }    else if (strcmp(_str,"parseMCFdbFile") == 0) {
+        cmd = _wrap_IBFabric_parseMCFdbFile;
     }    else if (strcmp(_str,"setLidPort") == 0) {
         cmd = _wrap_IBFabric_setLidPort;
     }    else if (strcmp(_str,"getPortByLid") == 0) {
@@ -14283,37 +15049,37 @@ static int TclIBFabricMethodCmd(ClientData clientData, Tcl_Interp *interp, int o
       int i = 2;
       cmd = 0;
       while (i+1 < objc) {
-	_str = Tcl_GetStringFromObj(objv[i],&length);
-                if (strcmp(_str,"-minLid") == 0) {
+        _str = Tcl_GetStringFromObj(objv[i],&length);
+                        if (strcmp(_str,"-minLid") == 0) {
                     cmd = _wrap_IBFabric_minLid_set;
                 }  else if (strcmp(_str,"-maxLid") == 0) {
                     cmd = _wrap_IBFabric_maxLid_set;
                 }  else if (strcmp(_str,"-lmc") == 0) {
                     cmd = _wrap_IBFabric_lmc_set;
                 } 
-	   if (cmd) {
-	     oldarg = objv[i];
-	     objv[i] = obj;
-	     rcode = (*cmd)(clientData,interp,3,&objv[i-1]);
-	     objv[i] = oldarg;
-	     if (rcode == TCL_ERROR) return rcode;
-	     cmd = 0;
-	   } else {
-	     Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be { -minLid -maxLid -lmc  }",-1);
-	     return TCL_ERROR;
-	   }
-	i+=2;
+          if (cmd) {
+            oldarg = objv[i];
+            objv[i] = obj;
+            rcode = (*cmd)(clientData,interp,3,&objv[i-1]);
+            objv[i] = oldarg;
+            if (rcode == TCL_ERROR) return rcode;
+            cmd = 0;
+          } else {
+            Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be { -minLid -maxLid -lmc  }",-1);
+            return TCL_ERROR;
+          }
+        i+=2;
       }
       if ((i < objc) || (i == 2)) {
-	Tcl_SetStringObj(tcl_result,"{ -minLid -maxLid -lmc  }",-1);
-	return TCL_ERROR;
+        Tcl_SetStringObj(tcl_result,"{ -minLid -maxLid -lmc  }",-1);
+        return TCL_ERROR;
       }
       return TCL_OK;
     } else if ((c == 'c') && (strncmp(_str,"cget",length) == 0) && (length >= 2)) {
-            if (objc == 3) {
-	      _str = Tcl_GetStringFromObj(objv[2],&length);
-	      if (0) {}
-                if (strcmp(_str,"-NodeByName") == 0) {
+      if (objc == 3) {
+        _str = Tcl_GetStringFromObj(objv[2],&length);
+        if (0) {}
+                        if (strcmp(_str,"-NodeByName") == 0) {
                     cmd = _wrap_IBFabric_NodeByName_get;
                 }  else if (strcmp(_str,"-SystemByName") == 0) {
                     cmd = _wrap_IBFabric_SystemByName_get;
@@ -14332,34 +15098,109 @@ static int TclIBFabricMethodCmd(ClientData clientData, Tcl_Interp *interp, int o
                 }  else if (strcmp(_str,"-lmc") == 0) {
                     cmd = _wrap_IBFabric_lmc_get;
                 } 
-	      else if (strcmp(_str,"-this") == 0) {
-                   SWIG_SetPointerObj(tcl_result,(void *) clientData, "_IBFabric_p");
-                   return TCL_OK;
-	      }
-	      if (cmd) {
-		oldarg = objv[2];
-		objv[2] = obj;
-		rcode = (*cmd)(clientData,interp,objc-1,&objv[1]);
-		objv[2] = oldarg;
-		return rcode;
-	      } else {
-		Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this -NodeByName -SystemByName -PortByLid -NodeByGuid -SystemByGuid -PortByGuid -minLid -maxLid -lmc  }",-1);
-		return TCL_ERROR;
-	      }
-	    } else {
-	      Tcl_SetStringObj(tcl_result,"{ -this -NodeByName -SystemByName -PortByLid -NodeByGuid -SystemByGuid -PortByGuid -minLid -maxLid -lmc  }", -1);
-	      return TCL_ERROR;
-	    }
-    }
-    if (!cmd) {
-        Tcl_SetStringObj(tcl_result,"Invalid Method. Must be { cget configure makeNode getNode getNodesByType makeGenericSystem makeSystem getSystemByGuid getNodeByGuid getPortByGuid addCable parseCables parseTopology addLink parseSubnetLinks parseFdbFile setLidPort getPortByLid }",-1);
+          else if (strcmp(_str,"-this") == 0) {
+            SWIG_SetPointerObj(tcl_result,(void *) clientData, "_IBFabric_p");
+            return TCL_OK;
+          }
+        if (cmd) {
+          oldarg = objv[2];
+          objv[2] = obj;
+          rcode = (*cmd)(clientData,interp,objc-1,&objv[1]);
+          objv[2] = oldarg;
+          return rcode;
+        } else {
+          Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this -NodeByName -SystemByName -PortByLid -NodeByGuid -SystemByGuid -PortByGuid -minLid -maxLid -lmc  }",-1);
+          return TCL_ERROR;
+        }
+      } else {
+        Tcl_SetStringObj(tcl_result,"{ -this -NodeByName -SystemByName -PortByLid -NodeByGuid -SystemByGuid -PortByGuid -minLid -maxLid -lmc  }", -1);
         return TCL_ERROR;
+      }
+    } else if ((c == 'd') && (strncmp(_str,"dump",length) == 0) && (length >= 2)) {
+      if (objc == 2) {
+        Tcl_Obj *pDumpObj;
+        pDumpObj = Tcl_NewStringObj("",-1);
+        Tcl_IncrRefCount(pDumpObj);
+                cmd = _wrap_IBFabric_NodeByName_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-NodeByName ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_IBFabric_SystemByName_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-SystemByName ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_IBFabric_PortByLid_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-PortByLid ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_IBFabric_NodeByGuid_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-NodeByGuid ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_IBFabric_SystemByGuid_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-SystemByGuid ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_IBFabric_PortByGuid_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-PortByGuid ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_IBFabric_minLid_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-minLid ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_IBFabric_maxLid_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-maxLid ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_IBFabric_lmc_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-lmc ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+
+        Tcl_DecrRefCount(pDumpObj);
+        return TCL_OK;
+      } else {
+        Tcl_SetStringObj(tcl_result,"no parameters are allowed for dump", -1);
+        return TCL_ERROR;
+      }
     }
-    oldarg = objv[1];
-    objv[1] = obj;
-    rcode = (*cmd)(clientData,interp,objc,objv);
-    objv[1] = oldarg;
-    return rcode;
+  if (!cmd) {
+    Tcl_SetStringObj(tcl_result,"Invalid Method. Must be { dump cget configure makeNode getNode getNodesByType makeGenericSystem makeSystem getSystem getSystemByGuid getNodeByGuid getPortByGuid addCable parseCables parseTopology addLink parseSubnetLinks parseFdbFile parseMCFdbFile setLidPort getPortByLid }",-1);
+    return TCL_ERROR;
+  }
+  oldarg = objv[1];
+  objv[1] = obj;
+  rcode = (*cmd)(clientData,interp,objc,objv);
+  objv[1] = oldarg;
+  return rcode;
 }
 
 
@@ -14407,7 +15248,7 @@ static int TclIBFabricCmd(ClientData clientData, Tcl_Interp *interp, int objc, T
             SWIG_GetPointerObj(interp,tcl_result,(void **) &newObj,"_IBFabric_p");
         } else { return result; }
         if (!name) name = Tcl_GetStringFromObj(tcl_result,&length);
-        del = TclDeleteIBFabric;
+        del = 0;
     } else if (thisarg > 0) { 
         if (thisarg < objc) {
             char *r;
@@ -14452,6 +15293,7 @@ SWIGEXPORT(int,Ibdm_Init)(Tcl_Interp *interp) {
 	 Tcl_LinkVar(interp, SWIG_prefix "FABU_LOG_VERBOSE", (char *) &_wrap_const_FABU_LOG_VERBOSE, TCL_LINK_INT | TCL_LINK_READ_ONLY);
 	 Tcl_LinkVar(interp, SWIG_prefix "FabricUtilsVerboseLevel", (char *) &FabricUtilsVerboseLevel, TCL_LINK_INT);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "new_IBFabric", _wrap_new_IBFabric, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "delete_IBFabric", _wrap_delete_IBFabric, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ibdmAssignLids", _wrap_ibdmAssignLids, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ibdmCalcMinHopTables", _wrap_ibdmCalcMinHopTables, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ibdmCalcUpDnMinHopTbls", _wrap_ibdmCalcUpDnMinHopTbls, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
@@ -14464,6 +15306,7 @@ SWIGEXPORT(int,Ibdm_Init)(Tcl_Interp *interp) {
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ibdmTraceRouteByLFT", _wrap_ibdmTraceRouteByLFT, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ibdmMatchFabrics", _wrap_ibdmMatchFabrics, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ibdmBuildMergedFabric", _wrap_ibdmBuildMergedFabric, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ibdmCheckMulticastGroups", _wrap_ibdmCheckMulticastGroups, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 
 
   /* mixing declarations .... */
@@ -14536,6 +15379,7 @@ SWIGEXPORT(int,Ibdm_Init)(Tcl_Interp *interp) {
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "IBNode_getFirstMinHopPort", _wrap_IBNode_getFirstMinHopPort, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "IBNode_setLFTPortForLid", _wrap_IBNode_setLFTPortForLid, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "IBNode_getLFTPortForLid", _wrap_IBNode_getLFTPortForLid, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "IBNode_repHopTable", _wrap_IBNode_repHopTable, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp,SWIG_prefix "IBNode",TclIBNodeCmd, (ClientData) NULL, NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "IBSysPort_name_set", _wrap_IBSysPort_name_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "IBSysPort_name_get", _wrap_IBSysPort_name_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
@@ -14563,6 +15407,7 @@ SWIGEXPORT(int,Ibdm_Init)(Tcl_Interp *interp) {
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "IBSystem_guid_set", _wrap_IBSystem_guid_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "IBSystem_makeSysPort", _wrap_IBSystem_makeSysPort, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "IBSystem_getSysPortNodePortByName", _wrap_IBSystem_getSysPortNodePortByName, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "IBSystem_getSysPort", _wrap_IBSystem_getSysPort, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp,SWIG_prefix "IBSystem",TclIBSystemCmd, (ClientData) NULL, NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "IBFabric_NodeByName_get", _wrap_IBFabric_NodeByName_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "IBFabric_SystemByName_get", _wrap_IBFabric_SystemByName_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
@@ -14576,12 +15421,12 @@ SWIGEXPORT(int,Ibdm_Init)(Tcl_Interp *interp) {
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "IBFabric_maxLid_get", _wrap_IBFabric_maxLid_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "IBFabric_lmc_set", _wrap_IBFabric_lmc_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "IBFabric_lmc_get", _wrap_IBFabric_lmc_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
-	 Tcl_CreateObjCommand(interp, SWIG_prefix "delete_IBFabric", _wrap_delete_IBFabric, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "IBFabric_makeNode", _wrap_IBFabric_makeNode, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "IBFabric_getNode", _wrap_IBFabric_getNode, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "IBFabric_getNodesByType", _wrap_IBFabric_getNodesByType, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "IBFabric_makeGenericSystem", _wrap_IBFabric_makeGenericSystem, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "IBFabric_makeSystem", _wrap_IBFabric_makeSystem, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "IBFabric_getSystem", _wrap_IBFabric_getSystem, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "IBFabric_getSystemByGuid", _wrap_IBFabric_getSystemByGuid, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "IBFabric_getNodeByGuid", _wrap_IBFabric_getNodeByGuid, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "IBFabric_getPortByGuid", _wrap_IBFabric_getPortByGuid, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
@@ -14591,6 +15436,7 @@ SWIGEXPORT(int,Ibdm_Init)(Tcl_Interp *interp) {
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "IBFabric_addLink", _wrap_IBFabric_addLink, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "IBFabric_parseSubnetLinks", _wrap_IBFabric_parseSubnetLinks, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "IBFabric_parseFdbFile", _wrap_IBFabric_parseFdbFile, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "IBFabric_parseMCFdbFile", _wrap_IBFabric_parseMCFdbFile, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "IBFabric_setLidPort", _wrap_IBFabric_setLidPort, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "IBFabric_getPortByLid", _wrap_IBFabric_getPortByLid, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp,SWIG_prefix "IBFabric",TclIBFabricCmd, (ClientData) NULL, NULL);

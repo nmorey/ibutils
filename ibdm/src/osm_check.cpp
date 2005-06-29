@@ -29,19 +29,22 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
- * $Id: osm_check.cpp,v 1.6 2005/03/20 11:05:11 eitan Exp $
+ * $Id: osm_check.cpp,v 1.9 2005/06/01 20:19:07 eitan Exp $
  */
 
 #include "Fabric.h" 
 #include "SubnMgt.h"
 #include "CredLoops.h"
 #include <getopt.h>
+#include <fstream>
+
+using namespace std;
 
 void
 show_usage() {
   cout << "Usage: there are two modes: Design/Verify" << endl;
-  cout << "  Design: ibdmchk [-v][-h][-e][-u][-l <lmc>] -t <topology file> -n <SM Node> -p <SM Port>" << endl;
-  cout << "  Verify: ibdmchk [-v][-h][-l <lmc>] [-s <subnet file>] [-f <fdb file>] [-m <mcfdb file>]" << endl;
+  cout << "  Design: ibdmchk [-v][-h][-e][-u][-l <lmc>][-r <roots file>] -t <topology file> -n <SM Node> -p <SM Port>" << endl;
+  cout << "  Verify: ibdmchk [-v][-h][-l <lmc>][-r <roots file>] [-s <subnet file>] [-f <fdb file>] [-m <mcfdb file>]" << endl;
 }
 
 void 
@@ -55,7 +58,7 @@ show_help() {
     << "\n"
     << "  CLUSTER DESIGN:\n"
     << "  Usage:\n"
-    << "   ibdmchk [-v][-h] -t <topology file> -n <SM Node> -p <SM Port> [-e] [-l <lmc>]\n\n" 
+    << "   ibdmchk [-v][-h][-u][-a <roots file>] -t <topology file> -n <SM Node> -p <SM Port> [-e] [-l <lmc>]\n\n" 
     << "  Description:\n"
     << "   The Design mode is intended to be used before the cluster is built. It provides \n"
     << "   basic checks of the specified network as described by a topology file.\n"
@@ -74,10 +77,11 @@ show_help() {
     << "  -e|--enh = use enhanced routing algorithm when LMC > 0 and report the resulting paths\n"
     << "       correlation (using same system/node) histogram\n"
     << "  -u|--updn = use up/down routing algorithm instead of OpenSM min-hop.\n"
+    << "  -r|--roots <roots file> = a file with all the roots node names (one on each line).\n"
     << "\n"
     << "  CLUSTER VERIFICATION:\n"
     << "  Usage:\n"    
-    << "   ibdmchk [-v][-h] [-s <subnet file>] [-f <fdb file>] [-l <lmc>]\n\n"
+    << "   ibdmchk [-v][-h][-r <roots file>] [-s <subnet file>] [-f <fdb file>] [-l <lmc>]\n\n"
     << "  Description:\n"
     << "   After the cluster is built and OpenSM is run (using flag -D 0x43) it reports the\n"
     << "   subnet and FDB tables into the files /tmp/subnet.lst and /tmp/osm.fdbs.\n"
@@ -97,9 +101,79 @@ show_help() {
     << "     (default is /tmp/osm.fdbs).\n"
     << "  -m|--mcfdb <file> = OpenSM dump of Multicast LFDB. Use -D 0x41 to generate it.\n"
     << "     (default is /tmp/osm.mcfdbs).\n"
+    << "  -r|--roots <roots file> = a file holding all root nodes guids (one per line).\n"
     << "\n"
     << "Author: Eitan Zahavi, Mellanox Technologies LTD.\n"
     << endl;
+}
+
+list <IBNode *> 
+ParseRootNodeNamesFile( IBFabric *p_fabric, string fileName)
+{
+  ifstream namesFile;
+  namesFile.open(fileName.c_str(), ifstream::in);
+  if (!namesFile.is_open())
+  {
+    cout << "-F- Given roots file could not be opened!" << endl;
+    exit(1); 
+  }
+  
+  char name[256];
+  list <IBNode *> roots;
+  cout << "-I- Parsing Root Node Names from file:" << fileName << endl;
+  namesFile.getline(name,256);
+  while (namesFile.good())
+  {
+    IBNode *pNode = p_fabric->getNode(string(name));
+    if (!pNode) 
+    {
+      cout << "-E- Fail to find node:" << name << endl;
+    }
+    else
+    {
+      roots.push_back(pNode);
+    }
+    namesFile.getline(name,256);
+  }
+  cout << "-I- Defined " << roots.size() << " root nodes" << endl;
+  namesFile.close();
+  return roots;
+}
+
+list <IBNode *> 
+ParseRootNodeGuidsFile( IBFabric *p_fabric, string fileName)
+{
+  ifstream guidsFile;
+  guidsFile.open(fileName.c_str(), ifstream::in);
+  if (!guidsFile.is_open())
+  {
+    cout << "-F- Given roots file could not be opened!" << endl;
+    exit(1); 
+  }
+
+  uint64_t guid;
+  list <IBNode *> roots;
+
+  guidsFile >> guid;
+  while (guidsFile.good())
+  {
+    IBNode *pNode = p_fabric->getNodeByGuid(guid);
+    if (!pNode) 
+    {
+      char g[20];
+      sprintf(g,"%016" PRIx64, guid);
+      cout << "-E- Fail to find node guid:" << g << endl;
+    }
+    else
+    {
+      roots.push_back(pNode);
+    }
+    guidsFile >> guid;
+
+  }
+  
+  guidsFile.close();
+  return roots;  
 }
 
 int main (int argc, char **argv) {
@@ -110,17 +184,19 @@ int main (int argc, char **argv) {
   string mcFdbFile = string("/tmp/osm.mcfdbs");
   string TopoFile = string("");
   string SmNodeName = string("");
+  string RootsFileName = string("");
   int EnhancedRouting = 0;
   int lmc = 0;
   int SmPortNum  = -1;
   int UseUpDown = 0;
+  int AllPaths = 0;
 
   /*
 	* Parseing of Command Line 
 	*/
 
   char next_option;
-  const char * const short_option = "vhl:s:f:m:el:t:p:n:u";
+  const char * const short_option = "vhl:s:f:m:el:t:p:n:uar:";
   /*
 	 In the array below, the 2nd parameter specified the number
 	 of arguments as follows:
@@ -141,6 +217,8 @@ int main (int argc, char **argv) {
   		{	"port",	   1,	NULL,	'p'},
       {  "enh",      0, NULL, 'e'},
       {  "updn",     0, NULL, 'u'},
+      {  "roots",    1, NULL, 'r'},
+      {  "all",      0, NULL, 'a'},
 		{	NULL,		0,	NULL,	 0 }	/* Required at the end of the array */
 	 };
   
@@ -219,11 +297,25 @@ int main (int argc, char **argv) {
 		EnhancedRouting = 1;
 		break;
       
+	 case 'r':
+		/*
+		  Use Roots File
+		*/
+		RootsFileName = string(optarg);
+		break;
+
 	 case 'u':
 		/*
 		  Use Up Down Routing
 		*/
 		UseUpDown = 1;
+		break;
+
+	 case 'a':
+		/*
+		  Use Up Down Routing
+		*/
+		AllPaths = 1;
 		break;
 
 	 case -1:
@@ -247,7 +339,9 @@ int main (int argc, char **argv) {
     printf(" LMC ............ %u\n", lmc);
     if (EnhancedRouting && lmc > 0) 
       printf(" Using Enhanced Routing\n");
-
+    if (RootsFileName.size())
+      printf(" Roots File ..... %s\n", RootsFileName.c_str());
+    
     if (fabric.parseTopology(TopoFile)) {
       cout << "-E- Fail to parse topology file:" << TopoFile << endl;
       exit(1);
@@ -281,8 +375,15 @@ int main (int argc, char **argv) {
    
    if (UseUpDown) {
      list <IBNode *> rootNodes;
+     if (RootsFileName.size())
+     {
+       rootNodes = ParseRootNodeNamesFile(&fabric, RootsFileName);
+     }
+     else
+     {
+       rootNodes = SubnMgtFindRootNodesByMinHop(&fabric);
+     }
      
-     rootNodes = SubnMgtFindRootNodesByMinHop(&fabric);
      if (!rootNodes.empty()) {
        cout << "-I- Recognized " << rootNodes.size() << " root nodes:" << endl;
        for (list <IBNode *>::iterator nI = rootNodes.begin();
@@ -353,6 +454,11 @@ int main (int argc, char **argv) {
     exit(1);
   }
     
+  if (AllPaths && SubnMgtVerifyAllRoutes(&fabric)) {
+    cout << "-E- Some Point to Point Traversals Failed." << endl;
+    exit(1);
+  }
+
   if (SubnMgtCheckFabricMCGrps(&fabric)) {
     cout << "-E- Some Multicast Groups Routing Check Failed." << endl;
     exit(1);
@@ -361,7 +467,22 @@ int main (int argc, char **argv) {
   list <IBNode *> rootNodes;
   int anyErr = 0;
 
-  rootNodes = SubnMgtFindRootNodesByMinHop(&fabric);
+  if (RootsFileName.size())
+  {
+    if (TopoFile.size()) 
+    {
+      rootNodes = ParseRootNodeNamesFile(&fabric, RootsFileName);
+    }
+    else
+    {
+      rootNodes = ParseRootNodeGuidsFile(&fabric, RootsFileName);
+    }
+  }
+  else
+  {
+    rootNodes = SubnMgtFindRootNodesByMinHop(&fabric);
+  }
+
   if (!rootNodes.empty()) {
     cout << "-I- Recognized " << rootNodes.size() << " root nodes:" << endl;
     for (list <IBNode *>::iterator nI = rootNodes.begin();
@@ -373,6 +494,13 @@ int main (int argc, char **argv) {
     // rank the fabric by these roots
     map_pnode_int nodesRank;
     SubnRankFabricNodesByRootNodes(&fabric, rootNodes, nodesRank);
+    cout << "-I- Node Ranking:" << endl;
+    for(map_pnode_int::iterator nI = nodesRank.begin();
+        nI != nodesRank.end(); nI++)
+    {
+      cout << (*nI).first->name << " rank:" << (*nI).second << endl;
+    }
+    cout << "---------------------------------------------------------------------------\n" << endl;
     
     // report non up down paths:
     anyErr |= SubnReportNonUpDownCa2CaPaths(&fabric, nodesRank);

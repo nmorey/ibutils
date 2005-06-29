@@ -29,7 +29,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
- * $Id: Fabric.h,v 1.7 2005/02/23 21:08:37 eitan Exp $
+ * $Id: Fabric.h,v 1.10 2005/06/01 20:13:37 eitan Exp $
  */
 
 /*
@@ -103,6 +103,7 @@ typedef list<int, allocator< int> > list_int;
 typedef list<char *, allocator< char *> > list_charp;
 typedef list<string , allocator< string > > list_str;
 typedef map< IBNode *, int, less< IBNode *> > map_pnode_int;
+typedef map< IBNode *, vec_int, less< IBNode *> > map_pnode_vec_int;
 typedef map< IBSystem *, int, less< IBSystem *> > map_psystem_int;
 typedef set< uint16_t, less< uint16_t > > set_uint16;
 
@@ -276,7 +277,7 @@ class IBNode {
 
   // get a port by number num = 1..N:
   inline IBPort *getPort(unsigned int num) {
-	 if (Ports.size() < num - 1) 
+	 if ((Ports.size() < num) || (num == 0))
 		return NULL;
 	 else 
 		return Ports[num - 1];

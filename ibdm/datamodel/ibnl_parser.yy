@@ -127,13 +127,14 @@
 
     for( list< char * >::iterator snI = sysNames.begin(); 
          snI != sysNames.end(); snI++) {
-      char sname[512];
+      char sname[1024];
       if (gIsTopSystem) {
         sprintf(sname, "%s", *snI);
       } else {
         sprintf(sname, "%s/%s", gp_fileName, *snI);
       }
-      gp_sysColl->addSysDef(sname, gp_curSysDef);
+      string sNameStr(sname);
+      gp_sysColl->addSysDef(sNameStr, gp_curSysDef);
 #ifdef DEBUG
       printf("%s ", sname);
 #endif

@@ -74,7 +74,15 @@ if test "x$with_tcl" != xno; then
     if test "X${TCLSH}" != "Xunknown"; then
       AC_MSG_CHECKING([where Tcl says it lives])
       dnl to avoid .tclshrc issues use from a file... 
-      echo "puts \$tcl_library" > /tmp/tcl.conf.$$
+      echo "puts \$tcl_library" > /tmp/tcl.conf.$$ 
+      # Make sure nobody defined the TCL_LIBRARY previously
+      export TCL_LIBRARY=
+      # TCL will use the LD_LIBRARY_PATH to search for the lib so
+      # we must make sure it will include the local lib of the tclsh
+      if test ! -z "$LD_LIBRARY_PATH"; then
+         tclsh_lib=`echo ${TCLSH}|sed 's=/bin/tclsh.*=='`/lib
+         export LD_LIBRARY_PATH=$tclsh_lib:$LD_LIBRARY_PATH
+      fi
       TclLibBase=`${TCLSH} /tmp/tcl.conf.$$ | sed -e 's,[^/]*$,,'`
       rm /tmp/tcl.conf.$$
        AC_MSG_RESULT($TclLibBase)

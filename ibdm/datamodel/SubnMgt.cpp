@@ -29,7 +29,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
- * $Id: SubnMgt.cpp,v 1.6 2005/03/20 11:05:52 eitan Exp $
+ * $Id: SubnMgt.cpp,v 1.11 2005/06/07 10:55:21 eitan Exp $
  */
 
 /*
@@ -230,21 +230,25 @@ SubnMgtCalcMinHopTables (IBFabric *p_fabric) {
       for (unsigned int bLid = 1; 
            bLid <= p_fabric->maxLid;
            bLid += lidStep) {
-        // the min we have for this lid is:
-        int minHops = p_node->getHops(NULL, bLid);
 
-        // go over all connected ports
+       // go over all connected ports
         for (unsigned int pn = 1; pn <= p_node->numPorts; pn++) {
           IBPort *p_port = p_node->getPort(pn);
 
           // do we have a port on the other side ? is it a SW ?
           if (p_port && 
               p_port->p_remotePort && 
-              p_port->p_remotePort->p_node->type == IB_SW_NODE) {
-                                // we need to update only if lower then our - 1 
+              (p_port->p_remotePort->p_node->type == IB_SW_NODE)) {
+
+            // the min we have for this lid is:
+            int minHops = p_node->getHops(p_port, bLid);
+
+            // we need to update the local port hops only they will be made
+            // smaller by this step. I.e. the remote port hops value + 1 is < hops
             int remNodeHops = 
               p_port->p_remotePort->p_node->getHops(NULL, bLid);
-            if (remNodeHops < minHops - 1) {
+            
+            if (remNodeHops + 1 < minHops) {
               // need to update:
               p_node->setHops(p_port, bLid, remNodeHops + 1);
               anyUpdate++;
@@ -255,9 +259,13 @@ SubnMgtCalcMinHopTables (IBFabric *p_fabric) {
     }
     // cout << "-I- Propagated:" << anyUpdate << " updates" << endl;
   } while (anyUpdate) ;
-  cout << "-I- Init Min Hops Tables in:"<< loop << " steps" << endl;
+  cout << "-I- Init Min Hops Tables in:" << loop << " steps" << endl;
 
   // simply check that one can reach to all lids from all switches:
+  // also we build a historgram of the number of ports one can use 
+  // to get to any lid.
+  vec_int numPathsHist(50,0);
+
   int anyUnAssigend = 0;
   for( nI = p_fabric->NodeByName.begin();
        nI != p_fabric->NodeByName.end();
@@ -271,13 +279,39 @@ SubnMgtCalcMinHopTables (IBFabric *p_fabric) {
       // skip lids that are not mapped to a port:
       if (! p_fabric->PortByLid[i]) continue;
 
-      if (p_node->getHops(NULL, i) == IB_HOP_UNASSIGNED) {
+      int minHops = p_node->getHops(NULL, i);
+      if (minHops == IB_HOP_UNASSIGNED) {
         cout << "-W- Found - un-assigned hops for node:"
              << p_node->name << " to lid:" << i << ")" << endl;
         anyUnAssigend++;
+      } else {
+        // count all ports that have min hops to that lid (only HCAs count)
+        IBPort *p_targetPort = p_fabric->getPortByLid(i);
+        if (p_targetPort && (p_targetPort->p_node->type != IB_SW_NODE)) 
+        {
+          
+          int numMinHopPorts = 0;
+          for (unsigned int pn = 1; pn <= p_node->numPorts; pn++)
+          {
+            IBPort *p_port = p_node->getPort(pn);
+            if (p_port && (p_node->getHops(p_port, i) == minHops))
+              numMinHopPorts++;
+          }
+          numPathsHist[numMinHopPorts]++;
+        }
       }
     }
   }
+
+  cout << "------------------ NUM ALTERNATE PORTS TO CA HISTOGRAM --------------------" << endl;
+  cout << "Describes how many out ports on every switch have the same Min Hop to each " << endl;
+  cout << "target CA. Or in other words how many alternate routes are possible at the " << endl;
+  cout << "switch level. This is useful to show the symmetry of the cluster.\n" << endl;
+  cout << "OUT-PORTS NUM-SW-LID-PAIRS" << endl; 
+  for (int b = 0; b < 50 ; b++) 
+    if (numPathsHist[b])
+      cout << setw(4) << b << "   " << numPathsHist[b] << endl;
+  cout << "---------------------------------------------------------------------------\n" << endl;
 
   if (anyUnAssigend) 
   {
@@ -337,14 +371,16 @@ SubnMgtCalcMinHopTables (IBFabric *p_fabric) {
 
   // print the histogram:
   cout << "---------------------- CA to CA : MIN HOP HISTOGRAM -----------------------" << endl;
+  cout << "The number of CA pairs that are in each number of hops distance." << endl;
+  cout << "The data is based on topology only. Even before any routing is run.\n" << endl;
   cout << "HOPS NUM-CA-CA-PAIRS" << endl;
   for (int b = 0; b <= maxHops ; b++) 
     if (maxHopsHist[b]) 
-      cout << setw(3) << b << "   " << maxHopsHist[b] << endl;
+      cout << setw(3) << b+1 << "   " << maxHopsHist[b] << endl;
   cout << "---------------------------------------------------------------------------\n" << endl;
 
   if (p_worstHopNode) {
-    cout << "-I- Found worst min hops:" << maxHops << " at node:" 
+    cout << "-I- Found worst min hops:" << maxHops + 1 << " at node:" 
          << p_worstHopNode->name << " to node:" 
          << p_fabric->PortByLid[worstHopLid]->p_node->name << endl;
          
@@ -394,9 +430,16 @@ SubnMgtOsmEnhancedRoute(IBFabric *p_fabric) {
     for (unsigned int bLid = 1; 
          bLid <= p_fabric->maxLid;
          bLid += lidStep) {
+      
+      int targetIsHCA;
+      IBPort *pTargetPort = p_fabric->PortByLid[bLid];
+      if (pTargetPort && (pTargetPort->p_node->type == IB_SW_NODE)) 
+        targetIsHCA = 0;
+      else
+        targetIsHCA = 1;
 
       // get the minimal hop count from this port:
-      int minHop = p_node->MinHopsTable[bLid][0];
+      int minHop = p_node->getHops(NULL, bLid);
 
       // We track the Systems we already went through:
       set<IBSystem *> goThroughSystems;
@@ -434,9 +477,10 @@ SubnMgtOsmEnhancedRoute(IBFabric *p_fabric) {
           IBPort *p_port = p_node->getPort(pn);
           if (! p_port) continue;
 
+          if (! p_port->p_remotePort) continue;
+        
           // the hops should match the min 
-          if (p_node->MinHopsTable[bLid][pn] == minHop) {
-                                
+          if (p_node->getHops(p_port,bLid) == minHop) {
                                 
             minSubs = portsSubscriptions[pn-1];
             IBNode   *p_remNode = p_port->p_remotePort->p_node;
@@ -489,7 +533,8 @@ SubnMgtOsmEnhancedRoute(IBFabric *p_fabric) {
         goThroughNodes.insert(p_remNode);
 
         // track subscriptions:
-        portsSubscriptions[minPortNumShared-1]++;
+        if (targetIsHCA)
+          portsSubscriptions[minPortNumShared-1]++;
                   
         // assign the fdb table.
         p_node->setLFTPortForLid(bLid + lmcValue, minPortNumShared);
@@ -499,12 +544,23 @@ SubnMgtOsmEnhancedRoute(IBFabric *p_fabric) {
          
     // we want to get some histogram of subsriptions.
     for (unsigned int pn = 1; pn <= p_node->numPorts; pn++) {
-      subscHist[portsSubscriptions[pn-1]]++;
+      IBPort *p_port = p_node->getPort(pn);
+      if (p_port && p_port->p_remotePort)
+      { 
+        if (portsSubscriptions[pn-1] == 0)
+        {
+          cout << "-W- Unused port:" << p_port->getName() << endl;
+        }
+        subscHist[portsSubscriptions[pn-1]]++;
+      }
     }
   } // all nodes
 
   // print the histogram:
   cout << "----------------------- LINK SUBSCRIPTIONS HISTOGRAM ----------------------" << endl;
+  cout << "Distribution of number of LIDs mapped to each switch out port. Note that " << endl;
+  cout << "this assumes every LID is routed through every switch which is not correct" << endl;
+  cout << "if one ignores the switch to CA paths.\n" << endl;
   cout << "NUM-LIDS COUNT" << endl;
   for (unsigned int b = 0; b < 1024 ; b++) 
     if (subscHist[b]) 
@@ -552,8 +608,15 @@ SubnMgtOsmRoute(IBFabric *p_fabric) {
          bLid <= p_fabric->maxLid;
          bLid += lidStep) {
 
-      // get the minimal hop count from this port:
-      int minHop = p_node->MinHopsTable[bLid][0];
+      int targetIsHCA;
+      IBPort *pTargetPort = p_fabric->getPortByLid(bLid);
+      if (pTargetPort && (pTargetPort->p_node->type == IB_SW_NODE)) 
+        targetIsHCA = 0;
+      else
+        targetIsHCA = 1;
+
+     // get the minimal hop count from this port:
+      int minHop = p_node->getHops(NULL,bLid);
 
       // We track the Systems we already went through:
       set<IBSystem *> goThroughSystems;
@@ -582,12 +645,13 @@ SubnMgtOsmRoute(IBFabric *p_fabric) {
         // look for the port with min profile 
         for (unsigned int pn = 1; pn <= p_node->numPorts; pn++) {
           IBPort *p_port = p_node->getPort(pn);
+
           if (! p_port) continue;
+          
           // the hops should match the min 
-          if (p_node->MinHopsTable[bLid][pn] == minHop) {
-                                
-                                // Standard OpenSM Routing:
-                                // is it the lowest subscribed port:
+          if (p_node->getHops(p_port, bLid) == minHop) {
+            // Standard OpenSM Routing:
+            // is it the lowest subscribed port:
             if (portsSubscriptions[pn-1] < minSubsc) {
               minSubsPortNum = pn;
               minSubsc = portsSubscriptions[pn-1];
@@ -601,8 +665,9 @@ SubnMgtOsmRoute(IBFabric *p_fabric) {
           return(1);
         }
 
-        // track subscriptions:
-        portsSubscriptions[minSubsPortNum-1]++;
+        // track subscriptions only if target is not a switch:
+        if (targetIsHCA)
+          portsSubscriptions[minSubsPortNum-1]++;
                   
         // assign the fdb table.
         p_node->setLFTPortForLid(bLid + lmcValue, minSubsPortNum);
@@ -612,12 +677,23 @@ SubnMgtOsmRoute(IBFabric *p_fabric) {
          
     // we want to get some histogram of subsriptions.
     for (unsigned int pn = 1; pn <= p_node->numPorts; pn++) {
-      subscHist[portsSubscriptions[pn-1]]++;
+      IBPort *p_port = p_node->getPort(pn);
+      if (p_port && p_port->p_remotePort)
+      { 
+        if (portsSubscriptions[pn-1] == 0)
+        {
+          cout << "-W- Unused port:" << p_port->getName() << endl;
+        }
+        subscHist[portsSubscriptions[pn-1]]++;
+      }
     }
   } // all nodes
 
   // print the histogram:
   cout << "----------------------- LINK SUBSCRIPTIONS HISTOGRAM ----------------------" << endl;
+  cout << "Distribution of number of LIDs mapped to each switch out port. Note that " << endl;
+  cout << "this assumes every LID is routed through every switch which is not correct" << endl;
+  cout << "if one ignores the switch to CA paths.\n" << endl;
   cout << "NUM-LIDS COUNT" << endl;
   for (unsigned int b = 0; b < 1024 ; b++) 
     if (subscHist[b]) 
@@ -784,7 +860,13 @@ SubnMgtVerifyAllCaToCaRoutes(IBFabric *p_fabric) {
   int CommonNodes[50][16];
   int CommonSystems[50][16];
   unsigned int maxDepth = 0;
-  
+  int maxLinkSubscriptions = 0;
+
+  // to track the actual paths going through each switch port
+  // we need to have a map from switch node to a vector of count 
+  // per port.
+  map_pnode_vec_int switchPathsPerOutPort;
+
   cout << "-I- Verifying all CA to CA paths ... " << endl;
   // initialize the histograms:
   memset(CommonNodes, 0 , 50*16 * sizeof(int));
@@ -839,12 +921,36 @@ SubnMgtVerifyAllCaToCaRoutes(IBFabric *p_fabric) {
           maxHopsHist[hops]++;
           if (hops > maxHops) maxHops = hops;
 
+          // populate the number of the out ports along the path
+          // but ignore the last element
+          for (list_pnode::const_iterator lI = p_path->begin();
+               lI != p_path->end(); lI++) 
+          {
+            // init the ports count vector if needed 
+            IBNode *pNode = (*lI);
+            if (switchPathsPerOutPort.find(pNode) == switchPathsPerOutPort.end())
+            {
+              vec_int tmp(pNode->numPorts + 1,0);
+              switchPathsPerOutPort[pNode] = tmp;
+            }
+            
+            list_pnode::const_iterator nlI = lI;
+            nlI++;
+            if (nlI != p_path->end())
+            {
+              unsigned int outPort = pNode->getLFTPortForLid(dLid + l);
+              switchPathsPerOutPort[pNode][outPort]++;
+              if (maxLinkSubscriptions < switchPathsPerOutPort[pNode][outPort])
+                maxLinkSubscriptions = switchPathsPerOutPort[pNode][outPort];
+            }
+          }
+          
           // Analyze the path against the previous path:
           if (l != 0) {
             static int commonSystems, commonNodes;
 
-                                // we only cre about paths longer then 2 hops since teh two switches
-                                //  must be identical
+            // we only care about paths longer then 2 hops since teh two switches
+            //  must be identical
             if (path1.size()) {
               SubnFindPathCommonality(&path1, &path2, &commonSystems, &commonNodes);
 
@@ -898,14 +1004,18 @@ SubnMgtVerifyAllCaToCaRoutes(IBFabric *p_fabric) {
   }
 
   cout << "---------------------- CA to CA : LFT ROUTE HOP HISTOGRAM -----------------" << endl;
+  cout << "The number of CA pairs that are in each number of hops distance." << endl;
+  cout << "This data is based on the result fo the routing algorithm.\n" << endl;
   cout << "HOPS NUM-CA-CA-PAIRS" << endl;
   for (int b = 0; b <= (int)maxHops ; b++) 
     if (maxHopsHist[b]) 
-      cout << setw(3) << b << "   " << maxHopsHist[b] << endl;
+      cout << setw(3) << b+1 << "   " << maxHopsHist[b] << endl;
   cout << "---------------------------------------------------------------------------\n" << endl;
 
   if (p_fabric->lmc > 0) {
     cout << "------------------ LMC BASED ROTING :COMMON NODES HISTOGRAM -----------------" << endl;
+    cout << "Describes the distribution of the number of common nodes between the " << endl;
+    cout << "different LMC paths of all the CA to CA paths.\n" << endl;
     cout << "COMMON-NODES NUM-CA-CA-PAIRS" << endl;
     cout << "PATH DPT|";
     for (unsigned int d = 1; d <= maxDepth; d++) 
@@ -920,8 +1030,10 @@ SubnMgtVerifyAllCaToCaRoutes(IBFabric *p_fabric) {
         cout << endl;
       }
     cout << "---------------------------------------------------------------------------\n" << endl;
-         
+
     cout << "---------------- LMC BASED ROTING :COMMON SYSTEMS HISTOGRAM ---------------" << endl;
+    cout << "The distribution of the number of common systems between the " << endl;
+    cout << "different LMC paths of all the CA to CA paths.\n" << endl;     
     cout << "COMMON-SYSTEM NUM-CA-CA-PAIRS" << endl;
     cout << "PATH DPT|";
     for (unsigned int d = 1; d <= maxDepth; d++) 
@@ -937,11 +1049,96 @@ SubnMgtVerifyAllCaToCaRoutes(IBFabric *p_fabric) {
     cout << "---------------------------------------------------------------------------\n" << endl;
   }
 
+  // report the link over subscription histogram
+  vec_int linkSubscriptionHist(maxLinkSubscriptions + 1,0);
+  for (map_pnode_vec_int::iterator nI = switchPathsPerOutPort.begin();
+       nI !=  switchPathsPerOutPort.end();
+       nI++)
+  {
+    IBNode *p_node = (*nI).first;
+    for (unsigned int pn = 1; pn <= p_node->numPorts; pn++)
+    {
+      IBPort *p_port = p_node->getPort(pn);
+      if (p_port && p_port->p_remotePort && 
+          (p_port->p_remotePort->p_node->type == IB_SW_NODE))
+        linkSubscriptionHist[((*nI).second)[pn]]++;
+    }
+  }
+       
+  cout << "-------------- CA to CA : LINK OVER SUBSCRIPTION HISTOGRAM -----------------" << endl;
+  cout << "Number of subscriptions on every out port of every switch when considering" << endl;
+  cout << "all the CA to CA paths. Last link on every path is ignored (connects to the" << endl;
+  cout << "CA).\n" << endl;
+  cout << "SUBSCRIPTIONS NUM-CA-CA-PAIRS" << endl;
+  for (int b = 0; b <= maxLinkSubscriptions; b++) 
+    if (linkSubscriptionHist[b]) 
+      cout << setw(12) << b << "   " << linkSubscriptionHist[b] << endl;
+  cout << "---------------------------------------------------------------------------\n" << endl;
+
   if (anyError) 
     cout << "-E- Found " << anyError << " missing paths" 
          << " out of:" << paths << " paths" << endl;
   else 
     cout << "-I- Scanned:" << paths << " CA to CA paths " << endl;  
+  
+  cout << "---------------------------------------------------------------------------\n" << endl;
+  return anyError;
+}
+
+int
+SubnMgtVerifyAllRoutes(IBFabric *p_fabric) {
+  unsigned int lidStep = 1 << p_fabric->lmc;
+  int anyError = 0, paths = 0;
+  unsigned int maxDepth = 0;
+  
+  cout << "-I- Verifying all paths ... " << endl;
+  unsigned int hops, maxHops = 0;
+  list_pnode path;
+
+  // go over all ports in the fabric 
+  for (unsigned int i = p_fabric->minLid; i <= p_fabric->maxLid; i += lidStep )
+  {
+    IBPort *p_srcPort = p_fabric->PortByLid[i]; 
+    
+    if (!p_srcPort) continue;
+    
+    unsigned int sLid = p_srcPort->base_lid;
+    // go over all the rest of the ports:
+    for (unsigned int j = p_fabric->minLid; j <= p_fabric->maxLid; j += lidStep ) 
+    {
+      IBPort *p_dstPort = p_fabric->PortByLid[j]; 
+
+      // Avoid tracing to itself
+      if (i == j) continue;
+
+      if (! p_dstPort) continue;
+
+      unsigned int dLid = p_dstPort->base_lid;
+      
+      // go over all LMC combinations:
+      for (unsigned int l = 0; l < lidStep; l++) {
+        paths++;
+                  
+        // now go and verify the path:
+        if (TraceRouteByLFT(p_fabric, sLid + l, dLid + l, &hops, &path)) {
+          cout << "-E- Fail to find a path from:" 
+               << p_srcPort->p_node->name << "/" << p_srcPort->num
+               << " to:" << p_dstPort->p_node->name << "/" << p_dstPort->num
+               << endl;
+          anyError++;
+        } else {
+          if (hops > maxHops) maxHops = hops;
+        }
+        path.clear();
+      }
+    }
+  }
+
+  if (anyError) 
+    cout << "-E- Found " << anyError << " missing paths" 
+         << " out of:" << paths << " paths" << endl;
+  else 
+    cout << "-I- Scanned:" << paths << " paths " << endl;  
   
   cout << "---------------------------------------------------------------------------\n" << endl;
   return anyError;
@@ -1102,7 +1299,7 @@ SubnMgtFindRootNodesByMinHop(IBFabric *p_fabric) {
       unsigned int bLid = p_port->base_lid;
       
       // get the min hops to this port:
-      minHop = p_node->MinHopsTable[bLid][0];
+      minHop = p_node->getHops(NULL, bLid);
       
       swToCaMinHopsHist[minHop]++;
       
@@ -1358,34 +1555,32 @@ SubnMgtUpDnBFSFromPort (
     for (list_pnode::iterator lI = CurState.begin();
          lI != CurState.end(); lI++) {
       IBNode *p_node = *lI;
+      
       if (FabricUtilsVerboseLevel & FABU_LOG_VERBOSE)
-	cout << "-V- Current switch handeled is : " << p_node->name << endl;
+        cout << "-V- Current switch handeled is : " << p_node->name << endl;
+      
       IBPort *p_zero_port = p_node->getPort(1);
+      
       // go over all ports to find unvisited remote nodes
       for (unsigned int pn = 1; pn <= p_node->numPorts; pn++) {
         IBPort *p_port = p_node->getPort(pn);
-        unsigned int IsExist = 0;
+
         // Only if current port is NULL or not connected skip it
         if (! p_port || ! p_port->p_remotePort ) continue;
+        
         if (FabricUtilsVerboseLevel & FABU_LOG_VERBOSE)
           cout << "-V- Handling port num : " << pn << " of node :" << p_node->name 
                << " p_type="<<p_node->type<<"\n"<<endl;
+        
         IBPort *p_rem_port = p_node->getPort(pn)->p_remotePort;
         IBNode *p_rem_node = p_rem_port->p_node;
+
+
         int minHop=0;
         unsigned int rpn = p_rem_port->num;
-        // go over Next step nodes and find if allready added to the list
-        for (list_pnode::iterator nI = NextState.begin();
-             nI != NextState.end(); nI++) {
-          IBNode *p_nxt_node = *nI;
-          if (p_nxt_node == p_rem_node)
-            IsExist = 1;
-        }
-        if (FabricUtilsVerboseLevel & FABU_LOG_VERBOSE)
-          cout << "-V- IsExist = " << IsExist << endl;
-        // Only if it is a switch && new node (for the next state)  
-        //   then update its table since for CA MinHopTable does not exist
-        if (p_rem_node->type == IB_SW_NODE && !IsExist) {
+
+        // Only if it is a switch then update its table 
+        if (p_rem_node->type == IB_SW_NODE) {
           // First put UP / DOWN label to remote node
           if (nodesRank[p_node] < nodesRank[p_rem_node])
             // This is DOWN
@@ -1398,31 +1593,39 @@ SubnMgtUpDnBFSFromPort (
           if (SubnMgtUpDnIsLegelStep(p_node,p_rem_node)) continue;
           if (FabricUtilsVerboseLevel & FABU_LOG_VERBOSE)
             cout << "-V- Current step is legal ..." << endl;
+          
           // Update remote port MinHopTable according to Current MinHopTable
           // Set minHop with the minimum hop count for this lid through current node
-          minHop = p_node->MinHopsTable[lid][0];
+          minHop = p_node->getHops(NULL,lid);
+
           if (FabricUtilsVerboseLevel & FABU_LOG_VERBOSE) {
             cout << "-V- lid=" <<lid << " p_node="<<p_node<<"\n"<<endl;
             cout << "-V- MinHopTable of current node at lid=" <<lid 
                  << " port=0 is : " << minHop<<endl;
             //	  cout << "-V- After minHop :"<<minHop<<"\n" <<endl;
             cout << "-V- B4 Check of current_node(minHop)=" << minHop
-                 << " and p_rem_node(minHop)=" << (int)p_rem_node->MinHopsTable[lid][rpn] << "\n"<<endl;
+                 << " and p_rem_node(minHop)=" 
+                 << p_rem_node->getHops(p_rem_port, lid) << "\n"<<endl;
           }
+          
+          // we will use the remote node min hops to know if we already have visited this node 
+          int remNodeHops = p_rem_node->getHops(NULL,lid);
+          
           // Check min hop count if better insert into NextState list && update the remote node Min Hop Table 
-          if (minHop + 1 <= p_rem_node->MinHopsTable[lid][rpn]) {
+          if (minHop + 1 <= p_rem_node->getHops(p_rem_port, lid)) {
+            
             // Update MinHopTable of remote node and add it to NextState
             p_rem_node->setHops(p_rem_port,lid,minHop + 1);
-            NextState.push_back(p_rem_node);
-            // We do not need same element several time , only once .
-            NextState.unique();
-            minHop++;
-          }
-          if (FabricUtilsVerboseLevel & FABU_LOG_VERBOSE) {
-            cout << "-V- Updating MinHopTable of node : " << p_rem_node->name
-                 << " for lid :" <<  lid  << " Value is : " << minHop << "\n" << endl;
-            // Lets see the last update for the current node
-            p_rem_node->repHopTable();
+
+            // only if the remote node did not have this hop we need to visit it next step
+            if (remNodeHops > minHop + 1) NextState.push_back(p_rem_node);
+
+            if (FabricUtilsVerboseLevel & FABU_LOG_VERBOSE) {
+              cout << "-V- Updating MinHopTable of node : " << p_rem_node->name
+                   << " for lid :" <<  lid  << " Value is : " << minHop << "\n" << endl;
+              // Lets see the last update for the current node
+              p_rem_node->repHopTable();
+            }
           }
         }
       }
@@ -1463,6 +1666,18 @@ SubnMgtCalcUpDnMinHopTbls(
   for (unsigned int i = 1; i <= p_fabric->maxLid; i += lidStep )
     if (SubnMgtUpDnBFSFromPort(i,p_fabric,nodesRank))
       return (1);  
+
+  // dump the min hops
+  if (FabricUtilsVerboseLevel & FABU_LOG_VERBOSE)
+    for( map_str_pnode::iterator nI = p_fabric->NodeByName.begin();
+         nI != p_fabric->NodeByName.end();
+         nI++) {
+      
+      IBNode *p_node = (*nI).second;
+      if (p_node->type != IB_SW_NODE) continue;
+      p_node->repHopTable();
+    }
+
   return(0);
 }
 
@@ -1656,7 +1871,7 @@ SubnMgtCheckFabricMCGrps(
     anyErrs += SubnMgtCheckMCGrp(p_fabric, *sI);
   
   if (anyErrs)
-    cout << "-E- " << anyErrs << " multicast groups failed" << endl;
+    cout << "-E- " << anyErrs << " multicast group checks failed" << endl;
   
   cout << "---------------------------------------------------------------------------\n" << endl;
   return anyErrs;
@@ -1693,7 +1908,7 @@ SubnReportNonUpDownMulticastGroupFromCaSwitch(
   thisStep.inPort = 0; // start as we got in from port 0 we can go out any port
   thisStep.pTurnNode = NULL;
   nodesQueue.push_back(thisStep);
-  
+
   // we do the BFS through the queue
   while (nodesQueue.size()) 
   {
@@ -1714,6 +1929,10 @@ SubnReportNonUpDownMulticastGroupFromCaSwitch(
       exit(1);
     }
     thisNodeRank = (*rI).second;
+
+    if (FabricUtilsVerboseLevel & FABU_LOG_VERBOSE)
+      cout << "-V- Visiting node:" << thisStep.pNode->name 
+           << " dir:" << (thisStep.down ? "DOWN" : "UP") << endl;
 
     // go over all MC output ports of the current node ignoring the input
     for (list_int::iterator pnI = portNums.begin();
@@ -1757,28 +1976,29 @@ SubnReportNonUpDownMulticastGroupFromCaSwitch(
       remNodeRank = (*rI).second;
 
       // if we are goin up make sure we did not go down before.
-      if (remNodeRank > thisNodeRank)
+      if (remNodeRank < thisNodeRank)
       {
+        // we go up - was it a down?
         if (thisStep.down)
         {
           cout << "-E- Non Up/Down on MLID:" << mlidStr
                << " turning UP from:" << thisStep.pNode->name
-               << "/P" << pn << " to node:" << pRemNode->name
-               << "/P" << pPort->p_remotePort->num
-               << " previoulsy turned down:" << thisStep.pTurnNode->name
-               << endl;
+               << "/P" << pn << "("<< thisNodeRank << ") to node:"
+               << pRemNode->name << "/P" << pPort->p_remotePort->num
+               << "(" << remNodeRank << ") previoulsy turned down:" 
+               << thisStep.pTurnNode->name << endl;
           anyErr++;
           continue;
         } 
         else
         {
           // we turned down here so track it:
-          nextStep.down = 1;
-          nextStep.pTurnNode = thisStep.pNode;
+          nextStep.down = 0;
+          nextStep.pTurnNode = NULL;
         }
       } else {
-        nextStep.down = 0;
-        nextStep.pTurnNode = NULL;
+        nextStep.pTurnNode = thisStep.pNode;
+        nextStep.down = 1;
       }
 
       // push the node into next steps:
@@ -1866,8 +2086,8 @@ SubnReportNonUpDownMulticastGroupCa2CaPaths(
          << " CA to CA paths that can cause credit loops." << endl;
   }
   else
-    cout << "-I- No credit loops found in:" << paths
-         << " Multicast:" << mlidStr << " CA to CA paths" << endl;
+    cout << "-I- No credit loops found traversing:" << paths 
+         << " leaf switches for Multicast LID:" << mlidStr << endl;
   
   return 0;
 }

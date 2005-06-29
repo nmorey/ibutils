@@ -29,7 +29,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
- * $Id: SysDef.cpp,v 1.5 2005/02/23 21:08:37 eitan Exp $
+ * $Id: SysDef.cpp,v 1.6 2005/05/05 13:50:40 eitan Exp $
  */
 
 /*
@@ -76,6 +76,13 @@ IBSystemsCollection::makeSysNodes(
         cout << "-E- Fail to create node:" << nodeName << endl;
         anyErr = 1;
       }
+
+      // the device number should be embedded in the master name of
+      // the node: MT23108 ...
+      char *p_digit;
+      if ((p_digit = strpbrk(p_inst->master.c_str(), "0123456789")) != NULL)
+        sscanf(p_digit,"%u", &p_node->devId);
+
     } else {
       // find the definition of this inst:
       IBSysDef *p_sysDef =

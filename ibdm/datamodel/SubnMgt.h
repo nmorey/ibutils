@@ -29,7 +29,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
- * $Id: SubnMgt.h,v 1.4 2005/02/23 21:08:37 eitan Exp $
+ * $Id: SubnMgt.h,v 1.5 2005/05/29 15:33:05 eitan Exp $
  */
 
 #ifndef IBDM_SUBN_MGT_H
@@ -72,9 +72,13 @@ SubnMgtOsmRoute(IBFabric *p_fabric);
 int
 SubnMgtOsmEnhancedRoute(IBFabric *p_fabric);
 
-// Verify point to point connectivity
+// Verify All CA to CA connectivity
 int
 SubnMgtVerifyAllCaToCaRoutes(IBFabric *p_fabric);
+
+// Verify all point to point connectivity
+int
+SubnMgtVerifyAllRoutes(IBFabric *p_fabric);
 
 // Calc Up/Down min hop tables using the given ranking per node
 int 

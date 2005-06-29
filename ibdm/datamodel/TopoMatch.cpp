@@ -29,7 +29,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
- * $Id: TopoMatch.cpp,v 1.16 2005/02/27 12:34:04 eitan Exp $
+ * $Id: TopoMatch.cpp,v 1.20 2005/06/07 10:55:21 eitan Exp $
  */
 
 /*
@@ -133,7 +133,8 @@ TopoMatchPorts(
                << " but got port:" << p_dRemPort->num << endl;
       } else {
         if (doDiag)
-          diag << "Wrong port number on remote side of cable from:" << p_sPort->getName()
+          diag << "Wrong port number on remote side of cable from:" 
+               << p_sPort->getName()
                << ". Expected port:" << p_sRemPort->num
                << " but got port:" << p_dRemPort->num << endl;
         return 0;
@@ -376,17 +377,57 @@ TopoBFSAndMatchFromPorts(
 
       IBNode *p_node2 = (*snI).second;
 
-      // set the cross pointers and visited flag:
-      TopoMarkNodeAsMatchAlgoVisited(p_node1);
-
       // make sure they are not previously match somehome
       if (p_node1->appData1.ptr || p_node2->appData1.ptr) continue;
 
-      TopoMarkMatcedNodes(p_node1, p_node2, numMatchedNodes);
-      bfsFifo.push_back(p_node1);
+
+      // do not rush into matching - double check all teh nodes ports ... 
+      int anyMissmatch = 0;
+      if (p_node1->numPorts != p_node2->numPorts) continue;
+      for (unsigned int pn = 1; !anyMissmatch && (pn <= p_node1->numPorts);
+           pn++) 
+      {
+        IBPort *p_dPort = p_node1->getPort(pn);
+        IBPort *p_sPort = p_node2->getPort(pn);
+        
+        if (! TopoMatchPorts(p_sPort, p_dPort, 1, diag))
+        {
+          anyMissmatch++;
+          if (FabricUtilsVerboseLevel & FABU_LOG_VERBOSE)
+            cout << "-V- Disqualified start nodes match:" << 
+              p_node1->name << endl;
+        }
+        
+        if (p_dPort->p_remotePort)
+        {
+          IBNode *p_dRemNode = p_dPort->p_remotePort->p_node;
+          IBNode *p_sRemNode = p_sPort->p_remotePort->p_node;
+          if (! TopoQalifyNodesMatching(p_sRemNode, p_dRemNode))
+          {
+            anyMissmatch++;
+            if (FabricUtilsVerboseLevel & FABU_LOG_VERBOSE)
+              cout << "-V- Disqualified start nodes match:"
+                   << p_node1->name << " by rem nodes" << endl;
+          }
+        }
+
+        if (!anyMissmatch)
+        {
+          if (FabricUtilsVerboseLevel & FABU_LOG_VERBOSE)
+            cout << "-V- Start nodes match:" << p_node1->name << endl;        
+          // set the cross pointers and visited flag:
+          TopoMarkNodeAsMatchAlgoVisited(p_node1);
+          
+          TopoMarkMatcedNodes(p_node1, p_node2, numMatchedNodes);
+          // If we do not start from the HCAs we avoid cases where the 
+          // wrong leaf is connected and the leaf is deep enough to hide
+          // it
+          // bfsFifo.push_back(p_node1);
+        }
+      }
     }
   }
-
+  
   // track any further unmatch:
   int anyUnmatch = 0;
 
@@ -772,10 +813,17 @@ TopoReportMismatchedNode(
           if (p_port->p_remotePort->p_node->appData1.ptr) {
             IBNode *p_sNode = 
               (IBNode *)p_port->p_remotePort->p_node->appData1.ptr;
-            diag << "   Connected by cable from port:" << pn 
-                 << " to:" 
-                 << p_sNode->getPort(p_port->p_remotePort->num)->getName()
-                 << endl;
+            IBPort *p_tmpPort = p_sNode->getPort(p_port->p_remotePort->num);
+            if (p_tmpPort)
+              diag << "   Connected by cable from port:" << pn 
+                   << " to:" 
+                   << p_tmpPort->getName()
+                   << endl;
+            else
+              diag << "   Connected by cable from port:" << pn 
+                   << " to:" 
+                   << p_sNode->name << "/P" << p_port->p_remotePort->num
+                   << endl; 
           } else {
             diag << "   Connected by cable from port:" << pn
                  << " to:" << p_port->p_remotePort->getName() << endl;
@@ -835,9 +883,15 @@ TopoReportMatchedNodesUnMatchingLinks(
       if (p_actRemSNode != p_sRemPort->p_node) {
         // clasify internal and external cables
         if (p_sNode->p_system != p_actRemSNode->p_system) {
-          diag << "Wrong cable connecting:" << p_sPort->getName()
-               << " to:" << p_actRemSNode->name << "/P" << p_dRemPort->num
-               << " instead of:" << p_sRemPort->getName() << endl;
+          IBPort *p_repPort = p_actRemSNode->getPort(p_dRemPort->num);
+          if (p_repPort) 
+            diag << "Wrong cable connecting:" << p_sPort->getName()
+                 << " to:" << p_repPort->getName()
+                 << " instead of:" << p_sRemPort->getName() << endl;
+          else
+            diag << "Wrong cable connecting:" << p_sPort->getName()
+                 << " to:" << p_actRemSNode->name << "/P" << p_dRemPort->num
+                 << " instead of:" << p_sRemPort->getName() << endl;
         } else {
           diag << "Wrong Internal Link connecting:" << p_sPort->getName()
                << " to:" << p_actRemSNode->name << "/P" << p_dRemPort->num
@@ -848,9 +902,15 @@ TopoReportMatchedNodesUnMatchingLinks(
         // make sure same port remote number
         if (p_dRemPort->num != p_sRemPort->num) {
           if (p_sNode->p_system != p_actRemSNode->p_system) {
-            diag << "Wrong cable connecting:" << p_sPort->getName()
-                 << " to:" << p_actRemSNode->name << "/P" << p_dRemPort->num
-                 << " instead of:" << p_sRemPort->getName() << endl;
+            IBPort *p_repPort = p_actRemSNode->getPort(p_dRemPort->num);
+            if (p_repPort)
+              diag << "Wrong cable connecting:" << p_sPort->getName()
+                   << " to:" << p_repPort->getName()
+                   << " instead of:" << p_sRemPort->getName() << endl;
+            else
+              diag << "Wrong cable connecting:" << p_sPort->getName()
+                   << " to:" << p_actRemSNode->name << "/P" << p_dRemPort->num
+                   << " instead of:" << p_sRemPort->getName() << endl;
           } else {
             diag << "Wrong Internal Link connecting:" << p_sPort->getName()
                  << " to:" << p_actRemSNode->name << "/P" << p_dRemPort->num
@@ -888,16 +948,21 @@ TopoReportMatchedNodesUnMatchingLinks(
       if (p_actRemPort && p_actRemPort->p_remotePort)
         continue;
 
-      // clasify the link as cable or internal
-      if (p_sNode->p_system != p_sRemPort->p_node->p_system) {
-        diag << "Missing cable connecting:" << p_sPort->getName()
-             << " to:" <<  p_sRemPort->getName() << endl;
-      } else {
-        diag << "Missing internal Link connecting:" << p_sPort->getName()
-             << " to:" << p_sRemPort->getName() << endl; 
+      // as the spec connections are reciprocal we do not want double the 
+      // report 
+      if (p_sPort > p_sRemPort)
+      {
+        // clasify the link as cable or internal
+        if (p_sPort->p_sysPort || p_sRemPort->p_sysPort) {
+          diag << "Missing cable connecting:" << p_sPort->getName()
+               << " to:" <<  p_sRemPort->getName() << endl;
+        } else {
+          diag << "Missing internal Link connecting:" << p_sPort->getName()
+               << " to:" << p_sRemPort->getName() << endl; 
+        }
       }
       anyMissmatch++;        
-        
+      
     } else if (p_dRemPort && !p_sRemPort) {
       // Only a discovered link exists:
 
@@ -1289,6 +1354,9 @@ TopoCopyNodeToMergedFabric(
       // copy some vital data:
       p_port->guid_set(p_dPort->guid_get());
       p_port->base_lid = p_dPort->base_lid;
+      p_mFabric->setLidPort(p_port->base_lid, p_port);
+      if (p_mFabric->maxLid < p_port->base_lid)
+        p_mFabric->maxLid = p_port->base_lid;
 
       // if there is a matching spec port we use it and get the 
       // sys port name etc
@@ -1382,7 +1450,10 @@ TopoMergeDiscAndSpecFabrics(
   
   // go through all nodes of the discovered fabric.
   // copy all their systems, and links...
-
+  p_dFabric->setLidPort(0, NULL);
+  p_dFabric->minLid = 1;
+  p_dFabric->maxLid = 0;
+  
   for (map_str_pnode::iterator nI = p_dFabric->NodeByName.begin();
        nI != p_dFabric->NodeByName.end();
        nI++) {

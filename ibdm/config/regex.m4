@@ -6,7 +6,7 @@ dnl Modified by Eiatn Zahavi to test only regcomp and regexec
 
 dnl Usage: ez_INCLUDED_REGEX([lib/regex.c])
 dnl
-AC_DEFUN(ez_INCLUDED_REGEX,
+AC_DEFUN([ez_INCLUDED_REGEX],
   [
     dnl Even packages that don't use regex.c can use this macro.
     dnl Of course, for them it doesn't do anything.

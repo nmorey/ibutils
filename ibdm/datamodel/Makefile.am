@@ -29,7 +29,7 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
-# $Id: Makefile.am,v 1.10 2005/03/07 13:32:39 eitan Exp $
+# $Id: Makefile.am,v 1.13 2005/04/12 13:28:34 eitan Exp $
 #--
 
 # we would like to export these headers during install
@@ -72,8 +72,8 @@ else
 IBNL_PATH=-DIBDM_IBNL_DIR='"$(libdir)/ibadm"'
 endif
 
-CXXFLAGS = $(DBG) $(IBNL_PATH) $(TCL_CPPFLAGS)
-CFLAGS =   $(DBG) $(IBNL_PATH) $(TCL_CFLAGS)
+AM_CXXFLAGS = $(DBG) $(IBNL_PATH) $(TCL_CPPFLAGS)
+AM_CFLAGS =   $(DBG) $(IBNL_PATH) $(TCL_CFLAGS)
 
 lib_LTLIBRARIES = libibdmcom.la libibdm.la
 libibdmcom_la_SOURCES = $(common_SOURCES)
@@ -95,12 +95,12 @@ ibdmsh_LDFLAGS = -static -Wl,-rpath -Wl,$(TCL_PREFIX)/lib
 # only generate the swig wrappers if they do not exist...
 # so we avoid un-needed swig dependency
 if HAS_SWIG
-ibdm_wrap.cpp: @MAINTAINER_MODE_TRUE@ $(srcdir)/ibdm.i
+$(srcdir)/ibdm_wrap.cpp: @MAINTAINER_MODE_TRUE@ $(srcdir)/ibdm.i
 	swig -c++ -dhtml -tcl8 -o swig_wrap.c $(srcdir)/ibdm.i
 	$(srcdir)/fixSwigWrapper -g -s -p -o $@
 	rm -f swig_wrap.c	
 
-ibdmsh_wrap.cpp: @MAINTAINER_MODE_TRUE@ $(srcdir)/ibdm.i
+$(srcdir)/ibdmsh_wrap.cpp: @MAINTAINER_MODE_TRUE@ $(srcdir)/ibdm.i
 	swig -c++ -dhtml -tcl8  -ltclsh.i -o swig_wrap.c $(srcdir)/ibdm.i
 	$(srcdir)/fixSwigWrapper -g -s -p -r ibdm -o $@
 	rm -f swig_wrap.c
@@ -110,10 +110,17 @@ swigclean:
 	rm -f $(srcdir)/ibdm_wrap.cpp $(srcdir)/ibdmsh_wrap.cpp *wrap.o
 
 ibnl_parser.cc: @MAINTAINER_MODE_TRUE@ $(srcdir)/ibnl_parser.yy
-	$(srcdir)/../config/ylwrap $(srcdir)/ibnl_parser.yy -- bison -y -d
+	$(srcdir)/../config/ylwrap $(srcdir)/ibnl_parser.yy \
+		y.tab.c ibnl_parser.cc \
+	 	y.tab.h ibnl_parser.h \
+		y.output ibnl_parser.output -- bison -y -d
+	cp ibnl_parser.cc $(srcdir)/ibnl_parser.cc 
+	cp ibnl_parser.h $(srcdir)/ibnl_parser.h
 
 ibnl_scanner.cc: @MAINTAINER_MODE_TRUE@ $(srcdir)/ibnl_scanner.ll
-	$(srcdir)/../config/ylwrap $(srcdir)/ibnl_scanner.ll -- flex 
+	$(srcdir)/../config/ylwrap $(srcdir)/ibnl_scanner.ll \
+		lex.yy.c ibnl_scanner.cc -- flex
+	cp ibnl_scanner.cc $(srcdir)/ibnl_scanner.cc
 
 # Don't distribute common.h, since it is build host dependent!
 dist-hook:
@@ -122,7 +129,8 @@ dist-hook:
 # we need there extra in the distribution as their dependency is not defined
 EXTRA_DIST = swig_alternate_mangling.cpp fixSwigWrapper pkgIndex.tcl
 
-install-exec-am:
+# this actually over write the lib install
+install-exec-am: install-binPROGRAMS 
 	mkdir -p $(libdir)/ibadm/ibdm$(VERSION)
 	cp .libs/libibdm.so.$(LIB_FILE_TRIPLET) $(libdir)/ibadm/ibdm$(VERSION)/libibdm.so.$(VERSION)
 	cp $(srcdir)/pkgIndex.tcl $(libdir)/ibadm/ibdm$(VERSION)/pkgIndex.tcl

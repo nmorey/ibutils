@@ -1,5 +1,21 @@
-#!/bin/sh 
+#!/bin/bash 
 DIR=`cd ${0%*/*};pwd`
+# remove previous
+\rm -rf ../autom4te.cache 
+\rm -rf ../aclocal.m4
+# make sure autoconf is up-to-date
+ac_ver=`autoconf --version | head -1 | awk '{print $NF}'`
+ac_maj=`echo $ac_ver|sed 's/\..*//'`
+ac_min=`echo $ac_ver|sed 's/.*\.//'`
+if [[ $ac_maj < 2 ]]; then 
+    echo Min autoconf version is 2.59
+    exit
+fi
+if [[ $ac_maj = 2 && $ac_min < 59 ]]; then 
+    echo Min autoconf version is 2.59
+    exit
+fi
+    
 aclocal -I config
 $DIR/libtoolize --automake
 automake --add-missing --gnu

@@ -29,7 +29,7 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
-# $Id: Makefile.am,v 1.12 2005/02/23 21:08:43 eitan Exp $
+# $Id: Makefile.am,v 1.13 2005/03/23 16:15:39 eitan Exp $
 #--
 
 ## Makefile.am -- Process this file with automake to produce Makefile.in
@@ -42,7 +42,7 @@ AM_CPPFLAGS = -I$(top_srcdir)/datamodel
 
 bin_PROGRAMS = ibdmchk ibdmtr topotest ibnlparse
 LDADD = -L../datamodel -libdmcom
-LDFLAGS = -static
+AM_LDFLAGS = -static
 
 # Why do we need to provide extra dep? the LDADD should have worked isnt it?
 # Deprecated : ibdmsim_DEPENDENCIES=../datamodel/libibdmcom.la

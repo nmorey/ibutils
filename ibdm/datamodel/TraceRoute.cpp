@@ -29,7 +29,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
- * $Id: TraceRoute.cpp,v 1.4 2005/02/23 21:08:37 eitan Exp $
+ * $Id: TraceRoute.cpp,v 1.5 2005/05/29 15:33:05 eitan Exp $
  */
 
 #include "Fabric.h"
@@ -274,6 +274,31 @@ int TraceRouteByLFT (
 		return 1;
 	 }
 	 
+    // if the port number is 0 we must have reached the target
+    if (pn == 0) 
+    {
+      uint16_t base_lid = 0;
+      // get lid of any port of this node
+      for (unsigned int portNum = 0; 
+           (base_lid == 0) && (portNum <= p_node->numPorts); portNum++)
+      {
+        IBPort *p_port = p_node->getPort(portNum);
+        if (p_port) base_lid = p_port->base_lid;
+      }
+      if (base_lid == 0) {
+        cout << "-E- Fail to find node:" << p_node->name 
+             << " base lid?" << endl;
+        return 1;
+      }
+      
+      if ((base_lid > dLid) || (base_lid + lidStep - 1 < dLid)) {
+        cout << "-E- Dead end at port 0 of node:" << p_node->name << endl;
+        return 1;
+      }
+      
+      return 0;  
+    }
+
 	 // get the port on the other side
 	 p_port = p_node->getPort(pn);
 	 if (FabricUtilsVerboseLevel & FABU_LOG_VERBOSE)

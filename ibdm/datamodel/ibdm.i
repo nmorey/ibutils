@@ -29,7 +29,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
- * $Id: ibdm.i,v 1.8 2005/02/23 21:08:37 eitan Exp $
+ * $Id: ibdm.i,v 1.10 2005/06/01 20:17:50 eitan Exp $
  */
 
 
@@ -88,18 +88,6 @@
 
   */
 
-  /*
-	 we provide our own constructor such that all IBFabrics are
-	 registered in teh global vector;
-  */
-  IBFabric *new_IBFabric() {
-	 IBFabric *p_fabric = new IBFabric();
-	 if (p_fabric) {
-		ibdm_fabrics.push_back(p_fabric);
-	 }
-	 return p_fabric;
-  }
-
   /* Given a fabric pointer return its idx (starting w 1) or 0 */
   int ibdmGetFabricIdxByPtr(IBFabric *p_fabric) {
 	 /* go over all fabrics and find it's index: */
@@ -118,6 +106,43 @@
 		return NULL;
 	 }
 	 return ibdm_fabrics[idx - 1];
+  }
+
+  /*
+	 we provide our own constructor such that all IBFabrics are
+	 registered in teh global vector;
+  */
+  IBFabric *new_IBFabric(void) {
+	 IBFabric *p_fabric = new IBFabric();
+    int i;
+	 if (p_fabric) {
+      /* look for an open index in the vector of fabrics */
+      for (i = 0; i < ibdm_fabrics.size(); i++)
+      { 
+        if (ibdm_fabrics[i] == NULL) 
+        {
+          ibdm_fabrics[i] = p_fabric;
+          return p_fabric;
+        }
+      }
+      ibdm_fabrics.push_back(p_fabric);
+	 }
+	 return p_fabric;
+  }
+
+  /*
+	 we provide our own destructor such that teh deleted fabric is 
+    de-registered from the global fabrics vector
+  */
+  void delete_IBFabric(IBFabric *p_fabric) {
+    int idx = ibdmGetFabricIdxByPtr(p_fabric);
+    if (! idx) {
+      printf("ERROR: Fabric idx:%p does not exist in the global vector!\n",
+             p_fabric);
+    } else {
+      ibdm_fabrics[idx-1] = NULL;
+    }
+    delete p_fabric;
   }
 
   /* Given the Object Pointer and Type provide it's TCL name */
@@ -278,7 +303,7 @@
 	 }
 	 return TCL_OK;
   }
-  
+
 %}
 
 
@@ -592,6 +617,17 @@
   Tcl_SetStringObj($target,buff,strlen(buff));
 }
 
+%{
+#define new_uint64_t uint64_t
+%}
+%typemap(tcl8,out) new_uint64_t *, new_uint64_t {
+  char buff[20];
+  /* new_uint64_t tcl8 out */
+  sprintf(buff, "0x%016" PRIx64, *$source);
+  Tcl_SetStringObj($target,buff,strlen(buff));
+  delete $source;
+}
+
 %typemap(tcl8,in) uint32_t * (uint32_t temp){
   temp = strtoul(Tcl_GetStringFromObj($source,NULL), NULL, 0);
   $target = &temp;
@@ -785,7 +821,7 @@ class IBPort {
   IBPort(IBNode *p_nodePtr, int number);
   // constructor
   
-  uint64_t guid_get();
+  new_uint64_t guid_get();
   void guid_set(uint64_t guid);
 
   string getName();
@@ -820,7 +856,7 @@ class IBNode {
   // void            *p_appData1;  // Application Private Data #1 
   // void            *p_appData2;  // Application Private Data #2
   
-  uint64_t guid_get();
+  new_uint64_t guid_get();
   void guid_set(uint64_t guid);
 
   IBNode(string n, 
@@ -852,6 +888,9 @@ class IBNode {
 	
   int getLFTPortForLid (unsigned int lid);
   // Get the LFT for a given lid
+
+  void repHopTable();
+  // dump out the min hop table of the node
 
 }; // Class IBNode
 
@@ -896,14 +935,17 @@ class IBSystem {
 
   ~IBSystem();
 
-  uint64_t guid_get();
+  new_uint64_t guid_get();
   void guid_set(uint64_t guid);
 
-  virtual IBSysPort *makeSysPort (string pName);
+  IBSysPort *makeSysPort (string pName);
   // make sure we got the port defined (so define it if not)
 
-  virtual IBPort *getSysPortNodePortByName (string sysPortName);
+  IBPort *getSysPortNodePortByName (string sysPortName);
   // get the node port for the given sys port by name
+
+  IBSysPort *getSysPort(string name);
+  // Get a Sys Port by name
 };
 
 // 
@@ -926,7 +968,10 @@ class IBFabric {
 
   // IBFabric() {maxLid = 0;};
 
-  ~IBFabric();
+  // we need to have our own destructor to take care of the 
+  // fabrics vector cleanup
+
+  // ~IBFabric();
 
   IBNode *makeNode (string n, 
 						  IBSystem *p_sys, 
@@ -945,6 +990,9 @@ class IBFabric {
   
   IBSystem *makeSystem (string name, string type);
   // crate a new system - the type must have a registed factory.
+
+  IBSystem *getSystem(string name);
+  // Get system by name
 
   IBSystem *getSystemByGuid(uint64_t guid);
   // get the system by its guid
@@ -986,6 +1034,9 @@ class IBFabric {
   int parseFdbFile(string fn);
   // Parse OpenSM FDB dump file
 
+  int parseMCFdbFile(string fn);
+  // Parse an OpenSM MCFDBs file and set the MFT table accordingly
+  
   inline void setLidPort (unsigned int lid, IBPort *p_port);
   // set a lid port
 	
@@ -996,6 +1047,8 @@ class IBFabric {
 
 /* we use our own version of the constructor */
 IBFabric*  new_IBFabric();
+/* we use our own version of the destructor */
+void delete_IBFabric(IBFabric *p_fabric);
 
 %section "IBDM Functions",pre
 /* IBDM functions */
@@ -1098,6 +1151,12 @@ TopoMergeDiscAndSpecFabrics(
   IBFabric  *p_merged_fabric);    // Output merged fabric (allocated internaly)
 // Build a merged fabric from a matched discovered and spec fabrics.
 // NOTE: you have to run ibdmMatchFabrics before calling this routine. 
+
+%name(ibdmCheckMulticastGroups)
+int SubnMgtCheckFabricMCGrps(IBFabric *p_fabric);
+// Check all multicast groups :
+// 1. all switches holding it are connected 
+// 2. No loops (i.e. a single BFS with no returns).
 
 //
 // FIX OF SWIG TO SUPPORT NAME ALTERNATE MANGLING 
