@@ -29,7 +29,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
- * $Id: Fabric.cpp,v 1.13 2005/06/08 06:35:17 eitan Exp $
+ * $Id: Fabric.cpp,v 1.15 2005/07/02 19:08:21 eitan Exp $
  */
 
 /*
@@ -117,9 +117,10 @@ IBPort::connect (IBPort *p_otherPort,
   if (p_remotePort) {
     // we only do care if not the requested remote previously conn.
     if (p_remotePort != p_otherPort) {
-      cout << "-W- Disconencting: "
+      cout << "-W- Disconnecting: "
            << p_remotePort->getName() << " previously connected to:"
-           << p_remotePort->getName() << endl;
+           << p_remotePort->getName() 
+           << " whil econnecting:" << p_otherPort->getName() << endl;
       // the other side should be cleaned only if points here
       if (p_remotePort->p_remotePort == this) {
         p_remotePort->p_remotePort = NULL;
@@ -132,9 +133,10 @@ IBPort::connect (IBPort *p_otherPort,
   if (p_otherPort->p_remotePort) {
     if (p_otherPort->p_remotePort != this) {
       // it was connected to a wrong port so disconnect
-      cout << "-W- Disconencting: " << p_otherPort->getName()
+      cout << "-W- Disconnecting: " << p_otherPort->getName()
            << " previously connected to:"
-           << p_otherPort->p_remotePort->getName() << endl;
+           << p_otherPort->p_remotePort->getName()
+           << " while connecting:" << this->getName() << endl;
       // the other side should be cleaned only if points here
       if (p_otherPort->p_remotePort->p_remotePort == p_otherPort) {
         p_otherPort->p_remotePort->p_remotePort = NULL;
@@ -432,10 +434,12 @@ IBSysPort::connect (IBSysPort *p_otherSysPort,
   if (p_remoteSysPort) {
     // we only do care if not the requested remote previously conn.
     if (p_remoteSysPort != p_otherSysPort) {
-      cout << "-W- Disconencting: " << p_system->name << "/" 
-           << p_remoteSysPort->name << " previously connected to:"
-           << p_remoteSysPort->p_system->name << "/" 
-           << p_remoteSysPort->name << endl;
+      cout << "-W- Disconnecting: " << p_system->name << "-/" 
+           << this->name << " previously connected to:"
+           << p_remoteSysPort->p_system->name << "-/" 
+           << p_remoteSysPort->name 
+           << " while connecting:" << p_otherSysPort->p_system->name
+           << "-/" << p_otherSysPort->name << endl;
       // the other side should be cleaned only if points here
       if (p_remoteSysPort->p_remoteSysPort == this) {
         p_remoteSysPort->p_remoteSysPort = NULL;
@@ -448,10 +452,13 @@ IBSysPort::connect (IBSysPort *p_otherSysPort,
   if (p_otherSysPort->p_remoteSysPort) {
     if (p_otherSysPort->p_remoteSysPort != this) {
       // it was connected to a wrong port so disconnect
-      cout << "-W- Disconencting: " << p_otherSysPort->p_system->name << "/" 
+      cout << "-W- Disconnecting back: " 
+           << p_otherSysPort->p_system->name << "-/" 
            << p_otherSysPort->name << " previously connected to:"
-           << p_otherSysPort->p_remoteSysPort->p_system->name << "/" 
-           << p_otherSysPort->p_remoteSysPort->name << endl;
+           << p_otherSysPort->p_remoteSysPort->p_system->name << "-/" 
+           << p_otherSysPort->p_remoteSysPort->name
+           << " while connecting:" << this->p_system->name
+           << "-/" << this->name << endl;
       // the other side should be cleaned only if points here
       if (p_otherSysPort->p_remoteSysPort->p_remoteSysPort == p_otherSysPort) {
         p_otherSysPort->p_remoteSysPort->p_remoteSysPort = NULL;
@@ -1293,13 +1300,18 @@ IBFabric::addLink(string type1, int numPorts1,
     } else {
       sprintf(buf,"P%u", portNum1);
     }
-    p_sysPort1 = new IBSysPort(buf, p_sys1);
+    p_sysPort1 = p_sys1->getSysPort(buf);
+    if (p_sysPort1 == NULL)
+      p_sysPort1 = new IBSysPort(buf, p_sys1);
+
     if (type2 == "SW") {    
-      sprintf(buf,"%s/P%u", p_node1->name.c_str(), portNum2);
+      sprintf(buf,"%s/P%u", p_node2->name.c_str(), portNum2);
     } else {
       sprintf(buf,"P%u", portNum2);
-    }   
-    p_sysPort2 = new IBSysPort(buf, p_sys2);
+    }
+    p_sysPort2 = p_sys2->getSysPort(buf);
+    if (p_sysPort2 == NULL)
+      p_sysPort2 = new IBSysPort(buf, p_sys2);
   }
 
   // make sure the ports exits

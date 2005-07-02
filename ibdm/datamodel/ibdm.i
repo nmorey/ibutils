@@ -29,7 +29,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
- * $Id: ibdm.i,v 1.10 2005/06/01 20:17:50 eitan Exp $
+ * $Id: ibdm.i,v 1.12 2005/07/02 19:09:52 eitan Exp $
  */
 
 
@@ -582,6 +582,17 @@
 	strcpy(ezTmp, $source->c_str());
 	Tcl_SetStringObj(tcl_result, ezTmp, strlen(ezTmp));
 }
+%{
+#define new_string string
+%}
+// return a char * from a string that was allocated previously
+// so we need to delete it
+%typemap(tcl8,out) new_string, new_string * {
+	char ezTmp[1024];
+	strcpy(ezTmp, $source->c_str());
+	Tcl_SetStringObj(tcl_result, ezTmp, strlen(ezTmp));
+   delete $source;
+}
 
 %typemap (tcl8, ignore) char **p_out_str (char *p_c) {
   $target = &p_c;
@@ -824,7 +835,7 @@ class IBPort {
   new_uint64_t guid_get();
   void guid_set(uint64_t guid);
 
-  string getName();
+  new_string getName();
 
   void connect (IBPort *p_otherPort,
                 IBLinkWidth w = DefaultLinkWidth,

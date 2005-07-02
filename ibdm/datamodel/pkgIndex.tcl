@@ -9,7 +9,7 @@ proc ibdmLoad {dir} {
    } else {
       set ibnl_path ""
    }
-
+   puts "Loading IBDM from: $dir"
    load [file join $dir libibdm.so.1.0]
 }
 

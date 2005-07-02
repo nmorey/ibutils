@@ -29,7 +29,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
- * $Id: SysDef.cpp,v 1.6 2005/05/05 13:50:40 eitan Exp $
+ * $Id: SysDef.cpp,v 1.7 2005/07/02 19:05:38 eitan Exp $
  */
 
 /*
@@ -451,6 +451,7 @@ list< string > getDirIbnlFiles(string dir) {
         res.push_back(ep->d_name);
       }
     }
+    closedir(dp);
   }
   else
     cout << "-E- Faill to scan for IBNL files in directory:" << dir << endl;

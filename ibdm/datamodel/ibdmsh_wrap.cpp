@@ -26,7 +26,7 @@
 #define SWIGTCL
 #define SWIGTCL8
 /*
- * $Header: /b2/dmb/SWIG/SWIG1.0b3/swig_lib/tcl/RCS/swigtcl.cfg,v 1.1 1996/05/22 19:47:45 beazley Exp $
+ * $Header: /mswg/cvsroot/IBADM/ibdm/datamodel/ibdmsh_wrap.cpp,v 1.12 2005/07/02 19:09:53 eitan Exp $
  * 
  * swigtcl.cfg
  *
@@ -35,7 +35,12 @@
  * files to work on Unix, Windows, and Macintosh.
  *
  * Revision History
- * $Log: swigtcl.cfg,v $
+ * $Log: ibdmsh_wrap.cpp,v $
+ * Revision 1.12  2005/07/02 19:09:53  eitan
+ * Fix memory leak due to swig allocation of new string on each call to IBPort_getName
+ * A new type was defined : new_string - such that its type map delete the allocated
+ * string explicitly
+ *
  * Revision 1.1  1996/05/22 19:47:45  beazley
  * Initial revision
  *
@@ -103,7 +108,7 @@ DllEntryPoint(HINSTANCE hInst, DWORD reason, LPVOID reserved)
 #endif
 
 /**************************************************************************
- * $Header:$
+ * $Header: /mswg/cvsroot/IBADM/ibdm/datamodel/ibdmsh_wrap.cpp,v 1.12 2005/07/02 19:09:53 eitan Exp $
  *
  * tcl8ptr.swg
  *
@@ -559,6 +564,8 @@ SWIGEXPORT(int,Ibdm_Init)(Tcl_Interp *);
 	 return TCL_OK;
   }
 
+
+#define new_string string
 
 #define new_uint64_t uint64_t
 static int  _wrap_const_IB_UNKNOWN_NODE_TYPE = IB_UNKNOWN_NODE_TYPE;
@@ -4111,7 +4118,7 @@ static int _wrap_IBPort_guid_set(ClientData clientData, Tcl_Interp *interp, int 
 #define IBPort_getName(_swigobj)  (_swigobj->getName())
 static int _wrap_IBPort_getName(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
 
-    string * _result;
+    new_string * _result;
     IBPort * _arg0;
     Tcl_Obj * tcl_result;
 
@@ -4192,7 +4199,7 @@ static int _wrap_IBPort_getName(ClientData clientData, Tcl_Interp *interp, int o
 }
 { 
   ibdm_tcl_error = 0;
-      _result = new string (IBPort_getName(_arg0));
+      _result = new new_string (IBPort_getName(_arg0));
 ; 
   if (ibdm_tcl_error) { 
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
@@ -4203,6 +4210,7 @@ static int _wrap_IBPort_getName(ClientData clientData, Tcl_Interp *interp, int o
 	char ezTmp[1024];
 	strcpy(ezTmp, _result->c_str());
 	Tcl_SetStringObj(tcl_result, ezTmp, strlen(ezTmp));
+   delete _result;
 }
     return TCL_OK;
 }
