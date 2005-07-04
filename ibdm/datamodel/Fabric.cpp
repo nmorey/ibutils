@@ -34,7 +34,7 @@
 
 /*
 IB Fabric Data Model
-This file hodls implementation of the data model classes and methods 
+This file holds implementation of the data model classes and methods
 
 */
 
@@ -119,8 +119,8 @@ IBPort::connect (IBPort *p_otherPort,
     if (p_remotePort != p_otherPort) {
       cout << "-W- Disconnecting: "
            << p_remotePort->getName() << " previously connected to:"
-           << p_remotePort->getName() 
-           << " whil econnecting:" << p_otherPort->getName() << endl;
+           << p_remotePort->getName()
+           << " while connecting:" << p_otherPort->getName() << endl;
       // the other side should be cleaned only if points here
       if (p_remotePort->p_remotePort == this) {
         p_remotePort->p_remotePort = NULL;
@@ -580,7 +580,7 @@ IBSystem::getSysPort(string name) {
 // constructor:
 IBSystem::IBSystem(string n, class IBFabric *p_fab, string t) {
   if (p_fab->getSystem(n)) {
-    cerr << "Can' deal with double allocation of same system!" << endl;
+    cerr << "Can't deal with double allocation of same system!" << endl;
     abort();
   }
   name = n;
@@ -679,7 +679,7 @@ IBSystem::removeBoard (string boardName) {
 
   // Warn if no match:
   if (matchedNodes.empty()) {
-    cout << "-W-(RemoveBoard) Fail to find any node in:"
+    cout << "-W- removeBoard : Fail to find any node in:"
          << sysNodePrefix << " while removing:" << boardName << endl;
     return 1;
   }
@@ -1636,7 +1636,7 @@ IBFabric::parseFdbFile(string fn) {
     //cout << "-W- Ignoring line:" << sLine << endl;
   }
 
-  cout << "-I- Defined " << fdbLines << " fdb entires for:"
+  cout << "-I- Defined " << fdbLines << " fdb entries for:"
        << switches << " switches" << endl;
   f.close();
   return anyErr;
@@ -1715,7 +1715,7 @@ IBFabric::parseMCFdbFile(string fn) {
     //cout << "-W- Ignoring line:" << sLine << endl;
   }
 
-  cout << "-I- Defined " << fdbLines << " Multicast Fdb entires for:"
+  cout << "-I- Defined " << fdbLines << " Multicast Fdb entries for:"
        << switches << " switches" << endl;
   f.close();
   return anyErr;

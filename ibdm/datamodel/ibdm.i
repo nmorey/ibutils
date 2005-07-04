@@ -780,7 +780,7 @@ int FabricUtilsVerboseLevel;
 
   IBDM exposes some of its internal objects. The objects 
   identifiers returned by the various function calls are formatted
-  acording to the following rules:
+  according to the following rules:
   Fabric: fabric:<idx>
   System: system:<fab idx>:<sys name>
   SysPort: sysport:<fab idx>:<sys name>:<port name>

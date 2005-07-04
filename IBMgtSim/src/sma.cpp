@@ -904,7 +904,7 @@ int IBMSSma::setIBPortBaseLid(
   unsigned int        portLidIndex;
   MSG_ENTER_FUNC;
 
-  MSGREG(inf0, 'I', "Seting base_lid for node:$ port:$ to $", "setIBPortBaseLid");
+  MSGREG(inf0, 'I', "Setting base_lid for node:$ port:$ to $", "setIBPortBaseLid");
   pNode = pSimNode->getIBNode();
   pPort = pNode->getPort(portNum);
   if (! pPort) 
@@ -925,7 +925,7 @@ int IBMSSma::setIBPortBaseLid(
   /* make sure the vector of port by lid has enough entries */
   if (pNode->p_fabric->PortByLid.size() <= base_lid)
   {
-    /* we add 20 entires each time */
+    /* we add 20 entries each time */
     pNode->p_fabric->PortByLid.resize(base_lid+20);
     for ( portLidIndex = pNode->p_fabric->PortByLid.size();
           portLidIndex < base_lid + 20;
