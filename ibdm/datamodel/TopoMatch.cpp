@@ -29,7 +29,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
- * $Id: TopoMatch.cpp,v 1.20 2005/06/07 10:55:21 eitan Exp $
+ * $Id: TopoMatch.cpp,v 1.21 2005/07/03 15:28:50 eitan Exp $
  */
 
 /*
@@ -362,10 +362,15 @@ TopoBFSAndMatchFromPorts(
   p_dFabric = p_dPort->p_node->p_fabric;
   p_sFabric = p_sPort->p_node->p_fabric;
   if (p_dFabric->subnCANames) {
+    
+    if (FabricUtilsVerboseLevel & FABU_LOG_VERBOSE)
+      cout << "-V- Matching nodes by name"  << endl;
+    
     // we go through entire discovered fabric trying to find match by name
     for (map_str_pnode::iterator nI = p_dFabric->NodeByName.begin();
          nI != p_dFabric->NodeByName.end();
-         nI++) {
+         nI++) 
+    {
 
       IBNode *p_node1 = (*nI).second;
 
@@ -373,8 +378,12 @@ TopoBFSAndMatchFromPorts(
       map_str_pnode::iterator snI = p_sFabric->NodeByName.find((*nI).first);
 
       // no match
-      if (snI == p_sFabric->NodeByName.end()) continue;
-
+      if (snI == p_sFabric->NodeByName.end()) 
+      {
+        if (FabricUtilsVerboseLevel & FABU_LOG_VERBOSE)
+          cout << "-V- No match for:" << (*nI).first << endl;
+        continue;
+      }
       IBNode *p_node2 = (*snI).second;
 
       // make sure they are not previously match somehome
@@ -394,11 +403,12 @@ TopoBFSAndMatchFromPorts(
         {
           anyMissmatch++;
           if (FabricUtilsVerboseLevel & FABU_LOG_VERBOSE)
-            cout << "-V- Disqualified start nodes match:" << 
-              p_node1->name << endl;
+            cout << "-V- Matched node:" <<  (*nI).first 
+                 << " by name - but some ports are different." << endl;
         }
+
         
-        if (p_dPort->p_remotePort)
+        if (0 && p_dPort->p_remotePort)
         {
           IBNode *p_dRemNode = p_dPort->p_remotePort->p_node;
           IBNode *p_sRemNode = p_sPort->p_remotePort->p_node;
@@ -410,20 +420,17 @@ TopoBFSAndMatchFromPorts(
                    << p_node1->name << " by rem nodes" << endl;
           }
         }
-
-        if (!anyMissmatch)
-        {
-          if (FabricUtilsVerboseLevel & FABU_LOG_VERBOSE)
-            cout << "-V- Start nodes match:" << p_node1->name << endl;        
-          // set the cross pointers and visited flag:
-          TopoMarkNodeAsMatchAlgoVisited(p_node1);
-          
-          TopoMarkMatcedNodes(p_node1, p_node2, numMatchedNodes);
-          // If we do not start from the HCAs we avoid cases where the 
-          // wrong leaf is connected and the leaf is deep enough to hide
-          // it
-          // bfsFifo.push_back(p_node1);
-        }
+        
+        if (FabricUtilsVerboseLevel & FABU_LOG_VERBOSE)
+          cout << "-V- Using name match for nodes:" << p_node1->name << endl;
+        // set the cross pointers and visited flag:
+        TopoMarkNodeAsMatchAlgoVisited(p_node1);
+        
+        TopoMarkMatcedNodes(p_node1, p_node2, numMatchedNodes);
+        // If we do not start from the HCAs we avoid cases where the 
+        // wrong leaf is connected and the leaf is deep enough to hide
+        // it
+        // bfsFifo.push_back(p_node1);
       }
     }
   }

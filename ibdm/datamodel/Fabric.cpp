@@ -29,7 +29,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
- * $Id: Fabric.cpp,v 1.15 2005/07/02 19:08:21 eitan Exp $
+ * $Id: Fabric.cpp,v 1.17 2005/07/04 07:16:21 eitan Exp $
  */
 
 /*
@@ -1424,7 +1424,7 @@ IBFabric::parseSubnetLine(char *line) {
     // the first word in the description please.
     pch = strtok(NULL, " ");
     // but now we must find an "HCA-" ...
-    if (!strncmp("HCA-", pch + strlen(pch) + 2, 4)) {
+    if (!strncmp("HCA-", pch + strlen(pch) + 1, 4)) {
       desc1 = string(pch+1);
     }
   }
@@ -1484,7 +1484,7 @@ IBFabric::parseSubnetLine(char *line) {
     // the first word in the description please.
     pch = strtok(NULL, " ");
     // but now we must find an "HCA-" ...
-    if (!strncmp("HCA-", pch + strlen(pch) + 2, 4))
+    if (!strncmp("HCA-", pch + strlen(pch) + 1, 4))
       desc2 = string(pch+1);
   }
   // on some reare cases there is no space in desc:

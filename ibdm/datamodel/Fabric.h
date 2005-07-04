@@ -29,7 +29,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
- * $Id: Fabric.h,v 1.10 2005/06/01 20:13:37 eitan Exp $
+ * $Id: Fabric.h,v 1.11 2005/07/03 18:52:05 eitan Exp $
  */
 
 /*
@@ -84,24 +84,24 @@ struct strless : public binary_function <string, string, bool> {
   }
 };
 
-typedef vector<int, allocator<int> > vec_int;
-typedef vector<vec_int, allocator<vec_int> > vec_vec_int;
-typedef vector<uint8_t, allocator<uint8_t> > vec_byte;
-typedef vector<uint32_t, allocator<uint32_t> > vec_word;
-typedef vector<vec_byte, allocator<vec_byte> > vec_vec_byte;
+typedef vector<int > vec_int;
+typedef vector<vec_int > vec_vec_int;
+typedef vector<uint8_t > vec_byte;
+typedef vector<uint32_t > vec_word;
+typedef vector<vec_byte > vec_vec_byte;
 
-typedef vector<class IBPort *, allocator<class IBPort *> > vec_pport;
-typedef map< string, class IBSysPort *, strless, allocator<class IBSysPort *> > map_str_psysport;
-typedef map< string, class IBNode *, strless, allocator<class IBNode *> > map_str_pnode;
-typedef map< string, class IBSystem *, strless, allocator<class IBSystem *> > map_str_psys;
-typedef map< uint64_t, class IBPort *, less<uint64_t>, allocator<class IBPort*> > map_guid_pport;
-typedef map< uint64_t, class IBNode *, less<uint64_t>, allocator<class IBNode*> > map_guid_pnode;
-typedef map< uint64_t, class IBSystem *, less<uint64_t>, allocator<class IBSystem*> > map_guid_psys;
-typedef list<class IBNode *, allocator<class IBNode *> > list_pnode;
-typedef list<class IBSystem *, allocator<class IBSystem *> > list_psystem;
-typedef list<int, allocator< int> > list_int;
-typedef list<char *, allocator< char *> > list_charp;
-typedef list<string , allocator< string > > list_str;
+typedef vector<class IBPort * > vec_pport;
+typedef map< string, class IBSysPort *, strless > map_str_psysport;
+typedef map< string, class IBNode *, strless > map_str_pnode;
+typedef map< string, class IBSystem *, strless > map_str_psys;
+typedef map< uint64_t, class IBPort *, less<uint64_t> > map_guid_pport;
+typedef map< uint64_t, class IBNode *, less<uint64_t> > map_guid_pnode;
+typedef map< uint64_t, class IBSystem *, less<uint64_t> > map_guid_psys;
+typedef list<class IBNode * > list_pnode;
+typedef list<class IBSystem * > list_psystem;
+typedef list<int > list_int;
+typedef list<char * > list_charp;
+typedef list<string > list_str;
 typedef map< IBNode *, int, less< IBNode *> > map_pnode_int;
 typedef map< IBNode *, vec_int, less< IBNode *> > map_pnode_vec_int;
 typedef map< IBSystem *, int, less< IBSystem *> > map_psystem_int;

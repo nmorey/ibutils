@@ -29,7 +29,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
- * $Id: SysDef.h,v 1.4 2005/02/23 21:08:37 eitan Exp $
+ * $Id: SysDef.h,v 1.5 2005/07/03 18:52:05 eitan Exp $
  */
 
 /*
@@ -45,11 +45,11 @@
 
 #include "Fabric.h"
 
-typedef map< string, string, strless, allocator<string> > map_str_str;
-typedef map< string, class IBSysInstPort *, strless, allocator<class IBSysInstPort *> > map_str_pinstport;
-typedef map< string, class IBSysInst *, strless, allocator<class IBSysInst *> > map_str_psysinsts;
-typedef map< string, class IBSysPortDef *, strless, allocator<class IBSysPortDef *> > map_str_psysportdef;
-typedef map< string, class IBSysDef *, strless, allocator<class IBSysDef *> > map_str_psysdef;
+typedef map< string, string, strless > map_str_str;
+typedef map< string, class IBSysInstPort *, strless > map_str_pinstport;
+typedef map< string, class IBSysInst *, strless > map_str_psysinsts;
+typedef map< string, class IBSysPortDef *, strless > map_str_psysportdef;
+typedef map< string, class IBSysDef *, strless > map_str_psysdef;
 typedef list< string > list_str;
 
 // Ports are only connected to other SysInst at the same level.
