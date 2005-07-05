@@ -278,7 +278,7 @@ int main (int argc, char **argv) {
        }
        cout << "-----------------------------------------" << endl;
        
-       // rank teh fabric by these roots
+       // rank the fabric by these roots
        map_pnode_int nodesRank;
        SubnRankFabricNodesByRootNodes(&fabric, rootNodes, nodesRank);
 

@@ -370,7 +370,7 @@ SWIGEXPORT(int,Ibdm_Init)(Tcl_Interp *);
 
   /*
 	 we provide our own constructor such that all IBFabrics are
-	 registered in teh global vector;
+	 registered in the global vector;
   */
   IBFabric *new_IBFabric(void) {
 	 IBFabric *p_fabric = new IBFabric();
@@ -391,7 +391,7 @@ SWIGEXPORT(int,Ibdm_Init)(Tcl_Interp *);
   }
 
   /*
-	 we provide our own destructor such that teh deleted fabric is 
+	 we provide our own destructor such that the deleted fabric is 
     de-registered from the global fabrics vector
   */
   void delete_IBFabric(IBFabric *p_fabric) {

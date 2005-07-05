@@ -66,7 +66,7 @@ proc Help {} {
 
   The test flow starts the simulator and runs the the given test flow
   on top of it. Then it runs the test flow. The default test flow starts
-  OpenSM and wait for Subnet-Up event. User given flow can make use fo the 
+  OpenSM and wait for Subnet-Up event. User given flow can make use of the 
   provided facilities for starting OpenSM and tracking it events.
 
   Command Line Arguments (required):
@@ -112,12 +112,12 @@ proc Help {} {
 # OpenSM log file analyzer 
 # 
 # Continuously monitor the OpenSM log file and generate a log of all the 
-# events reported in teh log file.
+# events reported in the log file.
 # 
 # On any event - it scans through the list of callbacks to be invoked 
 # and calls them acordingly. The list of callabcks is in osmLogCallbacks(logFile)
 #
-# The log fo all events is accoumulated in the global list:
+# The log of all events is accumulated in the global list:
 # osmEventLog(logFile)
 # 
 # The format of the event log list entry is:
@@ -251,7 +251,7 @@ proc osmTrackProcess {osmPId logFile} {
 # 
 # Start up the test applications
 # This is the default flow that will start OpenSM only in 0x43 verbosity
-# Return a list of process ids it started (to eb killed on exit)
+# Return a list of process ids it started (to be killed on exit)
 #
 proc runner {simDir osmPath osmPortGuid} { 
    set osmStdOutLog [file join $simDir osm.stdout.log]
@@ -416,7 +416,7 @@ proc getSMNodeInfo {simDir nodeName} {
 
 ##############################################################################
 # 
-# Get a TS port guid string of teh format 0000:ffff:1111:2222
+# Get a TS port guid string of the format 0000:ffff:1111:2222
 #
 proc getPortGuidStr {guid} {
    set guidRex \

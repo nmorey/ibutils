@@ -36,7 +36,7 @@
 
   Subnet Utilities:
   
-  The file holds a set of utilities to be run on teh subnet to mimic OpenSM 
+  The file holds a set of utilities to be run on the subnet to mimic OpenSM 
   initialization and analyze the results:
   
   Assign Lids: SubnMgtAssignLids
@@ -190,7 +190,7 @@ SubnMgtCalcMinHopTables (IBFabric *p_fabric) {
       p_node->setHops(NULL,lid,0);
     } else {
       // a non switch node might have connections on both ports
-      // and also we just want to update the switch on teh other side 
+      // and also we just want to update the switch on the other side 
       int conPorts = 0;
       for (unsigned int i = 0; i< p_node->numPorts; i++) {
         IBPort *p_port = p_node->Ports[i];
@@ -917,7 +917,7 @@ SubnMgtVerifyAllCaToCaRoutes(IBFabric *p_fabric) {
                << endl;
           anyError++;
         } else {
-          // track teh hops histogram
+          // track the hops histogram
           maxHopsHist[hops]++;
           if (hops > maxHops) maxHops = hops;
 
@@ -949,7 +949,7 @@ SubnMgtVerifyAllCaToCaRoutes(IBFabric *p_fabric) {
           if (l != 0) {
             static int commonSystems, commonNodes;
 
-            // we only care about paths longer then 2 hops since teh two switches
+            // we only care about paths longer then 2 hops since the two switches
             //  must be identical
             if (path1.size()) {
               SubnFindPathCommonality(&path1, &path2, &commonSystems, &commonNodes);
@@ -1005,7 +1005,7 @@ SubnMgtVerifyAllCaToCaRoutes(IBFabric *p_fabric) {
 
   cout << "---------------------- CA to CA : LFT ROUTE HOP HISTOGRAM -----------------" << endl;
   cout << "The number of CA pairs that are in each number of hops distance." << endl;
-  cout << "This data is based on the result fo the routing algorithm.\n" << endl;
+  cout << "This data is based on the result of the routing algorithm.\n" << endl;
   cout << "HOPS NUM-CA-CA-PAIRS" << endl;
   for (int b = 0; b <= (int)maxHops ; b++) 
     if (maxHopsHist[b]) 
@@ -1248,7 +1248,7 @@ SubnMgtFindTreeRootNodes(IBFabric *p_fabric) {
   return rootNodes;
 }
 
-// This routine is based on teh min hop tables and 
+// This routine is based on the min hop tables and 
 // the fact the statistics of the min hops changes for the
 // root nodes:
 
@@ -1261,7 +1261,7 @@ SubnMgtFindRootNodesByMinHop(IBFabric *p_fabric) {
   int minHop;
   int numCas = 0;
 
-  // go over all switch nodes and print teh statistics:
+  // go over all switch nodes and print the statistics:
   cout << "-I- Automatically recognizing the tree root nodes ..." 
        <<  endl;
   

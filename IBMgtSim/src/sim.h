@@ -80,7 +80,7 @@ class IBMgtSim {
   /* Initialize the fabric server and dispatcher */
   int init(string topoFileName, int serverPortNum, int numWorkers);
 
-  /* get the directory naem where teh simulator randesvous exists */
+  /* get the directory naem where the simulator randesvous exists */
   char *getSimulatorDir();
 
 };

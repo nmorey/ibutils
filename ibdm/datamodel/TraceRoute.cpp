@@ -70,7 +70,7 @@ int TraceDRPathRoute (IBPort *p_smNodePort, list_int drPathPortNums) {
 
   // we are at the port of the SM node so we are at hop 1.
   hop = 1;
-  pI++; // points to next hop in teh list
+  pI++; // points to next hop in the list
 
   // we traverse to null port or max number of hops reached.
   while (p_port && (hop < drPathPortNums.size())) {

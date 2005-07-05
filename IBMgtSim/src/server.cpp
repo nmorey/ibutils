@@ -475,7 +475,7 @@ IBMSClientMsgProcessor::processMad(
 
   IBNode *pNode = pClient->getSimNode()->getIBNode();
   
-  /* ignore mads arriving on teh other port */
+  /* ignore mads arriving on the other port */
   if ((inPort != 0) && (pClient->getIbPortNum() != inPort)) 
   {
     MSGSND(inf2, cl_ntoh64(fwdMsg.msg.mad.header.trans_id), 

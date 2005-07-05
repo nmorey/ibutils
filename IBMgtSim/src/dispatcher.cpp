@@ -199,7 +199,7 @@ IBMSDispatcher::timerCallback(void *context)
   /* obtain a lock on the Q */
   cl_spinlock_acquire(&pDisp->lock);
   
-  /* search for the next wakeup time on teh list */
+  /* search for the next wakeup time on the list */
   uint32_t nextWakeUp_msec = 0;
   map_uint64_mad::iterator mI = pDisp->madQueueByWakeup.begin();
   while ((mI != pDisp->madQueueByWakeup.end()) && !nextWakeUp_msec)

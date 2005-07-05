@@ -127,7 +127,7 @@ class IBMSNode {
   /* Holds the lists of mad proccessors per mgt class */
   vec_mad_proc_list madProccessors;
 
-  /* back pointer to teh simulator main object */
+  /* back pointer to the simulator main object */
   class IBMgtSim *pSim;
   
   /* the fabric node we attach to. */
@@ -225,7 +225,7 @@ class IBMSNode {
     
     Updated both output pointers:
     remNode - to the Sim Node of the other side 
-    remIBPort - to the remote side IB Fabric Port object on teh other side.
+    remIBPort - to the remote side IB Fabric Port object on the other side.
   */
   int IBMSNode::getRemoteNodeByOutPort(
     uint8_t outPortNum,

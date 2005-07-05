@@ -39,7 +39,7 @@ TopoMatchFabrics(
   IBFabric *p_sFabric,      // The specification fabric
   IBFabric *p_dFabric,      // The discovered fabric
   char     *anchorNodeName, // The name of the node to be the anchor point
-  int       anchorPortNum,  // The port number fo the anchor port
+  int       anchorPortNum,  // The port number of the anchor port
   uint64_t  anchorPortGuid, // Guid of the anchor port
   char **messages);
 

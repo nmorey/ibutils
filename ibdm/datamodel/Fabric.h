@@ -493,7 +493,7 @@ class IBFabric {
 	 return (PortByLid[lid]);
   };
 
-  // dump out the contents of teh entire fabric
+  // dump out the contents of the entire fabric
   void dump(ostream &sout);
 
  private:

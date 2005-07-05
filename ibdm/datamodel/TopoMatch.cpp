@@ -349,14 +349,14 @@ TopoBFSAndMatchFromPorts(
 
   // BFS through the matching ports only.
   // we keep track of the the discovered nodes only as it needs to be matched
-  // already to get into this list and thus we have a pointer to teh spec node.
+  // already to get into this list and thus we have a pointer to the spec node.
   // To mark visited nodes we use the appData2.val
   list < IBNode * > bfsFifo;
 
   bfsFifo.push_back(p_dPort->p_remotePort->p_node);
   TopoMarkNodeAsMatchAlgoVisited(p_dPort->p_remotePort->p_node);
 
-  // On discovered fabrics where teh CA nodes are marked by name we 
+  // On discovered fabrics where the CA nodes are marked by name we 
   // can start traversing from these nodes also - of they match any
   // spec system by name.
   p_dFabric = p_dPort->p_node->p_fabric;
@@ -374,7 +374,7 @@ TopoBFSAndMatchFromPorts(
 
       IBNode *p_node1 = (*nI).second;
 
-      // so we try to find a node by teh same name on the spec fabric.
+      // so we try to find a node by the same name on the spec fabric.
       map_str_pnode::iterator snI = p_sFabric->NodeByName.find((*nI).first);
 
       // no match
@@ -390,7 +390,7 @@ TopoBFSAndMatchFromPorts(
       if (p_node1->appData1.ptr || p_node2->appData1.ptr) continue;
 
 
-      // do not rush into matching - double check all teh nodes ports ... 
+      // do not rush into matching - double check all the nodes ports ... 
       int anyMissmatch = 0;
       if (p_node1->numPorts != p_node2->numPorts) continue;
       for (unsigned int pn = 1; !anyMissmatch && (pn <= p_node1->numPorts);
@@ -540,7 +540,7 @@ TopoMatchNodeByAdjacentMatched(
   // discovered node
   map_pnode_int dNodeNumMatches;
 
-  // we track the total number fo connected ports of the spec node
+  // we track the total number of connected ports of the spec node
   int numConnPorts = 0;
   
   // Go over all the node ports:
@@ -1150,7 +1150,7 @@ TopoReportMissmatches(
     
     int anyPortMatch = 0;
     // Try to match all ports of the current nodes
-    // we assume port counts match since teh nodes match
+    // we assume port counts match since the nodes match
     for (unsigned int pn = 1; pn <= p_dNode->numPorts; pn++) {
 
       IBPort *p_tmpPort = p_dNode->getPort(pn);
@@ -1216,7 +1216,7 @@ TopoMatchFabrics(
   IBFabric *p_sFabric,      // The specification fabric
   IBFabric *p_dFabric,      // The discovered fabric
   char     *anchorNodeName, // The name of the system to be the anchor point
-  int       anchorPortNum,  // The port number fo the anchor port
+  int       anchorPortNum,  // The port number of the anchor port
   uint64_t  anchorPortGuid, // Guid of the anchor port
   char **messages)
 {

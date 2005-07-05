@@ -198,7 +198,7 @@ class IBSystemsCollection {
     makeSysNodes(
       IBFabric *p_fabric,        // the fabric we belong to
       IBSystem *p_system,        // the system we build
-      IBSysDef *p_parSysDef,     // the sysdef of teh parent 
+      IBSysDef *p_parSysDef,     // the sysdef of the parent 
       string    parHierName,     // the hier name of the parent "" for top
       map_str_str &mods          // hier name based modifiers list
       );
@@ -233,7 +233,7 @@ class IBSystemsCollection {
       );
 
   // find the lowest point connection of this port and make it if a node port
-  // assumes teh nodes were already created for the
+  // assumes the nodes were already created for the
   IBPort *
     makeNodePortBySysPortDef(
       IBSystem      *p_system,    // the system we build the node port in

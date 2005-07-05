@@ -1574,7 +1574,7 @@ IBFabric::parseSubnetLinks (string fn) {
 
 //////////////////////////////////////////////////////////////////////////////
 
-// Parse an OpenSM FDBs file and set teh LFT table accordingly
+// Parse an OpenSM FDBs file and set the LFT table accordingly
 int
 IBFabric::parseFdbFile(string fn) {
   ifstream f(fn.c_str());

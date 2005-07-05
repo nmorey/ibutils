@@ -300,7 +300,7 @@ typedef struct _ibms_cap_msg
 *   each bit might be set or cleared to mark a capability exists or not.
 * 
 * mask
-*   each bit might be 1 or 0 to mark teh scope of the operation
+*   each bit might be 1 or 0 to mark the scope of the operation
 *
 * SEE ALSO
 *********/

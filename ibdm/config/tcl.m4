@@ -127,7 +127,7 @@ if test "x$with_tcl" != xno; then
     fi
 
     dnl We hack the provided TCL_LIB_SPEC since it is using the /usr/lib even
-    dnl if teh build was using lib64 
+    dnl if the build was using lib64 
     if test -d /usr/lib64 ; then
        TCL_LIB_SPEC=`echo ${TCL_LIB_SPEC} | sed 's=/usr/lib =/usr/lib64 =g'`
     fi

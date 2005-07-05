@@ -39,7 +39,7 @@
 
   Subnet Utilities:
   
-  The file holds a set of utilities to be run on teh subnet to mimic OpenSM 
+  The file holds a set of utilities to be run on the subnet to mimic OpenSM 
   initialization and analyze the results:
   
   Assign Lids: SubnMgtAssignLids
@@ -94,7 +94,7 @@ list_pnode
 SubnMgtFindTreeRootNodes(IBFabric *p_fabric);
 
 // Analyze the fabric to find its root nodes using statistical methods 
-// on teh profiles of min hops to CAs
+// on the profiles of min hops to CAs
 list_pnode
 SubnMgtFindRootNodesByMinHop(IBFabric *p_fabric);
 

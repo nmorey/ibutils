@@ -469,7 +469,7 @@ CrdLoopTraceLoop(IBFabric *p_fabric,
                            doNotPrintPath);
 		  
 		  // we might have encountered a scroll (return value < 0)
-		  // so we sould ignore it in teh global count.
+		  // so we sould ignore it in the global count.
 		  if (foundPaths > 0) numPaths += foundPaths;
 
 		  // if found a loop or a scroll downwards mark the local port pair.

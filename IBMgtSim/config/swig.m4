@@ -6,7 +6,7 @@ dnl    MLX_PROG_SWIG(maj.min.patch, eq|lt)
 dnl The second parameter defines the required relation of the found version 
 dnl to the requested version:
 dnl lt - the found version required to be newer or equal to the maj.min.patch
-dnl eq - the found version required to eb equal to the maj.min.patch
+dnl eq - the found version required to be equal to the maj.min.patch
 dnl
 dnl Result:
 dnl    HAS_SWIG conditional - set to 1 if swig was found or 0 if not

@@ -87,7 +87,7 @@ class IBMSDispatcher {
   /* route the mad to the destination by direct route */ 
   int routeMadToDestByDR(madItem &item);
 
-  /* route the mad to teh destination by dest lid */ 
+  /* route the mad to the destination by dest lid */ 
   int routeMadToDestByLid(madItem &item);
 
   /* route a mad to the destination node. On the way can drop mads by 

@@ -345,7 +345,7 @@ SWIGEXPORT(int,Ibdm_Init)(Tcl_Interp *);
 
   /*
 	 we provide our own constructor such that all IBFabrics are
-	 registered in teh global vector;
+	 registered in the global vector;
   */
   IBFabric *new_IBFabric() {
 	 IBFabric *p_fabric = new IBFabric();

@@ -22,7 +22,7 @@ TODO: Randomize missmatches ...
 
 ###########################################################################
 
-# return the string representing the given port in teh subnet.lst
+# return the string representing the given port in the subnet.lst
 proc getPortStr {port} {
    global IB_SW_NODE
    set portFormat "{ CA%s Ports:%02x SystemGUID:%s NodeGUID:%s PortGUID:%s VenID:000002C9 DevID:%s Rev:000000A1 {%s} LID:%04x PN:%02x }"
@@ -50,7 +50,7 @@ proc getPortStr {port} {
              ]
 }
 
-# return the string of teh link in subnet.lst format
+# return the string of the link in subnet.lst format
 proc getLinkStr {port1 port2} {
    set linkFormat "%s %s PHY=%s LOG=%s SPD=%s"
    set p1 [getPortStr $port1]

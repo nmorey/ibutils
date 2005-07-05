@@ -110,7 +110,7 @@
 
   /*
 	 we provide our own constructor such that all IBFabrics are
-	 registered in teh global vector;
+	 registered in the global vector;
   */
   IBFabric *new_IBFabric(void) {
 	 IBFabric *p_fabric = new IBFabric();
@@ -131,7 +131,7 @@
   }
 
   /*
-	 we provide our own destructor such that teh deleted fabric is 
+	 we provide our own destructor such that the deleted fabric is 
     de-registered from the global fabrics vector
   */
   void delete_IBFabric(IBFabric *p_fabric) {
@@ -1074,7 +1074,7 @@ They all return 0 on succes.
 
   Subnet Utilities:
   
-  The file holds a set of utilities to be run on teh subnet to mimic OpenSM 
+  The file holds a set of utilities to be run on the subnet to mimic OpenSM 
   initialization and analyze the results:
   
   Assign Lids: SubnMgtAssignLids
@@ -1148,7 +1148,7 @@ int TopoMatchFabrics(
   IBFabric *p_spec_fabric,       // The specification fabric
   IBFabric *p_discovered_fabric, // The discovered fabric
   char     *anchorNodeName,      // The system to be the anchor point
-  int       anchorPortNum,       // The port number fo the anchor port
+  int       anchorPortNum,       // The port number of the anchor port
   uint64_t  anchorPortGuid,      // Discovered Guid of the anchor port
   char **p_report_str            // Diagnostic output.
   );

@@ -255,7 +255,7 @@ pkginclude_HEADERS = Fabric.h \
 
 # ibdm shared library version triplet is:
 # API_ID:API_VER:NUM_PREV_API_SUP = x:y:z
-# * change fo API_ID means new API
+# * change of API_ID means new API
 # * change of AGE means how many API backward compt 
 # * change of API_VER is required every version
 # Results with SO version: x-z:z:y

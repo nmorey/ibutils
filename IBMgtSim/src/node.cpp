@@ -309,7 +309,7 @@ int IBMSNode::getCrSpace(uint32_t addr, uint32_t &data)
   
   Updated both output pointers:
   remNode - to the Sim Node of the other side 
-  remIBPort - to the remote side IB Fabric Port object on teh other side.
+  remIBPort - to the remote side IB Fabric Port object on the other side.
   isVl15 - if > 0 - requires the port state to be init otherwise active
 */
 int

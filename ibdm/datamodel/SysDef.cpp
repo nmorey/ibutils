@@ -52,7 +52,7 @@ int
 IBSystemsCollection::makeSysNodes(
   IBFabric *p_fabric,        // the fabric we belong to
   IBSystem *p_system,        // the system we build
-  IBSysDef *p_parSysDef,     // the sysdef of teh parent 
+  IBSysDef *p_parSysDef,     // the sysdef of the parent 
   string    parHierName,     // the hier name of the parent "" for top
   map_str_str &mods          // hier name based modifiers list
   )
@@ -170,7 +170,7 @@ IBSystemsCollection::makeNodePortByInstAndPortName(
 }
 
 // find the lowest point connection of this port and make it if a node port
-// assumes teh nodes were already created for the
+// assumes the nodes were already created for the
 IBPort *
 IBSystemsCollection::makeNodePortBySysPortDef(
   IBSystem      *p_system,    // the system we build the node port in
@@ -469,7 +469,7 @@ IBSystemsCollection::parseIBSysdef(string fileName) {
   return ibnlParseSysDefs(this, fileName.c_str());
 }
 
-// Read all IBNL files available from teh given path list.
+// Read all IBNL files available from the given path list.
 int
 IBSystemsCollection::parseSysDefsFromDirs(list< string > dirs) 
 {
