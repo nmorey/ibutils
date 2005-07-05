@@ -67,9 +67,9 @@ endif
 # We have a special mode where we know the package will be eventually moved
 # to $with_final_prefix
 if USE_FINAL_PREFIX
-IBNL_PATH=-DIBDM_IBNL_DIR='"$(with_final_prefix)/lib/ibadm"' 
+IBNL_PATH=-DIBDM_IBNL_DIR='"$(with_final_prefix)/lib"' 
 else
-IBNL_PATH=-DIBDM_IBNL_DIR='"$(libdir)/ibadm"'
+IBNL_PATH=-DIBDM_IBNL_DIR='"$(libdir)"'
 endif
 
 AM_CXXFLAGS = $(DBG) $(IBNL_PATH) $(TCL_CPPFLAGS)
@@ -131,6 +131,6 @@ EXTRA_DIST = swig_alternate_mangling.cpp fixSwigWrapper pkgIndex.tcl
 
 # this actually over write the lib install
 install-exec-am: install-binPROGRAMS 
-	mkdir -p $(libdir)/ibadm/ibdm$(VERSION)
-	cp .libs/libibdm.so.$(LIB_FILE_TRIPLET) $(libdir)/ibadm/ibdm$(VERSION)/libibdm.so.$(VERSION)
-	cp $(srcdir)/pkgIndex.tcl $(libdir)/ibadm/ibdm$(VERSION)/pkgIndex.tcl
+	mkdir -p $(libdir)/ibdm$(VERSION)
+	cp .libs/libibdm.so.$(LIB_FILE_TRIPLET) $(libdir)/ibdm$(VERSION)/libibdm.so.$(VERSION)
+	cp $(srcdir)/pkgIndex.tcl $(libdir)/ibdm$(VERSION)/pkgIndex.tcl

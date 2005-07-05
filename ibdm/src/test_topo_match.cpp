@@ -65,7 +65,7 @@ show_help() {
        << "Description:\n"
        << "\n"
        << "Arguments:\n"
-       << "  -t|--topology <file> = Topology file [ibadm.topo].\n"
+       << "  -t|--topology <file> = Topology file [ibdm.topo].\n"
        << "   The format is defined in the IBADM user manual.\n"
        << "  -d|--discovered <file> = [subnet.lst] file produced by OpenSM.\n"
        << "  -s|--start-system <name> = The name of the start system [H-1].\n"
@@ -87,7 +87,7 @@ int main (int argc, char **argv) {
    */
 
   char * startSystemName = "H-1";
-  char * topoFileName = "ibadm.topo";
+  char * topoFileName = "ibdm.topo";
   char * subnetFileName = "subnet.lst";
   int startPortNum = 1;
   uint64_t startPortGuid = 0;
