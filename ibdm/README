@@ -72,7 +72,6 @@ Description:
 
 Arguments:
   -t|--topology <file> = Topology file.
-   The format is defined in the IBADM user manual.
   -c|--cables <file> = Cabling list file. Following the line format:
    <Sys1Type> <Sys1Name> <Port1Name> <Sys2Type> <Sys2Name> <Port2Name>
   -s|--sm-node <name> = The name of the SM node (not system). E.g. OSM/U1.
@@ -94,7 +93,6 @@ Description:
 
 Arguments:
   -t|--topology <file> = Topology file [ibadm.topo].
-   The format is defined in the IBADM user manual.
   -d|--discovered <file> = [subnet.lst] file produced by OpenSM.
   -s|--start-system <name> = The name of the start system [H-1].
   -p|--port-num <num> = The number of the start port [1].
