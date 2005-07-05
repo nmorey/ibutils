@@ -66,7 +66,7 @@ show_help() {
        << "\n"
        << "Arguments:\n"
        << "  -t|--topology <file> = Topology file [ibdm.topo].\n"
-       << "   The format is defined in the IBADM user manual.\n"
+       << "   The format is defined in the IBDM user manual.\n"
        << "  -d|--discovered <file> = [subnet.lst] file produced by OpenSM.\n"
        << "  -s|--start-system <name> = The name of the start system [H-1].\n"
        << "  -p|--port-num <num> = The number of the start port [1].\n"

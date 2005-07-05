@@ -62,7 +62,7 @@ show_help() {
        << "\n"
        << "Arguments:\n"
        << "  -t|--topology <file> = Topology file.\n"
-       << "   The format is defined in the IBADM user manual.\n"
+       << "   The format is defined in the IBDM user manual.\n"
        << "  -c|--cables <file> = Cabling list file. Following the line format:\n"
        << "   <Sys1Type> <Sys1Name> <Port1Name> <Sys2Type> <Sys2Name> <Port2Name>\n"
        << "  -s|--sm-node <name> = The name of the SM node (not system). E.g. OSM/U1.\n"

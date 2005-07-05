@@ -50,7 +50,7 @@ show_usage() {
 void 
 show_help() {
   cout 
-    << " IBADM Topology - Checker\n"
+    << " IBDM Topology - Checker\n"
     << "--------------------------\n"
     << "\n"
     << "Usage: \n"
