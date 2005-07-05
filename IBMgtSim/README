@@ -11,7 +11,7 @@ HOWTO BUILD
    Optionally you can add:
    --enable-debug --enable-maintainer-mode 
 
-   If there there is no IBADM installed on the machine you will need to provide:
+   If there there is no IBDM installed on the machine you will need to provide:
    --with-ibdm=<where ever you did install it>
 
    NOTE: the pointer to the osm install path can be to any osm (not just the one 
@@ -52,6 +52,3 @@ HOWTO BUILD
 
    Invoke OpenSM ...
 
-8. to run IBADM on top of the simulator (no obbs yet)
-   Need to make a link for the libosmv_sim.so  named libosmv_ts.so and
-   put the directory this link is in - in the LD_LIBRARY_PATH .
