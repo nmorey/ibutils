@@ -4,32 +4,104 @@
 This package provides a set of utilities that is based on a common 
 data model to hold a complete fabric at both the system and node levels.
 
-fabric_sim:
+ibdmchk:
 -----------
-Provide means to define a fabric from a cabling scheme file holding
-both cables definition and systems types. Then it runs OpenSM like
-algorithm for LID assignment, MinHOP  tables generation and finally 
-routing. Some statistics are provided. The fabric is checked for 
-credit loops that might cause dead locks.
+ ibdmchk has two operation modes: cluster design and verification.
 
-E.g.: 
-fabric_sim -v Clusters/FullCbbTwoSpines.cables H1/U1000 1
+  CLUSTER DESIGN:
+  Usage:
+   ibdmchk [-v][-h][-u][-a <roots file>] -t <topology file> -n <SM Node> -p <SM Port> [-e] [-l <lmc>]
 
-fabric_tr: 
+  Description:
+   The Design mode is intended to be used before the cluster is built. It provides 
+   basic checks of the specified network as described by a topology file.
+   After simulating the SM LID assignment and routing algorithms it provides reports
+   of the CA to CA paths depth histogram and credit deadlock potential 
+   in the resulting routing scheme.
+
+  Arguments (required):
+  -t|--topo <topo file> = the topology file specifying the fabric.
+  -n|--node <SM Node> = the name of the Subnet Manager node (syntax: <Topo-File-System>/U1)
+  -p|--port <SM Port> = the port number by which the SM nodes is attached to the fabric.
+
+  Options:
+  -v|--verbose = verbsoe mode
+  -h|--help = provide this help message
+  -l|--lmc <lmc> = LMC value > 0 means assigning 2^lmc lids to each port.
+  -e|--enh = use enhanced routing algorithm when LMC > 0 and report the resulting paths
+       correlation (using same system/node) histogram
+  -u|--updn = use up/down routing algorithm instead of OpenSM min-hop.
+  -r|--roots <roots file> = a file with all the roots node names (one on each line).
+
+  CLUSTER VERIFICATION:
+  Usage:
+   ibdmchk [-v][-h][-r <roots file>] [-s <subnet file>] [-f <fdb file>] [-l <lmc>]
+
+  Description:
+   After the cluster is built and OpenSM is run (using flag -D 0x43) it reports the
+   subnet and FDB tables into the files /tmp/subnet.lst and /tmp/osm.fdbs.
+   Based on these files the utility checks all CA to CA connectivity. Further analysis
+   for credit deadlock potential is performed and reported. 
+   In case of an LMC > 0 it reports histograms for how many systems and nodes
+   are common between the different paths for the same port pairs.
+  Arguments (required):
+  -l|--lmc <lmc> = The LMC value used while running OpenSM. Mandatory if not the default 0.
+
+  Options:
+  -v|--verbose = verbsoe mode
+  -h|--help = provide this help message
+  -s|--subnet <file> = OpenSM subnet.lst file (default is /tmp/subnet.lst)
+  -f|--fdb <file> = OpenSM dump of Ucast LFDB. Use -D 0x41 to generate it.
+     (default is /tmp/osm.fdbs).
+  -m|--mcfdb <file> = OpenSM dump of Multicast LFDB. Use -D 0x41 to generate it.
+     (default is /tmp/osm.mcfdbs).
+  -r|--roots <roots file> = a file holding all root nodes guids (one per line).
+
+
+ibdmtr: 
 -----------
 Traces a direct route through the fabric while printing the path
 information at both node and system levels.
+Usage: ibdmtr [-v][-h] {-c <cbaling file>|-t <topo file>} -s <sm node name>  -p <sm port num> -d <comma-sep-dr-path>
 
-E.g.: 
-fabric_tr Clusters/VaTech.cables OSM/U1000 1 0,1,5,5,2,3,4,5,5,1,3,3,5,5,6,4,1
+Description:
+  This utility parses a cabling list or topology file
+ describing the systems connections that make a fabric.
+ Then it start following the direct route provided and
+ print out the systems and nodes on the route.
+
+Arguments:
+  -t|--topology <file> = Topology file.
+   The format is defined in the IBADM user manual.
+  -c|--cables <file> = Cabling list file. Following the line format:
+   <Sys1Type> <Sys1Name> <Port1Name> <Sys2Type> <Sys2Name> <Port2Name>
+  -s|--sm-node <name> = The name of the SM node (not system). E.g. OSM/U1.
+  -p|--port-num <num> = The number of the port SM is connected to.
+  -d|--dr-path <comm-sep-dr-path> = a list of ports to go out through
+
+Options:
+  -v|--verbose = verbsoe mode
+  -h|--help = provide this help message
 
 
-osm_check:
------------
-Checks some OpenSM routing attributes.
-Given OpenSM fdb file (default /tmp/osm.fdbs) and subnet links file 
-(/tmp/subnt.lst) - trace routes from every CA to every othr CA.
-Also analyze the fabric routing for credit loops.
+topotest
+--------
+Tests a topology file matching vs subnet.lst. 
 
-E.g.: 
-osm_check -s Clusters/subnet.lst -f Clusters/osm.fdbs
+Usage: topotest [-v][-h] -t <topo file> -d <subnet file> -s <start system name> -p <start port num> -g <start port guid>
+
+Description:
+
+Arguments:
+  -t|--topology <file> = Topology file [ibadm.topo].
+   The format is defined in the IBADM user manual.
+  -d|--discovered <file> = [subnet.lst] file produced by OpenSM.
+  -s|--start-system <name> = The name of the start system [H-1].
+  -p|--port-num <num> = The number of the start port [1].
+  -g|--port-guid <guid> = The guid of the start port [none].
+
+Options:
+  -v|--verbose = verbsoe mode
+  -h|--help = provide this help message
+
+
