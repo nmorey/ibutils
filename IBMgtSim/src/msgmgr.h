@@ -29,7 +29,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
- * $Id: msgmgr.h,v 1.6 2005/03/20 11:28:31 eitan Exp $
+ * $Id: msgmgr.h,v 1.7 2005/07/07 21:15:29 eitan Exp $
  */
 
 ///////////////////////////////////////////////////////////////////////////
@@ -49,7 +49,7 @@
 // 0. The following flags define the verbosity level:
 //    MsgShowFatal   - show fatal errors
 //    MsgShowError   - show algorithmic or data non fatal errors 
-//    MsgShowWarning - show warninings
+//    MsgShowWarning - show warnings
 //    MsgShowInfo    - show info massages
 //    MsgShowVerbose - show verbose messages
 //    MsgShowMads    - show MAD messages contents
@@ -71,7 +71,7 @@
 //     "myModule"                                  // module name
 //     );
 //
-// 3. Send a message (using the predefinde type errMsg1):
+// 3. Send a message (using the predefined type errMsg1):
 //    msgMgr().send(errMsg1,__FILE__,__LINE__,"n18","i1","output");
 // 
 // 4. You can control the verbosity of each module:
@@ -79,7 +79,7 @@
 //    NOTE: Even if the global verbosity is set to errors only a verbose message
 //          of type with module "myModule" will be shown.
 //
-//    For simplicty we provide macro versions:
+//    For simplicity we provide macro versions:
 //
 //    MSGREG(varName, verbosity, msgTemplate, module) - register new type for current module
 //
@@ -125,7 +125,7 @@ extern int msgMgrLeaveFunc;
 #define MSG_EXIT_FUNC
 #endif
 
-// we use spcialization of strings to support custing of various types:
+// we use specialization of strings to support casting of various types:
 class msgStr {
  public:
   std::string s;
@@ -179,7 +179,7 @@ class msgType {
   std::string format;  // format string is "<any string> $ <any string> $ ...."
   int numFields;  // number of fields in the format
   std::string context; // the context (the function) of the message
-  std::string module;  // the module name - message filterring can be done in module granularity
+  std::string module;  // the module name - message filtering can be done in module granularity
  public:
 
   msgType() { severity = 'U'; numFields = 0; context = ""; module = "";};
@@ -187,7 +187,7 @@ class msgType {
   
   // ~msgType(); // NOTE it will not be removed from the mgr list of generators!
   
-  // generate a msg object and send it to the mannager
+  // generate a msg object and send it to the manager
   // HACK WE CURRENTLY LIMIT THE NUMBER OF FIELDS TO 6
   // string send(string f1 = "", string f2 = "", string f3 = "", 
   // string f4 = "", string f5 = "", string f6 = ""); 
@@ -285,7 +285,7 @@ class msgManager {
   // declare a new message type - return the generator id:
   int reg(char s, std::string fmt, std::string ctx = "", std::string mod = "");
 
-  // get a new message and do somthing with it
+  // get a new message and do something with it
   int send(int typeId, std::string fn = "", int ln = 0, 
 			  msgStr i1="",msgStr i2="",msgStr i3="",msgStr i4="",
 			  msgStr i5="",msgStr i6="");
@@ -295,7 +295,7 @@ class msgManager {
   
 };
 
-// we want to have a singleton massage menager
+// we want to have a singleton massage manager
 msgManager &msgMgr(int vl = MsgDefault, std::ostream *o = & std::cout);
 
 #endif

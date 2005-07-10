@@ -29,12 +29,12 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
- * $Id: node.cpp,v 1.10 2005/03/20 11:24:14 eitan Exp $
+ * $Id: node.cpp,v 1.18 2005/07/07 21:15:29 eitan Exp $
  */
 
 /****h* IBMS/Node
 * NAME
-*	IB Management Simulator Node object and acompany Mad Processor
+*	IB Management Simulator Node object and accompany Mad Processor
 *
 * DESCRIPTION
 *	The simulator routes mad messages to the target node. This node 
@@ -49,37 +49,53 @@
 #include "msgmgr.h"
 #include "node.h"
 #include "sim.h"
+#include "randmgr.h"
 
 //////////////////////////////////////////////////////////////
 //
 // CLASS  IBMSPortErrProfile
 //
 
-/* This class holds the variables defining statistical behaviour of the
+/* This class holds the variables defining statistical behavior of the
    port counters */
 
 /* checks if needs to drop current packet - also increases the 
    packet count */
 boolean_t IBMSPortErrProfile::isDropped() 
 {
-  /* we are given a rate for dropping packets and the deviation for it */
+
   /*
     as we can evenly randomize integers in the range 0 - RAND_MAX we
-    need to reflect that into a binary descission for dropping the packets
-    such that infinately we will have a drop ratio as defined
+    need to reflect that into a binary decision for dropping the packets
+    such that infinitely we will have a drop ratio as defined
     
-    TODO: Apply a filter on the random data to simulate reduced spectrum.
+    We use the packetDropRateVar as a measure to filter out changes in the 
+    pass/fail decision. This is useful to sustain a failure over the
+    several retries of the packet send
   */
-  static unsigned int seed = 62871;
-  float r = rand_r(&seed) / RAND_MAX;
-  if (r < packetDropRate)
+  float d = RandMgr()->random();
+
+  //MSGREG(inf1, 'V', "New drop value:$ r:$ dr:$ after:$", "errProfile");
+  //MSGREG(inf2, 'V', "No need for new value after:$ (rand was:$)", "errProfile");
+
+  /* do we need to change our previous decision */
+  if (numPacketFromLastChange > d * packetDropRateVar) 
   {
-    return TRUE;
+    float r = RandMgr()->random();
+    if (r < packetDropRate)
+      drop = TRUE;
+    else
+      drop = FALSE;
+    //MSGSND(inf1, drop, r, packetDropRate, numPacketFromLastChange);
+    numPacketFromLastChange = 1;
   }
   else
   {
-    return FALSE;
+    //MSGSND(inf2, numPacketFromLastChange, d * packetDropRateVar);
+    /* use previous decision */
+    numPacketFromLastChange++;
   }
+  return drop;
 }
 
 
@@ -88,11 +104,11 @@ boolean_t IBMSPortErrProfile::isDropped()
 // CLASS  IBMSMadProcessor
 //
 
-/* Mad proccessor class is a pure virtual class that 
+/* Mad processor class is a pure virtual class that 
    supports handling of mads of specific class        */
 
 
-/* add a single mad proccessor to a node */
+/* add a single mad processor to a node */
 void IBMSMadProcessor::addProcToNode(uint16_t mgtClass)
 {
   MSGREG(inf1, 'V', "Registered mad processor of class:$ on node:$", "server");
@@ -144,6 +160,9 @@ IBMSMadProcessor::~IBMSMadProcessor()
   MSGREG(err2, 'E', "Could not find the processor in its node list?", "server");
   MSGREG(inf1, 'V', "Removed mad processor of class:$ from its node", "server");
   
+  /* need to lock the node - otherwise can race against mads ... */
+  pthread_mutex_lock(&pSimNode->lock);
+ 
   for (list_uint16::iterator lI = mgtClasses.begin();
        lI != mgtClasses.end(); lI++)
   {
@@ -169,6 +188,7 @@ IBMSMadProcessor::~IBMSMadProcessor()
       }
     }
   }
+  pthread_mutex_unlock(&pSimNode->lock);
 }
 
 //////////////////////////////////////////////////////////////
@@ -208,8 +228,14 @@ int IBMSNode::processMad(uint8_t inPort, ibms_mad_msg_t &madMsg)
 {
   /* get the registered IBMSMadProcessor's of this class */
   uint8_t mgtClass = madMsg.header.mgmt_class;
+  uint8_t method = madMsg.header.method;
+  uint16_t attributeId = madMsg.header.attr_id ;
+
+
   MSGREG(err1, 'E', "No processor registered for class:$", "simnode");
-  
+  MSGREG(inf1, 'V', "processing mad mgtClass $ attrId $ method $", "simnode");
+  MSGSND(inf1, mgtClass ,attributeId ,method);
+
   if (madProccessors.size() <= mgtClass)
   {
     MSGSND(err1, mgtClass);
@@ -224,7 +250,7 @@ int IBMSNode::processMad(uint8_t inPort, ibms_mad_msg_t &madMsg)
 
   pthread_mutex_lock(&lock);
 
-  /* ok we got some processors - so call them */
+  /* OK we got some processors - so call them */
   for (list_mad_processor::iterator lI = madProccessors[mgtClass].begin();
        lI != madProccessors[mgtClass].end();
        lI++)
@@ -289,22 +315,71 @@ IBMSNode::getPhyPortPMCounter(
   return &(phyPortCounters[portNum]);
 }
 
-/* set CR Space Value */
-int IBMSNode::setCrSpace(uint32_t addr, uint32_t &data)
-{
-  return 0;
-}    
+/* Read CrSpace Address */
+int IBMSNode::getCrSpace (uint32_t startAddr,uint32_t length , uint32_t data[] ) {
+    MSG_ENTER_FUNC;
+    uint32_t curAddr = startAddr;
+    int res =0;
+    MSGREG(inf0, 'V', "reading CrSpace from address $ length $ ", "ReadAddr");
+    MSGSND(inf0,startAddr,length);
+    for (uint32_t i=0;i<length;i++) {
+        curAddr = curAddr + i*4;
+        map < uint32_t , uint32_t,less < uint32_t > >::iterator  mapIter;
+        mapIter = crSpace.find(curAddr);
+        if (mapIter == crSpace.end()) {
+            MSGREG(err0, 'E', "Can't find address $ in CrSpace ", "ReadAddr");
+            MSGSND(err0,curAddr);
+            res = 1;
+        } else {
+            data[i] = (crSpace[curAddr]);  
+            MSGREG(inf1, 'V', "reading CrSpace address $ got data - $ ", "ReadAddr");
+            MSGSND(inf1,curAddr,data[i]);
+        }
+    }
+    MSG_EXIT_FUNC;
+    return res;
+}
 
-/* get CR Space Value */
-int IBMSNode::getCrSpace(uint32_t addr, uint32_t &data)
+/* Write CrSpace Address */
+int IBMSNode::setCrSpace(uint32_t startAddr,uint32_t length,uint32_t data[]) {
+    MSG_ENTER_FUNC;
+    int res =0;
+    int curAddr = startAddr;
+    MSGREG(inf0, 'V', "writing to CrSpace to address $ length $ ", "WriteAddr");
+    MSGSND(inf0,startAddr,length);
+    map < uint32_t , uint32_t,less < uint32_t > >::iterator mapIter;
+    for (uint32_t i=0;i<length;i++) {
+        curAddr = curAddr + i*4;
+        mapIter = crSpace.find(curAddr);
+        if (mapIter == crSpace.end()) {
+            MSGREG(err0, 'E', "Can't find address $ in CrSpace ", "WriteAddr");
+            MSGSND(err0,curAddr);
+            res =1;
+        }
+        crSpace[curAddr] = data[i];
+        MSGREG(inf1, 'V', "writing to CrSpace address $ data - $ ", "WriteAddr");
+        MSGSND(inf1,curAddr,data[i]);
+    }
+    MSG_EXIT_FUNC;
+    return res;
+}
+
+static void
+ib_net16_inc(ib_net16_t *pVal, unsigned int add = 1)
 {
-  return 0;
-}    
+  *pVal = cl_hton16( cl_ntoh16(*pVal) + add);
+}
+
+static void
+ib_net32_inc(ib_net32_t *pVal, unsigned int add = 1)
+{
+  *pVal = cl_hton32( cl_ntoh32(*pVal) + add);
+}
 
 /*
   Get remote node by given port number. 
   Handle both HCA and SW.
-  
+                                                                   
   Return either 0 if step could be made or 1 if failed.
   
   Updated both output pointers:
@@ -339,7 +414,7 @@ IBMSNode::getRemoteNodeByOutPort(
     return 1;
   }
 
-  /* ok we can update the returned variables */
+  /* OK we can update the returned variables */
   if (ppRemIBPort != NULL) *ppRemIBPort = pPort->p_remotePort;
 
   /* get the remote node if any */
@@ -366,23 +441,26 @@ IBMSNode::getRemoteNodeByOutPort(
   /* do we want to drop this mad ? */
   if (phyPortErrProfiles[outPortNum].isDropped()) 
   {
-    // TODO: double check the register and also randomally 
+    // TODO: double check the register and also randomly 
     // increase the remote node rcv dropped.
     // Update port counters of dropped mad.
-    phyPortCounters[outPortNum].port_xmit_discard++;
-    pRemSimNode->phyPortCounters[pPort->p_remotePort->num].port_rcv_errors++;
-    pRemSimNode->phyPortCounters[pPort->p_remotePort->num].port_rcv_remote_physical_errors++;
-
+    ib_net16_inc(&(phyPortCounters[outPortNum].port_xmit_discard));
+    
+    ib_net16_inc(
+      &(pRemSimNode->phyPortCounters[pPort->p_remotePort->num].port_rcv_errors));
+    ib_net16_inc(
+      &(pRemSimNode->phyPortCounters[pPort->p_remotePort->num].port_rcv_remote_physical_errors));
+    
     MSGSND(inf3, pNode->name, outPortNum);
     pthread_mutex_unlock(&lock);
     return 1;
   }
   
   // Update port counters of sent mad and received mads
-  phyPortCounters[outPortNum].port_xmit_pkts++;
-  phyPortCounters[outPortNum].port_xmit_data += 256;
-  pRemSimNode->phyPortCounters[pPort->p_remotePort->num].port_rcv_pkts++;
-  pRemSimNode->phyPortCounters[pPort->p_remotePort->num].port_rcv_data += 256;
+  ib_net32_inc(&(phyPortCounters[outPortNum].port_xmit_pkts));
+  ib_net32_inc(&(phyPortCounters[outPortNum].port_xmit_data), 256);
+  ib_net32_inc(&(pRemSimNode->phyPortCounters[pPort->p_remotePort->num].port_rcv_pkts));
+  ib_net32_inc(&(pRemSimNode->phyPortCounters[pPort->p_remotePort->num].port_rcv_data),256);
   
   /* release the lock */
   pthread_mutex_unlock(&lock);
@@ -395,7 +473,6 @@ int IBMSNode::setLinkStatus(
     uint8_t portNum, 
     uint8_t newState)
 {
-    uint8_t                 modifyedState = 0;
     uint8_t                 oldState;
     ib_smp_t                noticeMad;
     ib_mad_notice_attr_t*   pTrapMadData;
@@ -510,7 +587,7 @@ int IBMSNode::getRemoteNodeByLid(
   /* release the node lock */
   pthread_mutex_unlock(&lock);
 
-  /* if the port number is 0 - westay on this node */
+  /* if the port number is 0 - we stay on this node */
   if (portNum == 0) 
   {
     *ppRemNode = this;

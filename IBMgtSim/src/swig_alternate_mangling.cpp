@@ -29,7 +29,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
- * $Id: swig_alternate_mangling.cpp,v 1.2 2005/02/23 20:43:50 eitan Exp $
+ * $Id: swig_alternate_mangling.cpp,v 1.3 2005/07/07 21:15:29 eitan Exp $
  */
 
 
@@ -116,7 +116,7 @@ char *SWIG_GetPointerObj(Tcl_Interp *interp, Tcl_Obj *objPtr, void **ptr, char *
   char *_c;
   _p = 0;
 
-  // if altername mangling is defined use it:
+  // if alternate mangling is defined use it:
   charp_getobjp_map::const_iterator I = SWIG_AlternateNameToObj.find(_t);
   if (I != SWIG_AlternateNameToObj.end()) {
 	 int (* getObjByName)(Tcl_Obj *, void **) = (*I).second;

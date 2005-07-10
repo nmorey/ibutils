@@ -29,7 +29,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
- * $Id: msgmgr.cpp,v 1.5 2005/02/23 20:43:49 eitan Exp $
+ * $Id: msgmgr.cpp,v 1.6 2005/07/07 21:15:29 eitan Exp $
  */
 
 #include "msgmgr.h"
@@ -131,7 +131,7 @@ string msgManager::msg2string(
       strcat(res, tmp);
     }
     
-    // close parenthesys or space
+    // close the parent system or space
     if ((vl & MsgShowContext) || (vl & MsgShowSource) || (vl & MsgShowModule))
       strcat(res,") ");
     else
@@ -257,7 +257,7 @@ int msgManager::reg(char s, string fmt, string ctx, string mod) {
   return id;
 }
 
-// get a new message and do somthing with it
+// get a new message and do something with it
 int msgManager::send(int typeId, string fn , int ln, msgStr i1 ,msgStr i2 ,msgStr i3 ,
                  msgStr i4, msgStr i5 ,msgStr i6) 
 {

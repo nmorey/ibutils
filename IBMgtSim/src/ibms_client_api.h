@@ -29,7 +29,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
- * $Id: ibms_client_api.h,v 1.3 2005/02/23 20:43:49 eitan Exp $
+ * $Id: ibms_client_api.h,v 1.4 2005/07/07 21:15:28 eitan Exp $
  */
 
 /****h* IBMgtSim/ClientInterface
@@ -42,7 +42,7 @@
  * Environment:
  * 	Linux User Mode
  *
- * $Revision: 1.3 $
+ * $Revision: 1.4 $
  *
  * AUTHOR
  *	Eitan Zahavi, Mellanox
@@ -78,7 +78,7 @@ typedef void
 *		[in] The context provided during the client registration by ibms_connect
 *
 *  p_mad
-*     [in] Pointer to the incomming mad message
+*     [in] Pointer to the incoming mad message
 *
 *****/
 
@@ -88,7 +88,7 @@ typedef void
 *	ibms_conn_handle_t
 *
 * DESCRIPTION
-*	Abstruct handle to connection objects
+*	Abstract handle to connection objects
 *
 * SYNOPSIS
 */
@@ -97,7 +97,7 @@ typedef void * ibms_conn_handle_t;
 *
 *****/
 
-/* connect to the server to the port guid. Registering incomming messages callbacks */
+/* connect to the server to the port guid. Registering incoming messages callbacks */
 ibms_conn_handle_t
 ibms_connect(uint64_t portGuid, ibms_pfn_receive_cb_t receiveCb, void* context);
 

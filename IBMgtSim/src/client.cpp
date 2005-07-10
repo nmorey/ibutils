@@ -29,7 +29,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
- * $Id: client.cpp,v 1.7 2005/02/23 20:43:49 eitan Exp $
+ * $Id: client.cpp,v 1.12 2005/07/07 21:15:28 eitan Exp $
  */
 
 #include <stdlib.h>     /* for atoi() and exit() */
@@ -168,18 +168,18 @@ __ibms_get_sim_host_n_port(
 }
 
 /* connect to the server to the port guid. 
-   Registering incomming messages callbacks */
+   Registering incoming messages callbacks */
 ibms_conn_handle_t
 ibms_connect(uint64_t portGuid, 
              ibms_pfn_receive_cb_t receiveCb, 
              void* context)
 {
-  static unsigned short int serverPortNum = 46281;
+  unsigned short int serverPortNum;
   ibms_client_conn_rec_t clientConn;
   char hostName[32];
   unsigned short int simPortNum;
+  unsigned int seed = (int)time(NULL);
   
-
   /* get the simulator hostname and port */
   __ibms_get_sim_host_n_port(hostName, simPortNum);
 
@@ -193,8 +193,10 @@ ibms_connect(uint64_t portGuid,
   /* iterate several times to find an available socket */
   int trys = 0;
   do {
+    serverPortNum = 
+      (unsigned short int)((1.0*rand_r(&seed)/RAND_MAX)*(65535-1024)+1024);
     clientConn.pServer = 
-      new IBMSClientInMsgs( serverPortNum++ ,receiveCb, context);
+      new IBMSClientInMsgs( serverPortNum ,receiveCb, context);
     
     if (clientConn.pServer->isAlive()) 
       break;
@@ -217,7 +219,7 @@ ibms_connect(uint64_t portGuid,
   request.msg.conn.port_num = 1;
   request.msg.conn.port_guid = portGuid;
   strcpy(request.msg.conn.host, thisHostName);
-  request.msg.conn.in_msg_port = serverPortNum - 1;  
+  request.msg.conn.in_msg_port = serverPortNum;  
   
   if (clientConn.pClient->sendSimMsg(request, response))
   {
@@ -308,6 +310,7 @@ ibms_disconnect(
 {
   ibms_client_conn_rec_t *pCon = (ibms_client_conn_rec_t*)conHdl;
   delete pCon;
+  return(0);
 }
 
 #ifdef BUILD_QUIT_CLIENT
@@ -315,11 +318,8 @@ int main(int argc, char *argv[])
 {
   unsigned short servPort;       /* server port */
   char *hostName;                /* Server Host Name */
-  int bytesRcvd, totalBytesRcvd; /* Bytes read in single recv() 
-                                    and total bytes read */
   ibms_client_msg_t request;     /* the message we send */
   ibms_response_t response;    /* the message we receive back */
-  int msgLen = sizeof(ibms_client_msg_t);
 
   if ((argc < 2) || (argc > 3))  /* Test for correct number of arguments */
   {
@@ -426,7 +426,7 @@ int main(int argc, char *argv[])
     request.msg.mad.header.method = 0x1;
     request.msg.mad.header.trans_id = i;
 
-    /* we will hardcode some direct route path */
+    /* we will hard-code some direct route path */
     ib_smp_t *p_mad = (ib_smp_t *)(&request.msg.mad.header);
     p_mad->hop_count = 3;
     p_mad->hop_ptr = 0;
@@ -452,7 +452,7 @@ int main(int argc, char *argv[])
   request.msg.mad.header.method = 0x1;
   request.msg.mad.header.trans_id = 123456;
   
-  /* we will hardcode some direct route path */
+  /* we will hard-code some direct route path */
   ib_smp_t *p_mad = (ib_smp_t *)(&request.msg.mad.header);
   p_mad->hop_count = 4;
   p_mad->hop_ptr = 0;

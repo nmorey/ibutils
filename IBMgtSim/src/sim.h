@@ -29,7 +29,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
- * $Id: sim.h,v 1.3 2005/02/23 20:43:49 eitan Exp $
+ * $Id: sim.h,v 1.5 2005/07/07 21:15:29 eitan Exp $
  */
 
 /****h* IBMS/IB Management Simulator
@@ -67,10 +67,22 @@ class IBMgtSim {
  
   /* initialize simulator nodes */
   int populateFabricNodes();
-  
+
+  /* the random generator seed */
+  unsigned int randomSeed;
+
+  /* lock - enables locking the simulator */
+  pthread_mutex_t lock;
+
  public:
   /* constructor */
-  IBMgtSim() {pFabric = NULL; pServer = NULL; pDispatcher = NULL;};
+  IBMgtSim() {
+    pFabric = NULL; 
+    pServer = NULL; 
+    pDispatcher = NULL; 
+    randomSeed = 0;
+    pthread_mutex_init( &lock, NULL );
+  };
 
   /* access function */
   inline class IBFabric *getFabric() { return pFabric;};
@@ -80,9 +92,14 @@ class IBMgtSim {
   /* Initialize the fabric server and dispatcher */
   int init(string topoFileName, int serverPortNum, int numWorkers);
 
-  /* get the directory naem where the simulator randesvous exists */
+  /* get the directory name where the simulator rendezvous exists */
   char *getSimulatorDir();
 
+  /* set the random number seed */
+  int setRandomSeed( int seed );
+  
+  /* get a random floating point number 0.0 - 1.0 */
+  float random();
 };
 
 #endif /* IBMS_SIM_H */

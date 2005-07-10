@@ -29,11 +29,11 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
-# $Id: Makefile.am,v 1.3 2005/03/20 11:17:42 eitan Exp $
+# $Id: Makefile.am,v 1.4 2005/04/12 08:15:33 eitan Exp $
 #--
 
 # We only want to distriute these files
 bin_SCRIPTS = mkSimNodeDir IBMgtSim RunSimTest
 
 # The only way to add to the dist is using this one...
-EXTRA_DIST = mkSimNodeDir IBMgtSim RunSimTest
+EXTRA_DIST = mkSimNodeDir IBMgtSim RunSimTest fixSwigWrapper

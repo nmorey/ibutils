@@ -29,16 +29,16 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
-# $Id: Makefile.am,v 1.9 2005/03/20 11:22:55 eitan Exp $
+# $Id: Makefile.am,v 1.14 2005/05/24 11:59:20 eitan Exp $
 #--
 
 ## Makefile.am -- Process this file with automake to produce Makefile.in
 
 # Support debug mode through config variable
 if DEBUG
-DBG = -O0 -g
+DBG = -O0 -g -Wall -Werror
 else
-DBG = -O2
+DBG = -O6 -Wall -Werror
 endif
 
 AM_CXXFLAGS = $(DBG)
@@ -54,11 +54,11 @@ LDADD = -L$(with_ibdm)/lib -libdmcom -L$(with_osm)/lib -lcomplib
 
 # this is the main simulator
 #ibmgtsim_SOURCES = sim.cpp server.cpp node.cpp dispatcher.cpp \
-#	msgmgr.cpp simmsg.cpp tcpcomm.cpp sma.cpp 
+#	msgmgr.cpp simmsg.cpp tcpcomm.cpp sma.cpp pma.cpp
 #ibmgtsim_CPPFLAGS = -DBUILD_STANDALONE_SIM=1
 
 ibmssh_SOURCES = sim.cpp server.cpp node.cpp dispatcher.cpp \
-	 ibmssh_wrap.cpp sma.cpp 
+	 ibmssh_wrap.cpp sma.cpp pma.cpp vsa.cpp randmgr.cpp
 
 ibmssh_LDFLAGS = -static -Wl,-rpath -Wl,$(TCL_PREFIX)/lib \
 	-Wl,-rpath -Wl,$(with_osm)/lib \
@@ -87,7 +87,7 @@ swigclean:
 	rm -f $(srcdir)/ibms_wrap.cpp $(srcdir)/ibmssh_wrap.cpp *wrap.o
 
 # we need there extra in the distribution as their dependency is not defined
-EXTRA_DIST = swig_alternate_mangling.cpp fixSwigWrapper pkgIndex.tcl
+EXTRA_DIST = swig_alternate_mangling.cpp 
 
 # Quiter for the server
 ibmsquit_SOURCES = client.cpp msgmgr.cpp simmsg.cpp tcpcomm.cpp
@@ -127,7 +127,7 @@ libibmscli_la_SOURCES = client.cpp simmsg.cpp msgmgr.cpp tcpcomm.cpp
 libibmscli_la_LDFLAGS = -version-info $(LIB_VER_TRIPLET) -no-undefined
 
 # we would like to export these headers during install
-pkginclude_HEADERS = ibms_client_api.h simmsg.h ib_types_extend.h
+pkginclude_HEADERS = $(wildcard $(srcdir)/*.h)
 
 # Don't distribute common.h, since it is build host dependent!
 #dist-hook:

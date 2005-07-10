@@ -29,7 +29,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
- * $Id: dispatcher.h,v 1.3 2005/02/23 20:43:49 eitan Exp $
+ * $Id: dispatcher.h,v 1.5 2005/07/07 21:15:28 eitan Exp $
  */
 
 #ifndef IBMS_WORKER_H
@@ -40,7 +40,7 @@
 *	IB Management Simulator MAD Dispatcher: Worker Threads and MAD Queue
 *
 * DESCRIPTION
-*	The simulator stores incoming mads in a speacial queue that provides 
+*	The simulator stores incoming mads in a special queue that provides 
 *  randomization of transport time. A group of worker threads is responsible
 *  to pop mad messages from the queue, route them to the destination nodes 
 *  and call their mad processor.
@@ -75,10 +75,10 @@ class IBMSDispatcher {
      mad processors */
   cl_thread_pool_t workersPool;
   
-  /* lock to synchronize poping up and pushing into the madQueue */
+  /* lock to synchronize popping up and pushing into the madQueue */
   cl_spinlock_t lock;
 
-  /* avarage delay from introducing the mad to when it appear on the queue */
+  /* average delay from introducing the mad to when it appear on the queue */
   uint64_t avgDelay_usec;
   
   /* deviation on the delay */

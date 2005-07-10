@@ -35,6 +35,6 @@ if [[ $am_maj = 1 && $am_min = 9 && $am_sub < 3 ]]; then
 fi
 
 aclocal -I config
-libtoolize --automake
+$DIR/libtoolize --automake
 automake --add-missing --gnu
 autoconf

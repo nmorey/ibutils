@@ -1,6 +1,6 @@
 #!/bin/sh
 # the next line restarts using tclsh \
-exec ibmssh "$0" "$@"
+exec ibmssh "$0" "$@" 
 
 #--
 # Copyright (c) 2004 Mellanox Technologies LTD. All rights reserved.
@@ -34,13 +34,13 @@ exec ibmssh "$0" "$@"
 # SOFTWARE.
 #
 #############################################################################
-# Id ..........$Id: RunSimTest,v 1.1 2005/03/20 11:17:42 eitan Exp $
-# Revision.....$Revision: 1.1 $
-# Date.........$Date: 2005/03/20 11:17:42 $
+# Id ..........$Id: RunSimTest,v 1.11 2005/07/05 07:07:37 eitan Exp $
+# Revision.....$Revision: 1.11 $
+# Date.........$Date: 2005/07/05 07:07:37 $
 # Author.......$Author: eitan $
 #EOH#########################################################################
 
-set ToolUsage {[-h] [-o osm-path][-f flow-file][-c checker-file] -t topology [-n osm-node-name][-p osm-port-num]}
+set ToolUsage {[-h] [-o osm-path][-f flow-file][-c checker-file] -t topology [-n osm-node-name][-p osm-port-num][-s seed]}
 
 set ToolUsage "Usage: $argv0 $ToolUsage"
 
@@ -85,6 +85,7 @@ proc Help {} {
    -o osm-path = Full path to OpenSM (/usr/mellanox/osm-sim/bin/opensm).
    -n osm-node = Topology file node name the SM runs on (default H-1/U1).
    -p port-num = Port number the SM attaches to (default 1).
+   -s seed = random seed to be used.
 
    -h - help.
     
@@ -129,7 +130,7 @@ proc Help {} {
 #
 
 proc startOsmLogAnalyzer {logFileName} {
-   global osmEventLog osmTrackerPipes
+   global osmEventLog osmTrackerPipes osmSubProcessIds
    
    # clear the log
    set osmEventLog($logFileName) {}
@@ -137,6 +138,8 @@ proc startOsmLogAnalyzer {logFileName} {
    # Open Up the OpenSM Log file
    set logFile [open "| tail -F $logFileName" r+]
    lappend osmTrackerPipes $logFile
+   lappend osmSubProcessIds [pid $logFile]
+
    fconfigure $logFile -buffering none -blocking 0
    fileevent $logFile readable [list osmLogAnalyzerEvent $logFile $logFileName]
 }
@@ -257,7 +260,6 @@ proc runner {simDir osmPath osmPortGuid} {
    set osmStdOutLog [file join $simDir osm.stdout.log]
    set osmLog [file join $simDir osm.log]
 
-
    puts "-I- Starting: $osmPath -D 0x43 -g $osmPortGuid  ..."
    set osmPId [exec $osmPath -D 0x43 -f $osmLog -g $osmPortGuid > $osmStdOutLog &]
 
@@ -279,8 +281,12 @@ proc checker {simDir osmPath osmPortGuid} {
  
    set osmLog [file join $simDir osm.log]
    set exitCode [osmWaitForUpOrDead $osmLog]
+   set subnetFile [file join $simDir subnet.lst]
+   set fdbsFile [file join $simDir osm.fdbs]
+   set mcfdbsFile [file join $simDir osm.mcfdbs]
+   set cmd "ibdmchk -s $subnetFile -f $fdbsFile -m $mcfdbsFile"
    if {$exitCode == 0} {
-      if {[catch {set res [exec ibdmchk > $ibdmchkLog]} e]} {
+      if {[catch {set res [eval "exec $cmd > $ibdmchkLog"]} e]} {
          puts $e
          set exitCode 1
       } else {
@@ -296,31 +302,33 @@ proc checker {simDir osmPath osmPortGuid} {
 # Exit the test flow killing OpenSM and the Simulator
 #
 proc exitTestFlow {pidList simPipeId exitCode} {
-   global simDir
+   global simDir tmpDir
    global simCtrlSock osmTrackerPipes
+
+   puts "-I- Closing SIM ... "
+   catch {
+      puts $simCtrlSock "puts {exiting from remote}"
+      puts $simCtrlSock "exit"
+   }
 
    puts "-I- Closing Sub Processes ... "
    foreach pId $pidList {
       catch {exec kill -9 $pId}
    }
-   
-   set subProcesses [exec ps --ppid [pid] -o pid]
-   foreach p $subProcesses {
-      catch {exec kill $p}
-   }
 
+   catch {
+      set subProcesses [exec ps --ppid [pid] -o pid]
+      foreach p $subProcesses {
+         catch {exec kill $p}
+      }
+    }
+    
    after 5000
    puts "-I- Closing Pipes ..."
    foreach logPipe [array names osmTrackerPipes] {
       catch {fileevent $logPipe readable {}; close $logPipe}
    }
 
-   puts "-I- Closing SIM ... "
-   set srvData [exec cat [file join $simDir ibmgtsim.server]]
-   puts $simCtrlSock "exit"
-
-   #catch {exec ibmsquit [lindex $srvData 0] [lindex $srvData 1]}
-   
    puts "-I- Status = $exitCode"
    if {$exitCode == 0} {
       exec rm -rf $simDir
@@ -429,11 +437,10 @@ proc getPortGuidStr {guid} {
 
 ##############################################################################
 # 
-# Make a proc file system for the given node:
+# Make a proc file system for the given node. Return the port GUID
 #
 proc makeProcFSForNode {simDir nodeName {portNum 0} {portLid 0}} {
-   global osmPortGuid 
-
+   set thePortGuid 0
    set nodeData [getSMNodeInfo $simDir $nodeName]
    
    puts "-I- Node $nodeName data: $nodeData"
@@ -479,7 +486,7 @@ FW revision:   0x300020002
 
       # use the given lid for the port
       if {$portNum == $portIdx} {
-         set osmPortGuid $pg
+         set thePortGuid $pg
 
          if {$portLid != 0} {
             set lid $portLid
@@ -515,6 +522,36 @@ Capabilities:  IsTrapSupported
       puts $of "\[  0\] fe80:0000:0000:0000:$portGuidStr"
       close $of
    }
+   return $thePortGuid
+}
+
+##############################################################################
+#
+# Get LD_PRELOAD to overcome /lib/tls issues
+#
+
+proc getLibAltPath {libName} {
+   if {[file isdirectory /lib64]} {
+      set res [lindex [glob /lib64/$libName*] 0]
+   } else {
+      set res [lindex [glob /lib/$libName*] 0]
+   }
+
+   return $res
+}
+
+# Return either an empty string or the LD_PRELOAD to perform
+proc getLdPreloadCmd {} {
+   set res ""
+   if {[file isdirectory /lib/tls] ||[file isdirectory /lib64/tls]} {
+      append res "[getLibAltPath libpthread.so]:"
+      append res "[getLibAltPath libc.so]:"
+      append res "[getLibAltPath libm.so]:"
+      append res "[getLibAltPath librt.so]"
+      puts "-I- Required Preload: $res"
+   } 
+   
+   return $res    
 }
 
 ##############################################################################
@@ -617,8 +654,10 @@ set osmPath /usr/mellanox/osm-sim/bin/opensm
 set moduleVerbosityList {top 0xA7}
 set osmPortNum 1
 set osmNodeName "H-1"
+set osmSubProcessIds {}
+set randomSeed [expr int(rand() * 100000)]
 
-while { [ set err [ getopt $argv "hvV:o:f:c:t:n:p:" opt arg ]] } {
+while { [ set err [ getopt $argv "hvV:o:f:c:t:n:p:s:" opt arg ]] } {
 	if { $err < 0 } then {
 		Usage
 		exit 2
@@ -632,6 +671,7 @@ while { [ set err [ getopt $argv "hvV:o:f:c:t:n:p:" opt arg ]] } {
          n {set osmNodeName $arg}
          p {set osmPortNum $arg}
 			t {set topologyFile $arg}
+         s {set randomSeed $arg}
 			V {set moduleVerbosityList "top $arg" }
          default {
             puts "-E- Unsupported option:$opt"
@@ -657,6 +697,9 @@ if {[llength $left_args]} {
     exit 1
 }
 
+puts "-I- Using random seed:$randomSeed"
+rmSeed $randomSeed
+
 # track opened pipes 
 set osmTrackerPipes {}
 
@@ -665,8 +708,12 @@ set tmpDir /tmp
 
 # Define the temporary directory:
 set simDir [file join $tmpDir ibmgtsim.$pid]
+puts "-I- Simulation directory is: $simDir"
 set env(IBMGTSIM_DIR) $simDir
+set env(OSM_CACHE_DIR) $simDir
+set env(OSM_TMP_DIR) $simDir
 file mkdir $simDir
+cd $simDir
 
 # if provided a flow file use it
 if {$checkerFlowFile != ""} {
@@ -677,15 +724,21 @@ set simLog [file join $simDir sim.log]
 set simStdOutLog [file join $simDir sim.stdout.log]
 
 if {[catch {
+   set preload [getLdPreloadCmd]
+   if {$preload != ""} {
+      set env(LD_PRELOAD) $preload
+   }
+
    # Start the Simulator 
    if {$simulationFlowFile != ""} {
-      puts "-I- Calling IBMgtSim -V 0xffff -t $topologyFile -f $simulationFlowFile ..."
-      exec IBMgtSim -V 0xffff -t $topologyFile -f $simulationFlowFile -l $simLog > $simStdOutLog &
+      puts "-I- Calling IBMgtSim -s $randomSeed -V 0xf -t $topologyFile -f $simulationFlowFile ..."
+      exec IBMgtSim -s $randomSeed -V 0xf -t $topologyFile -f $simulationFlowFile -l $simLog > $simStdOutLog &
    } else {
-      puts "-I- Calling IBMgtSim -V 0xffff -t $topologyFile ..."
-      exec IBMgtSim -V 0xffff -l $simLog -t $topologyFile > $simStdOutLog &
+      puts "-I- Calling IBMgtSim -s $randomSeed -V 0xf -t $topologyFile ..."
+      exec IBMgtSim -s $randomSeed -V 0xf -l $simLog -t $topologyFile > $simStdOutLog &
    }
    set sim [open "|tail -F $simStdOutLog" r+]
+   lappend osmSubProcessIds [pid $sim]
 
    # wait for the simulator to report it is ready to serve
    waitForSimReady $sim
@@ -696,26 +749,28 @@ if {[catch {
    fconfigure $sim -buffering line -blocking 0
 
    # make the node files for the OpenSM Node:
-   makeProcFSForNode $simDir $osmNodeName $osmPortNum 1 
+   set osmPortGuid [makeProcFSForNode $simDir $osmNodeName $osmPortNum 1]
    
    # set the node name for OpenSM
    set env(IBMGTSIM_NODE) $osmNodeName
    
    # start OpenSM 
    set osmPid [runner $simDir $osmPath $osmPortGuid]
+   lappend osmSubProcessIds $osmPid
 
    # run the checker
    set exitCode [checker $simDir $osmPath $osmPortGuid]
    
    # exit everything
-   exitTestFlow $osmPid $sim $exitCode
+   exitTestFlow $osmSubProcessIds $sim $exitCode
 } e]} {
+   puts "$e"
    if {[info exists sim]} {
       close $sim
    }
    puts "-E- $errorInfo"
 
-   exitTestFlow $osmPid $sim 2
+   exitTestFlow $osmSubProcessIds $sim 2
 
    exit 1
 }

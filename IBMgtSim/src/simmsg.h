@@ -29,7 +29,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
- * $Id: simmsg.h,v 1.5 2005/02/23 20:43:49 eitan Exp $
+ * $Id: simmsg.h,v 1.7 2005/07/07 21:15:29 eitan Exp $
  */
 
 /****h* IBMgtSim/Messages
@@ -42,7 +42,7 @@
  * Environment:
  * 	Linux User Mode
  *
- * $Revision: 1.5 $
+ * $Revision: 1.7 $
  *
  * AUTHOR
  *	Eitan Zahavi, Mellanox
@@ -82,7 +82,7 @@ typedef enum _ibms_cli_msg_type
 /*
 * IBMS_CLI_MSG_CONN
 *   Establish the connection to the server by providing local node
-*   physical info like port number adn port guid.
+*   physical info like port number and port guid.
 *
 * IBMS_CLI_MSG_BIND
 *   Allows for binding to a specific MAD type and port (ala TS filter).

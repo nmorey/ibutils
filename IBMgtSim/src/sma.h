@@ -29,15 +29,15 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
- * $Id: sma.h,v 1.12 2005/03/20 11:23:41 eitan Exp $
+ * $Id: sma.h,v 1.15 2005/07/07 21:15:29 eitan Exp $
  */
 
 /****h* IBMS/Subnet Manager Agent
 * NAME
-*	IB Subnet Managemer Agent Simulator
+*	IB Subnet Manager Agent Simulator
 *
 * DESCRIPTION
-*	The top level object of the subnet managemer agent simulator
+*	The top level object of the subnet manager agent simulator
 *
 * AUTHOR
 *	Nimrod Gindi, Mellanox
@@ -62,8 +62,8 @@
 *	ibms_dump_mad
 *
 * DESCRIPTION
-*	upper level function of printing all mad contant in
-*   recieving or sending of Mad
+*	upper level function of printing all mad content in
+*   receiving or sending of Mad
 *
 * SYNOPSIS
 */
@@ -157,10 +157,7 @@ class IBMSSma : IBMSMadProcessor {
 
   /* Constructor - should initial the specific class elements 
      in the node. */
-  IBMSSma(IBMSNode *pSNode, uint16_t mgtClass);
-
-  /* destructor - clean up from the node too */
-  ~IBMSSma();
+  IBMSSma(IBMSNode *pSNode, list_uint16 mgtClasses);
 
 };
 

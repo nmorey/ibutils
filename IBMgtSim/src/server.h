@@ -29,7 +29,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
- * $Id: server.h,v 1.5 2005/02/23 20:43:49 eitan Exp $
+ * $Id: server.h,v 1.6 2005/07/07 21:15:29 eitan Exp $
  */
 
 #ifndef IBMS_SERVER_H
@@ -101,7 +101,7 @@ class IBMSClientConn : GenClient {
   client send method. 
 */
 class IBMSClientMsgProcessor : IBMSMadProcessor {
-  /* The filterring information by which we attach to. */
+  /* The filtering information by which we attach to. */
   ibms_bind_msg_t filter;
   
   /* the client object attached. */
@@ -155,7 +155,7 @@ class IBMSServer : public GenServer {
   IBMSServer(IBMgtSim *pS, unsigned short portNum);
 
   /* handle client request - 
-     either create a new client conn or pass the reques to the 
+     either create a new client conn or pass the request to the 
      existing one */
   int proccessClientMsg(int clientSock, 
                         int reqLen, char request[], 

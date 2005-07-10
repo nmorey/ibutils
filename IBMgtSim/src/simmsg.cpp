@@ -29,7 +29,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
- * $Id: simmsg.cpp,v 1.7 2005/02/23 20:43:49 eitan Exp $
+ * $Id: simmsg.cpp,v 1.10 2005/05/25 12:42:07 sezer Exp $
  */
 
 #include <inttypes.h>
@@ -42,6 +42,18 @@
 #include <unistd.h>
 #include <string>
 #include "simmsg.h"
+#include <inttypes.h>
+
+#ifndef PRIx64 
+# if __WORDSIZE == 64
+#  define __PRI64_PREFIX   "l"
+#  define __PRIPTR_PREFIX  "l"
+# else
+#  define __PRI64_PREFIX   "ll"
+#  define __PRIPTR_PREFIX
+# endif
+# define PRIx64 __PRI64_PREFIX "x"
+#endif
 
 std::string
 __ibms_dump_conn_msg(
@@ -53,7 +65,7 @@ __ibms_dump_conn_msg(
   buff[31] = '\0';
 
   sprintf(msg,"MSG: CONN"
-          " Port:%u Guid:0x%016llx Host:%s InPort:%u",
+          " Port:%u Guid:0x%016" PRIx64 " Host:%s InPort:%u",
           p_msg->msg.conn.port_num,
           p_msg->msg.conn.port_guid,
           p_msg->msg.conn.host,
@@ -72,7 +84,7 @@ __ibms_dump_disconn_msg(
   buff[31] = '\0';
 
   sprintf(msg,"MSG: DISCONNECT "
-          " Port:%u Guid:0x%016llx",
+          " Port:%u Guid:0x%016" PRIx64 "",
           p_msg->msg.disc.port_num,
           p_msg->msg.disc.port_guid
           );
@@ -129,7 +141,7 @@ __ibms_dump_mad_msg(
           " CLASS:0x%02X"
           " METHOD:0x%02X"
           " STATUS:0x%04X"
-          " TID:0x%016lx", 
+          " TID:0x%016"PRIx64"",
           p_msg->msg.mad.addr.slid, 
           p_msg->msg.mad.addr.dlid,
           p_msg->msg.mad.addr.sqpn,
@@ -184,7 +196,7 @@ ibms_get_mad_header_str(ib_mad_t madHeader)
             "  method                   0x%x\n"
             "  status                   0x%x\n"
             "  class_spec               0x%x\n"
-            "  trans_id                 0x%016lx\n"
+            "  trans_id                 0x%016"PRIx64"\n"
             "  attr_id                  0x%x\n"
             "  attr_mod                 0x%x\n"
             "--------------------------------------------------------\n",
@@ -229,12 +241,15 @@ ibms_get_port_info_str(ib_port_info_t*     pPortInfo)
             "  Port Phy State           0x%x\n"
             "  nMTU                     0x%x\n"
             "  VL Cap                   0x%x\n"
+            "  LMC                      0x%x\n"
             "--------------------------------------------------------\n",
             CL_NTOH16(pPortInfo->base_lid),
             ib_port_info_get_port_state(pPortInfo),
             ib_port_info_get_port_phys_state(pPortInfo),
             ib_port_info_get_neighbor_mtu(pPortInfo),
-            ib_port_info_get_vl_cap(pPortInfo));
+            ib_port_info_get_vl_cap(pPortInfo),
+            ib_port_info_get_lmc(pPortInfo)
+            );
     return (std::string)msg;
 };
 

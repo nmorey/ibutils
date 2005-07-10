@@ -29,7 +29,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
- * $Id: tcpcomm.cpp,v 1.4 2005/02/23 20:43:50 eitan Exp $
+ * $Id: tcpcomm.cpp,v 1.6 2005/07/07 21:15:29 eitan Exp $
  */
 
 #include <algorithm>
@@ -53,10 +53,10 @@
 //  Create a server thread : open up a server socket
 //   serverThreadMain : simply wait for client connections
 //    Create client thread for every connection 
-//     clientThreadMain  : wait for incomming messages
+//     clientThreadMain  : wait for incoming messages
 //      recv - wait for data on the socket
 //      while message size > 0 and no send error
-//       proccessClientMsg : handle incomming message and return the response.
+//       proccessClientMsg : handle incoming message and return the response.
 //       send - send the response
 //      close the socket cleaning up reg in active threads list
 // 
@@ -67,7 +67,7 @@
 /* The simulator server allowing for multiple clients to connect */
 
 /* create the tcp server socket */
-/* return the socket number or -1 if errr */
+/* return the socket number or -1 if error */
 int GenServer::createServerSocket(unsigned short port_num)
 {
   int sock;                        /* socket to create */
@@ -145,8 +145,6 @@ int GenServer::proccessClientMsg(
 void *
 GenServer::clientThreadMain(void *threadArgs)
 {
-  MSGREG(err1 ,'E' ,
-         "Client message size is not ibms_client_msg_t size. but $", "server");
   MSGREG(err2 ,'E' ,"Fail to send message (sent:$ should:$)", "server");
   MSGREG(msg1 ,'V' ,"Closed connection with client:$", "server");
   MSGREG(msg2 ,'V' ,"Waiting for messages from client:$", "server");
@@ -154,7 +152,6 @@ GenServer::clientThreadMain(void *threadArgs)
   ClientThreadArgs *clientThreadArgs = 
     static_cast<ClientThreadArgs*>(threadArgs);
 
-  int clntSock;         /* Socket descriptor for client connection */
   pthread_t threadID = pthread_self();
 
   /* Guarantees that thread resources are deallocated upon return */
@@ -166,7 +163,7 @@ GenServer::clientThreadMain(void *threadArgs)
 
   delete clientThreadArgs;       /* Deallocate memory for argument */
 
-  /* we store the recived message in this buffer */
+  /* we store the received message in this buffer */
   char request[pServer->maxMsgBytes];
   char *response;
 
@@ -209,10 +206,10 @@ GenServer::clientThreadMain(void *threadArgs)
   /* obtain the lock when cleaning up */
   pthread_mutex_lock(&pServer->lock);
 
-  /* callback that can be used by server extentions for cleanup */
+  /* callback that can be used by server extensions for cleanup */
   pServer->closingClient(clientSocket);
 
-  /* remove the clinet thread from the list of threads */
+  /* remove the client thread from the list of threads */
   std::list< pthread_t >::iterator lI = 
     std::find(pServer->clientThreadsList.begin(),
               pServer->clientThreadsList.end(),
@@ -236,8 +233,6 @@ GenServer::serverThreadMain(void *args)
   delete pArgs;
 
   MSGREG(errMsg1, 'E', "Fail to accept client", "server");
-  MSGREG(errMsg2, 'F', "Fail to malloc", "server");
-  MSGREG(errMsg3, 'E', "Fail to create client thread", "server");
   MSGREG(verbMsg1, 'V', "Handling client $", "server");
 
   for (;;) /* run forever */
@@ -312,7 +307,7 @@ GenServer::GenServer(unsigned short portNum, int maxMsgLen)
      so avoid generating the thread */
   if (serverSock > 0) 
   {
-    /* we malloc the args as we want the server thread to dallocate them */
+    /* we malloc the args as we want the server thread to deallocate them */
     ServerThreadArgs *pServerArgs = new ServerThreadArgs;
     pServerArgs->pServer = this;
     
@@ -448,8 +443,6 @@ int
 GenClient::sendMsg(int reqLen, char request[], 
                    int &resLen, char response[] )
 {
-  int bytesRcvd; /* Bytes read in single recv() */
-  
   MSGREG(err1, 'E', "Fail to send.", "client");
   MSGREG(err2, 'E', "Fail to receive any response.", "client"); 
 

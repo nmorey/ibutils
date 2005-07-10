@@ -29,7 +29,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
- * $Id: ibdm.i,v 1.3 2005/02/23 20:43:49 eitan Exp $
+ * $Id: ibdm.i,v 1.6 2005/07/07 21:15:28 eitan Exp $
  */
 
 /*
@@ -39,7 +39,7 @@
  *
  */
 
-%title "IB Fabric Data Model - TCL Extention"
+%title "IB Fabric Data Model - TCL Extension"
 
 %module ibdm
 %{
@@ -77,7 +77,7 @@
 
   /* 
 	  MAPPING IBDM OBJECTS TO TCL and BACK:
-	  The idea is that we have specifc rules for naming
+	  The idea is that we have specific rules for naming
 	  Node, Port, System and SystemPort for a specific Fabric.
 	  
 	  All Fabrics are stored by id in a global vector.
@@ -173,7 +173,7 @@
   int ibdmGetObjPtrByTclName(Tcl_Obj *objPtr, void **ptr) {
 	 /* we need to parse the name and get the type etc. */
 	 char buf[256];
-	 char *type, *name, *fabIdxStr;
+	 char *type, *name = 0, *fabIdxStr;
 	 char *colonIdx, *slashIdx;
 	 int fabricIdx;
 	 *ptr = NULL;
@@ -193,7 +193,7 @@
 	 type = buf;
 	 fabIdxStr = ++colonIdx;
 
-	 /* now separate the fabric section if tyep is not fabric */
+	 /* now separate the fabric section if type is not fabric */
 	 if (strcmp(type, "fabric")) {
 		slashIdx = index(fabIdxStr,':');
 		if (!slashIdx) {
@@ -205,7 +205,7 @@
 		name = ++slashIdx;
 	 }
 	 
-	 /* Ok so now get the fabic pointer */
+	 /* OK so now get the fabric pointer */
 	 fabricIdx = atoi(fabIdxStr);
 	 
 	 IBFabric *p_fabric = ibdmGetFabricPtrByIdx(fabricIdx);
@@ -418,7 +418,7 @@
 
 // representing map_str_psysport in TCL
 %typemap(tcl8, out) map_str_psysport * {
-  // build a TCL list out of the Objec ID's of the ibdm objects in it.
+  // build a TCL list out of the Object ID's of the ibdm objects in it.
   map_str_psysport::const_iterator I = $source->begin();
   Tcl_Obj *p_tclObj;
 
@@ -438,7 +438,7 @@
 
 // representing map_str_psys in TCL
 %typemap(tcl8, out) map_str_psys * {
-  // build a TCL list out of the Objec ID's of the ibdm objects in it.
+  // build a TCL list out of the Object ID's of the ibdm objects in it.
   map_str_psys::const_iterator I = $source->begin();
   Tcl_Obj *p_tclObj;
 
@@ -458,7 +458,7 @@
 
 // representing map_str_pnode in TCL
 %typemap(tcl8, out) map_str_pnode * {
-  // build a TCL list out of the Objec ID's of the ibdm objects in it.
+  // build a TCL list out of the Object ID's of the ibdm objects in it.
   map_str_pnode::const_iterator I = $source->begin();
   Tcl_Obj *p_tclObj;
 
@@ -478,7 +478,7 @@
 
 // representing map_guid_pport in TCL
 %typemap(tcl8, out) map_guid_pport * {
-  // build a TCL list out of the Objec ID's of the ibdm objects in it.
+  // build a TCL list out of the Object ID's of the ibdm objects in it.
   map_guid_pport::const_iterator I = $source->begin();
   Tcl_Obj *p_tclObj;
 
@@ -499,7 +499,7 @@
 
 // representing map_guid_pnode in TCL
 %typemap(tcl8, out) map_guid_pnode * {
-  // build a TCL list out of the Objec ID's of the ibdm objects in it.
+  // build a TCL list out of the Object ID's of the ibdm objects in it.
   map_guid_pnode::const_iterator I = $source->begin();
   Tcl_Obj *p_tclObj;
 
@@ -520,7 +520,7 @@
 
 // representing map_guid_psystem in TCL
 %typemap(tcl8, out) map_guid_psys * {
-  // build a TCL list out of the Objec ID's of the ibdm objects in it.
+  // build a TCL list out of the Object ID's of the ibdm objects in it.
   map_guid_psys::const_iterator I = $source->begin();
   Tcl_Obj *p_tclObj;
 
@@ -727,7 +727,7 @@ int FabricUtilsVerboseLevel;
 /* Log level: set to FABU_LOG* values  */
 
 %section "IBDM Objects",pre
-/* This section decribes the various object types exposed by IBDM. */
+/* This section describes the various object types exposed by IBDM. */
 %text %{
 
   IBDM exposes some of its internal objects. The objects 
@@ -826,7 +826,7 @@ class IBNode {
 			IBFabric *p_fab, 
 			IBSystem *p_sys, 
 			IBNodeType t, int np);
-  // Constractor
+  // Constructor
 
   ~IBNode();
 
@@ -856,13 +856,13 @@ class IBNode {
 
 //
 // System Port Class
-// The System Port is a front pannel entity.
+// The System Port is a front panel entity.
 // 
 class IBSysPort {
  public:
-  string			   name;              // The front pannel name of the port
+  string			   name;              // The front panel name of the port
   IBSysPort	*p_remoteSysPort;  // If connected the other side sys port
-  IBSystem	*p_system;         // System it benongs to
+  IBSystem	*p_system;         // System it belongs to
   IBPort	   *p_nodePort;       // The node port it connects to.
   
   IBSysPort(string n, IBSystem *p_sys);
@@ -887,11 +887,11 @@ class IBSystem {
   IBFabric        *p_fabric;  // fabric belongs to
 %readonly
   map_str_pnode NodeByName;   // Provide the node pointer by its name
-  map_str_psysport PortByName;// A map provising pointer to the SysPort by name
+  map_str_psysport PortByName;// A map providing pointer to the SysPort by name
 %readwrite	
 
   IBSystem(string n, IBFabric *p_fab, string t);
-  // Constractor
+  // Constructor
 
   ~IBSystem();
 
@@ -940,10 +940,10 @@ class IBFabric {
   // return the list of node pointers matching the required type
 
   IBSystem *makeGenericSystem (string name);
-  // crate a new generic system - basically an empty contaner for nodes...  
+  // crate a new generic system - basically an empty container for nodes...  
   
   IBSystem *makeSystem (string name, string type);
-  // crate a new system - the type must have a registed factory.
+  // crate a new system - the type must have a registered factory.
 
   IBSystem *getSystemByGuid(uint64_t guid);
   // get the system by its guid
@@ -1026,7 +1026,7 @@ They all return 0 on succes.
 
 %name(ibdmCalcMinHopTables)
  int SubnMgtCalcMinHopTables (IBFabric *p_fabric);
-// Calculate the minhop table for the switches
+// Calculate the min-hop table for the switches
 
 %name(ibdmCalcUpDnMinHopTbls)
  int SubnMgtCalcUpDnMinHopTblsByRootNodesRex(IBFabric *p_fabric, char *rootNodesNameRex);
@@ -1035,17 +1035,17 @@ They all return 0 on succes.
 
 %name (ibdmOsmRoute) 
  int SubnMgtOsmRoute(IBFabric *p_fabric);
-// Fill in the FDB tables in an OpesnSM style routing 
+// Fill in the FDB tables in an OpenSM style routing 
 // which is switch based, uses number of routes per port 
-// profiling and treat LMC assigned lids sequentialy
+// profiling and treat LMC assigned lids sequentially
 // Rely on running the SubnMgtCalcMinHopTables beforehand
 
 %name(ibdmEnhancedRoute)
  int SubnMgtOsmEnhancedRoute(IBFabric *p_fabric);
-// Fill in the FDB tables in an OpesnSM style routing 
+// Fill in the FDB tables in an OpenSM style routing 
 // which is switch based, uses number of routes per port 
-// profiling and treat LMC assigned lids sequentialy.
-// Also it will favor runing through a new system or node 
+// profiling and treat LMC assigned lids sequentially.
+// Also it will favor running through a new system or node 
 // on top of the port profile.
 // Rely on running the SubnMgtCalcMinHopTables beforehand
 
@@ -1087,14 +1087,14 @@ int TopoMatchFabrics(
   uint64_t  anchorPortGuid,      // Discovered Guid of the anchor port
   char **p_report_str            // Diagnostic output.
   );
-// Error if fabrics deffer. And provide it as result.
+// Error if fabrics defer. And provide it as result.
 
 %name(ibdmBuildMergedFabric)
 int
 TopoMergeDiscAndSpecFabrics(
   IBFabric  *p_spec_fabric,       // The specification fabric
   IBFabric  *p_discovered_fabric, // The discovered fabric
-  IBFabric  *p_merged_fabric);    // Output merged fabric (allocated internaly)
+  IBFabric  *p_merged_fabric);    // Output merged fabric (allocated internally)
 // Build a merged fabric from a matched discovered and spec fabrics.
 // NOTE: you have to run ibdmMatchFabrics before calling this routine. 
 

@@ -29,12 +29,13 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
- * $Id: dispatcher.cpp,v 1.11 2005/03/20 11:26:16 eitan Exp $
+ * $Id: dispatcher.cpp,v 1.17 2005/07/07 21:15:28 eitan Exp $
  */
 
 #include "dispatcher.h"
 #include "server.h"
 #include "msgmgr.h"
+#include <math.h>
 
 //////////////////////////////////////////////////////////////
 //
@@ -101,7 +102,7 @@ int IBMSDispatcher::dispatchMad(
 {
   MSG_ENTER_FUNC;  
 
-  MSGREG(inf1, 'V', "Queued a mad to expire in $ msec", "dispatcher");
+  MSGREG(inf1, 'V', "Queued a mad to expire in $ msec $ usec at $ usec", "dispatcher");
 
   /* obtain a lock on the Q */
   cl_spinlock_acquire(&lock);
@@ -123,7 +124,7 @@ int IBMSDispatcher::dispatchMad(
   /* set the timer to the next event - trim to max delay of the current mad */
   uint32_t waitTime_msec = waitTime_usec/1000;
 
-  MSGSND(inf1, waitTime_msec, waitTime_usec);
+  MSGSND(inf1, waitTime_msec, waitTime_usec, wakeupTime_up);
 
   if (madQueueByWakeup.size() > 1) 
     cl_timer_trim(&timer, waitTime_msec);
@@ -137,7 +138,7 @@ int IBMSDispatcher::dispatchMad(
 }
 
 /*
-  The callback function for the threads 
+  The call back function for the threads 
   Loop to handle all outstanding MADs (those expired their wakeup time)
 */
 void 
@@ -184,7 +185,7 @@ IBMSDispatcher::workerCallback(void *context)
 }
 
 /* 
-   The callback function for the timer - should signal the threads 
+   The call-back function for the timer - should signal the threads 
    if there is an outstanding mad - and re-set the timer next event 
 */
 void 
@@ -202,36 +203,25 @@ IBMSDispatcher::timerCallback(void *context)
   /* search for the next wakeup time on the list */
   uint32_t nextWakeUp_msec = 0;
   map_uint64_mad::iterator mI = pDisp->madQueueByWakeup.begin();
-  while ((mI != pDisp->madQueueByWakeup.end()) && !nextWakeUp_msec)
+  if (mI != pDisp->madQueueByWakeup.end())
   {
     uint64_t curTime_usec = cl_get_time_stamp();
     uint64_t wakeUpTime_usec = (*mI).first;
     /* we are looking for an entry further down the road */
     if (curTime_usec < wakeUpTime_usec)
       nextWakeUp_msec = (wakeUpTime_usec - curTime_usec)/1000 + 1;
-    
-    /* get next entry */
-    mI++;
   }
 
+  cl_spinlock_release(&pDisp->lock);
+
+  /* might be zero if no outstanding mads */
   if (nextWakeUp_msec)
   {
     /* restart the timer on the current time - the key */
     cl_timer_start(&pDisp->timer, nextWakeUp_msec);
     MSGSND(inf1, nextWakeUp_msec);
   }
-    /* TODO : cleanup this dead code */
-//   else
-//   {
-
-    /* just in case restart the timer in 50msec */
-//     nextWakeUp_msec = 500;
-//     cl_timer_start(&pDisp->timer, nextWakeUp_msec);
-//     MSGSND(inf1, nextWakeUp_msec);
-//   }
   
-  cl_spinlock_release(&pDisp->lock);
-
   /* signal the workers threads */
   MSGSND(inf2);
   cl_thread_pool_signal(&pDisp->workersPool);
@@ -248,6 +238,7 @@ IBMSDispatcher::routeMadToDestByLid(
   IBMSNode *pRemNode = item.pFromNode;
   IBPort   *pRemIBPort; /* stores the incoming remote port */
   uint16_t lid = item.madMsg.addr.dlid;
+  uint8_t   prevPortNum = 0;
   int hops = 0;
   
   MSGREG(inf0, 'I', "Routing MAD tid:$ to lid:$ from:$ port:$", "dispatcher");
@@ -260,13 +251,13 @@ IBMSDispatcher::routeMadToDestByLid(
          "dispatcher");
   MSGREG(inf5, 'V', "Got node:$ through port:$", "dispatcher");
   
-  MSGREG(err1, 'F', "Should never got here with null !", "dispatcher");
-
   MSGSND(inf0, cl_ntoh64(item.madMsg.header.trans_id), 
          lid, item.pFromNode->getIBNode()->name, item.fromPort);
 
   int isVl15 = (item.madMsg.header.mgmt_class == IB_MCLASS_SUBN_LID);
   
+  prevPortNum = item.fromPort;
+
   /* we will stop when we are done or stuck */
   while (pRemNode && (pCurNode != pRemNode))
   {
@@ -295,7 +286,10 @@ IBMSDispatcher::routeMadToDestByLid(
             return 1;
           }
           if (pRemIBPort)
+          {
             MSGSND(inf5, pRemNode->getIBNode()->name, pRemIBPort->num);
+            prevPortNum = pRemIBPort->num;
+          }
         }
       }
       else 
@@ -313,8 +307,19 @@ IBMSDispatcher::routeMadToDestByLid(
         MSG_EXIT_FUNC;
         return 1;
       }
+      /* if the remote port identical to cur node that target is this switch */
+      if (pCurNode == pRemNode)
+      {
+        MSGSND(inf2, lid, pRemNode->getIBNode()->name, hops);
+        int res = pRemNode->processMad(prevPortNum, item.madMsg);
+        MSG_EXIT_FUNC;  
+        return(res);
+      }
       if (pRemIBPort)
+      {
         MSGSND(inf5, pRemNode->getIBNode()->name, pRemIBPort->num);
+        prevPortNum = pRemIBPort->num;
+      }
     }
     hops++;
   }
@@ -353,23 +358,20 @@ IBMSDispatcher::routeMadToDestByDR(
   IBMSNode *pRemNode = item.pFromNode;
   IBPort   *pRemIBPort = NULL; /* stores the incoming remote port */
   uint8_t   inPortNum = item.fromPort;
-  int hop_delta;        /* 1 for query -1 for response */
   int hops = 0;         /* just for debug */
 
   /* we deal only with SMP with DR sections */
   ib_smp_t *p_mad = (ib_smp_t *)(&(item.madMsg.header));
-  uint8_t *initialPath = p_mad->initial_path;
-  uint8_t *returnPath = p_mad->return_path;
   
   MSGREG(inf0, 'I', "Routing MAD tid:$ by DR", "dispatcher");
   MSGREG(inf1, 'I', "Got to dead-end routing by MAD tid:$ at node:$ hop:$", 
          "dispatcher");
   MSGREG(inf2, 'I', "MAD tid:$ to node:$ after $ hops", "dispatcher");
-  MSGREG(err1, 'E', "Commbination of direct and lid route is not supported by the simulator!", "dispatcher");
+  MSGREG(err1, 'E', "Combination of direct and lid route is not supported by the simulator!", "dispatcher");
 
   MSGSND(inf0, cl_ntoh64(item.madMsg.header.trans_id));
 
-  /* check that no srdlid or drdlid are set */
+  /* check that no dr_dlid or drdlid are set */
   if ((p_mad->dr_slid != 0xffff) || (p_mad->dr_slid != 0xffff) )
   {
     MSGSND(err1);
@@ -462,8 +464,8 @@ IBMSDispatcher::routeMadToDest(
      getRemoteNodeByOutPort(outPort, &pRemNode, &remPortNum)
      getRemoteNodeByLid(lid, &pRemNode, &remPortNum)
 
-     These fucntions can return 1 if the routing was unseccessful, including
-     port state, fdb missmatch, packet drop, etc.
+     These functions can return 1 if the routing was unsuccessful, including
+     port state, fdb mismatch, packet drop, etc.
 
   */
   int res;

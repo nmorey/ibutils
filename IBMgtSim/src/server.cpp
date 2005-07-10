@@ -29,7 +29,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
- * $Id: server.cpp,v 1.10 2005/02/23 20:43:49 eitan Exp $
+ * $Id: server.cpp,v 1.13 2005/07/07 21:15:29 eitan Exp $
  */
 
 #include "server.h"
@@ -140,6 +140,7 @@ int IBMSServer::closingClient(
     delete pClientConn;
   }
   MSG_EXIT_FUNC;
+  return(0);
 }
 
 /* handle a connection message */
@@ -151,7 +152,7 @@ int IBMSServer::handleConnectionMsg(
   MSGREG(err1, 'E', "Given port guid:$ does not exists in fabric.", "server");
   MSGREG(err2, 'E', "Socket $ has previously connected.", "server");
   MSGREG(err3, 'E', "Fail to create client connection.", "server");
-  MSGREG(inf1, 'V', "Received connection requets to node:$ port:$.", "server");
+  MSGREG(inf1, 'V', "Received connection requests to node:$ port:$.", "server");
   
   IBFabric *pFabric = pSim->getFabric();
 
@@ -216,7 +217,7 @@ IBMSServer::handleDisconnectMsg(
   MSG_ENTER_FUNC;  
   MSGREG(err1, 'E', "Given port guid:$ does not exists in fabric.", "server");
   MSGREG(err2, 'E', "Socket $ was not previously connected.", "server");
-  MSGREG(inf1, 'V', "Received disconnect requets from node:$ port:$.",
+  MSGREG(inf1, 'V', "Received disconnect requests from node:$ port:$.",
          "server");
   
   IBFabric *pFabric = pSim->getFabric();
@@ -233,7 +234,6 @@ IBMSServer::handleDisconnectMsg(
   
   IBPort *pPort = (*pI).second;
   IBNode *pNode = pPort->p_node;
-  IBMSNode *pMgtNode = ibmsGetIBNodeSimNode(pNode);
   
   MSGSND(inf1, pNode->name, pPort->num);
   
@@ -301,8 +301,6 @@ IBMSServer::handleCapMsg(
   ibms_cap_msg_t &capMsg)
 {
   MSG_ENTER_FUNC;  
-  int status;
-
   MSGREG(err1, 'E', "Socket $ was not previously connected.", "server");
 
   pthread_mutex_lock(&lock);
@@ -327,7 +325,7 @@ IBMSServer::handleCapMsg(
   
   pthread_mutex_unlock(&lock);
 
-  /* ok we got the port info - now set/clr the capability mask */
+  /* OK we got the port info - now set/clr the capability mask */
   pPortInfo->capability_mask = 
     (~capMsg.mask & pPortInfo->capability_mask) |
     ( capMsg.mask & capMsg.capabilities );

@@ -29,12 +29,14 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
- * $Id: sim.cpp,v 1.8 2005/02/23 20:43:49 eitan Exp $
+ * $Id: sim.cpp,v 1.13 2005/07/07 21:15:29 eitan Exp $
  */
 
 #include "sim.h"
 #include "msgmgr.h"
 #include "sma.h"
+#include "vsa.h"
+#include "pma.h"
 #include <getopt.h>
 #include <inttypes.h>
 
@@ -125,10 +127,9 @@ IBMgtSim::allocateFabricNodeGuids()
 }
 
 /* initialize simulator nodes */
-int 
-IBMgtSim::populateFabricNodes()
+int IBMgtSim::populateFabricNodes()  
 {
-  
+
   MSGREG(msg1, 'I', "Populating Fabric Nodes ...", "server");
   MSGSND(msg1);
 
@@ -141,8 +142,35 @@ IBMgtSim::populateFabricNodes()
     IBMSNode *pSimNode = new IBMSNode(this, pNode);
     ibmsSetIBNodeSimNode(pNode, pSimNode);
 
-    // TODO use a list of mgtclass instead
-    IBMSSma *pSma = new IBMSSma(pSimNode, 0x81);
+    list_uint16 smClassList;
+    smClassList.push_back(0x1);
+    smClassList.push_back(0x81);
+    IBMSSma *pSma = new IBMSSma(pSimNode, smClassList);
+    if (! pSma) 
+    {
+      MSGREG(err1, 'F', "Fail to allocate SMA for Node:$", "server");
+      MSGSND(err1, pNode->name);
+      exit(1);
+    }
+
+    list_uint16 vsClassList;
+    vsClassList.push_back(0x9);
+    vsClassList.push_back(0x10);
+    IBMSVendorSpecific *pVsa = new IBMSVendorSpecific(pSimNode, vsClassList);
+    if (! pVsa) 
+    {
+      MSGREG(err2, 'F', "Fail to allocate VSA for Node:$", "server");
+      MSGSND(err2, pNode->name);
+      exit(1);
+    }
+
+    IBMSPma *pPma = new IBMSPma(pSimNode, 0x04);
+    if (! pPma) 
+    {
+	MSGREG(err3, 'F', "Fail to allocate PMA for Node:$", "server");
+	MSGSND(err3, pNode->name);
+	exit(1);
+    }
   }
   
   return 0;
@@ -209,7 +237,7 @@ show_help() {
 int main(int argc, char **argv) 
 {
   /*
-   * Parseing of Command Line 
+   * Parsing of Command Line 
    */
   
   string TopoFile = string("");
@@ -255,7 +283,7 @@ int main(int argc, char **argv)
 		
 	 case 'p':
 		/*
-		  Sepcific Server Port
+		  Specific Server Port
 		*/
 		serverPortNum = atoi(optarg);
 		printf(" Using Port:%u\n", serverPortNum);

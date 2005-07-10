@@ -28,7 +28,7 @@ if test "x$with_osm" = xnone; then
    if test -d /usr/local/ibgd/apps/osm; then
       with_osm=/usr/local/ibgd/apps/osm
    elif test -d /usr/mellanox/osm; then
-      with_osm=/usr/mellanox/osm
+      with_osm=/usr/mellanox
    else
       AC_MSG_ERROR([--with-osm must be provided - failde to find standard OpenSM installation])
    fi

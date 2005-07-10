@@ -26,7 +26,7 @@
 #define SWIGTCL
 #define SWIGTCL8
 /*
- * $Header: /b2/dmb/SWIG/SWIG1.0b3/swig_lib/tcl/RCS/swigtcl.cfg,v 1.1 1996/05/22 19:47:45 beazley Exp $
+ * $Header: /mswg/cvsroot/IBMgtSim/src/ibmssh_wrap.cpp,v 1.6 2005/07/07 21:15:28 eitan Exp $
  * 
  * swigtcl.cfg
  *
@@ -35,7 +35,10 @@
  * files to work on Unix, Windows, and Macintosh.
  *
  * Revision History
- * $Log: swigtcl.cfg,v $
+ * $Log: ibmssh_wrap.cpp,v $
+ * Revision 1.6  2005/07/07 21:15:28  eitan
+ * Spelling fixes
+ *
  * Revision 1.1  1996/05/22 19:47:45  beazley
  * Initial revision
  *
@@ -103,7 +106,7 @@ DllEntryPoint(HINSTANCE hInst, DWORD reason, LPVOID reserved)
 #endif
 
 /**************************************************************************
- * $Header:$
+ * $Header: /mswg/cvsroot/IBMgtSim/src/ibmssh_wrap.cpp,v 1.6 2005/07/07 21:15:28 eitan Exp $
  *
  * tcl8ptr.swg
  *
@@ -333,7 +336,7 @@ SWIGEXPORT(int,Ibdm_Init)(Tcl_Interp *);
 
   /* 
 	  MAPPING IBDM OBJECTS TO TCL and BACK:
-	  The idea is that we have specifc rules for naming
+	  The idea is that we have specific rules for naming
 	  Node, Port, System and SystemPort for a specific Fabric.
 	  
 	  All Fabrics are stored by id in a global vector.
@@ -429,7 +432,7 @@ SWIGEXPORT(int,Ibdm_Init)(Tcl_Interp *);
   int ibdmGetObjPtrByTclName(Tcl_Obj *objPtr, void **ptr) {
 	 /* we need to parse the name and get the type etc. */
 	 char buf[256];
-	 char *type, *name, *fabIdxStr;
+	 char *type, *name = 0, *fabIdxStr;
 	 char *colonIdx, *slashIdx;
 	 int fabricIdx;
 	 *ptr = NULL;
@@ -449,7 +452,7 @@ SWIGEXPORT(int,Ibdm_Init)(Tcl_Interp *);
 	 type = buf;
 	 fabIdxStr = ++colonIdx;
 
-	 /* now separate the fabric section if tyep is not fabric */
+	 /* now separate the fabric section if type is not fabric */
 	 if (strcmp(type, "fabric")) {
 		slashIdx = index(fabIdxStr,':');
 		if (!slashIdx) {
@@ -461,7 +464,7 @@ SWIGEXPORT(int,Ibdm_Init)(Tcl_Interp *);
 		name = ++slashIdx;
 	 }
 	 
-	 /* Ok so now get the fabic pointer */
+	 /* OK so now get the fabric pointer */
 	 fabricIdx = atoi(fabIdxStr);
 	 
 	 IBFabric *p_fabric = ibdmGetFabricPtrByIdx(fabricIdx);
@@ -549,8 +552,10 @@ static int  _wrap_const_FABU_LOG_VERBOSE = 0x4;
 #include <getopt.h>
 #include <inttypes.h>
 #include <ibdm/Fabric.h>
+#include <errno.h>
 #include "sim.h"
 #include "node.h"
+#include "randmgr.h"
 
 # if __WORDSIZE == 64
 #  define __PRI64_PREFIX   "l"
@@ -615,7 +620,7 @@ static int  _wrap_const_FABU_LOG_VERBOSE = 0x4;
   int ibmsGetSimNodePtrByTclName(Tcl_Obj *objPtr, void **ptr) {
 	 /* we need to parse the name and get the type etc. */
 	 char buf[256];
-	 char *type, *name, *fabIdxStr;
+	 char *type, *name = 0, *fabIdxStr;
 	 char *colonIdx, *slashIdx;
 	 int fabricIdx;
 	 *ptr = NULL;
@@ -635,7 +640,7 @@ static int  _wrap_const_FABU_LOG_VERBOSE = 0x4;
 	 type = buf;
 	 fabIdxStr = ++colonIdx;
 	 
-	 /* now separate the fabric section if tyep is not fabric */
+	 /* now separate the fabric section if type is not fabric */
 	 if (strcmp(type, "fabric")) {
 		slashIdx = index(fabIdxStr,':');
 		if (!slashIdx) {
@@ -647,7 +652,7 @@ static int  _wrap_const_FABU_LOG_VERBOSE = 0x4;
 		name = ++slashIdx;
 	 }
 
-	 /* Ok so now get the fabic pointer */
+	 /* OK so now get the fabric pointer */
 	 fabricIdx = atoi(fabIdxStr);
 	 
 	 IBFabric *p_fabric = ibdmGetFabricPtrByIdx(fabricIdx);
@@ -675,6 +680,20 @@ static int  _wrap_const_FABU_LOG_VERBOSE = 0x4;
 	 return TCL_OK;
   }
 
+#define uint8_array_t uint8_t
+
+#define uint16_array_t uint16_t
+
+#define uint32_array_t uint32_t
+
+#define uint64_array_t uint64_t
+
+#define ib_net16_array_t ib_net16_t
+
+#define ib_net32_array_t ib_net32_t
+
+#define ib_net64_array_t ib_net64_t
+
   
   /* for IB structs we use the format: <type>:<ptr> */
 
@@ -682,7 +701,6 @@ static int  _wrap_const_FABU_LOG_VERBOSE = 0x4;
   int ibmsGetIBStructObjNameByPtr(Tcl_Obj *objPtr, void *ptr, char *type) {
 	 char tclName[128];
 	 string uiType;
-	 char *spacePtr;
 	 char name[128];
     
     /* check that the string starts with _ib_ and ends with _t_p */
@@ -754,6 +772,97 @@ static int  _wrap_const_MsgDefault = 0x62f;
 
 static string MsgAllModules("");
 
+
+  float rmRand() {
+    return RandMgr()->random();
+  }
+  
+  int rmSeed(int seed) {
+    return RandMgr()->setRandomSeed(seed);
+  }
+
+  /* the following code will place the mad into the dispatcher */
+  int
+    send_mad(
+      IBMSNode *pFromNode, 
+      uint8_t   fromPort, 
+      uint16_t  destLid,
+      uint8_t   mgmt_class, 
+      uint8_t   method, 
+      uint16_t  attr,
+      uint32_t  attr_mod,
+      uint8_t  *data,
+      size_t    size)
+    {
+      ibms_mad_msg_t msg;
+      IBPort *pPort;
+      static uint64_t tid = 19927;
+      
+      /* initialize the message address vector */
+      msg.addr.sl = 0;
+      msg.addr.pkey_index = 0;
+      msg.addr.dlid = destLid;
+      msg.addr.sqpn = 0;
+      msg.addr.dqpn = 0;
+
+      pPort = pFromNode->getIBNode()->getPort(fromPort);
+      if (! pPort)
+      {
+        cout << "-E- Given port:" << fromPort << " is down." << endl;
+        return 1;
+      }
+      msg.addr.slid = pPort->base_lid;
+      
+      /* initialize the mad header */
+      msg.header.base_ver = 1;
+      msg.header.mgmt_class = mgmt_class;
+      msg.header.class_ver = 1;
+      msg.header.method = method;
+      msg.header.status = 0;
+      msg.header.class_spec = 0;
+      msg.header.trans_id = tid++;
+      msg.header.attr_id = cl_hton16(attr);
+      msg.header.attr_mod = cl_hton32(attr_mod);
+     
+      memcpy(msg.payload, data, size);
+      IBMSDispatcher *pDispatcher = Simulator.getDispatcher();
+      if (! pDispatcher )
+        return TCL_ERROR;
+      
+      return pDispatcher->dispatchMad(pFromNode, fromPort, msg);
+    }
+
+  int send_sa_mad(
+    IBMSNode *pFromNode, 
+    uint8_t   fromPort, 
+    uint16_t  destLid,
+    uint8_t   mgmt_class, 
+    uint8_t   method,
+    uint16_t  attr,
+    uint64_t  comp_mask,
+    uint8_t  *sa_data,
+    size_t    sa_data_size)
+    {
+      ib_sa_mad_t mad = {0}; /* includes std header and rmpp header */
+      
+      mad.attr_offset = ib_get_attr_offset(sa_data_size);
+      mad.comp_mask = cl_hton64(comp_mask);
+      memcpy(mad.data, sa_data, sa_data_size);
+
+      return send_mad(
+        pFromNode, 
+        fromPort, 
+        destLid,
+        mgmt_class, 
+        method, 
+        attr,
+        0,
+        &mad.rmpp_version, 
+        MAD_RMPP_DATA_SIZE + 12);
+    }
+
+
+#define madMcMemberRec ib_member_rec_t
 
 
 /* A TCL_AppInit() function that lets you build a new copy
@@ -2231,6 +2340,56 @@ static int _wrap_ibdmBuildMergedFabric(ClientData clientData, Tcl_Interp *interp
 ; 
   if (ibdm_tcl_error) { 
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+    Tcl_SetIntObj(tcl_result,(long) _result);
+    return TCL_OK;
+}
+static int _wrap_rmRand(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    float  _result;
+    Tcl_Obj * tcl_result;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 1) || (objc > 1)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. rmRand ",-1);
+        return TCL_ERROR;
+    }
+{ 
+  ibms_tcl_error = 0;
+      _result = (float )rmRand();
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+    Tcl_SetDoubleObj(tcl_result,(double) _result);
+    return TCL_OK;
+}
+static int _wrap_rmSeed(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    int  _result;
+    int  _arg0;
+    Tcl_Obj * tcl_result;
+    int tempint;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. rmSeed seed ",-1);
+        return TCL_ERROR;
+    }
+    if (Tcl_GetIntFromObj(interp,objv[1],&tempint) == TCL_ERROR) return TCL_ERROR;
+    _arg0 = (int ) tempint;
+{ 
+  ibms_tcl_error = 0;
+      _result = (int )rmSeed(_arg0);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
  	 return TCL_ERROR; 
   }
 }    tcl_result = Tcl_GetObjResult(interp);
@@ -4385,26 +4544,26 @@ static int _wrap_IBPort_connect(ClientData clientData, Tcl_Interp *interp, int o
 /* methodcmd8.swg : Tcl8.x method invocation */
 
 static int TclIBPortMethodCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST _objv[]) {
-    int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
-    char *_str;
-    int rcode;
-    Tcl_Obj **objv;
-    Tcl_Obj *oldarg,*tcl_result,*obj;
-    int length;
-    char c;
+  int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
+  char *_str;
+  int rcode;
+  Tcl_Obj **objv;
+  Tcl_Obj *oldarg,*tcl_result,*obj;
+  int length;
+  char c;
 
-    tcl_result = Tcl_GetObjResult(interp);
-    objv = (Tcl_Obj **) _objv; 
-    if (objc < 2) {
-        Tcl_SetStringObj(tcl_result,"IBPort methods : { cget configure guid_get guid_set getName connect  }",-1);
-        return TCL_ERROR;
-    }
-    obj = Tcl_NewObj();
-    SWIG_SetPointerObj(obj,(void *) clientData,"_IBPort_p");
-    _str = Tcl_GetStringFromObj(objv[1],&length);
-    c = *_str;
-    if (0);
-    if (strcmp(_str,"guid_get") == 0) {
+  tcl_result = Tcl_GetObjResult(interp);
+  objv = (Tcl_Obj **) _objv; 
+  if (objc < 2) {
+    Tcl_SetStringObj(tcl_result,"IBPort methods : { dump cget configure guid_get guid_set getName connect  }",-1);
+    return TCL_ERROR;
+  }
+  obj = Tcl_NewObj();
+  SWIG_SetPointerObj(obj,(void *) clientData,"_IBPort_p");
+  _str = Tcl_GetStringFromObj(objv[1],&length);
+  c = *_str;
+  if (0);
+      if (strcmp(_str,"guid_get") == 0) {
         cmd = _wrap_IBPort_guid_get;
     }    else if (strcmp(_str,"guid_set") == 0) {
         cmd = _wrap_IBPort_guid_set;
@@ -4417,8 +4576,8 @@ static int TclIBPortMethodCmd(ClientData clientData, Tcl_Interp *interp, int obj
       int i = 2;
       cmd = 0;
       while (i+1 < objc) {
-	_str = Tcl_GetStringFromObj(objv[i],&length);
-                if (strcmp(_str,"-p_remotePort") == 0) {
+        _str = Tcl_GetStringFromObj(objv[i],&length);
+                        if (strcmp(_str,"-p_remotePort") == 0) {
                     cmd = _wrap_IBPort_p_remotePort_set;
                 }  else if (strcmp(_str,"-p_sysPort") == 0) {
                     cmd = _wrap_IBPort_p_sysPort_set;
@@ -4433,29 +4592,29 @@ static int TclIBPortMethodCmd(ClientData clientData, Tcl_Interp *interp, int obj
                 }  else if (strcmp(_str,"-speed") == 0) {
                     cmd = _wrap_IBPort_speed_set;
                 } 
-	   if (cmd) {
-	     oldarg = objv[i];
-	     objv[i] = obj;
-	     rcode = (*cmd)(clientData,interp,3,&objv[i-1]);
-	     objv[i] = oldarg;
-	     if (rcode == TCL_ERROR) return rcode;
-	     cmd = 0;
-	   } else {
-	     Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be { -p_remotePort -p_sysPort -p_node -num -base_lid -width -speed  }",-1);
-	     return TCL_ERROR;
-	   }
-	i+=2;
+          if (cmd) {
+            oldarg = objv[i];
+            objv[i] = obj;
+            rcode = (*cmd)(clientData,interp,3,&objv[i-1]);
+            objv[i] = oldarg;
+            if (rcode == TCL_ERROR) return rcode;
+            cmd = 0;
+          } else {
+            Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be { -p_remotePort -p_sysPort -p_node -num -base_lid -width -speed  }",-1);
+            return TCL_ERROR;
+          }
+        i+=2;
       }
       if ((i < objc) || (i == 2)) {
-	Tcl_SetStringObj(tcl_result,"{ -p_remotePort -p_sysPort -p_node -num -base_lid -width -speed  }",-1);
-	return TCL_ERROR;
+        Tcl_SetStringObj(tcl_result,"{ -p_remotePort -p_sysPort -p_node -num -base_lid -width -speed  }",-1);
+        return TCL_ERROR;
       }
       return TCL_OK;
     } else if ((c == 'c') && (strncmp(_str,"cget",length) == 0) && (length >= 2)) {
-            if (objc == 3) {
-	      _str = Tcl_GetStringFromObj(objv[2],&length);
-	      if (0) {}
-                if (strcmp(_str,"-p_remotePort") == 0) {
+      if (objc == 3) {
+        _str = Tcl_GetStringFromObj(objv[2],&length);
+        if (0) {}
+                        if (strcmp(_str,"-p_remotePort") == 0) {
                     cmd = _wrap_IBPort_p_remotePort_get;
                 }  else if (strcmp(_str,"-p_sysPort") == 0) {
                     cmd = _wrap_IBPort_p_sysPort_get;
@@ -4470,34 +4629,95 @@ static int TclIBPortMethodCmd(ClientData clientData, Tcl_Interp *interp, int obj
                 }  else if (strcmp(_str,"-speed") == 0) {
                     cmd = _wrap_IBPort_speed_get;
                 } 
-	      else if (strcmp(_str,"-this") == 0) {
-                   SWIG_SetPointerObj(tcl_result,(void *) clientData, "_IBPort_p");
-                   return TCL_OK;
-	      }
-	      if (cmd) {
-		oldarg = objv[2];
-		objv[2] = obj;
-		rcode = (*cmd)(clientData,interp,objc-1,&objv[1]);
-		objv[2] = oldarg;
-		return rcode;
-	      } else {
-		Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this -p_remotePort -p_sysPort -p_node -num -base_lid -width -speed  }",-1);
-		return TCL_ERROR;
-	      }
-	    } else {
-	      Tcl_SetStringObj(tcl_result,"{ -this -p_remotePort -p_sysPort -p_node -num -base_lid -width -speed  }", -1);
-	      return TCL_ERROR;
-	    }
-    }
-    if (!cmd) {
-        Tcl_SetStringObj(tcl_result,"Invalid Method. Must be { cget configure guid_get guid_set getName connect }",-1);
+          else if (strcmp(_str,"-this") == 0) {
+            SWIG_SetPointerObj(tcl_result,(void *) clientData, "_IBPort_p");
+            return TCL_OK;
+          }
+        if (cmd) {
+          oldarg = objv[2];
+          objv[2] = obj;
+          rcode = (*cmd)(clientData,interp,objc-1,&objv[1]);
+          objv[2] = oldarg;
+          return rcode;
+        } else {
+          Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this -p_remotePort -p_sysPort -p_node -num -base_lid -width -speed  }",-1);
+          return TCL_ERROR;
+        }
+      } else {
+        Tcl_SetStringObj(tcl_result,"{ -this -p_remotePort -p_sysPort -p_node -num -base_lid -width -speed  }", -1);
         return TCL_ERROR;
+      }
+    } else if ((c == 'd') && (strncmp(_str,"dump",length) == 0) && (length >= 2)) {
+      if (objc == 2) {
+        Tcl_Obj *pDumpObj;
+        pDumpObj = Tcl_NewStringObj("",-1);
+        Tcl_IncrRefCount(pDumpObj);
+                cmd = _wrap_IBPort_p_remotePort_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-p_remotePort ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_IBPort_p_sysPort_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-p_sysPort ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_IBPort_p_node_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-p_node ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_IBPort_num_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-num ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_IBPort_base_lid_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-base_lid ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_IBPort_width_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-width ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_IBPort_speed_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-speed ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+
+        Tcl_DecrRefCount(pDumpObj);
+        return TCL_OK;
+      } else {
+        Tcl_SetStringObj(tcl_result,"no parameters are allowed for dump", -1);
+        return TCL_ERROR;
+      }
     }
-    oldarg = objv[1];
-    objv[1] = obj;
-    rcode = (*cmd)(clientData,interp,objc,objv);
-    objv[1] = oldarg;
-    return rcode;
+  if (!cmd) {
+    Tcl_SetStringObj(tcl_result,"Invalid Method. Must be { dump cget configure guid_get guid_set getName connect }",-1);
+    return TCL_ERROR;
+  }
+  oldarg = objv[1];
+  objv[1] = obj;
+  rcode = (*cmd)(clientData,interp,objc,objv);
+  objv[1] = oldarg;
+  return rcode;
 }
 
 
@@ -7698,26 +7918,26 @@ static void TclDeleteIBNode(ClientData clientData) {
 /* methodcmd8.swg : Tcl8.x method invocation */
 
 static int TclIBNodeMethodCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST _objv[]) {
-    int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
-    char *_str;
-    int rcode;
-    Tcl_Obj **objv;
-    Tcl_Obj *oldarg,*tcl_result,*obj;
-    int length;
-    char c;
+  int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
+  char *_str;
+  int rcode;
+  Tcl_Obj **objv;
+  Tcl_Obj *oldarg,*tcl_result,*obj;
+  int length;
+  char c;
 
-    tcl_result = Tcl_GetObjResult(interp);
-    objv = (Tcl_Obj **) _objv; 
-    if (objc < 2) {
-        Tcl_SetStringObj(tcl_result,"IBNode methods : { cget configure guid_get guid_set makePort getPort setHops getHops getFirstMinHopPort setLFTPortForLid getLFTPortForLid  }",-1);
-        return TCL_ERROR;
-    }
-    obj = Tcl_NewObj();
-    SWIG_SetPointerObj(obj,(void *) clientData,"_IBNode_p");
-    _str = Tcl_GetStringFromObj(objv[1],&length);
-    c = *_str;
-    if (0);
-    if (strcmp(_str,"guid_get") == 0) {
+  tcl_result = Tcl_GetObjResult(interp);
+  objv = (Tcl_Obj **) _objv; 
+  if (objc < 2) {
+    Tcl_SetStringObj(tcl_result,"IBNode methods : { dump cget configure guid_get guid_set makePort getPort setHops getHops getFirstMinHopPort setLFTPortForLid getLFTPortForLid  }",-1);
+    return TCL_ERROR;
+  }
+  obj = Tcl_NewObj();
+  SWIG_SetPointerObj(obj,(void *) clientData,"_IBNode_p");
+  _str = Tcl_GetStringFromObj(objv[1],&length);
+  c = *_str;
+  if (0);
+      if (strcmp(_str,"guid_get") == 0) {
         cmd = _wrap_IBNode_guid_get;
     }    else if (strcmp(_str,"guid_set") == 0) {
         cmd = _wrap_IBNode_guid_set;
@@ -7740,8 +7960,8 @@ static int TclIBNodeMethodCmd(ClientData clientData, Tcl_Interp *interp, int obj
       int i = 2;
       cmd = 0;
       while (i+1 < objc) {
-	_str = Tcl_GetStringFromObj(objv[i],&length);
-                if (strcmp(_str,"-name") == 0) {
+        _str = Tcl_GetStringFromObj(objv[i],&length);
+                        if (strcmp(_str,"-name") == 0) {
                     cmd = _wrap_IBNode_name_set;
                 }  else if (strcmp(_str,"-type") == 0) {
                     cmd = _wrap_IBNode_type_set;
@@ -7754,29 +7974,29 @@ static int TclIBNodeMethodCmd(ClientData clientData, Tcl_Interp *interp, int obj
                 }  else if (strcmp(_str,"-attributes") == 0) {
                     cmd = _wrap_IBNode_attributes_set;
                 } 
-	   if (cmd) {
-	     oldarg = objv[i];
-	     objv[i] = obj;
-	     rcode = (*cmd)(clientData,interp,3,&objv[i-1]);
-	     objv[i] = oldarg;
-	     if (rcode == TCL_ERROR) return rcode;
-	     cmd = 0;
-	   } else {
-	     Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be { -name -type -devId -revId -vendId -attributes  }",-1);
-	     return TCL_ERROR;
-	   }
-	i+=2;
+          if (cmd) {
+            oldarg = objv[i];
+            objv[i] = obj;
+            rcode = (*cmd)(clientData,interp,3,&objv[i-1]);
+            objv[i] = oldarg;
+            if (rcode == TCL_ERROR) return rcode;
+            cmd = 0;
+          } else {
+            Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be { -name -type -devId -revId -vendId -attributes  }",-1);
+            return TCL_ERROR;
+          }
+        i+=2;
       }
       if ((i < objc) || (i == 2)) {
-	Tcl_SetStringObj(tcl_result,"{ -name -type -devId -revId -vendId -attributes  }",-1);
-	return TCL_ERROR;
+        Tcl_SetStringObj(tcl_result,"{ -name -type -devId -revId -vendId -attributes  }",-1);
+        return TCL_ERROR;
       }
       return TCL_OK;
     } else if ((c == 'c') && (strncmp(_str,"cget",length) == 0) && (length >= 2)) {
-            if (objc == 3) {
-	      _str = Tcl_GetStringFromObj(objv[2],&length);
-	      if (0) {}
-                if (strcmp(_str,"-name") == 0) {
+      if (objc == 3) {
+        _str = Tcl_GetStringFromObj(objv[2],&length);
+        if (0) {}
+                        if (strcmp(_str,"-name") == 0) {
                     cmd = _wrap_IBNode_name_get;
                 }  else if (strcmp(_str,"-type") == 0) {
                     cmd = _wrap_IBNode_type_get;
@@ -7801,34 +8021,130 @@ static int TclIBNodeMethodCmd(ClientData clientData, Tcl_Interp *interp, int obj
                 }  else if (strcmp(_str,"-LFT") == 0) {
                     cmd = _wrap_IBNode_LFT_get;
                 } 
-	      else if (strcmp(_str,"-this") == 0) {
-                   SWIG_SetPointerObj(tcl_result,(void *) clientData, "_IBNode_p");
-                   return TCL_OK;
-	      }
-	      if (cmd) {
-		oldarg = objv[2];
-		objv[2] = obj;
-		rcode = (*cmd)(clientData,interp,objc-1,&objv[1]);
-		objv[2] = oldarg;
-		return rcode;
-	      } else {
-		Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this -name -type -devId -revId -vendId -attributes -p_system -p_fabric -numPorts -Ports -MinHopsTable -LFT  }",-1);
-		return TCL_ERROR;
-	      }
-	    } else {
-	      Tcl_SetStringObj(tcl_result,"{ -this -name -type -devId -revId -vendId -attributes -p_system -p_fabric -numPorts -Ports -MinHopsTable -LFT  }", -1);
-	      return TCL_ERROR;
-	    }
-    }
-    if (!cmd) {
-        Tcl_SetStringObj(tcl_result,"Invalid Method. Must be { cget configure guid_get guid_set makePort getPort setHops getHops getFirstMinHopPort setLFTPortForLid getLFTPortForLid }",-1);
+          else if (strcmp(_str,"-this") == 0) {
+            SWIG_SetPointerObj(tcl_result,(void *) clientData, "_IBNode_p");
+            return TCL_OK;
+          }
+        if (cmd) {
+          oldarg = objv[2];
+          objv[2] = obj;
+          rcode = (*cmd)(clientData,interp,objc-1,&objv[1]);
+          objv[2] = oldarg;
+          return rcode;
+        } else {
+          Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this -name -type -devId -revId -vendId -attributes -p_system -p_fabric -numPorts -Ports -MinHopsTable -LFT  }",-1);
+          return TCL_ERROR;
+        }
+      } else {
+        Tcl_SetStringObj(tcl_result,"{ -this -name -type -devId -revId -vendId -attributes -p_system -p_fabric -numPorts -Ports -MinHopsTable -LFT  }", -1);
         return TCL_ERROR;
+      }
+    } else if ((c == 'd') && (strncmp(_str,"dump",length) == 0) && (length >= 2)) {
+      if (objc == 2) {
+        Tcl_Obj *pDumpObj;
+        pDumpObj = Tcl_NewStringObj("",-1);
+        Tcl_IncrRefCount(pDumpObj);
+                cmd = _wrap_IBNode_name_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-name ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_IBNode_type_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-type ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_IBNode_devId_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-devId ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_IBNode_revId_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-revId ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_IBNode_vendId_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-vendId ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_IBNode_attributes_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-attributes ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_IBNode_p_system_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-p_system ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_IBNode_p_fabric_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-p_fabric ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_IBNode_numPorts_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-numPorts ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_IBNode_Ports_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-Ports ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_IBNode_MinHopsTable_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-MinHopsTable ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_IBNode_LFT_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-LFT ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+
+        Tcl_DecrRefCount(pDumpObj);
+        return TCL_OK;
+      } else {
+        Tcl_SetStringObj(tcl_result,"no parameters are allowed for dump", -1);
+        return TCL_ERROR;
+      }
     }
-    oldarg = objv[1];
-    objv[1] = obj;
-    rcode = (*cmd)(clientData,interp,objc,objv);
-    objv[1] = oldarg;
-    return rcode;
+  if (!cmd) {
+    Tcl_SetStringObj(tcl_result,"Invalid Method. Must be { dump cget configure guid_get guid_set makePort getPort setHops getHops getFirstMinHopPort setLFTPortForLid getLFTPortForLid }",-1);
+    return TCL_ERROR;
+  }
+  oldarg = objv[1];
+  objv[1] = obj;
+  rcode = (*cmd)(clientData,interp,objc,objv);
+  objv[1] = oldarg;
+  return rcode;
 }
 
 
@@ -9286,34 +9602,34 @@ static void TclDeleteIBSysPort(ClientData clientData) {
 /* methodcmd8.swg : Tcl8.x method invocation */
 
 static int TclIBSysPortMethodCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST _objv[]) {
-    int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
-    char *_str;
-    int rcode;
-    Tcl_Obj **objv;
-    Tcl_Obj *oldarg,*tcl_result,*obj;
-    int length;
-    char c;
+  int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
+  char *_str;
+  int rcode;
+  Tcl_Obj **objv;
+  Tcl_Obj *oldarg,*tcl_result,*obj;
+  int length;
+  char c;
 
-    tcl_result = Tcl_GetObjResult(interp);
-    objv = (Tcl_Obj **) _objv; 
-    if (objc < 2) {
-        Tcl_SetStringObj(tcl_result,"IBSysPort methods : { cget configure connect  }",-1);
-        return TCL_ERROR;
-    }
-    obj = Tcl_NewObj();
-    SWIG_SetPointerObj(obj,(void *) clientData,"_IBSysPort_p");
-    _str = Tcl_GetStringFromObj(objv[1],&length);
-    c = *_str;
-    if (0);
-    if (strcmp(_str,"connect") == 0) {
+  tcl_result = Tcl_GetObjResult(interp);
+  objv = (Tcl_Obj **) _objv; 
+  if (objc < 2) {
+    Tcl_SetStringObj(tcl_result,"IBSysPort methods : { dump cget configure connect  }",-1);
+    return TCL_ERROR;
+  }
+  obj = Tcl_NewObj();
+  SWIG_SetPointerObj(obj,(void *) clientData,"_IBSysPort_p");
+  _str = Tcl_GetStringFromObj(objv[1],&length);
+  c = *_str;
+  if (0);
+      if (strcmp(_str,"connect") == 0) {
         cmd = _wrap_IBSysPort_connect;
     }
     else if ((c == 'c') && (strncmp(_str,"configure",length) == 0) && (length >= 2)) {
       int i = 2;
       cmd = 0;
       while (i+1 < objc) {
-	_str = Tcl_GetStringFromObj(objv[i],&length);
-                if (strcmp(_str,"-name") == 0) {
+        _str = Tcl_GetStringFromObj(objv[i],&length);
+                        if (strcmp(_str,"-name") == 0) {
                     cmd = _wrap_IBSysPort_name_set;
                 }  else if (strcmp(_str,"-p_remoteSysPort") == 0) {
                     cmd = _wrap_IBSysPort_p_remoteSysPort_set;
@@ -9322,29 +9638,29 @@ static int TclIBSysPortMethodCmd(ClientData clientData, Tcl_Interp *interp, int 
                 }  else if (strcmp(_str,"-p_nodePort") == 0) {
                     cmd = _wrap_IBSysPort_p_nodePort_set;
                 } 
-	   if (cmd) {
-	     oldarg = objv[i];
-	     objv[i] = obj;
-	     rcode = (*cmd)(clientData,interp,3,&objv[i-1]);
-	     objv[i] = oldarg;
-	     if (rcode == TCL_ERROR) return rcode;
-	     cmd = 0;
-	   } else {
-	     Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be { -name -p_remoteSysPort -p_system -p_nodePort  }",-1);
-	     return TCL_ERROR;
-	   }
-	i+=2;
+          if (cmd) {
+            oldarg = objv[i];
+            objv[i] = obj;
+            rcode = (*cmd)(clientData,interp,3,&objv[i-1]);
+            objv[i] = oldarg;
+            if (rcode == TCL_ERROR) return rcode;
+            cmd = 0;
+          } else {
+            Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be { -name -p_remoteSysPort -p_system -p_nodePort  }",-1);
+            return TCL_ERROR;
+          }
+        i+=2;
       }
       if ((i < objc) || (i == 2)) {
-	Tcl_SetStringObj(tcl_result,"{ -name -p_remoteSysPort -p_system -p_nodePort  }",-1);
-	return TCL_ERROR;
+        Tcl_SetStringObj(tcl_result,"{ -name -p_remoteSysPort -p_system -p_nodePort  }",-1);
+        return TCL_ERROR;
       }
       return TCL_OK;
     } else if ((c == 'c') && (strncmp(_str,"cget",length) == 0) && (length >= 2)) {
-            if (objc == 3) {
-	      _str = Tcl_GetStringFromObj(objv[2],&length);
-	      if (0) {}
-                if (strcmp(_str,"-name") == 0) {
+      if (objc == 3) {
+        _str = Tcl_GetStringFromObj(objv[2],&length);
+        if (0) {}
+                        if (strcmp(_str,"-name") == 0) {
                     cmd = _wrap_IBSysPort_name_get;
                 }  else if (strcmp(_str,"-p_remoteSysPort") == 0) {
                     cmd = _wrap_IBSysPort_p_remoteSysPort_get;
@@ -9353,34 +9669,74 @@ static int TclIBSysPortMethodCmd(ClientData clientData, Tcl_Interp *interp, int 
                 }  else if (strcmp(_str,"-p_nodePort") == 0) {
                     cmd = _wrap_IBSysPort_p_nodePort_get;
                 } 
-	      else if (strcmp(_str,"-this") == 0) {
-                   SWIG_SetPointerObj(tcl_result,(void *) clientData, "_IBSysPort_p");
-                   return TCL_OK;
-	      }
-	      if (cmd) {
-		oldarg = objv[2];
-		objv[2] = obj;
-		rcode = (*cmd)(clientData,interp,objc-1,&objv[1]);
-		objv[2] = oldarg;
-		return rcode;
-	      } else {
-		Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this -name -p_remoteSysPort -p_system -p_nodePort  }",-1);
-		return TCL_ERROR;
-	      }
-	    } else {
-	      Tcl_SetStringObj(tcl_result,"{ -this -name -p_remoteSysPort -p_system -p_nodePort  }", -1);
-	      return TCL_ERROR;
-	    }
-    }
-    if (!cmd) {
-        Tcl_SetStringObj(tcl_result,"Invalid Method. Must be { cget configure connect }",-1);
+          else if (strcmp(_str,"-this") == 0) {
+            SWIG_SetPointerObj(tcl_result,(void *) clientData, "_IBSysPort_p");
+            return TCL_OK;
+          }
+        if (cmd) {
+          oldarg = objv[2];
+          objv[2] = obj;
+          rcode = (*cmd)(clientData,interp,objc-1,&objv[1]);
+          objv[2] = oldarg;
+          return rcode;
+        } else {
+          Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this -name -p_remoteSysPort -p_system -p_nodePort  }",-1);
+          return TCL_ERROR;
+        }
+      } else {
+        Tcl_SetStringObj(tcl_result,"{ -this -name -p_remoteSysPort -p_system -p_nodePort  }", -1);
         return TCL_ERROR;
+      }
+    } else if ((c == 'd') && (strncmp(_str,"dump",length) == 0) && (length >= 2)) {
+      if (objc == 2) {
+        Tcl_Obj *pDumpObj;
+        pDumpObj = Tcl_NewStringObj("",-1);
+        Tcl_IncrRefCount(pDumpObj);
+                cmd = _wrap_IBSysPort_name_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-name ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_IBSysPort_p_remoteSysPort_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-p_remoteSysPort ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_IBSysPort_p_system_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-p_system ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_IBSysPort_p_nodePort_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-p_nodePort ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+
+        Tcl_DecrRefCount(pDumpObj);
+        return TCL_OK;
+      } else {
+        Tcl_SetStringObj(tcl_result,"no parameters are allowed for dump", -1);
+        return TCL_ERROR;
+      }
     }
-    oldarg = objv[1];
-    objv[1] = obj;
-    rcode = (*cmd)(clientData,interp,objc,objv);
-    objv[1] = oldarg;
-    return rcode;
+  if (!cmd) {
+    Tcl_SetStringObj(tcl_result,"Invalid Method. Must be { dump cget configure connect }",-1);
+    return TCL_ERROR;
+  }
+  oldarg = objv[1];
+  objv[1] = obj;
+  rcode = (*cmd)(clientData,interp,objc,objv);
+  objv[1] = oldarg;
+  return rcode;
 }
 
 
@@ -10222,7 +10578,7 @@ static int _wrap_IBSystem_NodeByName_get(ClientData clientData, Tcl_Interp *inte
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
-  // build a TCL list out of the Objec ID's of the ibdm objects in it.
+  // build a TCL list out of the Object ID's of the ibdm objects in it.
   map_str_pnode::const_iterator I = _result->begin();
   Tcl_Obj *p_tclObj;
 
@@ -10333,7 +10689,7 @@ static int _wrap_IBSystem_PortByName_get(ClientData clientData, Tcl_Interp *inte
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
-  // build a TCL list out of the Objec ID's of the ibdm objects in it.
+  // build a TCL list out of the Object ID's of the ibdm objects in it.
   map_str_psysport::const_iterator I = _result->begin();
   Tcl_Obj *p_tclObj;
 
@@ -10968,26 +11324,26 @@ static void TclDeleteIBSystem(ClientData clientData) {
 /* methodcmd8.swg : Tcl8.x method invocation */
 
 static int TclIBSystemMethodCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST _objv[]) {
-    int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
-    char *_str;
-    int rcode;
-    Tcl_Obj **objv;
-    Tcl_Obj *oldarg,*tcl_result,*obj;
-    int length;
-    char c;
+  int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
+  char *_str;
+  int rcode;
+  Tcl_Obj **objv;
+  Tcl_Obj *oldarg,*tcl_result,*obj;
+  int length;
+  char c;
 
-    tcl_result = Tcl_GetObjResult(interp);
-    objv = (Tcl_Obj **) _objv; 
-    if (objc < 2) {
-        Tcl_SetStringObj(tcl_result,"IBSystem methods : { cget configure guid_get guid_set makeSysPort getSysPortNodePortByName  }",-1);
-        return TCL_ERROR;
-    }
-    obj = Tcl_NewObj();
-    SWIG_SetPointerObj(obj,(void *) clientData,"_IBSystem_p");
-    _str = Tcl_GetStringFromObj(objv[1],&length);
-    c = *_str;
-    if (0);
-    if (strcmp(_str,"guid_get") == 0) {
+  tcl_result = Tcl_GetObjResult(interp);
+  objv = (Tcl_Obj **) _objv; 
+  if (objc < 2) {
+    Tcl_SetStringObj(tcl_result,"IBSystem methods : { dump cget configure guid_get guid_set makeSysPort getSysPortNodePortByName  }",-1);
+    return TCL_ERROR;
+  }
+  obj = Tcl_NewObj();
+  SWIG_SetPointerObj(obj,(void *) clientData,"_IBSystem_p");
+  _str = Tcl_GetStringFromObj(objv[1],&length);
+  c = *_str;
+  if (0);
+      if (strcmp(_str,"guid_get") == 0) {
         cmd = _wrap_IBSystem_guid_get;
     }    else if (strcmp(_str,"guid_set") == 0) {
         cmd = _wrap_IBSystem_guid_set;
@@ -11000,37 +11356,37 @@ static int TclIBSystemMethodCmd(ClientData clientData, Tcl_Interp *interp, int o
       int i = 2;
       cmd = 0;
       while (i+1 < objc) {
-	_str = Tcl_GetStringFromObj(objv[i],&length);
-                if (strcmp(_str,"-name") == 0) {
+        _str = Tcl_GetStringFromObj(objv[i],&length);
+                        if (strcmp(_str,"-name") == 0) {
                     cmd = _wrap_IBSystem_name_set;
                 }  else if (strcmp(_str,"-type") == 0) {
                     cmd = _wrap_IBSystem_type_set;
                 }  else if (strcmp(_str,"-p_fabric") == 0) {
                     cmd = _wrap_IBSystem_p_fabric_set;
                 } 
-	   if (cmd) {
-	     oldarg = objv[i];
-	     objv[i] = obj;
-	     rcode = (*cmd)(clientData,interp,3,&objv[i-1]);
-	     objv[i] = oldarg;
-	     if (rcode == TCL_ERROR) return rcode;
-	     cmd = 0;
-	   } else {
-	     Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be { -name -type -p_fabric  }",-1);
-	     return TCL_ERROR;
-	   }
-	i+=2;
+          if (cmd) {
+            oldarg = objv[i];
+            objv[i] = obj;
+            rcode = (*cmd)(clientData,interp,3,&objv[i-1]);
+            objv[i] = oldarg;
+            if (rcode == TCL_ERROR) return rcode;
+            cmd = 0;
+          } else {
+            Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be { -name -type -p_fabric  }",-1);
+            return TCL_ERROR;
+          }
+        i+=2;
       }
       if ((i < objc) || (i == 2)) {
-	Tcl_SetStringObj(tcl_result,"{ -name -type -p_fabric  }",-1);
-	return TCL_ERROR;
+        Tcl_SetStringObj(tcl_result,"{ -name -type -p_fabric  }",-1);
+        return TCL_ERROR;
       }
       return TCL_OK;
     } else if ((c == 'c') && (strncmp(_str,"cget",length) == 0) && (length >= 2)) {
-            if (objc == 3) {
-	      _str = Tcl_GetStringFromObj(objv[2],&length);
-	      if (0) {}
-                if (strcmp(_str,"-name") == 0) {
+      if (objc == 3) {
+        _str = Tcl_GetStringFromObj(objv[2],&length);
+        if (0) {}
+                        if (strcmp(_str,"-name") == 0) {
                     cmd = _wrap_IBSystem_name_get;
                 }  else if (strcmp(_str,"-type") == 0) {
                     cmd = _wrap_IBSystem_type_get;
@@ -11041,34 +11397,81 @@ static int TclIBSystemMethodCmd(ClientData clientData, Tcl_Interp *interp, int o
                 }  else if (strcmp(_str,"-PortByName") == 0) {
                     cmd = _wrap_IBSystem_PortByName_get;
                 } 
-	      else if (strcmp(_str,"-this") == 0) {
-                   SWIG_SetPointerObj(tcl_result,(void *) clientData, "_IBSystem_p");
-                   return TCL_OK;
-	      }
-	      if (cmd) {
-		oldarg = objv[2];
-		objv[2] = obj;
-		rcode = (*cmd)(clientData,interp,objc-1,&objv[1]);
-		objv[2] = oldarg;
-		return rcode;
-	      } else {
-		Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this -name -type -p_fabric -NodeByName -PortByName  }",-1);
-		return TCL_ERROR;
-	      }
-	    } else {
-	      Tcl_SetStringObj(tcl_result,"{ -this -name -type -p_fabric -NodeByName -PortByName  }", -1);
-	      return TCL_ERROR;
-	    }
-    }
-    if (!cmd) {
-        Tcl_SetStringObj(tcl_result,"Invalid Method. Must be { cget configure guid_get guid_set makeSysPort getSysPortNodePortByName }",-1);
+          else if (strcmp(_str,"-this") == 0) {
+            SWIG_SetPointerObj(tcl_result,(void *) clientData, "_IBSystem_p");
+            return TCL_OK;
+          }
+        if (cmd) {
+          oldarg = objv[2];
+          objv[2] = obj;
+          rcode = (*cmd)(clientData,interp,objc-1,&objv[1]);
+          objv[2] = oldarg;
+          return rcode;
+        } else {
+          Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this -name -type -p_fabric -NodeByName -PortByName  }",-1);
+          return TCL_ERROR;
+        }
+      } else {
+        Tcl_SetStringObj(tcl_result,"{ -this -name -type -p_fabric -NodeByName -PortByName  }", -1);
         return TCL_ERROR;
+      }
+    } else if ((c == 'd') && (strncmp(_str,"dump",length) == 0) && (length >= 2)) {
+      if (objc == 2) {
+        Tcl_Obj *pDumpObj;
+        pDumpObj = Tcl_NewStringObj("",-1);
+        Tcl_IncrRefCount(pDumpObj);
+                cmd = _wrap_IBSystem_name_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-name ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_IBSystem_type_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-type ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_IBSystem_p_fabric_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-p_fabric ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_IBSystem_NodeByName_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-NodeByName ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_IBSystem_PortByName_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-PortByName ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+
+        Tcl_DecrRefCount(pDumpObj);
+        return TCL_OK;
+      } else {
+        Tcl_SetStringObj(tcl_result,"no parameters are allowed for dump", -1);
+        return TCL_ERROR;
+      }
     }
-    oldarg = objv[1];
-    objv[1] = obj;
-    rcode = (*cmd)(clientData,interp,objc,objv);
-    objv[1] = oldarg;
-    return rcode;
+  if (!cmd) {
+    Tcl_SetStringObj(tcl_result,"Invalid Method. Must be { dump cget configure guid_get guid_set makeSysPort getSysPortNodePortByName }",-1);
+    return TCL_ERROR;
+  }
+  oldarg = objv[1];
+  objv[1] = obj;
+  rcode = (*cmd)(clientData,interp,objc,objv);
+  objv[1] = oldarg;
+  return rcode;
 }
 
 
@@ -11240,7 +11643,7 @@ static int _wrap_IBFabric_NodeByName_get(ClientData clientData, Tcl_Interp *inte
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
-  // build a TCL list out of the Objec ID's of the ibdm objects in it.
+  // build a TCL list out of the Object ID's of the ibdm objects in it.
   map_str_pnode::const_iterator I = _result->begin();
   Tcl_Obj *p_tclObj;
 
@@ -11351,7 +11754,7 @@ static int _wrap_IBFabric_SystemByName_get(ClientData clientData, Tcl_Interp *in
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
-  // build a TCL list out of the Objec ID's of the ibdm objects in it.
+  // build a TCL list out of the Object ID's of the ibdm objects in it.
   map_str_psys::const_iterator I = _result->begin();
   Tcl_Obj *p_tclObj;
 
@@ -11572,7 +11975,7 @@ static int _wrap_IBFabric_NodeByGuid_get(ClientData clientData, Tcl_Interp *inte
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
-  // build a TCL list out of the Objec ID's of the ibdm objects in it.
+  // build a TCL list out of the Object ID's of the ibdm objects in it.
   map_guid_pnode::const_iterator I = _result->begin();
   Tcl_Obj *p_tclObj;
 
@@ -11684,7 +12087,7 @@ static int _wrap_IBFabric_SystemByGuid_get(ClientData clientData, Tcl_Interp *in
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
-  // build a TCL list out of the Objec ID's of the ibdm objects in it.
+  // build a TCL list out of the Object ID's of the ibdm objects in it.
   map_guid_psys::const_iterator I = _result->begin();
   Tcl_Obj *p_tclObj;
 
@@ -11796,7 +12199,7 @@ static int _wrap_IBFabric_PortByGuid_get(ClientData clientData, Tcl_Interp *inte
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
-  // build a TCL list out of the Objec ID's of the ibdm objects in it.
+  // build a TCL list out of the Object ID's of the ibdm objects in it.
   map_guid_pport::const_iterator I = _result->begin();
   Tcl_Obj *p_tclObj;
 
@@ -14432,26 +14835,26 @@ static void TclDeleteIBFabric(ClientData clientData) {
 /* methodcmd8.swg : Tcl8.x method invocation */
 
 static int TclIBFabricMethodCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST _objv[]) {
-    int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
-    char *_str;
-    int rcode;
-    Tcl_Obj **objv;
-    Tcl_Obj *oldarg,*tcl_result,*obj;
-    int length;
-    char c;
+  int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
+  char *_str;
+  int rcode;
+  Tcl_Obj **objv;
+  Tcl_Obj *oldarg,*tcl_result,*obj;
+  int length;
+  char c;
 
-    tcl_result = Tcl_GetObjResult(interp);
-    objv = (Tcl_Obj **) _objv; 
-    if (objc < 2) {
-        Tcl_SetStringObj(tcl_result,"IBFabric methods : { cget configure makeNode getNode getNodesByType makeGenericSystem makeSystem getSystemByGuid getNodeByGuid getPortByGuid addCable parseCables parseTopology addLink parseSubnetLinks parseFdbFile setLidPort getPortByLid  }",-1);
-        return TCL_ERROR;
-    }
-    obj = Tcl_NewObj();
-    SWIG_SetPointerObj(obj,(void *) clientData,"_IBFabric_p");
-    _str = Tcl_GetStringFromObj(objv[1],&length);
-    c = *_str;
-    if (0);
-    if (strcmp(_str,"makeNode") == 0) {
+  tcl_result = Tcl_GetObjResult(interp);
+  objv = (Tcl_Obj **) _objv; 
+  if (objc < 2) {
+    Tcl_SetStringObj(tcl_result,"IBFabric methods : { dump cget configure makeNode getNode getNodesByType makeGenericSystem makeSystem getSystemByGuid getNodeByGuid getPortByGuid addCable parseCables parseTopology addLink parseSubnetLinks parseFdbFile setLidPort getPortByLid  }",-1);
+    return TCL_ERROR;
+  }
+  obj = Tcl_NewObj();
+  SWIG_SetPointerObj(obj,(void *) clientData,"_IBFabric_p");
+  _str = Tcl_GetStringFromObj(objv[1],&length);
+  c = *_str;
+  if (0);
+      if (strcmp(_str,"makeNode") == 0) {
         cmd = _wrap_IBFabric_makeNode;
     }    else if (strcmp(_str,"getNode") == 0) {
         cmd = _wrap_IBFabric_getNode;
@@ -14488,37 +14891,37 @@ static int TclIBFabricMethodCmd(ClientData clientData, Tcl_Interp *interp, int o
       int i = 2;
       cmd = 0;
       while (i+1 < objc) {
-	_str = Tcl_GetStringFromObj(objv[i],&length);
-                if (strcmp(_str,"-minLid") == 0) {
+        _str = Tcl_GetStringFromObj(objv[i],&length);
+                        if (strcmp(_str,"-minLid") == 0) {
                     cmd = _wrap_IBFabric_minLid_set;
                 }  else if (strcmp(_str,"-maxLid") == 0) {
                     cmd = _wrap_IBFabric_maxLid_set;
                 }  else if (strcmp(_str,"-lmc") == 0) {
                     cmd = _wrap_IBFabric_lmc_set;
                 } 
-	   if (cmd) {
-	     oldarg = objv[i];
-	     objv[i] = obj;
-	     rcode = (*cmd)(clientData,interp,3,&objv[i-1]);
-	     objv[i] = oldarg;
-	     if (rcode == TCL_ERROR) return rcode;
-	     cmd = 0;
-	   } else {
-	     Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be { -minLid -maxLid -lmc  }",-1);
-	     return TCL_ERROR;
-	   }
-	i+=2;
+          if (cmd) {
+            oldarg = objv[i];
+            objv[i] = obj;
+            rcode = (*cmd)(clientData,interp,3,&objv[i-1]);
+            objv[i] = oldarg;
+            if (rcode == TCL_ERROR) return rcode;
+            cmd = 0;
+          } else {
+            Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be { -minLid -maxLid -lmc  }",-1);
+            return TCL_ERROR;
+          }
+        i+=2;
       }
       if ((i < objc) || (i == 2)) {
-	Tcl_SetStringObj(tcl_result,"{ -minLid -maxLid -lmc  }",-1);
-	return TCL_ERROR;
+        Tcl_SetStringObj(tcl_result,"{ -minLid -maxLid -lmc  }",-1);
+        return TCL_ERROR;
       }
       return TCL_OK;
     } else if ((c == 'c') && (strncmp(_str,"cget",length) == 0) && (length >= 2)) {
-            if (objc == 3) {
-	      _str = Tcl_GetStringFromObj(objv[2],&length);
-	      if (0) {}
-                if (strcmp(_str,"-NodeByName") == 0) {
+      if (objc == 3) {
+        _str = Tcl_GetStringFromObj(objv[2],&length);
+        if (0) {}
+                        if (strcmp(_str,"-NodeByName") == 0) {
                     cmd = _wrap_IBFabric_NodeByName_get;
                 }  else if (strcmp(_str,"-SystemByName") == 0) {
                     cmd = _wrap_IBFabric_SystemByName_get;
@@ -14537,34 +14940,109 @@ static int TclIBFabricMethodCmd(ClientData clientData, Tcl_Interp *interp, int o
                 }  else if (strcmp(_str,"-lmc") == 0) {
                     cmd = _wrap_IBFabric_lmc_get;
                 } 
-	      else if (strcmp(_str,"-this") == 0) {
-                   SWIG_SetPointerObj(tcl_result,(void *) clientData, "_IBFabric_p");
-                   return TCL_OK;
-	      }
-	      if (cmd) {
-		oldarg = objv[2];
-		objv[2] = obj;
-		rcode = (*cmd)(clientData,interp,objc-1,&objv[1]);
-		objv[2] = oldarg;
-		return rcode;
-	      } else {
-		Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this -NodeByName -SystemByName -PortByLid -NodeByGuid -SystemByGuid -PortByGuid -minLid -maxLid -lmc  }",-1);
-		return TCL_ERROR;
-	      }
-	    } else {
-	      Tcl_SetStringObj(tcl_result,"{ -this -NodeByName -SystemByName -PortByLid -NodeByGuid -SystemByGuid -PortByGuid -minLid -maxLid -lmc  }", -1);
-	      return TCL_ERROR;
-	    }
-    }
-    if (!cmd) {
-        Tcl_SetStringObj(tcl_result,"Invalid Method. Must be { cget configure makeNode getNode getNodesByType makeGenericSystem makeSystem getSystemByGuid getNodeByGuid getPortByGuid addCable parseCables parseTopology addLink parseSubnetLinks parseFdbFile setLidPort getPortByLid }",-1);
+          else if (strcmp(_str,"-this") == 0) {
+            SWIG_SetPointerObj(tcl_result,(void *) clientData, "_IBFabric_p");
+            return TCL_OK;
+          }
+        if (cmd) {
+          oldarg = objv[2];
+          objv[2] = obj;
+          rcode = (*cmd)(clientData,interp,objc-1,&objv[1]);
+          objv[2] = oldarg;
+          return rcode;
+        } else {
+          Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this -NodeByName -SystemByName -PortByLid -NodeByGuid -SystemByGuid -PortByGuid -minLid -maxLid -lmc  }",-1);
+          return TCL_ERROR;
+        }
+      } else {
+        Tcl_SetStringObj(tcl_result,"{ -this -NodeByName -SystemByName -PortByLid -NodeByGuid -SystemByGuid -PortByGuid -minLid -maxLid -lmc  }", -1);
         return TCL_ERROR;
+      }
+    } else if ((c == 'd') && (strncmp(_str,"dump",length) == 0) && (length >= 2)) {
+      if (objc == 2) {
+        Tcl_Obj *pDumpObj;
+        pDumpObj = Tcl_NewStringObj("",-1);
+        Tcl_IncrRefCount(pDumpObj);
+                cmd = _wrap_IBFabric_NodeByName_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-NodeByName ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_IBFabric_SystemByName_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-SystemByName ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_IBFabric_PortByLid_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-PortByLid ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_IBFabric_NodeByGuid_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-NodeByGuid ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_IBFabric_SystemByGuid_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-SystemByGuid ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_IBFabric_PortByGuid_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-PortByGuid ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_IBFabric_minLid_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-minLid ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_IBFabric_maxLid_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-maxLid ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_IBFabric_lmc_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-lmc ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+
+        Tcl_DecrRefCount(pDumpObj);
+        return TCL_OK;
+      } else {
+        Tcl_SetStringObj(tcl_result,"no parameters are allowed for dump", -1);
+        return TCL_ERROR;
+      }
     }
-    oldarg = objv[1];
-    objv[1] = obj;
-    rcode = (*cmd)(clientData,interp,objc,objv);
-    objv[1] = oldarg;
-    return rcode;
+  if (!cmd) {
+    Tcl_SetStringObj(tcl_result,"Invalid Method. Must be { dump cget configure makeNode getNode getNodesByType makeGenericSystem makeSystem getSystemByGuid getNodeByGuid getPortByGuid addCable parseCables parseTopology addLink parseSubnetLinks parseFdbFile setLidPort getPortByLid }",-1);
+    return TCL_ERROR;
+  }
+  oldarg = objv[1];
+  objv[1] = obj;
+  rcode = (*cmd)(clientData,interp,objc,objv);
+  objv[1] = oldarg;
+  return rcode;
 }
 
 
@@ -14666,7 +15144,7 @@ static int _wrap_ib_node_info_t_base_version_set(ClientData clientData, Tcl_Inte
         return TCL_ERROR;
     }
 {
-  temp = atoi(Tcl_GetStringFromObj(objv[2],NULL));
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
   _arg1 = &temp;
 }
 { 
@@ -14742,7 +15220,7 @@ static int _wrap_ib_node_info_t_class_version_set(ClientData clientData, Tcl_Int
         return TCL_ERROR;
     }
 {
-  temp = atoi(Tcl_GetStringFromObj(objv[2],NULL));
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
   _arg1 = &temp;
 }
 { 
@@ -14818,7 +15296,7 @@ static int _wrap_ib_node_info_t_node_type_set(ClientData clientData, Tcl_Interp 
         return TCL_ERROR;
     }
 {
-  temp = atoi(Tcl_GetStringFromObj(objv[2],NULL));
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
   _arg1 = &temp;
 }
 { 
@@ -14894,7 +15372,7 @@ static int _wrap_ib_node_info_t_num_ports_set(ClientData clientData, Tcl_Interp 
         return TCL_ERROR;
     }
 {
-  temp = atoi(Tcl_GetStringFromObj(objv[2],NULL));
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
   _arg1 = &temp;
 }
 { 
@@ -15483,32 +15961,32 @@ static int _wrap_ib_node_info_t_port_num_vendor_id_get(ClientData clientData, Tc
 /* methodcmd8.swg : Tcl8.x method invocation */
 
 static int Tclib_node_info_tMethodCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST _objv[]) {
-    int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
-    char *_str;
-    int rcode;
-    Tcl_Obj **objv;
-    Tcl_Obj *oldarg,*tcl_result,*obj;
-    int length;
-    char c;
+  int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
+  char *_str;
+  int rcode;
+  Tcl_Obj **objv;
+  Tcl_Obj *oldarg,*tcl_result,*obj;
+  int length;
+  char c;
 
-    tcl_result = Tcl_GetObjResult(interp);
-    objv = (Tcl_Obj **) _objv; 
-    if (objc < 2) {
-        Tcl_SetStringObj(tcl_result,"ib_node_info_t methods : { cget configure  }",-1);
-        return TCL_ERROR;
-    }
-    obj = Tcl_NewObj();
-    SWIG_SetPointerObj(obj,(void *) clientData,"_ib_node_info_t_p");
-    _str = Tcl_GetStringFromObj(objv[1],&length);
-    c = *_str;
-    if (0);
-
+  tcl_result = Tcl_GetObjResult(interp);
+  objv = (Tcl_Obj **) _objv; 
+  if (objc < 2) {
+    Tcl_SetStringObj(tcl_result,"ib_node_info_t methods : { dump cget configure  }",-1);
+    return TCL_ERROR;
+  }
+  obj = Tcl_NewObj();
+  SWIG_SetPointerObj(obj,(void *) clientData,"_ib_node_info_t_p");
+  _str = Tcl_GetStringFromObj(objv[1],&length);
+  c = *_str;
+  if (0);
+  
     else if ((c == 'c') && (strncmp(_str,"configure",length) == 0) && (length >= 2)) {
       int i = 2;
       cmd = 0;
       while (i+1 < objc) {
-	_str = Tcl_GetStringFromObj(objv[i],&length);
-                if (strcmp(_str,"-base_version") == 0) {
+        _str = Tcl_GetStringFromObj(objv[i],&length);
+                        if (strcmp(_str,"-base_version") == 0) {
                     cmd = _wrap_ib_node_info_t_base_version_set;
                 }  else if (strcmp(_str,"-class_version") == 0) {
                     cmd = _wrap_ib_node_info_t_class_version_set;
@@ -15531,29 +16009,29 @@ static int Tclib_node_info_tMethodCmd(ClientData clientData, Tcl_Interp *interp,
                 }  else if (strcmp(_str,"-port_num_vendor_id") == 0) {
                     cmd = _wrap_ib_node_info_t_port_num_vendor_id_set;
                 } 
-	   if (cmd) {
-	     oldarg = objv[i];
-	     objv[i] = obj;
-	     rcode = (*cmd)(clientData,interp,3,&objv[i-1]);
-	     objv[i] = oldarg;
-	     if (rcode == TCL_ERROR) return rcode;
-	     cmd = 0;
-	   } else {
-	     Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be { -base_version -class_version -node_type -num_ports -sys_guid -node_guid -port_guid -partition_cap -device_id -revision -port_num_vendor_id  }",-1);
-	     return TCL_ERROR;
-	   }
-	i+=2;
+          if (cmd) {
+            oldarg = objv[i];
+            objv[i] = obj;
+            rcode = (*cmd)(clientData,interp,3,&objv[i-1]);
+            objv[i] = oldarg;
+            if (rcode == TCL_ERROR) return rcode;
+            cmd = 0;
+          } else {
+            Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be { -base_version -class_version -node_type -num_ports -sys_guid -node_guid -port_guid -partition_cap -device_id -revision -port_num_vendor_id  }",-1);
+            return TCL_ERROR;
+          }
+        i+=2;
       }
       if ((i < objc) || (i == 2)) {
-	Tcl_SetStringObj(tcl_result,"{ -base_version -class_version -node_type -num_ports -sys_guid -node_guid -port_guid -partition_cap -device_id -revision -port_num_vendor_id  }",-1);
-	return TCL_ERROR;
+        Tcl_SetStringObj(tcl_result,"{ -base_version -class_version -node_type -num_ports -sys_guid -node_guid -port_guid -partition_cap -device_id -revision -port_num_vendor_id  }",-1);
+        return TCL_ERROR;
       }
       return TCL_OK;
     } else if ((c == 'c') && (strncmp(_str,"cget",length) == 0) && (length >= 2)) {
-            if (objc == 3) {
-	      _str = Tcl_GetStringFromObj(objv[2],&length);
-	      if (0) {}
-                if (strcmp(_str,"-base_version") == 0) {
+      if (objc == 3) {
+        _str = Tcl_GetStringFromObj(objv[2],&length);
+        if (0) {}
+                        if (strcmp(_str,"-base_version") == 0) {
                     cmd = _wrap_ib_node_info_t_base_version_get;
                 }  else if (strcmp(_str,"-class_version") == 0) {
                     cmd = _wrap_ib_node_info_t_class_version_get;
@@ -15576,34 +16054,123 @@ static int Tclib_node_info_tMethodCmd(ClientData clientData, Tcl_Interp *interp,
                 }  else if (strcmp(_str,"-port_num_vendor_id") == 0) {
                     cmd = _wrap_ib_node_info_t_port_num_vendor_id_get;
                 } 
-	      else if (strcmp(_str,"-this") == 0) {
-                   SWIG_SetPointerObj(tcl_result,(void *) clientData, "_ib_node_info_t_p");
-                   return TCL_OK;
-	      }
-	      if (cmd) {
-		oldarg = objv[2];
-		objv[2] = obj;
-		rcode = (*cmd)(clientData,interp,objc-1,&objv[1]);
-		objv[2] = oldarg;
-		return rcode;
-	      } else {
-		Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this -base_version -class_version -node_type -num_ports -sys_guid -node_guid -port_guid -partition_cap -device_id -revision -port_num_vendor_id  }",-1);
-		return TCL_ERROR;
-	      }
-	    } else {
-	      Tcl_SetStringObj(tcl_result,"{ -this -base_version -class_version -node_type -num_ports -sys_guid -node_guid -port_guid -partition_cap -device_id -revision -port_num_vendor_id  }", -1);
-	      return TCL_ERROR;
-	    }
-    }
-    if (!cmd) {
-        Tcl_SetStringObj(tcl_result,"Invalid Method. Must be { cget configure }",-1);
+          else if (strcmp(_str,"-this") == 0) {
+            SWIG_SetPointerObj(tcl_result,(void *) clientData, "_ib_node_info_t_p");
+            return TCL_OK;
+          }
+        if (cmd) {
+          oldarg = objv[2];
+          objv[2] = obj;
+          rcode = (*cmd)(clientData,interp,objc-1,&objv[1]);
+          objv[2] = oldarg;
+          return rcode;
+        } else {
+          Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this -base_version -class_version -node_type -num_ports -sys_guid -node_guid -port_guid -partition_cap -device_id -revision -port_num_vendor_id  }",-1);
+          return TCL_ERROR;
+        }
+      } else {
+        Tcl_SetStringObj(tcl_result,"{ -this -base_version -class_version -node_type -num_ports -sys_guid -node_guid -port_guid -partition_cap -device_id -revision -port_num_vendor_id  }", -1);
         return TCL_ERROR;
+      }
+    } else if ((c == 'd') && (strncmp(_str,"dump",length) == 0) && (length >= 2)) {
+      if (objc == 2) {
+        Tcl_Obj *pDumpObj;
+        pDumpObj = Tcl_NewStringObj("",-1);
+        Tcl_IncrRefCount(pDumpObj);
+                cmd = _wrap_ib_node_info_t_base_version_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-base_version ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_node_info_t_class_version_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-class_version ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_node_info_t_node_type_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-node_type ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_node_info_t_num_ports_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-num_ports ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_node_info_t_sys_guid_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-sys_guid ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_node_info_t_node_guid_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-node_guid ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_node_info_t_port_guid_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-port_guid ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_node_info_t_partition_cap_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-partition_cap ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_node_info_t_device_id_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-device_id ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_node_info_t_revision_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-revision ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_node_info_t_port_num_vendor_id_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-port_num_vendor_id ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+
+        Tcl_DecrRefCount(pDumpObj);
+        return TCL_OK;
+      } else {
+        Tcl_SetStringObj(tcl_result,"no parameters are allowed for dump", -1);
+        return TCL_ERROR;
+      }
     }
-    oldarg = objv[1];
-    objv[1] = obj;
-    rcode = (*cmd)(clientData,interp,objc,objv);
-    objv[1] = oldarg;
-    return rcode;
+  if (!cmd) {
+    Tcl_SetStringObj(tcl_result,"Invalid Method. Must be { dump cget configure }",-1);
+    return TCL_ERROR;
+  }
+  oldarg = objv[1];
+  objv[1] = obj;
+  rcode = (*cmd)(clientData,interp,objc,objv);
+  objv[1] = oldarg;
+  return rcode;
 }
 
 
@@ -16009,7 +16576,7 @@ static int _wrap_ib_switch_info_t_def_port_set(ClientData clientData, Tcl_Interp
         return TCL_ERROR;
     }
 {
-  temp = atoi(Tcl_GetStringFromObj(objv[2],NULL));
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
   _arg1 = &temp;
 }
 { 
@@ -16085,7 +16652,7 @@ static int _wrap_ib_switch_info_t_def_mcast_pri_port_set(ClientData clientData, 
         return TCL_ERROR;
     }
 {
-  temp = atoi(Tcl_GetStringFromObj(objv[2],NULL));
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
   _arg1 = &temp;
 }
 { 
@@ -16161,7 +16728,7 @@ static int _wrap_ib_switch_info_t_def_mcast_not_port_set(ClientData clientData, 
         return TCL_ERROR;
     }
 {
-  temp = atoi(Tcl_GetStringFromObj(objv[2],NULL));
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
   _arg1 = &temp;
 }
 { 
@@ -16237,7 +16804,7 @@ static int _wrap_ib_switch_info_t_life_state_set(ClientData clientData, Tcl_Inte
         return TCL_ERROR;
     }
 {
-  temp = atoi(Tcl_GetStringFromObj(objv[2],NULL));
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
   _arg1 = &temp;
 }
 { 
@@ -16465,7 +17032,7 @@ static int _wrap_ib_switch_info_t_flags_set(ClientData clientData, Tcl_Interp *i
         return TCL_ERROR;
     }
 {
-  temp = atoi(Tcl_GetStringFromObj(objv[2],NULL));
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
   _arg1 = &temp;
 }
 { 
@@ -16522,32 +17089,32 @@ static int _wrap_ib_switch_info_t_flags_get(ClientData clientData, Tcl_Interp *i
 /* methodcmd8.swg : Tcl8.x method invocation */
 
 static int Tclib_switch_info_tMethodCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST _objv[]) {
-    int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
-    char *_str;
-    int rcode;
-    Tcl_Obj **objv;
-    Tcl_Obj *oldarg,*tcl_result,*obj;
-    int length;
-    char c;
+  int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
+  char *_str;
+  int rcode;
+  Tcl_Obj **objv;
+  Tcl_Obj *oldarg,*tcl_result,*obj;
+  int length;
+  char c;
 
-    tcl_result = Tcl_GetObjResult(interp);
-    objv = (Tcl_Obj **) _objv; 
-    if (objc < 2) {
-        Tcl_SetStringObj(tcl_result,"ib_switch_info_t methods : { cget configure  }",-1);
-        return TCL_ERROR;
-    }
-    obj = Tcl_NewObj();
-    SWIG_SetPointerObj(obj,(void *) clientData,"_ib_switch_info_t_p");
-    _str = Tcl_GetStringFromObj(objv[1],&length);
-    c = *_str;
-    if (0);
-
+  tcl_result = Tcl_GetObjResult(interp);
+  objv = (Tcl_Obj **) _objv; 
+  if (objc < 2) {
+    Tcl_SetStringObj(tcl_result,"ib_switch_info_t methods : { dump cget configure  }",-1);
+    return TCL_ERROR;
+  }
+  obj = Tcl_NewObj();
+  SWIG_SetPointerObj(obj,(void *) clientData,"_ib_switch_info_t_p");
+  _str = Tcl_GetStringFromObj(objv[1],&length);
+  c = *_str;
+  if (0);
+  
     else if ((c == 'c') && (strncmp(_str,"configure",length) == 0) && (length >= 2)) {
       int i = 2;
       cmd = 0;
       while (i+1 < objc) {
-	_str = Tcl_GetStringFromObj(objv[i],&length);
-                if (strcmp(_str,"-lin_cap") == 0) {
+        _str = Tcl_GetStringFromObj(objv[i],&length);
+                        if (strcmp(_str,"-lin_cap") == 0) {
                     cmd = _wrap_ib_switch_info_t_lin_cap_set;
                 }  else if (strcmp(_str,"-rand_cap") == 0) {
                     cmd = _wrap_ib_switch_info_t_rand_cap_set;
@@ -16570,29 +17137,29 @@ static int Tclib_switch_info_tMethodCmd(ClientData clientData, Tcl_Interp *inter
                 }  else if (strcmp(_str,"-flags") == 0) {
                     cmd = _wrap_ib_switch_info_t_flags_set;
                 } 
-	   if (cmd) {
-	     oldarg = objv[i];
-	     objv[i] = obj;
-	     rcode = (*cmd)(clientData,interp,3,&objv[i-1]);
-	     objv[i] = oldarg;
-	     if (rcode == TCL_ERROR) return rcode;
-	     cmd = 0;
-	   } else {
-	     Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be { -lin_cap -rand_cap -mcast_cap -lin_top -def_port -def_mcast_pri_port -def_mcast_not_port -life_state -lids_per_port -enforce_cap -flags  }",-1);
-	     return TCL_ERROR;
-	   }
-	i+=2;
+          if (cmd) {
+            oldarg = objv[i];
+            objv[i] = obj;
+            rcode = (*cmd)(clientData,interp,3,&objv[i-1]);
+            objv[i] = oldarg;
+            if (rcode == TCL_ERROR) return rcode;
+            cmd = 0;
+          } else {
+            Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be { -lin_cap -rand_cap -mcast_cap -lin_top -def_port -def_mcast_pri_port -def_mcast_not_port -life_state -lids_per_port -enforce_cap -flags  }",-1);
+            return TCL_ERROR;
+          }
+        i+=2;
       }
       if ((i < objc) || (i == 2)) {
-	Tcl_SetStringObj(tcl_result,"{ -lin_cap -rand_cap -mcast_cap -lin_top -def_port -def_mcast_pri_port -def_mcast_not_port -life_state -lids_per_port -enforce_cap -flags  }",-1);
-	return TCL_ERROR;
+        Tcl_SetStringObj(tcl_result,"{ -lin_cap -rand_cap -mcast_cap -lin_top -def_port -def_mcast_pri_port -def_mcast_not_port -life_state -lids_per_port -enforce_cap -flags  }",-1);
+        return TCL_ERROR;
       }
       return TCL_OK;
     } else if ((c == 'c') && (strncmp(_str,"cget",length) == 0) && (length >= 2)) {
-            if (objc == 3) {
-	      _str = Tcl_GetStringFromObj(objv[2],&length);
-	      if (0) {}
-                if (strcmp(_str,"-lin_cap") == 0) {
+      if (objc == 3) {
+        _str = Tcl_GetStringFromObj(objv[2],&length);
+        if (0) {}
+                        if (strcmp(_str,"-lin_cap") == 0) {
                     cmd = _wrap_ib_switch_info_t_lin_cap_get;
                 }  else if (strcmp(_str,"-rand_cap") == 0) {
                     cmd = _wrap_ib_switch_info_t_rand_cap_get;
@@ -16615,34 +17182,123 @@ static int Tclib_switch_info_tMethodCmd(ClientData clientData, Tcl_Interp *inter
                 }  else if (strcmp(_str,"-flags") == 0) {
                     cmd = _wrap_ib_switch_info_t_flags_get;
                 } 
-	      else if (strcmp(_str,"-this") == 0) {
-                   SWIG_SetPointerObj(tcl_result,(void *) clientData, "_ib_switch_info_t_p");
-                   return TCL_OK;
-	      }
-	      if (cmd) {
-		oldarg = objv[2];
-		objv[2] = obj;
-		rcode = (*cmd)(clientData,interp,objc-1,&objv[1]);
-		objv[2] = oldarg;
-		return rcode;
-	      } else {
-		Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this -lin_cap -rand_cap -mcast_cap -lin_top -def_port -def_mcast_pri_port -def_mcast_not_port -life_state -lids_per_port -enforce_cap -flags  }",-1);
-		return TCL_ERROR;
-	      }
-	    } else {
-	      Tcl_SetStringObj(tcl_result,"{ -this -lin_cap -rand_cap -mcast_cap -lin_top -def_port -def_mcast_pri_port -def_mcast_not_port -life_state -lids_per_port -enforce_cap -flags  }", -1);
-	      return TCL_ERROR;
-	    }
-    }
-    if (!cmd) {
-        Tcl_SetStringObj(tcl_result,"Invalid Method. Must be { cget configure }",-1);
+          else if (strcmp(_str,"-this") == 0) {
+            SWIG_SetPointerObj(tcl_result,(void *) clientData, "_ib_switch_info_t_p");
+            return TCL_OK;
+          }
+        if (cmd) {
+          oldarg = objv[2];
+          objv[2] = obj;
+          rcode = (*cmd)(clientData,interp,objc-1,&objv[1]);
+          objv[2] = oldarg;
+          return rcode;
+        } else {
+          Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this -lin_cap -rand_cap -mcast_cap -lin_top -def_port -def_mcast_pri_port -def_mcast_not_port -life_state -lids_per_port -enforce_cap -flags  }",-1);
+          return TCL_ERROR;
+        }
+      } else {
+        Tcl_SetStringObj(tcl_result,"{ -this -lin_cap -rand_cap -mcast_cap -lin_top -def_port -def_mcast_pri_port -def_mcast_not_port -life_state -lids_per_port -enforce_cap -flags  }", -1);
         return TCL_ERROR;
+      }
+    } else if ((c == 'd') && (strncmp(_str,"dump",length) == 0) && (length >= 2)) {
+      if (objc == 2) {
+        Tcl_Obj *pDumpObj;
+        pDumpObj = Tcl_NewStringObj("",-1);
+        Tcl_IncrRefCount(pDumpObj);
+                cmd = _wrap_ib_switch_info_t_lin_cap_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-lin_cap ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_switch_info_t_rand_cap_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-rand_cap ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_switch_info_t_mcast_cap_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-mcast_cap ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_switch_info_t_lin_top_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-lin_top ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_switch_info_t_def_port_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-def_port ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_switch_info_t_def_mcast_pri_port_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-def_mcast_pri_port ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_switch_info_t_def_mcast_not_port_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-def_mcast_not_port ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_switch_info_t_life_state_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-life_state ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_switch_info_t_lids_per_port_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-lids_per_port ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_switch_info_t_enforce_cap_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-enforce_cap ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_switch_info_t_flags_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-flags ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+
+        Tcl_DecrRefCount(pDumpObj);
+        return TCL_OK;
+      } else {
+        Tcl_SetStringObj(tcl_result,"no parameters are allowed for dump", -1);
+        return TCL_ERROR;
+      }
     }
-    oldarg = objv[1];
-    objv[1] = obj;
-    rcode = (*cmd)(clientData,interp,objc,objv);
-    objv[1] = oldarg;
-    return rcode;
+  if (!cmd) {
+    Tcl_SetStringObj(tcl_result,"Invalid Method. Must be { dump cget configure }",-1);
+    return TCL_ERROR;
+  }
+  oldarg = objv[1];
+  objv[1] = obj;
+  rcode = (*cmd)(clientData,interp,objc,objv);
+  objv[1] = oldarg;
+  return rcode;
 }
 
 
@@ -17276,7 +17932,7 @@ static int _wrap_ib_port_info_t_local_port_num_set(ClientData clientData, Tcl_In
         return TCL_ERROR;
     }
 {
-  temp = atoi(Tcl_GetStringFromObj(objv[2],NULL));
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
   _arg1 = &temp;
 }
 { 
@@ -17352,7 +18008,7 @@ static int _wrap_ib_port_info_t_link_width_enabled_set(ClientData clientData, Tc
         return TCL_ERROR;
     }
 {
-  temp = atoi(Tcl_GetStringFromObj(objv[2],NULL));
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
   _arg1 = &temp;
 }
 { 
@@ -17428,7 +18084,7 @@ static int _wrap_ib_port_info_t_link_width_supported_set(ClientData clientData, 
         return TCL_ERROR;
     }
 {
-  temp = atoi(Tcl_GetStringFromObj(objv[2],NULL));
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
   _arg1 = &temp;
 }
 { 
@@ -17504,7 +18160,7 @@ static int _wrap_ib_port_info_t_link_width_active_set(ClientData clientData, Tcl
         return TCL_ERROR;
     }
 {
-  temp = atoi(Tcl_GetStringFromObj(objv[2],NULL));
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
   _arg1 = &temp;
 }
 { 
@@ -17580,7 +18236,7 @@ static int _wrap_ib_port_info_t_state_info1_set(ClientData clientData, Tcl_Inter
         return TCL_ERROR;
     }
 {
-  temp = atoi(Tcl_GetStringFromObj(objv[2],NULL));
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
   _arg1 = &temp;
 }
 { 
@@ -17656,7 +18312,7 @@ static int _wrap_ib_port_info_t_state_info2_set(ClientData clientData, Tcl_Inter
         return TCL_ERROR;
     }
 {
-  temp = atoi(Tcl_GetStringFromObj(objv[2],NULL));
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
   _arg1 = &temp;
 }
 { 
@@ -17732,7 +18388,7 @@ static int _wrap_ib_port_info_t_mkey_lmc_set(ClientData clientData, Tcl_Interp *
         return TCL_ERROR;
     }
 {
-  temp = atoi(Tcl_GetStringFromObj(objv[2],NULL));
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
   _arg1 = &temp;
 }
 { 
@@ -17808,7 +18464,7 @@ static int _wrap_ib_port_info_t_link_speed_set(ClientData clientData, Tcl_Interp
         return TCL_ERROR;
     }
 {
-  temp = atoi(Tcl_GetStringFromObj(objv[2],NULL));
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
   _arg1 = &temp;
 }
 { 
@@ -17884,7 +18540,7 @@ static int _wrap_ib_port_info_t_mtu_smsl_set(ClientData clientData, Tcl_Interp *
         return TCL_ERROR;
     }
 {
-  temp = atoi(Tcl_GetStringFromObj(objv[2],NULL));
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
   _arg1 = &temp;
 }
 { 
@@ -17960,7 +18616,7 @@ static int _wrap_ib_port_info_t_vl_cap_set(ClientData clientData, Tcl_Interp *in
         return TCL_ERROR;
     }
 {
-  temp = atoi(Tcl_GetStringFromObj(objv[2],NULL));
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
   _arg1 = &temp;
 }
 { 
@@ -18036,7 +18692,7 @@ static int _wrap_ib_port_info_t_vl_high_limit_set(ClientData clientData, Tcl_Int
         return TCL_ERROR;
     }
 {
-  temp = atoi(Tcl_GetStringFromObj(objv[2],NULL));
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
   _arg1 = &temp;
 }
 { 
@@ -18112,7 +18768,7 @@ static int _wrap_ib_port_info_t_vl_arb_high_cap_set(ClientData clientData, Tcl_I
         return TCL_ERROR;
     }
 {
-  temp = atoi(Tcl_GetStringFromObj(objv[2],NULL));
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
   _arg1 = &temp;
 }
 { 
@@ -18188,7 +18844,7 @@ static int _wrap_ib_port_info_t_vl_arb_low_cap_set(ClientData clientData, Tcl_In
         return TCL_ERROR;
     }
 {
-  temp = atoi(Tcl_GetStringFromObj(objv[2],NULL));
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
   _arg1 = &temp;
 }
 { 
@@ -18264,7 +18920,7 @@ static int _wrap_ib_port_info_t_mtu_cap_set(ClientData clientData, Tcl_Interp *i
         return TCL_ERROR;
     }
 {
-  temp = atoi(Tcl_GetStringFromObj(objv[2],NULL));
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
   _arg1 = &temp;
 }
 { 
@@ -18340,7 +18996,7 @@ static int _wrap_ib_port_info_t_vl_stall_life_set(ClientData clientData, Tcl_Int
         return TCL_ERROR;
     }
 {
-  temp = atoi(Tcl_GetStringFromObj(objv[2],NULL));
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
   _arg1 = &temp;
 }
 { 
@@ -18416,7 +19072,7 @@ static int _wrap_ib_port_info_t_vl_enforce_set(ClientData clientData, Tcl_Interp
         return TCL_ERROR;
     }
 {
-  temp = atoi(Tcl_GetStringFromObj(objv[2],NULL));
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
   _arg1 = &temp;
 }
 { 
@@ -18720,7 +19376,7 @@ static int _wrap_ib_port_info_t_guid_cap_set(ClientData clientData, Tcl_Interp *
         return TCL_ERROR;
     }
 {
-  temp = atoi(Tcl_GetStringFromObj(objv[2],NULL));
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
   _arg1 = &temp;
 }
 { 
@@ -18796,7 +19452,7 @@ static int _wrap_ib_port_info_t_subnet_timeout_set(ClientData clientData, Tcl_In
         return TCL_ERROR;
     }
 {
-  temp = atoi(Tcl_GetStringFromObj(objv[2],NULL));
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
   _arg1 = &temp;
 }
 { 
@@ -18872,7 +19528,7 @@ static int _wrap_ib_port_info_t_resp_time_value_set(ClientData clientData, Tcl_I
         return TCL_ERROR;
     }
 {
-  temp = atoi(Tcl_GetStringFromObj(objv[2],NULL));
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
   _arg1 = &temp;
 }
 { 
@@ -18948,7 +19604,7 @@ static int _wrap_ib_port_info_t_error_threshold_set(ClientData clientData, Tcl_I
         return TCL_ERROR;
     }
 {
-  temp = atoi(Tcl_GetStringFromObj(objv[2],NULL));
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
   _arg1 = &temp;
 }
 { 
@@ -19005,32 +19661,32 @@ static int _wrap_ib_port_info_t_error_threshold_get(ClientData clientData, Tcl_I
 /* methodcmd8.swg : Tcl8.x method invocation */
 
 static int Tclib_port_info_tMethodCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST _objv[]) {
-    int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
-    char *_str;
-    int rcode;
-    Tcl_Obj **objv;
-    Tcl_Obj *oldarg,*tcl_result,*obj;
-    int length;
-    char c;
+  int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
+  char *_str;
+  int rcode;
+  Tcl_Obj **objv;
+  Tcl_Obj *oldarg,*tcl_result,*obj;
+  int length;
+  char c;
 
-    tcl_result = Tcl_GetObjResult(interp);
-    objv = (Tcl_Obj **) _objv; 
-    if (objc < 2) {
-        Tcl_SetStringObj(tcl_result,"ib_port_info_t methods : { cget configure  }",-1);
-        return TCL_ERROR;
-    }
-    obj = Tcl_NewObj();
-    SWIG_SetPointerObj(obj,(void *) clientData,"_ib_port_info_t_p");
-    _str = Tcl_GetStringFromObj(objv[1],&length);
-    c = *_str;
-    if (0);
-
+  tcl_result = Tcl_GetObjResult(interp);
+  objv = (Tcl_Obj **) _objv; 
+  if (objc < 2) {
+    Tcl_SetStringObj(tcl_result,"ib_port_info_t methods : { dump cget configure  }",-1);
+    return TCL_ERROR;
+  }
+  obj = Tcl_NewObj();
+  SWIG_SetPointerObj(obj,(void *) clientData,"_ib_port_info_t_p");
+  _str = Tcl_GetStringFromObj(objv[1],&length);
+  c = *_str;
+  if (0);
+  
     else if ((c == 'c') && (strncmp(_str,"configure",length) == 0) && (length >= 2)) {
       int i = 2;
       cmd = 0;
       while (i+1 < objc) {
-	_str = Tcl_GetStringFromObj(objv[i],&length);
-                if (strcmp(_str,"-m_key") == 0) {
+        _str = Tcl_GetStringFromObj(objv[i],&length);
+                        if (strcmp(_str,"-m_key") == 0) {
                     cmd = _wrap_ib_port_info_t_m_key_set;
                 }  else if (strcmp(_str,"-subnet_prefix") == 0) {
                     cmd = _wrap_ib_port_info_t_subnet_prefix_set;
@@ -19091,29 +19747,29 @@ static int Tclib_port_info_tMethodCmd(ClientData clientData, Tcl_Interp *interp,
                 }  else if (strcmp(_str,"-error_threshold") == 0) {
                     cmd = _wrap_ib_port_info_t_error_threshold_set;
                 } 
-	   if (cmd) {
-	     oldarg = objv[i];
-	     objv[i] = obj;
-	     rcode = (*cmd)(clientData,interp,3,&objv[i-1]);
-	     objv[i] = oldarg;
-	     if (rcode == TCL_ERROR) return rcode;
-	     cmd = 0;
-	   } else {
-	     Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be { -m_key -subnet_prefix -base_lid -master_sm_base_lid -capability_mask -diag_code -m_key_lease_period -local_port_num -link_width_enabled -link_width_supported -link_width_active -state_info1 -state_info2 -mkey_lmc -link_speed -mtu_smsl -vl_cap -vl_high_limit -vl_arb_high_cap -vl_arb_low_cap -mtu_cap -vl_stall_life -vl_enforce -m_key_violations -p_key_violations -q_key_violations -guid_cap -subnet_timeout -resp_time_value -error_threshold  }",-1);
-	     return TCL_ERROR;
-	   }
-	i+=2;
+          if (cmd) {
+            oldarg = objv[i];
+            objv[i] = obj;
+            rcode = (*cmd)(clientData,interp,3,&objv[i-1]);
+            objv[i] = oldarg;
+            if (rcode == TCL_ERROR) return rcode;
+            cmd = 0;
+          } else {
+            Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be { -m_key -subnet_prefix -base_lid -master_sm_base_lid -capability_mask -diag_code -m_key_lease_period -local_port_num -link_width_enabled -link_width_supported -link_width_active -state_info1 -state_info2 -mkey_lmc -link_speed -mtu_smsl -vl_cap -vl_high_limit -vl_arb_high_cap -vl_arb_low_cap -mtu_cap -vl_stall_life -vl_enforce -m_key_violations -p_key_violations -q_key_violations -guid_cap -subnet_timeout -resp_time_value -error_threshold  }",-1);
+            return TCL_ERROR;
+          }
+        i+=2;
       }
       if ((i < objc) || (i == 2)) {
-	Tcl_SetStringObj(tcl_result,"{ -m_key -subnet_prefix -base_lid -master_sm_base_lid -capability_mask -diag_code -m_key_lease_period -local_port_num -link_width_enabled -link_width_supported -link_width_active -state_info1 -state_info2 -mkey_lmc -link_speed -mtu_smsl -vl_cap -vl_high_limit -vl_arb_high_cap -vl_arb_low_cap -mtu_cap -vl_stall_life -vl_enforce -m_key_violations -p_key_violations -q_key_violations -guid_cap -subnet_timeout -resp_time_value -error_threshold  }",-1);
-	return TCL_ERROR;
+        Tcl_SetStringObj(tcl_result,"{ -m_key -subnet_prefix -base_lid -master_sm_base_lid -capability_mask -diag_code -m_key_lease_period -local_port_num -link_width_enabled -link_width_supported -link_width_active -state_info1 -state_info2 -mkey_lmc -link_speed -mtu_smsl -vl_cap -vl_high_limit -vl_arb_high_cap -vl_arb_low_cap -mtu_cap -vl_stall_life -vl_enforce -m_key_violations -p_key_violations -q_key_violations -guid_cap -subnet_timeout -resp_time_value -error_threshold  }",-1);
+        return TCL_ERROR;
       }
       return TCL_OK;
     } else if ((c == 'c') && (strncmp(_str,"cget",length) == 0) && (length >= 2)) {
-            if (objc == 3) {
-	      _str = Tcl_GetStringFromObj(objv[2],&length);
-	      if (0) {}
-                if (strcmp(_str,"-m_key") == 0) {
+      if (objc == 3) {
+        _str = Tcl_GetStringFromObj(objv[2],&length);
+        if (0) {}
+                        if (strcmp(_str,"-m_key") == 0) {
                     cmd = _wrap_ib_port_info_t_m_key_get;
                 }  else if (strcmp(_str,"-subnet_prefix") == 0) {
                     cmd = _wrap_ib_port_info_t_subnet_prefix_get;
@@ -19174,34 +19830,256 @@ static int Tclib_port_info_tMethodCmd(ClientData clientData, Tcl_Interp *interp,
                 }  else if (strcmp(_str,"-error_threshold") == 0) {
                     cmd = _wrap_ib_port_info_t_error_threshold_get;
                 } 
-	      else if (strcmp(_str,"-this") == 0) {
-                   SWIG_SetPointerObj(tcl_result,(void *) clientData, "_ib_port_info_t_p");
-                   return TCL_OK;
-	      }
-	      if (cmd) {
-		oldarg = objv[2];
-		objv[2] = obj;
-		rcode = (*cmd)(clientData,interp,objc-1,&objv[1]);
-		objv[2] = oldarg;
-		return rcode;
-	      } else {
-		Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this -m_key -subnet_prefix -base_lid -master_sm_base_lid -capability_mask -diag_code -m_key_lease_period -local_port_num -link_width_enabled -link_width_supported -link_width_active -state_info1 -state_info2 -mkey_lmc -link_speed -mtu_smsl -vl_cap -vl_high_limit -vl_arb_high_cap -vl_arb_low_cap -mtu_cap -vl_stall_life -vl_enforce -m_key_violations -p_key_violations -q_key_violations -guid_cap -subnet_timeout -resp_time_value -error_threshold  }",-1);
-		return TCL_ERROR;
-	      }
-	    } else {
-	      Tcl_SetStringObj(tcl_result,"{ -this -m_key -subnet_prefix -base_lid -master_sm_base_lid -capability_mask -diag_code -m_key_lease_period -local_port_num -link_width_enabled -link_width_supported -link_width_active -state_info1 -state_info2 -mkey_lmc -link_speed -mtu_smsl -vl_cap -vl_high_limit -vl_arb_high_cap -vl_arb_low_cap -mtu_cap -vl_stall_life -vl_enforce -m_key_violations -p_key_violations -q_key_violations -guid_cap -subnet_timeout -resp_time_value -error_threshold  }", -1);
-	      return TCL_ERROR;
-	    }
-    }
-    if (!cmd) {
-        Tcl_SetStringObj(tcl_result,"Invalid Method. Must be { cget configure }",-1);
+          else if (strcmp(_str,"-this") == 0) {
+            SWIG_SetPointerObj(tcl_result,(void *) clientData, "_ib_port_info_t_p");
+            return TCL_OK;
+          }
+        if (cmd) {
+          oldarg = objv[2];
+          objv[2] = obj;
+          rcode = (*cmd)(clientData,interp,objc-1,&objv[1]);
+          objv[2] = oldarg;
+          return rcode;
+        } else {
+          Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this -m_key -subnet_prefix -base_lid -master_sm_base_lid -capability_mask -diag_code -m_key_lease_period -local_port_num -link_width_enabled -link_width_supported -link_width_active -state_info1 -state_info2 -mkey_lmc -link_speed -mtu_smsl -vl_cap -vl_high_limit -vl_arb_high_cap -vl_arb_low_cap -mtu_cap -vl_stall_life -vl_enforce -m_key_violations -p_key_violations -q_key_violations -guid_cap -subnet_timeout -resp_time_value -error_threshold  }",-1);
+          return TCL_ERROR;
+        }
+      } else {
+        Tcl_SetStringObj(tcl_result,"{ -this -m_key -subnet_prefix -base_lid -master_sm_base_lid -capability_mask -diag_code -m_key_lease_period -local_port_num -link_width_enabled -link_width_supported -link_width_active -state_info1 -state_info2 -mkey_lmc -link_speed -mtu_smsl -vl_cap -vl_high_limit -vl_arb_high_cap -vl_arb_low_cap -mtu_cap -vl_stall_life -vl_enforce -m_key_violations -p_key_violations -q_key_violations -guid_cap -subnet_timeout -resp_time_value -error_threshold  }", -1);
         return TCL_ERROR;
+      }
+    } else if ((c == 'd') && (strncmp(_str,"dump",length) == 0) && (length >= 2)) {
+      if (objc == 2) {
+        Tcl_Obj *pDumpObj;
+        pDumpObj = Tcl_NewStringObj("",-1);
+        Tcl_IncrRefCount(pDumpObj);
+                cmd = _wrap_ib_port_info_t_m_key_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-m_key ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_port_info_t_subnet_prefix_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-subnet_prefix ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_port_info_t_base_lid_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-base_lid ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_port_info_t_master_sm_base_lid_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-master_sm_base_lid ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_port_info_t_capability_mask_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-capability_mask ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_port_info_t_diag_code_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-diag_code ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_port_info_t_m_key_lease_period_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-m_key_lease_period ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_port_info_t_local_port_num_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-local_port_num ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_port_info_t_link_width_enabled_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-link_width_enabled ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_port_info_t_link_width_supported_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-link_width_supported ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_port_info_t_link_width_active_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-link_width_active ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_port_info_t_state_info1_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-state_info1 ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_port_info_t_state_info2_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-state_info2 ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_port_info_t_mkey_lmc_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-mkey_lmc ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_port_info_t_link_speed_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-link_speed ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_port_info_t_mtu_smsl_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-mtu_smsl ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_port_info_t_vl_cap_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-vl_cap ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_port_info_t_vl_high_limit_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-vl_high_limit ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_port_info_t_vl_arb_high_cap_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-vl_arb_high_cap ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_port_info_t_vl_arb_low_cap_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-vl_arb_low_cap ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_port_info_t_mtu_cap_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-mtu_cap ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_port_info_t_vl_stall_life_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-vl_stall_life ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_port_info_t_vl_enforce_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-vl_enforce ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_port_info_t_m_key_violations_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-m_key_violations ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_port_info_t_p_key_violations_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-p_key_violations ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_port_info_t_q_key_violations_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-q_key_violations ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_port_info_t_guid_cap_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-guid_cap ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_port_info_t_subnet_timeout_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-subnet_timeout ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_port_info_t_resp_time_value_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-resp_time_value ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_port_info_t_error_threshold_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-error_threshold ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+
+        Tcl_DecrRefCount(pDumpObj);
+        return TCL_OK;
+      } else {
+        Tcl_SetStringObj(tcl_result,"no parameters are allowed for dump", -1);
+        return TCL_ERROR;
+      }
     }
-    oldarg = objv[1];
-    objv[1] = obj;
-    rcode = (*cmd)(clientData,interp,objc,objv);
-    objv[1] = oldarg;
-    return rcode;
+  if (!cmd) {
+    Tcl_SetStringObj(tcl_result,"Invalid Method. Must be { dump cget configure }",-1);
+    return TCL_ERROR;
+  }
+  oldarg = objv[1];
+  objv[1] = obj;
+  rcode = (*cmd)(clientData,interp,objc,objv);
+  objv[1] = oldarg;
+  return rcode;
 }
 
 
@@ -19297,6 +20175,7 @@ static int _wrap_ib_node_desc_t_description_set(ClientData clientData, Tcl_Inter
     uint8_array_t * _arg1;
     Tcl_Obj * tcl_result;
     char * rettype;
+    uint8_t  entrys[IB_NODE_DESCRIPTION_SIZE];
 
     clientData = clientData; objv = objv;
     tcl_result = Tcl_GetObjResult(interp);
@@ -19309,11 +20188,32 @@ static int _wrap_ib_node_desc_t_description_set(ClientData clientData, Tcl_Inter
         Tcl_AppendToObj(tcl_result, rettype, -1);
         return TCL_ERROR;
     }
-    if ((rettype = SWIG_GetPointerObj(interp,objv[2],(void **) &_arg1,"_uint8_array_t_p"))) {
-        Tcl_SetStringObj(tcl_result, "Type error in argument 2 of ib_node_desc_t_description_set. Expected _uint8_array_t_p, received ", -1);
-        Tcl_AppendToObj(tcl_result, rettype, -1);
-        return TCL_ERROR;
+{
+  char *buff;
+  char *p_ch;
+  char *last;
+  long int entry;
+
+  int i = 0;
+  buff = (char *)malloc((strlen(Tcl_GetStringFromObj(objv[2],NULL))+1)*sizeof(char));
+  strcpy(buff, Tcl_GetStringFromObj(objv[2],NULL));
+  p_ch = strtok_r(buff, " \t",&last);
+  while (p_ch && (i < IB_NODE_DESCRIPTION_SIZE)) 
+  {    
+    entry = strtol(p_ch, NULL, 0);
+    if (entry > 0xff)
+    {
+      printf("Error: wrong format or out of range value for expected uint8_t entry: %s\n", p_ch);
+      return TCL_ERROR;
     }
+    entrys[i++] = entry;
+    p_ch = strtok_r(NULL, " \t", &last);
+  }
+  for (; i < IB_NODE_DESCRIPTION_SIZE; i++) entrys[i] = 0;
+
+  free(buff);
+  _arg1 = entrys;
+}
 { 
   ibms_tcl_error = 0;
       _result = (uint8_array_t *)_ib_node_desc_description_set(_arg0,_arg1);
@@ -19323,7 +20223,14 @@ static int _wrap_ib_node_desc_t_description_set(ClientData clientData, Tcl_Inter
  	 return TCL_ERROR; 
   }
 }    tcl_result = Tcl_GetObjResult(interp);
-    SWIG_SetPointerObj(tcl_result,(void *) _result,"_uint8_array_t_p");
+{
+  int i;
+  char buff[8];
+  for (i=0; i <IB_NODE_DESCRIPTION_SIZE ; i++) {
+    sprintf(buff, "0x%02x ", *(_result+i));
+    Tcl_AppendResult(interp, buff, NULL);
+  }
+}
     return TCL_OK;
 }
 #define _ib_node_desc_description_get(_swigobj) ((uint8_array_t *) _swigobj->description)
@@ -19354,93 +20261,119 @@ static int _wrap_ib_node_desc_t_description_get(ClientData clientData, Tcl_Inter
  	 return TCL_ERROR; 
   }
 }    tcl_result = Tcl_GetObjResult(interp);
-    SWIG_SetPointerObj(tcl_result,(void *) _result,"_uint8_array_t_p");
+{
+  int i;
+  char buff[8];
+  for (i=0; i <IB_NODE_DESCRIPTION_SIZE ; i++) {
+    sprintf(buff, "0x%02x ", *(_result+i));
+    Tcl_AppendResult(interp, buff, NULL);
+  }
+}
     return TCL_OK;
 }
 /* methodcmd8.swg : Tcl8.x method invocation */
 
 static int Tclib_node_desc_tMethodCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST _objv[]) {
-    int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
-    char *_str;
-    int rcode;
-    Tcl_Obj **objv;
-    Tcl_Obj *oldarg,*tcl_result,*obj;
-    int length;
-    char c;
+  int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
+  char *_str;
+  int rcode;
+  Tcl_Obj **objv;
+  Tcl_Obj *oldarg,*tcl_result,*obj;
+  int length;
+  char c;
 
-    tcl_result = Tcl_GetObjResult(interp);
-    objv = (Tcl_Obj **) _objv; 
-    if (objc < 2) {
-        Tcl_SetStringObj(tcl_result,"ib_node_desc_t methods : { cget configure  }",-1);
-        return TCL_ERROR;
-    }
-    obj = Tcl_NewObj();
-    SWIG_SetPointerObj(obj,(void *) clientData,"_ib_node_desc_t_p");
-    _str = Tcl_GetStringFromObj(objv[1],&length);
-    c = *_str;
-    if (0);
-
+  tcl_result = Tcl_GetObjResult(interp);
+  objv = (Tcl_Obj **) _objv; 
+  if (objc < 2) {
+    Tcl_SetStringObj(tcl_result,"ib_node_desc_t methods : { dump cget configure  }",-1);
+    return TCL_ERROR;
+  }
+  obj = Tcl_NewObj();
+  SWIG_SetPointerObj(obj,(void *) clientData,"_ib_node_desc_t_p");
+  _str = Tcl_GetStringFromObj(objv[1],&length);
+  c = *_str;
+  if (0);
+  
     else if ((c == 'c') && (strncmp(_str,"configure",length) == 0) && (length >= 2)) {
       int i = 2;
       cmd = 0;
       while (i+1 < objc) {
-	_str = Tcl_GetStringFromObj(objv[i],&length);
-                if (strcmp(_str,"-description") == 0) {
+        _str = Tcl_GetStringFromObj(objv[i],&length);
+                        if (strcmp(_str,"-description") == 0) {
                     cmd = _wrap_ib_node_desc_t_description_set;
                 } 
-	   if (cmd) {
-	     oldarg = objv[i];
-	     objv[i] = obj;
-	     rcode = (*cmd)(clientData,interp,3,&objv[i-1]);
-	     objv[i] = oldarg;
-	     if (rcode == TCL_ERROR) return rcode;
-	     cmd = 0;
-	   } else {
-	     Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be { -description  }",-1);
-	     return TCL_ERROR;
-	   }
-	i+=2;
+          if (cmd) {
+            oldarg = objv[i];
+            objv[i] = obj;
+            rcode = (*cmd)(clientData,interp,3,&objv[i-1]);
+            objv[i] = oldarg;
+            if (rcode == TCL_ERROR) return rcode;
+            cmd = 0;
+          } else {
+            Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be { -description  }",-1);
+            return TCL_ERROR;
+          }
+        i+=2;
       }
       if ((i < objc) || (i == 2)) {
-	Tcl_SetStringObj(tcl_result,"{ -description  }",-1);
-	return TCL_ERROR;
+        Tcl_SetStringObj(tcl_result,"{ -description  }",-1);
+        return TCL_ERROR;
       }
       return TCL_OK;
     } else if ((c == 'c') && (strncmp(_str,"cget",length) == 0) && (length >= 2)) {
-            if (objc == 3) {
-	      _str = Tcl_GetStringFromObj(objv[2],&length);
-	      if (0) {}
-                if (strcmp(_str,"-description") == 0) {
+      if (objc == 3) {
+        _str = Tcl_GetStringFromObj(objv[2],&length);
+        if (0) {}
+                        if (strcmp(_str,"-description") == 0) {
                     cmd = _wrap_ib_node_desc_t_description_get;
                 } 
-	      else if (strcmp(_str,"-this") == 0) {
-                   SWIG_SetPointerObj(tcl_result,(void *) clientData, "_ib_node_desc_t_p");
-                   return TCL_OK;
-	      }
-	      if (cmd) {
-		oldarg = objv[2];
-		objv[2] = obj;
-		rcode = (*cmd)(clientData,interp,objc-1,&objv[1]);
-		objv[2] = oldarg;
-		return rcode;
-	      } else {
-		Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this -description  }",-1);
-		return TCL_ERROR;
-	      }
-	    } else {
-	      Tcl_SetStringObj(tcl_result,"{ -this -description  }", -1);
-	      return TCL_ERROR;
-	    }
-    }
-    if (!cmd) {
-        Tcl_SetStringObj(tcl_result,"Invalid Method. Must be { cget configure }",-1);
+          else if (strcmp(_str,"-this") == 0) {
+            SWIG_SetPointerObj(tcl_result,(void *) clientData, "_ib_node_desc_t_p");
+            return TCL_OK;
+          }
+        if (cmd) {
+          oldarg = objv[2];
+          objv[2] = obj;
+          rcode = (*cmd)(clientData,interp,objc-1,&objv[1]);
+          objv[2] = oldarg;
+          return rcode;
+        } else {
+          Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this -description  }",-1);
+          return TCL_ERROR;
+        }
+      } else {
+        Tcl_SetStringObj(tcl_result,"{ -this -description  }", -1);
         return TCL_ERROR;
+      }
+    } else if ((c == 'd') && (strncmp(_str,"dump",length) == 0) && (length >= 2)) {
+      if (objc == 2) {
+        Tcl_Obj *pDumpObj;
+        pDumpObj = Tcl_NewStringObj("",-1);
+        Tcl_IncrRefCount(pDumpObj);
+                cmd = _wrap_ib_node_desc_t_description_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-description ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+
+        Tcl_DecrRefCount(pDumpObj);
+        return TCL_OK;
+      } else {
+        Tcl_SetStringObj(tcl_result,"no parameters are allowed for dump", -1);
+        return TCL_ERROR;
+      }
     }
-    oldarg = objv[1];
-    objv[1] = obj;
-    rcode = (*cmd)(clientData,interp,objc,objv);
-    objv[1] = oldarg;
-    return rcode;
+  if (!cmd) {
+    Tcl_SetStringObj(tcl_result,"Invalid Method. Must be { dump cget configure }",-1);
+    return TCL_ERROR;
+  }
+  oldarg = objv[1];
+  objv[1] = obj;
+  rcode = (*cmd)(clientData,interp,objc,objv);
+  objv[1] = oldarg;
+  return rcode;
 }
 
 
@@ -19764,6 +20697,7 @@ static int _wrap_ib_lft_record_t_lft_set(ClientData clientData, Tcl_Interp *inte
     uint8_array_t * _arg1;
     Tcl_Obj * tcl_result;
     char * rettype;
+    uint8_t  entrys[64];
 
     clientData = clientData; objv = objv;
     tcl_result = Tcl_GetObjResult(interp);
@@ -19776,11 +20710,32 @@ static int _wrap_ib_lft_record_t_lft_set(ClientData clientData, Tcl_Interp *inte
         Tcl_AppendToObj(tcl_result, rettype, -1);
         return TCL_ERROR;
     }
-    if ((rettype = SWIG_GetPointerObj(interp,objv[2],(void **) &_arg1,"_uint8_array_t_p"))) {
-        Tcl_SetStringObj(tcl_result, "Type error in argument 2 of ib_lft_record_t_lft_set. Expected _uint8_array_t_p, received ", -1);
-        Tcl_AppendToObj(tcl_result, rettype, -1);
-        return TCL_ERROR;
+{
+  char *buff;
+  char *p_ch;
+  char *last;
+  long int entry;
+
+  int i = 0;
+  buff = (char *)malloc((strlen(Tcl_GetStringFromObj(objv[2],NULL))+1)*sizeof(char));
+  strcpy(buff, Tcl_GetStringFromObj(objv[2],NULL));
+  p_ch = strtok_r(buff, " \t",&last);
+  while (p_ch && (i < 64)) 
+  {    
+    entry = strtol(p_ch, NULL, 0);
+    if (entry > 0xff)
+    {
+      printf("Error: wrong format or out of range value for expected uint8_t entry: %s\n", p_ch);
+      return TCL_ERROR;
     }
+    entrys[i++] = entry;
+    p_ch = strtok_r(NULL, " \t", &last);
+  }
+  for (; i < 64; i++) entrys[i] = 0;
+
+  free(buff);
+  _arg1 = entrys;
+}
 { 
   ibms_tcl_error = 0;
       _result = (uint8_array_t *)_ib_lft_record_lft_set(_arg0,_arg1);
@@ -19790,7 +20745,14 @@ static int _wrap_ib_lft_record_t_lft_set(ClientData clientData, Tcl_Interp *inte
  	 return TCL_ERROR; 
   }
 }    tcl_result = Tcl_GetObjResult(interp);
-    SWIG_SetPointerObj(tcl_result,(void *) _result,"_uint8_array_t_p");
+{
+  int i;
+  char buff[8];
+  for (i=0; i <64 ; i++) {
+    sprintf(buff, "0x%02x ", *(_result+i));
+    Tcl_AppendResult(interp, buff, NULL);
+  }
+}
     return TCL_OK;
 }
 #define _ib_lft_record_lft_get(_swigobj) ((uint8_array_t *) _swigobj->lft)
@@ -19821,38 +20783,45 @@ static int _wrap_ib_lft_record_t_lft_get(ClientData clientData, Tcl_Interp *inte
  	 return TCL_ERROR; 
   }
 }    tcl_result = Tcl_GetObjResult(interp);
-    SWIG_SetPointerObj(tcl_result,(void *) _result,"_uint8_array_t_p");
+{
+  int i;
+  char buff[8];
+  for (i=0; i <64 ; i++) {
+    sprintf(buff, "0x%02x ", *(_result+i));
+    Tcl_AppendResult(interp, buff, NULL);
+  }
+}
     return TCL_OK;
 }
 /* methodcmd8.swg : Tcl8.x method invocation */
 
 static int Tclib_lft_record_tMethodCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST _objv[]) {
-    int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
-    char *_str;
-    int rcode;
-    Tcl_Obj **objv;
-    Tcl_Obj *oldarg,*tcl_result,*obj;
-    int length;
-    char c;
+  int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
+  char *_str;
+  int rcode;
+  Tcl_Obj **objv;
+  Tcl_Obj *oldarg,*tcl_result,*obj;
+  int length;
+  char c;
 
-    tcl_result = Tcl_GetObjResult(interp);
-    objv = (Tcl_Obj **) _objv; 
-    if (objc < 2) {
-        Tcl_SetStringObj(tcl_result,"ib_lft_record_t methods : { cget configure  }",-1);
-        return TCL_ERROR;
-    }
-    obj = Tcl_NewObj();
-    SWIG_SetPointerObj(obj,(void *) clientData,"_ib_lft_record_t_p");
-    _str = Tcl_GetStringFromObj(objv[1],&length);
-    c = *_str;
-    if (0);
-
+  tcl_result = Tcl_GetObjResult(interp);
+  objv = (Tcl_Obj **) _objv; 
+  if (objc < 2) {
+    Tcl_SetStringObj(tcl_result,"ib_lft_record_t methods : { dump cget configure  }",-1);
+    return TCL_ERROR;
+  }
+  obj = Tcl_NewObj();
+  SWIG_SetPointerObj(obj,(void *) clientData,"_ib_lft_record_t_p");
+  _str = Tcl_GetStringFromObj(objv[1],&length);
+  c = *_str;
+  if (0);
+  
     else if ((c == 'c') && (strncmp(_str,"configure",length) == 0) && (length >= 2)) {
       int i = 2;
       cmd = 0;
       while (i+1 < objc) {
-	_str = Tcl_GetStringFromObj(objv[i],&length);
-                if (strcmp(_str,"-lid") == 0) {
+        _str = Tcl_GetStringFromObj(objv[i],&length);
+                        if (strcmp(_str,"-lid") == 0) {
                     cmd = _wrap_ib_lft_record_t_lid_set;
                 }  else if (strcmp(_str,"-block_num") == 0) {
                     cmd = _wrap_ib_lft_record_t_block_num_set;
@@ -19861,29 +20830,29 @@ static int Tclib_lft_record_tMethodCmd(ClientData clientData, Tcl_Interp *interp
                 }  else if (strcmp(_str,"-lft") == 0) {
                     cmd = _wrap_ib_lft_record_t_lft_set;
                 } 
-	   if (cmd) {
-	     oldarg = objv[i];
-	     objv[i] = obj;
-	     rcode = (*cmd)(clientData,interp,3,&objv[i-1]);
-	     objv[i] = oldarg;
-	     if (rcode == TCL_ERROR) return rcode;
-	     cmd = 0;
-	   } else {
-	     Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be { -lid -block_num -resv0 -lft  }",-1);
-	     return TCL_ERROR;
-	   }
-	i+=2;
+          if (cmd) {
+            oldarg = objv[i];
+            objv[i] = obj;
+            rcode = (*cmd)(clientData,interp,3,&objv[i-1]);
+            objv[i] = oldarg;
+            if (rcode == TCL_ERROR) return rcode;
+            cmd = 0;
+          } else {
+            Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be { -lid -block_num -resv0 -lft  }",-1);
+            return TCL_ERROR;
+          }
+        i+=2;
       }
       if ((i < objc) || (i == 2)) {
-	Tcl_SetStringObj(tcl_result,"{ -lid -block_num -resv0 -lft  }",-1);
-	return TCL_ERROR;
+        Tcl_SetStringObj(tcl_result,"{ -lid -block_num -resv0 -lft  }",-1);
+        return TCL_ERROR;
       }
       return TCL_OK;
     } else if ((c == 'c') && (strncmp(_str,"cget",length) == 0) && (length >= 2)) {
-            if (objc == 3) {
-	      _str = Tcl_GetStringFromObj(objv[2],&length);
-	      if (0) {}
-                if (strcmp(_str,"-lid") == 0) {
+      if (objc == 3) {
+        _str = Tcl_GetStringFromObj(objv[2],&length);
+        if (0) {}
+                        if (strcmp(_str,"-lid") == 0) {
                     cmd = _wrap_ib_lft_record_t_lid_get;
                 }  else if (strcmp(_str,"-block_num") == 0) {
                     cmd = _wrap_ib_lft_record_t_block_num_get;
@@ -19892,34 +20861,74 @@ static int Tclib_lft_record_tMethodCmd(ClientData clientData, Tcl_Interp *interp
                 }  else if (strcmp(_str,"-lft") == 0) {
                     cmd = _wrap_ib_lft_record_t_lft_get;
                 } 
-	      else if (strcmp(_str,"-this") == 0) {
-                   SWIG_SetPointerObj(tcl_result,(void *) clientData, "_ib_lft_record_t_p");
-                   return TCL_OK;
-	      }
-	      if (cmd) {
-		oldarg = objv[2];
-		objv[2] = obj;
-		rcode = (*cmd)(clientData,interp,objc-1,&objv[1]);
-		objv[2] = oldarg;
-		return rcode;
-	      } else {
-		Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this -lid -block_num -resv0 -lft  }",-1);
-		return TCL_ERROR;
-	      }
-	    } else {
-	      Tcl_SetStringObj(tcl_result,"{ -this -lid -block_num -resv0 -lft  }", -1);
-	      return TCL_ERROR;
-	    }
-    }
-    if (!cmd) {
-        Tcl_SetStringObj(tcl_result,"Invalid Method. Must be { cget configure }",-1);
+          else if (strcmp(_str,"-this") == 0) {
+            SWIG_SetPointerObj(tcl_result,(void *) clientData, "_ib_lft_record_t_p");
+            return TCL_OK;
+          }
+        if (cmd) {
+          oldarg = objv[2];
+          objv[2] = obj;
+          rcode = (*cmd)(clientData,interp,objc-1,&objv[1]);
+          objv[2] = oldarg;
+          return rcode;
+        } else {
+          Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this -lid -block_num -resv0 -lft  }",-1);
+          return TCL_ERROR;
+        }
+      } else {
+        Tcl_SetStringObj(tcl_result,"{ -this -lid -block_num -resv0 -lft  }", -1);
         return TCL_ERROR;
+      }
+    } else if ((c == 'd') && (strncmp(_str,"dump",length) == 0) && (length >= 2)) {
+      if (objc == 2) {
+        Tcl_Obj *pDumpObj;
+        pDumpObj = Tcl_NewStringObj("",-1);
+        Tcl_IncrRefCount(pDumpObj);
+                cmd = _wrap_ib_lft_record_t_lid_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-lid ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_lft_record_t_block_num_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-block_num ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_lft_record_t_resv0_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-resv0 ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_lft_record_t_lft_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-lft ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+
+        Tcl_DecrRefCount(pDumpObj);
+        return TCL_OK;
+      } else {
+        Tcl_SetStringObj(tcl_result,"no parameters are allowed for dump", -1);
+        return TCL_ERROR;
+      }
     }
-    oldarg = objv[1];
-    objv[1] = obj;
-    rcode = (*cmd)(clientData,interp,objc,objv);
-    objv[1] = oldarg;
-    return rcode;
+  if (!cmd) {
+    Tcl_SetStringObj(tcl_result,"Invalid Method. Must be { dump cget configure }",-1);
+    return TCL_ERROR;
+  }
+  oldarg = objv[1];
+  objv[1] = obj;
+  rcode = (*cmd)(clientData,interp,objc,objv);
+  objv[1] = oldarg;
+  return rcode;
 }
 
 
@@ -20083,6 +21092,7 @@ static int _wrap_ib_pm_counters_t_reserved0_set(ClientData clientData, Tcl_Inter
     uint32_array_t * _arg1;
     Tcl_Obj * tcl_result;
     char * rettype;
+    uint32_t  entrys[10];
 
     clientData = clientData; objv = objv;
     tcl_result = Tcl_GetObjResult(interp);
@@ -20095,11 +21105,32 @@ static int _wrap_ib_pm_counters_t_reserved0_set(ClientData clientData, Tcl_Inter
         Tcl_AppendToObj(tcl_result, rettype, -1);
         return TCL_ERROR;
     }
-    if ((rettype = SWIG_GetPointerObj(interp,objv[2],(void **) &_arg1,"_uint32_array_t_p"))) {
-        Tcl_SetStringObj(tcl_result, "Type error in argument 2 of ib_pm_counters_t_reserved0_set. Expected _uint32_array_t_p, received ", -1);
-        Tcl_AppendToObj(tcl_result, rettype, -1);
-        return TCL_ERROR;
+{
+  char *buff;
+  char *p_ch;
+  char *last;
+  long int entry;
+
+  int i = 0;
+  buff = (char *)malloc((strlen(Tcl_GetStringFromObj(objv[2],NULL))+1)*sizeof(char));
+  strcpy(buff, Tcl_GetStringFromObj(objv[2],NULL));
+  p_ch = strtok_r(buff, " \t",&last);
+  while (p_ch && (i < 10)) 
+  {    
+    entry = strtol(p_ch, NULL, 0);
+    if (entry > (long int)0xffffffff)
+    {
+      printf("Error: wrong format or out of range value for expected uint32_t entry: %s\n", p_ch);
+      return TCL_ERROR;
     }
+    entrys[i++] = entry;
+    p_ch = strtok_r(NULL, " \t", &last);
+  }
+  for (; i < 10; i++) entrys[i] = 0;
+
+  free(buff);
+  _arg1 = entrys;
+}
 { 
   ibms_tcl_error = 0;
       _result = (uint32_array_t *)_ib_pm_counters_reserved0_set(_arg0,_arg1);
@@ -20109,7 +21140,14 @@ static int _wrap_ib_pm_counters_t_reserved0_set(ClientData clientData, Tcl_Inter
  	 return TCL_ERROR; 
   }
 }    tcl_result = Tcl_GetObjResult(interp);
-    SWIG_SetPointerObj(tcl_result,(void *) _result,"_uint32_array_t_p");
+{
+  int i;
+  char buff[12];
+  for (i=0; i <10 ; i++) {
+    sprintf(buff, "0x%08x ", *(_result+i));
+    Tcl_AppendResult(interp, buff, NULL);
+  }
+}
     return TCL_OK;
 }
 #define _ib_pm_counters_reserved0_get(_swigobj) ((uint32_array_t *) _swigobj->reserved0)
@@ -20140,7 +21178,14 @@ static int _wrap_ib_pm_counters_t_reserved0_get(ClientData clientData, Tcl_Inter
  	 return TCL_ERROR; 
   }
 }    tcl_result = Tcl_GetObjResult(interp);
-    SWIG_SetPointerObj(tcl_result,(void *) _result,"_uint32_array_t_p");
+{
+  int i;
+  char buff[12];
+  for (i=0; i <10 ; i++) {
+    sprintf(buff, "0x%08x ", *(_result+i));
+    Tcl_AppendResult(interp, buff, NULL);
+  }
+}
     return TCL_OK;
 }
 #define _ib_pm_counters_reserved1_set(_swigobj,_swigval) (_swigobj->reserved1 = *(_swigval),_swigval)
@@ -20165,7 +21210,7 @@ static int _wrap_ib_pm_counters_t_reserved1_set(ClientData clientData, Tcl_Inter
         return TCL_ERROR;
     }
 {
-  temp = atoi(Tcl_GetStringFromObj(objv[2],NULL));
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
   _arg1 = &temp;
 }
 { 
@@ -20241,7 +21286,7 @@ static int _wrap_ib_pm_counters_t_port_select_set(ClientData clientData, Tcl_Int
         return TCL_ERROR;
     }
 {
-  temp = atoi(Tcl_GetStringFromObj(objv[2],NULL));
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
   _arg1 = &temp;
 }
 { 
@@ -20469,7 +21514,7 @@ static int _wrap_ib_pm_counters_t_link_error_recovery_counter_set(ClientData cli
         return TCL_ERROR;
     }
 {
-  temp = atoi(Tcl_GetStringFromObj(objv[2],NULL));
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
   _arg1 = &temp;
 }
 { 
@@ -20545,7 +21590,7 @@ static int _wrap_ib_pm_counters_t_link_down_counter_set(ClientData clientData, T
         return TCL_ERROR;
     }
 {
-  temp = atoi(Tcl_GetStringFromObj(objv[2],NULL));
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
   _arg1 = &temp;
 }
 { 
@@ -20925,7 +21970,7 @@ static int _wrap_ib_pm_counters_t_port_xmit_constraint_errors_set(ClientData cli
         return TCL_ERROR;
     }
 {
-  temp = atoi(Tcl_GetStringFromObj(objv[2],NULL));
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
   _arg1 = &temp;
 }
 { 
@@ -21001,7 +22046,7 @@ static int _wrap_ib_pm_counters_t_port_rcv_constraint_errors_set(ClientData clie
         return TCL_ERROR;
     }
 {
-  temp = atoi(Tcl_GetStringFromObj(objv[2],NULL));
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
   _arg1 = &temp;
 }
 { 
@@ -21077,7 +22122,7 @@ static int _wrap_ib_pm_counters_t_reserved2_set(ClientData clientData, Tcl_Inter
         return TCL_ERROR;
     }
 {
-  temp = atoi(Tcl_GetStringFromObj(objv[2],NULL));
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
   _arg1 = &temp;
 }
 { 
@@ -21153,7 +22198,7 @@ static int _wrap_ib_pm_counters_t_lli_errors_exc_buf_errors_set(ClientData clien
         return TCL_ERROR;
     }
 {
-  temp = atoi(Tcl_GetStringFromObj(objv[2],NULL));
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
   _arg1 = &temp;
 }
 { 
@@ -21679,6 +22724,7 @@ static int _wrap_ib_pm_counters_t_reserved5_set(ClientData clientData, Tcl_Inter
     uint32_array_t * _arg1;
     Tcl_Obj * tcl_result;
     char * rettype;
+    uint32_t  entrys[38];
 
     clientData = clientData; objv = objv;
     tcl_result = Tcl_GetObjResult(interp);
@@ -21691,11 +22737,32 @@ static int _wrap_ib_pm_counters_t_reserved5_set(ClientData clientData, Tcl_Inter
         Tcl_AppendToObj(tcl_result, rettype, -1);
         return TCL_ERROR;
     }
-    if ((rettype = SWIG_GetPointerObj(interp,objv[2],(void **) &_arg1,"_uint32_array_t_p"))) {
-        Tcl_SetStringObj(tcl_result, "Type error in argument 2 of ib_pm_counters_t_reserved5_set. Expected _uint32_array_t_p, received ", -1);
-        Tcl_AppendToObj(tcl_result, rettype, -1);
-        return TCL_ERROR;
+{
+  char *buff;
+  char *p_ch;
+  char *last;
+  long int entry;
+
+  int i = 0;
+  buff = (char *)malloc((strlen(Tcl_GetStringFromObj(objv[2],NULL))+1)*sizeof(char));
+  strcpy(buff, Tcl_GetStringFromObj(objv[2],NULL));
+  p_ch = strtok_r(buff, " \t",&last);
+  while (p_ch && (i < 38)) 
+  {    
+    entry = strtol(p_ch, NULL, 0);
+    if (entry > (long int)0xffffffff)
+    {
+      printf("Error: wrong format or out of range value for expected uint32_t entry: %s\n", p_ch);
+      return TCL_ERROR;
     }
+    entrys[i++] = entry;
+    p_ch = strtok_r(NULL, " \t", &last);
+  }
+  for (; i < 38; i++) entrys[i] = 0;
+
+  free(buff);
+  _arg1 = entrys;
+}
 { 
   ibms_tcl_error = 0;
       _result = (uint32_array_t *)_ib_pm_counters_reserved5_set(_arg0,_arg1);
@@ -21705,7 +22772,14 @@ static int _wrap_ib_pm_counters_t_reserved5_set(ClientData clientData, Tcl_Inter
  	 return TCL_ERROR; 
   }
 }    tcl_result = Tcl_GetObjResult(interp);
-    SWIG_SetPointerObj(tcl_result,(void *) _result,"_uint32_array_t_p");
+{
+  int i;
+  char buff[12];
+  for (i=0; i <38 ; i++) {
+    sprintf(buff, "0x%08x ", *(_result+i));
+    Tcl_AppendResult(interp, buff, NULL);
+  }
+}
     return TCL_OK;
 }
 #define _ib_pm_counters_reserved5_get(_swigobj) ((uint32_array_t *) _swigobj->reserved5)
@@ -21736,38 +22810,45 @@ static int _wrap_ib_pm_counters_t_reserved5_get(ClientData clientData, Tcl_Inter
  	 return TCL_ERROR; 
   }
 }    tcl_result = Tcl_GetObjResult(interp);
-    SWIG_SetPointerObj(tcl_result,(void *) _result,"_uint32_array_t_p");
+{
+  int i;
+  char buff[12];
+  for (i=0; i <38 ; i++) {
+    sprintf(buff, "0x%08x ", *(_result+i));
+    Tcl_AppendResult(interp, buff, NULL);
+  }
+}
     return TCL_OK;
 }
 /* methodcmd8.swg : Tcl8.x method invocation */
 
 static int Tclib_pm_counters_tMethodCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST _objv[]) {
-    int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
-    char *_str;
-    int rcode;
-    Tcl_Obj **objv;
-    Tcl_Obj *oldarg,*tcl_result,*obj;
-    int length;
-    char c;
+  int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
+  char *_str;
+  int rcode;
+  Tcl_Obj **objv;
+  Tcl_Obj *oldarg,*tcl_result,*obj;
+  int length;
+  char c;
 
-    tcl_result = Tcl_GetObjResult(interp);
-    objv = (Tcl_Obj **) _objv; 
-    if (objc < 2) {
-        Tcl_SetStringObj(tcl_result,"ib_pm_counters_t methods : { cget configure  }",-1);
-        return TCL_ERROR;
-    }
-    obj = Tcl_NewObj();
-    SWIG_SetPointerObj(obj,(void *) clientData,"_ib_pm_counters_t_p");
-    _str = Tcl_GetStringFromObj(objv[1],&length);
-    c = *_str;
-    if (0);
-
+  tcl_result = Tcl_GetObjResult(interp);
+  objv = (Tcl_Obj **) _objv; 
+  if (objc < 2) {
+    Tcl_SetStringObj(tcl_result,"ib_pm_counters_t methods : { dump cget configure  }",-1);
+    return TCL_ERROR;
+  }
+  obj = Tcl_NewObj();
+  SWIG_SetPointerObj(obj,(void *) clientData,"_ib_pm_counters_t_p");
+  _str = Tcl_GetStringFromObj(objv[1],&length);
+  c = *_str;
+  if (0);
+  
     else if ((c == 'c') && (strncmp(_str,"configure",length) == 0) && (length >= 2)) {
       int i = 2;
       cmd = 0;
       while (i+1 < objc) {
-	_str = Tcl_GetStringFromObj(objv[i],&length);
-                if (strcmp(_str,"-mad_header") == 0) {
+        _str = Tcl_GetStringFromObj(objv[i],&length);
+                        if (strcmp(_str,"-mad_header") == 0) {
                     cmd = _wrap_ib_pm_counters_t_mad_header_set;
                 }  else if (strcmp(_str,"-reserved0") == 0) {
                     cmd = _wrap_ib_pm_counters_t_reserved0_set;
@@ -21814,29 +22895,29 @@ static int Tclib_pm_counters_tMethodCmd(ClientData clientData, Tcl_Interp *inter
                 }  else if (strcmp(_str,"-reserved5") == 0) {
                     cmd = _wrap_ib_pm_counters_t_reserved5_set;
                 } 
-	   if (cmd) {
-	     oldarg = objv[i];
-	     objv[i] = obj;
-	     rcode = (*cmd)(clientData,interp,3,&objv[i-1]);
-	     objv[i] = oldarg;
-	     if (rcode == TCL_ERROR) return rcode;
-	     cmd = 0;
-	   } else {
-	     Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be { -mad_header -reserved0 -reserved1 -port_select -counter_select -symbol_error_counter -link_error_recovery_counter -link_down_counter -port_rcv_errors -port_rcv_remote_physical_errors -port_rcv_switch_relay_errors -port_xmit_discard -port_xmit_constraint_errors -port_rcv_constraint_errors -reserved2 -lli_errors_exc_buf_errors -reserved3 -vl15_dropped -port_xmit_data -port_rcv_data -port_xmit_pkts -port_rcv_pkts -reserved5  }",-1);
-	     return TCL_ERROR;
-	   }
-	i+=2;
+          if (cmd) {
+            oldarg = objv[i];
+            objv[i] = obj;
+            rcode = (*cmd)(clientData,interp,3,&objv[i-1]);
+            objv[i] = oldarg;
+            if (rcode == TCL_ERROR) return rcode;
+            cmd = 0;
+          } else {
+            Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be { -mad_header -reserved0 -reserved1 -port_select -counter_select -symbol_error_counter -link_error_recovery_counter -link_down_counter -port_rcv_errors -port_rcv_remote_physical_errors -port_rcv_switch_relay_errors -port_xmit_discard -port_xmit_constraint_errors -port_rcv_constraint_errors -reserved2 -lli_errors_exc_buf_errors -reserved3 -vl15_dropped -port_xmit_data -port_rcv_data -port_xmit_pkts -port_rcv_pkts -reserved5  }",-1);
+            return TCL_ERROR;
+          }
+        i+=2;
       }
       if ((i < objc) || (i == 2)) {
-	Tcl_SetStringObj(tcl_result,"{ -mad_header -reserved0 -reserved1 -port_select -counter_select -symbol_error_counter -link_error_recovery_counter -link_down_counter -port_rcv_errors -port_rcv_remote_physical_errors -port_rcv_switch_relay_errors -port_xmit_discard -port_xmit_constraint_errors -port_rcv_constraint_errors -reserved2 -lli_errors_exc_buf_errors -reserved3 -vl15_dropped -port_xmit_data -port_rcv_data -port_xmit_pkts -port_rcv_pkts -reserved5  }",-1);
-	return TCL_ERROR;
+        Tcl_SetStringObj(tcl_result,"{ -mad_header -reserved0 -reserved1 -port_select -counter_select -symbol_error_counter -link_error_recovery_counter -link_down_counter -port_rcv_errors -port_rcv_remote_physical_errors -port_rcv_switch_relay_errors -port_xmit_discard -port_xmit_constraint_errors -port_rcv_constraint_errors -reserved2 -lli_errors_exc_buf_errors -reserved3 -vl15_dropped -port_xmit_data -port_rcv_data -port_xmit_pkts -port_rcv_pkts -reserved5  }",-1);
+        return TCL_ERROR;
       }
       return TCL_OK;
     } else if ((c == 'c') && (strncmp(_str,"cget",length) == 0) && (length >= 2)) {
-            if (objc == 3) {
-	      _str = Tcl_GetStringFromObj(objv[2],&length);
-	      if (0) {}
-                if (strcmp(_str,"-mad_header") == 0) {
+      if (objc == 3) {
+        _str = Tcl_GetStringFromObj(objv[2],&length);
+        if (0) {}
+                        if (strcmp(_str,"-mad_header") == 0) {
                     cmd = _wrap_ib_pm_counters_t_mad_header_get;
                 }  else if (strcmp(_str,"-reserved0") == 0) {
                     cmd = _wrap_ib_pm_counters_t_reserved0_get;
@@ -21883,34 +22964,207 @@ static int Tclib_pm_counters_tMethodCmd(ClientData clientData, Tcl_Interp *inter
                 }  else if (strcmp(_str,"-reserved5") == 0) {
                     cmd = _wrap_ib_pm_counters_t_reserved5_get;
                 } 
-	      else if (strcmp(_str,"-this") == 0) {
-                   SWIG_SetPointerObj(tcl_result,(void *) clientData, "_ib_pm_counters_t_p");
-                   return TCL_OK;
-	      }
-	      if (cmd) {
-		oldarg = objv[2];
-		objv[2] = obj;
-		rcode = (*cmd)(clientData,interp,objc-1,&objv[1]);
-		objv[2] = oldarg;
-		return rcode;
-	      } else {
-		Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this -mad_header -reserved0 -reserved1 -port_select -counter_select -symbol_error_counter -link_error_recovery_counter -link_down_counter -port_rcv_errors -port_rcv_remote_physical_errors -port_rcv_switch_relay_errors -port_xmit_discard -port_xmit_constraint_errors -port_rcv_constraint_errors -reserved2 -lli_errors_exc_buf_errors -reserved3 -vl15_dropped -port_xmit_data -port_rcv_data -port_xmit_pkts -port_rcv_pkts -reserved5  }",-1);
-		return TCL_ERROR;
-	      }
-	    } else {
-	      Tcl_SetStringObj(tcl_result,"{ -this -mad_header -reserved0 -reserved1 -port_select -counter_select -symbol_error_counter -link_error_recovery_counter -link_down_counter -port_rcv_errors -port_rcv_remote_physical_errors -port_rcv_switch_relay_errors -port_xmit_discard -port_xmit_constraint_errors -port_rcv_constraint_errors -reserved2 -lli_errors_exc_buf_errors -reserved3 -vl15_dropped -port_xmit_data -port_rcv_data -port_xmit_pkts -port_rcv_pkts -reserved5  }", -1);
-	      return TCL_ERROR;
-	    }
-    }
-    if (!cmd) {
-        Tcl_SetStringObj(tcl_result,"Invalid Method. Must be { cget configure }",-1);
+          else if (strcmp(_str,"-this") == 0) {
+            SWIG_SetPointerObj(tcl_result,(void *) clientData, "_ib_pm_counters_t_p");
+            return TCL_OK;
+          }
+        if (cmd) {
+          oldarg = objv[2];
+          objv[2] = obj;
+          rcode = (*cmd)(clientData,interp,objc-1,&objv[1]);
+          objv[2] = oldarg;
+          return rcode;
+        } else {
+          Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this -mad_header -reserved0 -reserved1 -port_select -counter_select -symbol_error_counter -link_error_recovery_counter -link_down_counter -port_rcv_errors -port_rcv_remote_physical_errors -port_rcv_switch_relay_errors -port_xmit_discard -port_xmit_constraint_errors -port_rcv_constraint_errors -reserved2 -lli_errors_exc_buf_errors -reserved3 -vl15_dropped -port_xmit_data -port_rcv_data -port_xmit_pkts -port_rcv_pkts -reserved5  }",-1);
+          return TCL_ERROR;
+        }
+      } else {
+        Tcl_SetStringObj(tcl_result,"{ -this -mad_header -reserved0 -reserved1 -port_select -counter_select -symbol_error_counter -link_error_recovery_counter -link_down_counter -port_rcv_errors -port_rcv_remote_physical_errors -port_rcv_switch_relay_errors -port_xmit_discard -port_xmit_constraint_errors -port_rcv_constraint_errors -reserved2 -lli_errors_exc_buf_errors -reserved3 -vl15_dropped -port_xmit_data -port_rcv_data -port_xmit_pkts -port_rcv_pkts -reserved5  }", -1);
         return TCL_ERROR;
+      }
+    } else if ((c == 'd') && (strncmp(_str,"dump",length) == 0) && (length >= 2)) {
+      if (objc == 2) {
+        Tcl_Obj *pDumpObj;
+        pDumpObj = Tcl_NewStringObj("",-1);
+        Tcl_IncrRefCount(pDumpObj);
+                cmd = _wrap_ib_pm_counters_t_mad_header_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-mad_header ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_pm_counters_t_reserved0_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-reserved0 ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_pm_counters_t_reserved1_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-reserved1 ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_pm_counters_t_port_select_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-port_select ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_pm_counters_t_counter_select_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-counter_select ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_pm_counters_t_symbol_error_counter_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-symbol_error_counter ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_pm_counters_t_link_error_recovery_counter_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-link_error_recovery_counter ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_pm_counters_t_link_down_counter_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-link_down_counter ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_pm_counters_t_port_rcv_errors_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-port_rcv_errors ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_pm_counters_t_port_rcv_remote_physical_errors_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-port_rcv_remote_physical_errors ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_pm_counters_t_port_rcv_switch_relay_errors_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-port_rcv_switch_relay_errors ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_pm_counters_t_port_xmit_discard_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-port_xmit_discard ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_pm_counters_t_port_xmit_constraint_errors_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-port_xmit_constraint_errors ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_pm_counters_t_port_rcv_constraint_errors_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-port_rcv_constraint_errors ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_pm_counters_t_reserved2_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-reserved2 ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_pm_counters_t_lli_errors_exc_buf_errors_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-lli_errors_exc_buf_errors ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_pm_counters_t_reserved3_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-reserved3 ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_pm_counters_t_vl15_dropped_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-vl15_dropped ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_pm_counters_t_port_xmit_data_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-port_xmit_data ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_pm_counters_t_port_rcv_data_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-port_rcv_data ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_pm_counters_t_port_xmit_pkts_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-port_xmit_pkts ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_pm_counters_t_port_rcv_pkts_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-port_rcv_pkts ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_pm_counters_t_reserved5_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-reserved5 ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+
+        Tcl_DecrRefCount(pDumpObj);
+        return TCL_OK;
+      } else {
+        Tcl_SetStringObj(tcl_result,"no parameters are allowed for dump", -1);
+        return TCL_ERROR;
+      }
     }
-    oldarg = objv[1];
-    objv[1] = obj;
-    rcode = (*cmd)(clientData,interp,objc,objv);
-    objv[1] = oldarg;
-    return rcode;
+  if (!cmd) {
+    Tcl_SetStringObj(tcl_result,"Invalid Method. Must be { dump cget configure }",-1);
+    return TCL_ERROR;
+  }
+  oldarg = objv[1];
+  objv[1] = obj;
+  rcode = (*cmd)(clientData,interp,objc,objv);
+  objv[1] = oldarg;
+  return rcode;
 }
 
 
@@ -22300,26 +23554,26 @@ static int _wrap_msgManager_setLogFile(ClientData clientData, Tcl_Interp *interp
 /* methodcmd8.swg : Tcl8.x method invocation */
 
 static int TclmsgManagerMethodCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST _objv[]) {
-    int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
-    char *_str;
-    int rcode;
-    Tcl_Obj **objv;
-    Tcl_Obj *oldarg,*tcl_result,*obj;
-    int length;
-    char c;
+  int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
+  char *_str;
+  int rcode;
+  Tcl_Obj **objv;
+  Tcl_Obj *oldarg,*tcl_result,*obj;
+  int length;
+  char c;
 
-    tcl_result = Tcl_GetObjResult(interp);
-    objv = (Tcl_Obj **) _objv; 
-    if (objc < 2) {
-        Tcl_SetStringObj(tcl_result,"msgManager methods : { cget configure getVerbLevel clrVerbLevel setVerbLevel outstandingMsgCount outstandingMsgs getNextMessage nullOutstandingMsgs setLogFile  }",-1);
-        return TCL_ERROR;
-    }
-    obj = Tcl_NewObj();
-    SWIG_SetPointerObj(obj,(void *) clientData,"_msgManager_p");
-    _str = Tcl_GetStringFromObj(objv[1],&length);
-    c = *_str;
-    if (0);
-    if (strcmp(_str,"getVerbLevel") == 0) {
+  tcl_result = Tcl_GetObjResult(interp);
+  objv = (Tcl_Obj **) _objv; 
+  if (objc < 2) {
+    Tcl_SetStringObj(tcl_result,"msgManager methods : { dump cget configure getVerbLevel clrVerbLevel setVerbLevel outstandingMsgCount outstandingMsgs getNextMessage nullOutstandingMsgs setLogFile  }",-1);
+    return TCL_ERROR;
+  }
+  obj = Tcl_NewObj();
+  SWIG_SetPointerObj(obj,(void *) clientData,"_msgManager_p");
+  _str = Tcl_GetStringFromObj(objv[1],&length);
+  c = *_str;
+  if (0);
+      if (strcmp(_str,"getVerbLevel") == 0) {
         cmd = _wrap_msgManager_getVerbLevel;
     }    else if (strcmp(_str,"clrVerbLevel") == 0) {
         cmd = _wrap_msgManager_clrVerbLevel;
@@ -22340,59 +23594,71 @@ static int TclmsgManagerMethodCmd(ClientData clientData, Tcl_Interp *interp, int
       int i = 2;
       cmd = 0;
       while (i+1 < objc) {
-	_str = Tcl_GetStringFromObj(objv[i],&length);
-
-	   if (cmd) {
-	     oldarg = objv[i];
-	     objv[i] = obj;
-	     rcode = (*cmd)(clientData,interp,3,&objv[i-1]);
-	     objv[i] = oldarg;
-	     if (rcode == TCL_ERROR) return rcode;
-	     cmd = 0;
-	   } else {
-	     Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be {  }",-1);
-	     return TCL_ERROR;
-	   }
-	i+=2;
+        _str = Tcl_GetStringFromObj(objv[i],&length);
+        
+          if (cmd) {
+            oldarg = objv[i];
+            objv[i] = obj;
+            rcode = (*cmd)(clientData,interp,3,&objv[i-1]);
+            objv[i] = oldarg;
+            if (rcode == TCL_ERROR) return rcode;
+            cmd = 0;
+          } else {
+            Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be {  }",-1);
+            return TCL_ERROR;
+          }
+        i+=2;
       }
       if ((i < objc) || (i == 2)) {
-	Tcl_SetStringObj(tcl_result,"{  }",-1);
-	return TCL_ERROR;
+        Tcl_SetStringObj(tcl_result,"{  }",-1);
+        return TCL_ERROR;
       }
       return TCL_OK;
     } else if ((c == 'c') && (strncmp(_str,"cget",length) == 0) && (length >= 2)) {
-            if (objc == 3) {
-	      _str = Tcl_GetStringFromObj(objv[2],&length);
-	      if (0) {}
-
-	      else if (strcmp(_str,"-this") == 0) {
-                   SWIG_SetPointerObj(tcl_result,(void *) clientData, "_msgManager_p");
-                   return TCL_OK;
-	      }
-	      if (cmd) {
-		oldarg = objv[2];
-		objv[2] = obj;
-		rcode = (*cmd)(clientData,interp,objc-1,&objv[1]);
-		objv[2] = oldarg;
-		return rcode;
-	      } else {
-		Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this  }",-1);
-		return TCL_ERROR;
-	      }
-	    } else {
-	      Tcl_SetStringObj(tcl_result,"{ -this  }", -1);
-	      return TCL_ERROR;
-	    }
-    }
-    if (!cmd) {
-        Tcl_SetStringObj(tcl_result,"Invalid Method. Must be { cget configure getVerbLevel clrVerbLevel setVerbLevel outstandingMsgCount outstandingMsgs getNextMessage nullOutstandingMsgs setLogFile }",-1);
+      if (objc == 3) {
+        _str = Tcl_GetStringFromObj(objv[2],&length);
+        if (0) {}
+        
+          else if (strcmp(_str,"-this") == 0) {
+            SWIG_SetPointerObj(tcl_result,(void *) clientData, "_msgManager_p");
+            return TCL_OK;
+          }
+        if (cmd) {
+          oldarg = objv[2];
+          objv[2] = obj;
+          rcode = (*cmd)(clientData,interp,objc-1,&objv[1]);
+          objv[2] = oldarg;
+          return rcode;
+        } else {
+          Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this  }",-1);
+          return TCL_ERROR;
+        }
+      } else {
+        Tcl_SetStringObj(tcl_result,"{ -this  }", -1);
         return TCL_ERROR;
+      }
+    } else if ((c == 'd') && (strncmp(_str,"dump",length) == 0) && (length >= 2)) {
+      if (objc == 2) {
+        Tcl_Obj *pDumpObj;
+        pDumpObj = Tcl_NewStringObj("",-1);
+        Tcl_IncrRefCount(pDumpObj);
+        
+        Tcl_DecrRefCount(pDumpObj);
+        return TCL_OK;
+      } else {
+        Tcl_SetStringObj(tcl_result,"no parameters are allowed for dump", -1);
+        return TCL_ERROR;
+      }
     }
-    oldarg = objv[1];
-    objv[1] = obj;
-    rcode = (*cmd)(clientData,interp,objc,objv);
-    objv[1] = oldarg;
-    return rcode;
+  if (!cmd) {
+    Tcl_SetStringObj(tcl_result,"Invalid Method. Must be { dump cget configure getVerbLevel clrVerbLevel setVerbLevel outstandingMsgCount outstandingMsgs getNextMessage nullOutstandingMsgs setLogFile }",-1);
+    return TCL_ERROR;
+  }
+  oldarg = objv[1];
+  objv[1] = obj;
+  rcode = (*cmd)(clientData,interp,objc,objv);
+  objv[1] = oldarg;
+  return rcode;
 }
 
 
@@ -22622,26 +23888,26 @@ static int _wrap_IBMgtSim_init(ClientData clientData, Tcl_Interp *interp, int ob
 /* methodcmd8.swg : Tcl8.x method invocation */
 
 static int TclIBMgtSimMethodCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST _objv[]) {
-    int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
-    char *_str;
-    int rcode;
-    Tcl_Obj **objv;
-    Tcl_Obj *oldarg,*tcl_result,*obj;
-    int length;
-    char c;
+  int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
+  char *_str;
+  int rcode;
+  Tcl_Obj **objv;
+  Tcl_Obj *oldarg,*tcl_result,*obj;
+  int length;
+  char c;
 
-    tcl_result = Tcl_GetObjResult(interp);
-    objv = (Tcl_Obj **) _objv; 
-    if (objc < 2) {
-        Tcl_SetStringObj(tcl_result,"IBMgtSim methods : { cget configure getFabric getServer getDispatcher init  }",-1);
-        return TCL_ERROR;
-    }
-    obj = Tcl_NewObj();
-    SWIG_SetPointerObj(obj,(void *) clientData,"_IBMgtSim_p");
-    _str = Tcl_GetStringFromObj(objv[1],&length);
-    c = *_str;
-    if (0);
-    if (strcmp(_str,"getFabric") == 0) {
+  tcl_result = Tcl_GetObjResult(interp);
+  objv = (Tcl_Obj **) _objv; 
+  if (objc < 2) {
+    Tcl_SetStringObj(tcl_result,"IBMgtSim methods : { dump cget configure getFabric getServer getDispatcher init  }",-1);
+    return TCL_ERROR;
+  }
+  obj = Tcl_NewObj();
+  SWIG_SetPointerObj(obj,(void *) clientData,"_IBMgtSim_p");
+  _str = Tcl_GetStringFromObj(objv[1],&length);
+  c = *_str;
+  if (0);
+      if (strcmp(_str,"getFabric") == 0) {
         cmd = _wrap_IBMgtSim_getFabric;
     }    else if (strcmp(_str,"getServer") == 0) {
         cmd = _wrap_IBMgtSim_getServer;
@@ -22654,59 +23920,71 @@ static int TclIBMgtSimMethodCmd(ClientData clientData, Tcl_Interp *interp, int o
       int i = 2;
       cmd = 0;
       while (i+1 < objc) {
-	_str = Tcl_GetStringFromObj(objv[i],&length);
-
-	   if (cmd) {
-	     oldarg = objv[i];
-	     objv[i] = obj;
-	     rcode = (*cmd)(clientData,interp,3,&objv[i-1]);
-	     objv[i] = oldarg;
-	     if (rcode == TCL_ERROR) return rcode;
-	     cmd = 0;
-	   } else {
-	     Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be {  }",-1);
-	     return TCL_ERROR;
-	   }
-	i+=2;
+        _str = Tcl_GetStringFromObj(objv[i],&length);
+        
+          if (cmd) {
+            oldarg = objv[i];
+            objv[i] = obj;
+            rcode = (*cmd)(clientData,interp,3,&objv[i-1]);
+            objv[i] = oldarg;
+            if (rcode == TCL_ERROR) return rcode;
+            cmd = 0;
+          } else {
+            Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be {  }",-1);
+            return TCL_ERROR;
+          }
+        i+=2;
       }
       if ((i < objc) || (i == 2)) {
-	Tcl_SetStringObj(tcl_result,"{  }",-1);
-	return TCL_ERROR;
+        Tcl_SetStringObj(tcl_result,"{  }",-1);
+        return TCL_ERROR;
       }
       return TCL_OK;
     } else if ((c == 'c') && (strncmp(_str,"cget",length) == 0) && (length >= 2)) {
-            if (objc == 3) {
-	      _str = Tcl_GetStringFromObj(objv[2],&length);
-	      if (0) {}
-
-	      else if (strcmp(_str,"-this") == 0) {
-                   SWIG_SetPointerObj(tcl_result,(void *) clientData, "_IBMgtSim_p");
-                   return TCL_OK;
-	      }
-	      if (cmd) {
-		oldarg = objv[2];
-		objv[2] = obj;
-		rcode = (*cmd)(clientData,interp,objc-1,&objv[1]);
-		objv[2] = oldarg;
-		return rcode;
-	      } else {
-		Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this  }",-1);
-		return TCL_ERROR;
-	      }
-	    } else {
-	      Tcl_SetStringObj(tcl_result,"{ -this  }", -1);
-	      return TCL_ERROR;
-	    }
-    }
-    if (!cmd) {
-        Tcl_SetStringObj(tcl_result,"Invalid Method. Must be { cget configure getFabric getServer getDispatcher init }",-1);
+      if (objc == 3) {
+        _str = Tcl_GetStringFromObj(objv[2],&length);
+        if (0) {}
+        
+          else if (strcmp(_str,"-this") == 0) {
+            SWIG_SetPointerObj(tcl_result,(void *) clientData, "_IBMgtSim_p");
+            return TCL_OK;
+          }
+        if (cmd) {
+          oldarg = objv[2];
+          objv[2] = obj;
+          rcode = (*cmd)(clientData,interp,objc-1,&objv[1]);
+          objv[2] = oldarg;
+          return rcode;
+        } else {
+          Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this  }",-1);
+          return TCL_ERROR;
+        }
+      } else {
+        Tcl_SetStringObj(tcl_result,"{ -this  }", -1);
         return TCL_ERROR;
+      }
+    } else if ((c == 'd') && (strncmp(_str,"dump",length) == 0) && (length >= 2)) {
+      if (objc == 2) {
+        Tcl_Obj *pDumpObj;
+        pDumpObj = Tcl_NewStringObj("",-1);
+        Tcl_IncrRefCount(pDumpObj);
+        
+        Tcl_DecrRefCount(pDumpObj);
+        return TCL_OK;
+      } else {
+        Tcl_SetStringObj(tcl_result,"no parameters are allowed for dump", -1);
+        return TCL_ERROR;
+      }
     }
-    oldarg = objv[1];
-    objv[1] = obj;
-    rcode = (*cmd)(clientData,interp,objc,objv);
-    objv[1] = oldarg;
-    return rcode;
+  if (!cmd) {
+    Tcl_SetStringObj(tcl_result,"Invalid Method. Must be { dump cget configure getFabric getServer getDispatcher init }",-1);
+    return TCL_ERROR;
+  }
+  oldarg = objv[1];
+  objv[1] = obj;
+  rcode = (*cmd)(clientData,interp,objc,objv);
+  objv[1] = oldarg;
+  return rcode;
 }
 
 
@@ -22912,7 +24190,7 @@ static int _wrap_IBMSNode_getLinkStatus(ClientData clientData, Tcl_Interp *inter
   }
 }
 {
-  temp = atoi(Tcl_GetStringFromObj(objv[2],NULL));
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
   _arg1 = &temp;
 }
 { 
@@ -22986,7 +24264,7 @@ static int _wrap_IBMSNode_setPhyPortErrProfile(ClientData clientData, Tcl_Interp
   }
 }
 {
-  temp = atoi(Tcl_GetStringFromObj(objv[2],NULL));
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
   _arg1 = &temp;
 }
 { 
@@ -23078,7 +24356,7 @@ static int _wrap_IBMSNode_getPhyPortErrProfile(ClientData clientData, Tcl_Interp
   }
 }
 {
-  temp0 = atoi(Tcl_GetStringFromObj(objv[2],NULL));
+  temp0 = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
   _arg1 = &temp0;
 }
 { 
@@ -23164,7 +24442,7 @@ static int _wrap_IBMSNode_setPhyPortPMCounter(ClientData clientData, Tcl_Interp 
   }
 }
 {
-  temp = atoi(Tcl_GetStringFromObj(objv[2],NULL));
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
   _arg1 = &temp;
 }
 {
@@ -23247,7 +24525,7 @@ static int _wrap_IBMSNode_getPhyPortPMCounter(ClientData clientData, Tcl_Interp 
   }
 }
 {
-  temp = atoi(Tcl_GetStringFromObj(objv[2],NULL));
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
   _arg1 = &temp;
 }
 {
@@ -23323,7 +24601,7 @@ static int _wrap_IBMSNode_getPortInfo(ClientData clientData, Tcl_Interp *interp,
   }
 }
 {
-  temp = atoi(Tcl_GetStringFromObj(objv[2],NULL));
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
   _arg1 = &temp;
 }
 { 
@@ -23470,21 +24748,21 @@ static int _wrap_IBMSNode_getSwitchInfo(ClientData clientData, Tcl_Interp *inter
     SWIG_SetPointerObj(tcl_result,(void *) _result,"_ib_switch_info_t_p");
     return TCL_OK;
 }
-#define IBMSNode_setCrSpace(_swigobj,_swigarg0,_swigarg1)  (_swigobj->setCrSpace(_swigarg0,_swigarg1))
-static int _wrap_IBMSNode_setCrSpace(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+#define IBMSNode_getPKeyTblBlock(_swigobj,_swigarg0,_swigarg1)  (_swigobj->getPKeyTblBlock(_swigarg0,_swigarg1))
+static int _wrap_IBMSNode_getPKeyTblBlock(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
 
-    int  _result;
+    ib_pkey_table_t * _result;
     IBMSNode * _arg0;
-    uint32_t * _arg1;
-    uint32_t * _arg2;
+    uint8_t * _arg1;
+    uint16_t * _arg2;
     Tcl_Obj * tcl_result;
-    uint32_t  temp;
-    uint32_t  temp0;
+    uint8_t  temp;
+    uint16_t  temp0;
 
     clientData = clientData; objv = objv;
     tcl_result = Tcl_GetObjResult(interp);
     if ((objc < 4) || (objc > 4)) {
-        Tcl_SetStringObj(tcl_result,"Wrong # args. IBMSNode_setCrSpace { IBMSNode * } addr data ",-1);
+        Tcl_SetStringObj(tcl_result,"Wrong # args. IBMSNode_getPKeyTblBlock { IBMSNode * } portNum blockNum ",-1);
         return TCL_ERROR;
     }
 {
@@ -23538,7 +24816,117 @@ static int _wrap_IBMSNode_setCrSpace(ClientData clientData, Tcl_Interp *interp, 
 }
 { 
   ibms_tcl_error = 0;
-      _result = (int )IBMSNode_setCrSpace(_arg0,*_arg1,*_arg2);
+      _result = (ib_pkey_table_t *)IBMSNode_getPKeyTblBlock(_arg0,*_arg1,*_arg2);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[36];
+  int i;
+  for (i = 0; i < 32; i++) 
+  {
+    sprintf(buff, "0x%04x ", cl_ntoh16(_result->pkey_entry[i]));
+    Tcl_AppendToObj(tcl_result,buff,strlen(buff));
+  }
+}
+    return TCL_OK;
+}
+#define IBMSNode_setPKeyTblBlock(_swigobj,_swigarg0,_swigarg1,_swigarg2)  (_swigobj->setPKeyTblBlock(_swigarg0,_swigarg1,_swigarg2))
+static int _wrap_IBMSNode_setPKeyTblBlock(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    int  _result;
+    IBMSNode * _arg0;
+    uint8_t * _arg1;
+    uint16_t * _arg2;
+    ib_pkey_table_t * _arg3;
+    Tcl_Obj * tcl_result;
+    uint8_t  temp;
+    uint16_t  temp0;
+    ib_pkey_table_t  tmp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 5) || (objc > 5)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. IBMSNode_setPKeyTblBlock { IBMSNode * } portNum blockNum tbl ",-1);
+        return TCL_ERROR;
+    }
+{
+  
+  void *ptr;
+  if (ibmsGetSimNodePtrByTclName(objv[1], &ptr) != TCL_OK) {
+	 char err[128];
+	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
+	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+  }
+	 
+  _arg0 = (IBMSNode *)ptr;
+}
+{
+  /* the format is always: <type>:<idx>[:<name>] */
+  
+  // get the type from the given source 
+  char buf[128];
+  strcpy(buf, Tcl_GetStringFromObj(objv[1],0));
+  char *colonIdx = index(buf,':');
+  if (!colonIdx) {
+	 char err[128];
+	 sprintf(err, "-E- Bad formatted ibdm object:%s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;
+  }
+  *colonIdx = '\0';
+
+  if (!strcmp("IBMSNode ", "IBMSNode ")) {
+    if (strcmp(buf, "simnode")) {
+      char err[256];
+      sprintf(err, "-E- basetype is IBMSNode  but received obj of type %s", buf);
+      Tcl_SetStringObj(tcl_result, err, strlen(err));
+      return TCL_ERROR;	 
+    }
+  } else {
+	 char err[256];
+	 sprintf(err, "-E- basetype 'IBMSNode ' is unknown");
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+  }
+}
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
+  _arg1 = &temp;
+}
+{
+  temp0 = strtoul(Tcl_GetStringFromObj(objv[3],NULL), NULL, 0);
+  _arg2 = &temp0;
+}
+{
+  char buf[256];
+  char *p_pkey;
+  char *str_token;
+  int i = 0;
+
+  strncpy(buf, Tcl_GetStringFromObj(objv[4],NULL), 255);
+  buf[255] = '\0';
+  p_pkey = strtok_r(buf," ", &str_token);
+  while (p_pkey && (i < 32))
+  {
+    errno = 0;
+    tmp.pkey_entry[i++] = cl_hton16(strtoul(p_pkey, NULL, 0));
+    if (errno) {
+      printf("Wrong format for pkey:%s\n", p_pkey);
+      return TCL_ERROR;
+    }
+    
+    p_pkey = strtok_r(NULL," ", &str_token);
+  }
+  _arg3 = &tmp;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (int )IBMSNode_setPKeyTblBlock(_arg0,*_arg1,*_arg2,_arg3);
 ; 
   if (ibms_tcl_error) { 
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
@@ -23548,21 +24936,23 @@ static int _wrap_IBMSNode_setCrSpace(ClientData clientData, Tcl_Interp *interp, 
     Tcl_SetIntObj(tcl_result,(long) _result);
     return TCL_OK;
 }
-#define IBMSNode_getCrSpace(_swigobj,_swigarg0,_swigarg1)  (_swigobj->getCrSpace(_swigarg0,_swigarg1))
-static int _wrap_IBMSNode_getCrSpace(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+#define IBMSNode_setCrSpace(_swigobj,_swigarg0,_swigarg1,_swigarg2)  (_swigobj->setCrSpace(_swigarg0,_swigarg1,_swigarg2))
+static int _wrap_IBMSNode_setCrSpace(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
 
     int  _result;
     IBMSNode * _arg0;
     uint32_t * _arg1;
     uint32_t * _arg2;
+    uint32_t * _arg3;
     Tcl_Obj * tcl_result;
     uint32_t  temp;
     uint32_t  temp0;
+    uint32_t  temp1;
 
     clientData = clientData; objv = objv;
     tcl_result = Tcl_GetObjResult(interp);
-    if ((objc < 4) || (objc > 4)) {
-        Tcl_SetStringObj(tcl_result,"Wrong # args. IBMSNode_getCrSpace { IBMSNode * } addr data ",-1);
+    if ((objc < 5) || (objc > 5)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. IBMSNode_setCrSpace { IBMSNode * } startAddr length data ",-1);
         return TCL_ERROR;
     }
 {
@@ -23614,9 +25004,97 @@ static int _wrap_IBMSNode_getCrSpace(ClientData clientData, Tcl_Interp *interp, 
   temp0 = strtoul(Tcl_GetStringFromObj(objv[3],NULL), NULL, 0);
   _arg2 = &temp0;
 }
+{
+  temp1 = strtoul(Tcl_GetStringFromObj(objv[4],NULL), NULL, 0);
+  _arg3 = &temp1;
+}
 { 
   ibms_tcl_error = 0;
-      _result = (int )IBMSNode_getCrSpace(_arg0,*_arg1,*_arg2);
+      _result = (int )IBMSNode_setCrSpace(_arg0,*_arg1,*_arg2,_arg3);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+    Tcl_SetIntObj(tcl_result,(long) _result);
+    return TCL_OK;
+}
+#define IBMSNode_getCrSpace(_swigobj,_swigarg0,_swigarg1,_swigarg2)  (_swigobj->getCrSpace(_swigarg0,_swigarg1,_swigarg2))
+static int _wrap_IBMSNode_getCrSpace(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    int  _result;
+    IBMSNode * _arg0;
+    uint32_t * _arg1;
+    uint32_t * _arg2;
+    uint32_t * _arg3;
+    Tcl_Obj * tcl_result;
+    uint32_t  temp;
+    uint32_t  temp0;
+    uint32_t  temp1;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 5) || (objc > 5)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. IBMSNode_getCrSpace { IBMSNode * } startAddr length data ",-1);
+        return TCL_ERROR;
+    }
+{
+  
+  void *ptr;
+  if (ibmsGetSimNodePtrByTclName(objv[1], &ptr) != TCL_OK) {
+	 char err[128];
+	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
+	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+  }
+	 
+  _arg0 = (IBMSNode *)ptr;
+}
+{
+  /* the format is always: <type>:<idx>[:<name>] */
+  
+  // get the type from the given source 
+  char buf[128];
+  strcpy(buf, Tcl_GetStringFromObj(objv[1],0));
+  char *colonIdx = index(buf,':');
+  if (!colonIdx) {
+	 char err[128];
+	 sprintf(err, "-E- Bad formatted ibdm object:%s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;
+  }
+  *colonIdx = '\0';
+
+  if (!strcmp("IBMSNode ", "IBMSNode ")) {
+    if (strcmp(buf, "simnode")) {
+      char err[256];
+      sprintf(err, "-E- basetype is IBMSNode  but received obj of type %s", buf);
+      Tcl_SetStringObj(tcl_result, err, strlen(err));
+      return TCL_ERROR;	 
+    }
+  } else {
+	 char err[256];
+	 sprintf(err, "-E- basetype 'IBMSNode ' is unknown");
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+  }
+}
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
+  _arg1 = &temp;
+}
+{
+  temp0 = strtoul(Tcl_GetStringFromObj(objv[3],NULL), NULL, 0);
+  _arg2 = &temp0;
+}
+{
+  temp1 = strtoul(Tcl_GetStringFromObj(objv[4],NULL), NULL, 0);
+  _arg3 = &temp1;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (int )IBMSNode_getCrSpace(_arg0,*_arg1,*_arg2,_arg3);
 ; 
   if (ibms_tcl_error) { 
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
@@ -23629,26 +25107,26 @@ static int _wrap_IBMSNode_getCrSpace(ClientData clientData, Tcl_Interp *interp, 
 /* methodcmd8.swg : Tcl8.x method invocation */
 
 static int TclIBMSNodeMethodCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST _objv[]) {
-    int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
-    char *_str;
-    int rcode;
-    Tcl_Obj **objv;
-    Tcl_Obj *oldarg,*tcl_result,*obj;
-    int length;
-    char c;
+  int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
+  char *_str;
+  int rcode;
+  Tcl_Obj **objv;
+  Tcl_Obj *oldarg,*tcl_result,*obj;
+  int length;
+  char c;
 
-    tcl_result = Tcl_GetObjResult(interp);
-    objv = (Tcl_Obj **) _objv; 
-    if (objc < 2) {
-        Tcl_SetStringObj(tcl_result,"IBMSNode methods : { cget configure getIBNode getLinkStatus setPhyPortErrProfile getPhyPortErrProfile setPhyPortPMCounter getPhyPortPMCounter getPortInfo getNodeInfo getSwitchInfo setCrSpace getCrSpace  }",-1);
-        return TCL_ERROR;
-    }
-    obj = Tcl_NewObj();
-    SWIG_SetPointerObj(obj,(void *) clientData,"_IBMSNode_p");
-    _str = Tcl_GetStringFromObj(objv[1],&length);
-    c = *_str;
-    if (0);
-    if (strcmp(_str,"getIBNode") == 0) {
+  tcl_result = Tcl_GetObjResult(interp);
+  objv = (Tcl_Obj **) _objv; 
+  if (objc < 2) {
+    Tcl_SetStringObj(tcl_result,"IBMSNode methods : { dump cget configure getIBNode getLinkStatus setPhyPortErrProfile getPhyPortErrProfile setPhyPortPMCounter getPhyPortPMCounter getPortInfo getNodeInfo getSwitchInfo getPKeyTblBlock setPKeyTblBlock setCrSpace getCrSpace  }",-1);
+    return TCL_ERROR;
+  }
+  obj = Tcl_NewObj();
+  SWIG_SetPointerObj(obj,(void *) clientData,"_IBMSNode_p");
+  _str = Tcl_GetStringFromObj(objv[1],&length);
+  c = *_str;
+  if (0);
+      if (strcmp(_str,"getIBNode") == 0) {
         cmd = _wrap_IBMSNode_getIBNode;
     }    else if (strcmp(_str,"getLinkStatus") == 0) {
         cmd = _wrap_IBMSNode_getLinkStatus;
@@ -23666,6 +25144,10 @@ static int TclIBMSNodeMethodCmd(ClientData clientData, Tcl_Interp *interp, int o
         cmd = _wrap_IBMSNode_getNodeInfo;
     }    else if (strcmp(_str,"getSwitchInfo") == 0) {
         cmd = _wrap_IBMSNode_getSwitchInfo;
+    }    else if (strcmp(_str,"getPKeyTblBlock") == 0) {
+        cmd = _wrap_IBMSNode_getPKeyTblBlock;
+    }    else if (strcmp(_str,"setPKeyTblBlock") == 0) {
+        cmd = _wrap_IBMSNode_setPKeyTblBlock;
     }    else if (strcmp(_str,"setCrSpace") == 0) {
         cmd = _wrap_IBMSNode_setCrSpace;
     }    else if (strcmp(_str,"getCrSpace") == 0) {
@@ -23675,59 +25157,71 @@ static int TclIBMSNodeMethodCmd(ClientData clientData, Tcl_Interp *interp, int o
       int i = 2;
       cmd = 0;
       while (i+1 < objc) {
-	_str = Tcl_GetStringFromObj(objv[i],&length);
-
-	   if (cmd) {
-	     oldarg = objv[i];
-	     objv[i] = obj;
-	     rcode = (*cmd)(clientData,interp,3,&objv[i-1]);
-	     objv[i] = oldarg;
-	     if (rcode == TCL_ERROR) return rcode;
-	     cmd = 0;
-	   } else {
-	     Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be {  }",-1);
-	     return TCL_ERROR;
-	   }
-	i+=2;
+        _str = Tcl_GetStringFromObj(objv[i],&length);
+        
+          if (cmd) {
+            oldarg = objv[i];
+            objv[i] = obj;
+            rcode = (*cmd)(clientData,interp,3,&objv[i-1]);
+            objv[i] = oldarg;
+            if (rcode == TCL_ERROR) return rcode;
+            cmd = 0;
+          } else {
+            Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be {  }",-1);
+            return TCL_ERROR;
+          }
+        i+=2;
       }
       if ((i < objc) || (i == 2)) {
-	Tcl_SetStringObj(tcl_result,"{  }",-1);
-	return TCL_ERROR;
+        Tcl_SetStringObj(tcl_result,"{  }",-1);
+        return TCL_ERROR;
       }
       return TCL_OK;
     } else if ((c == 'c') && (strncmp(_str,"cget",length) == 0) && (length >= 2)) {
-            if (objc == 3) {
-	      _str = Tcl_GetStringFromObj(objv[2],&length);
-	      if (0) {}
-
-	      else if (strcmp(_str,"-this") == 0) {
-                   SWIG_SetPointerObj(tcl_result,(void *) clientData, "_IBMSNode_p");
-                   return TCL_OK;
-	      }
-	      if (cmd) {
-		oldarg = objv[2];
-		objv[2] = obj;
-		rcode = (*cmd)(clientData,interp,objc-1,&objv[1]);
-		objv[2] = oldarg;
-		return rcode;
-	      } else {
-		Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this  }",-1);
-		return TCL_ERROR;
-	      }
-	    } else {
-	      Tcl_SetStringObj(tcl_result,"{ -this  }", -1);
-	      return TCL_ERROR;
-	    }
-    }
-    if (!cmd) {
-        Tcl_SetStringObj(tcl_result,"Invalid Method. Must be { cget configure getIBNode getLinkStatus setPhyPortErrProfile getPhyPortErrProfile setPhyPortPMCounter getPhyPortPMCounter getPortInfo getNodeInfo getSwitchInfo setCrSpace getCrSpace }",-1);
+      if (objc == 3) {
+        _str = Tcl_GetStringFromObj(objv[2],&length);
+        if (0) {}
+        
+          else if (strcmp(_str,"-this") == 0) {
+            SWIG_SetPointerObj(tcl_result,(void *) clientData, "_IBMSNode_p");
+            return TCL_OK;
+          }
+        if (cmd) {
+          oldarg = objv[2];
+          objv[2] = obj;
+          rcode = (*cmd)(clientData,interp,objc-1,&objv[1]);
+          objv[2] = oldarg;
+          return rcode;
+        } else {
+          Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this  }",-1);
+          return TCL_ERROR;
+        }
+      } else {
+        Tcl_SetStringObj(tcl_result,"{ -this  }", -1);
         return TCL_ERROR;
+      }
+    } else if ((c == 'd') && (strncmp(_str,"dump",length) == 0) && (length >= 2)) {
+      if (objc == 2) {
+        Tcl_Obj *pDumpObj;
+        pDumpObj = Tcl_NewStringObj("",-1);
+        Tcl_IncrRefCount(pDumpObj);
+        
+        Tcl_DecrRefCount(pDumpObj);
+        return TCL_OK;
+      } else {
+        Tcl_SetStringObj(tcl_result,"no parameters are allowed for dump", -1);
+        return TCL_ERROR;
+      }
     }
-    oldarg = objv[1];
-    objv[1] = obj;
-    rcode = (*cmd)(clientData,interp,objc,objv);
-    objv[1] = oldarg;
-    return rcode;
+  if (!cmd) {
+    Tcl_SetStringObj(tcl_result,"Invalid Method. Must be { dump cget configure getIBNode getLinkStatus setPhyPortErrProfile getPhyPortErrProfile setPhyPortPMCounter getPhyPortPMCounter getPortInfo getNodeInfo getSwitchInfo getPKeyTblBlock setPKeyTblBlock setCrSpace getCrSpace }",-1);
+    return TCL_ERROR;
+  }
+  oldarg = objv[1];
+  objv[1] = obj;
+  rcode = (*cmd)(clientData,interp,objc,objv);
+  objv[1] = oldarg;
+  return rcode;
 }
 
 
@@ -23807,6 +25301,1561 @@ static int TclIBMSNodeCmd(ClientData clientData, Tcl_Interp *interp, int objc, T
 }
 
 
+#define new_madMcMemberRec() (new madMcMemberRec())
+static int _wrap_new_madMcMemberRec(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    madMcMemberRec * _result;
+    Tcl_Obj * tcl_result;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 1) || (objc > 1)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. new_madMcMemberRec ",-1);
+        return TCL_ERROR;
+    }
+{ 
+  ibms_tcl_error = 0;
+      _result = (madMcMemberRec *)new_madMcMemberRec();
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+    SWIG_SetPointerObj(tcl_result,(void *) _result,"_madMcMemberRec_p");
+    return TCL_OK;
+}
+#define delete_madMcMemberRec(_swigobj) (delete _swigobj)
+static int _wrap_delete_madMcMemberRec(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    madMcMemberRec * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. delete_madMcMemberRec { madMcMemberRec * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madMcMemberRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of delete_madMcMemberRec. Expected _madMcMemberRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{ 
+  ibms_tcl_error = 0;
+      delete_madMcMemberRec(_arg0);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+    return TCL_OK;
+}
+#define madMcMemberRec_mgid_set(_swigobj,_swigval) (_swigobj->mgid = *(_swigval),_swigval)
+static int _wrap_madMcMemberRec_mgid_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_gid_t * _result;
+    madMcMemberRec * _arg0;
+    ib_gid_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_gid_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madMcMemberRec_mgid_set { madMcMemberRec * } { ib_gid_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madMcMemberRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madMcMemberRec_mgid_set. Expected _madMcMemberRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  char buf[36];
+  char *p_prefix, *p_guid;
+  char *str_token;
+
+  strcpy(buf, Tcl_GetStringFromObj(objv[2],NULL));
+  p_prefix = strtok_r(buf,":", &str_token);
+  p_guid = strtok_r(NULL, " ", &str_token);
+  errno = 0;
+  temp.unicast.prefix = cl_hton64(strtoull(p_prefix, NULL, 16));
+  if (errno) {
+    printf("Wrong format for gid prefix:%s\n", p_prefix);
+    return TCL_ERROR;
+  }
+
+  temp.unicast.interface_id = cl_hton64(strtoull(p_guid, NULL, 16));
+  if (errno) {
+    printf("Wrong format for gid guid:%s\n", p_guid);
+    return TCL_ERROR;
+  }
+  
+  _arg1 = &temp;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_gid_t *)madMcMemberRec_mgid_set(_arg0,_arg1);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[36];
+  sprintf(buff, "0x%016" PRIx64 ":0x%016" PRIx64, 
+          cl_ntoh64(_result->unicast.prefix), 
+          cl_ntoh64(_result->unicast.interface_id) 
+          );
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madMcMemberRec_mgid_get(_swigobj) (&_swigobj->mgid)
+static int _wrap_madMcMemberRec_mgid_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_gid_t * _result;
+    madMcMemberRec * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madMcMemberRec_mgid_get { madMcMemberRec * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madMcMemberRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madMcMemberRec_mgid_get. Expected _madMcMemberRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_gid_t *)madMcMemberRec_mgid_get(_arg0);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[36];
+  sprintf(buff, "0x%016" PRIx64 ":0x%016" PRIx64, 
+          cl_ntoh64(_result->unicast.prefix), 
+          cl_ntoh64(_result->unicast.interface_id) 
+          );
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madMcMemberRec_port_gid_set(_swigobj,_swigval) (_swigobj->port_gid = *(_swigval),_swigval)
+static int _wrap_madMcMemberRec_port_gid_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_gid_t * _result;
+    madMcMemberRec * _arg0;
+    ib_gid_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_gid_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madMcMemberRec_port_gid_set { madMcMemberRec * } { ib_gid_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madMcMemberRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madMcMemberRec_port_gid_set. Expected _madMcMemberRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  char buf[36];
+  char *p_prefix, *p_guid;
+  char *str_token;
+
+  strcpy(buf, Tcl_GetStringFromObj(objv[2],NULL));
+  p_prefix = strtok_r(buf,":", &str_token);
+  p_guid = strtok_r(NULL, " ", &str_token);
+  errno = 0;
+  temp.unicast.prefix = cl_hton64(strtoull(p_prefix, NULL, 16));
+  if (errno) {
+    printf("Wrong format for gid prefix:%s\n", p_prefix);
+    return TCL_ERROR;
+  }
+
+  temp.unicast.interface_id = cl_hton64(strtoull(p_guid, NULL, 16));
+  if (errno) {
+    printf("Wrong format for gid guid:%s\n", p_guid);
+    return TCL_ERROR;
+  }
+  
+  _arg1 = &temp;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_gid_t *)madMcMemberRec_port_gid_set(_arg0,_arg1);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[36];
+  sprintf(buff, "0x%016" PRIx64 ":0x%016" PRIx64, 
+          cl_ntoh64(_result->unicast.prefix), 
+          cl_ntoh64(_result->unicast.interface_id) 
+          );
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madMcMemberRec_port_gid_get(_swigobj) (&_swigobj->port_gid)
+static int _wrap_madMcMemberRec_port_gid_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_gid_t * _result;
+    madMcMemberRec * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madMcMemberRec_port_gid_get { madMcMemberRec * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madMcMemberRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madMcMemberRec_port_gid_get. Expected _madMcMemberRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_gid_t *)madMcMemberRec_port_gid_get(_arg0);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[36];
+  sprintf(buff, "0x%016" PRIx64 ":0x%016" PRIx64, 
+          cl_ntoh64(_result->unicast.prefix), 
+          cl_ntoh64(_result->unicast.interface_id) 
+          );
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madMcMemberRec_qkey_set(_swigobj,_swigval) (_swigobj->qkey = *(_swigval),_swigval)
+static int _wrap_madMcMemberRec_qkey_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net32_t * _result;
+    madMcMemberRec * _arg0;
+    ib_net32_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_net32_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madMcMemberRec_qkey_set { madMcMemberRec * } { ib_net32_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madMcMemberRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madMcMemberRec_qkey_set. Expected _madMcMemberRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton32(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
+  _arg1 = &temp;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_net32_t *)madMcMemberRec_qkey_set(_arg0,_arg1);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_ntoh32(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madMcMemberRec_qkey_get(_swigobj) (&_swigobj->qkey)
+static int _wrap_madMcMemberRec_qkey_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net32_t * _result;
+    madMcMemberRec * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madMcMemberRec_qkey_get { madMcMemberRec * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madMcMemberRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madMcMemberRec_qkey_get. Expected _madMcMemberRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_net32_t *)madMcMemberRec_qkey_get(_arg0);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_ntoh32(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madMcMemberRec_mlid_set(_swigobj,_swigval) (_swigobj->mlid = *(_swigval),_swigval)
+static int _wrap_madMcMemberRec_mlid_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    madMcMemberRec * _arg0;
+    ib_net16_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_net16_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madMcMemberRec_mlid_set { madMcMemberRec * } { ib_net16_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madMcMemberRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madMcMemberRec_mlid_set. Expected _madMcMemberRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  _arg1 = &temp;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_net16_t *)madMcMemberRec_mlid_set(_arg0,_arg1);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madMcMemberRec_mlid_get(_swigobj) (&_swigobj->mlid)
+static int _wrap_madMcMemberRec_mlid_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    madMcMemberRec * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madMcMemberRec_mlid_get { madMcMemberRec * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madMcMemberRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madMcMemberRec_mlid_get. Expected _madMcMemberRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_net16_t *)madMcMemberRec_mlid_get(_arg0);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madMcMemberRec_mtu_set(_swigobj,_swigval) (_swigobj->mtu = *(_swigval),_swigval)
+static int _wrap_madMcMemberRec_mtu_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    madMcMemberRec * _arg0;
+    uint8_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint8_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madMcMemberRec_mtu_set { madMcMemberRec * } { uint8_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madMcMemberRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madMcMemberRec_mtu_set. Expected _madMcMemberRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
+  _arg1 = &temp;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (uint8_t *)madMcMemberRec_mtu_set(_arg0,_arg1);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madMcMemberRec_mtu_get(_swigobj) (&_swigobj->mtu)
+static int _wrap_madMcMemberRec_mtu_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    madMcMemberRec * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madMcMemberRec_mtu_get { madMcMemberRec * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madMcMemberRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madMcMemberRec_mtu_get. Expected _madMcMemberRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{ 
+  ibms_tcl_error = 0;
+      _result = (uint8_t *)madMcMemberRec_mtu_get(_arg0);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madMcMemberRec_tclass_set(_swigobj,_swigval) (_swigobj->tclass = *(_swigval),_swigval)
+static int _wrap_madMcMemberRec_tclass_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    madMcMemberRec * _arg0;
+    uint8_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint8_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madMcMemberRec_tclass_set { madMcMemberRec * } { uint8_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madMcMemberRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madMcMemberRec_tclass_set. Expected _madMcMemberRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
+  _arg1 = &temp;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (uint8_t *)madMcMemberRec_tclass_set(_arg0,_arg1);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madMcMemberRec_tclass_get(_swigobj) (&_swigobj->tclass)
+static int _wrap_madMcMemberRec_tclass_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    madMcMemberRec * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madMcMemberRec_tclass_get { madMcMemberRec * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madMcMemberRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madMcMemberRec_tclass_get. Expected _madMcMemberRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{ 
+  ibms_tcl_error = 0;
+      _result = (uint8_t *)madMcMemberRec_tclass_get(_arg0);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madMcMemberRec_pkey_set(_swigobj,_swigval) (_swigobj->pkey = *(_swigval),_swigval)
+static int _wrap_madMcMemberRec_pkey_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    madMcMemberRec * _arg0;
+    ib_net16_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_net16_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madMcMemberRec_pkey_set { madMcMemberRec * } { ib_net16_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madMcMemberRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madMcMemberRec_pkey_set. Expected _madMcMemberRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  _arg1 = &temp;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_net16_t *)madMcMemberRec_pkey_set(_arg0,_arg1);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madMcMemberRec_pkey_get(_swigobj) (&_swigobj->pkey)
+static int _wrap_madMcMemberRec_pkey_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    madMcMemberRec * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madMcMemberRec_pkey_get { madMcMemberRec * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madMcMemberRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madMcMemberRec_pkey_get. Expected _madMcMemberRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_net16_t *)madMcMemberRec_pkey_get(_arg0);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madMcMemberRec_rate_set(_swigobj,_swigval) (_swigobj->rate = *(_swigval),_swigval)
+static int _wrap_madMcMemberRec_rate_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    madMcMemberRec * _arg0;
+    uint8_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint8_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madMcMemberRec_rate_set { madMcMemberRec * } { uint8_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madMcMemberRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madMcMemberRec_rate_set. Expected _madMcMemberRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
+  _arg1 = &temp;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (uint8_t *)madMcMemberRec_rate_set(_arg0,_arg1);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madMcMemberRec_rate_get(_swigobj) (&_swigobj->rate)
+static int _wrap_madMcMemberRec_rate_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    madMcMemberRec * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madMcMemberRec_rate_get { madMcMemberRec * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madMcMemberRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madMcMemberRec_rate_get. Expected _madMcMemberRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{ 
+  ibms_tcl_error = 0;
+      _result = (uint8_t *)madMcMemberRec_rate_get(_arg0);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madMcMemberRec_pkt_life_set(_swigobj,_swigval) (_swigobj->pkt_life = *(_swigval),_swigval)
+static int _wrap_madMcMemberRec_pkt_life_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    madMcMemberRec * _arg0;
+    uint8_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint8_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madMcMemberRec_pkt_life_set { madMcMemberRec * } { uint8_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madMcMemberRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madMcMemberRec_pkt_life_set. Expected _madMcMemberRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
+  _arg1 = &temp;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (uint8_t *)madMcMemberRec_pkt_life_set(_arg0,_arg1);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madMcMemberRec_pkt_life_get(_swigobj) (&_swigobj->pkt_life)
+static int _wrap_madMcMemberRec_pkt_life_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    madMcMemberRec * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madMcMemberRec_pkt_life_get { madMcMemberRec * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madMcMemberRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madMcMemberRec_pkt_life_get. Expected _madMcMemberRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{ 
+  ibms_tcl_error = 0;
+      _result = (uint8_t *)madMcMemberRec_pkt_life_get(_arg0);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madMcMemberRec_sl_flow_hop_set(_swigobj,_swigval) (_swigobj->sl_flow_hop = *(_swigval),_swigval)
+static int _wrap_madMcMemberRec_sl_flow_hop_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net32_t * _result;
+    madMcMemberRec * _arg0;
+    ib_net32_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_net32_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madMcMemberRec_sl_flow_hop_set { madMcMemberRec * } { ib_net32_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madMcMemberRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madMcMemberRec_sl_flow_hop_set. Expected _madMcMemberRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton32(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
+  _arg1 = &temp;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_net32_t *)madMcMemberRec_sl_flow_hop_set(_arg0,_arg1);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_ntoh32(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madMcMemberRec_sl_flow_hop_get(_swigobj) (&_swigobj->sl_flow_hop)
+static int _wrap_madMcMemberRec_sl_flow_hop_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net32_t * _result;
+    madMcMemberRec * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madMcMemberRec_sl_flow_hop_get { madMcMemberRec * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madMcMemberRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madMcMemberRec_sl_flow_hop_get. Expected _madMcMemberRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_net32_t *)madMcMemberRec_sl_flow_hop_get(_arg0);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_ntoh32(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madMcMemberRec_scope_state_set(_swigobj,_swigval) (_swigobj->scope_state = *(_swigval),_swigval)
+static int _wrap_madMcMemberRec_scope_state_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    madMcMemberRec * _arg0;
+    uint8_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint8_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madMcMemberRec_scope_state_set { madMcMemberRec * } { uint8_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madMcMemberRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madMcMemberRec_scope_state_set. Expected _madMcMemberRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
+  _arg1 = &temp;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (uint8_t *)madMcMemberRec_scope_state_set(_arg0,_arg1);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madMcMemberRec_scope_state_get(_swigobj) (&_swigobj->scope_state)
+static int _wrap_madMcMemberRec_scope_state_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    madMcMemberRec * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madMcMemberRec_scope_state_get { madMcMemberRec * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madMcMemberRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madMcMemberRec_scope_state_get. Expected _madMcMemberRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{ 
+  ibms_tcl_error = 0;
+      _result = (uint8_t *)madMcMemberRec_scope_state_get(_arg0);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+static int  madMcMemberRec_send_set(madMcMemberRec *self,IBMSNode * pFromNode,uint8_t  fromPort,uint16_t  destLid,uint64_t  comp_mask) {
+      return( send_sa_mad(
+                pFromNode, 
+                fromPort, 
+                destLid,
+                IB_MCLASS_SUBN_ADM,
+                IB_MAD_METHOD_SET,
+                cl_ntoh16(IB_MAD_ATTR_MCMEMBER_RECORD),
+                comp_mask,
+                (uint8_t*)self,
+                sizeof(madMcMemberRec)
+                )
+              );
+    }
+static int _wrap_madMcMemberRec_send_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    int  _result;
+    madMcMemberRec * _arg0;
+    IBMSNode * _arg1;
+    uint8_t * _arg2;
+    uint16_t * _arg3;
+    uint64_t * _arg4;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint8_t  temp;
+    uint16_t  temp0;
+    uint64_t  temp1;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 6) || (objc > 6)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madMcMemberRec_send_set { madMcMemberRec * } pFromNode fromPort destLid comp_mask ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madMcMemberRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madMcMemberRec_send_set. Expected _madMcMemberRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  
+  void *ptr;
+  if (ibmsGetSimNodePtrByTclName(objv[2], &ptr) != TCL_OK) {
+	 char err[128];
+	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[2]) );
+	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+  }
+	 
+  _arg1 = (IBMSNode *)ptr;
+}
+{
+  /* the format is always: <type>:<idx>[:<name>] */
+  
+  // get the type from the given source 
+  char buf[128];
+  strcpy(buf, Tcl_GetStringFromObj(objv[2],0));
+  char *colonIdx = index(buf,':');
+  if (!colonIdx) {
+	 char err[128];
+	 sprintf(err, "-E- Bad formatted ibdm object:%s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;
+  }
+  *colonIdx = '\0';
+
+  if (!strcmp("IBMSNode ", "IBMSNode ")) {
+    if (strcmp(buf, "simnode")) {
+      char err[256];
+      sprintf(err, "-E- basetype is IBMSNode  but received obj of type %s", buf);
+      Tcl_SetStringObj(tcl_result, err, strlen(err));
+      return TCL_ERROR;	 
+    }
+  } else {
+	 char err[256];
+	 sprintf(err, "-E- basetype 'IBMSNode ' is unknown");
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+  }
+}
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[3],NULL), NULL, 0);
+  _arg2 = &temp;
+}
+{
+  temp0 = strtoul(Tcl_GetStringFromObj(objv[4],NULL), NULL, 0);
+  _arg3 = &temp0;
+}
+{
+  temp1 = strtoull(Tcl_GetStringFromObj(objv[5],NULL), NULL,16);
+  _arg4 = &temp1;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (int )madMcMemberRec_send_set(_arg0,_arg1,*_arg2,*_arg3,*_arg4);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+    Tcl_SetIntObj(tcl_result,(long) _result);
+    return TCL_OK;
+}
+static int  madMcMemberRec_send_get(madMcMemberRec *self,IBMSNode * pFromNode,uint8_t  fromPort,uint16_t  destLid,uint64_t  comp_mask) {
+      return( send_sa_mad(
+                pFromNode, 
+                fromPort, 
+                destLid,
+                IB_MCLASS_SUBN_ADM,
+                IB_MAD_METHOD_GET,
+                cl_ntoh16(IB_MAD_ATTR_MCMEMBER_RECORD),
+                comp_mask,
+                (uint8_t*)self,
+                sizeof(madMcMemberRec)
+                )
+              );
+    }
+static int _wrap_madMcMemberRec_send_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    int  _result;
+    madMcMemberRec * _arg0;
+    IBMSNode * _arg1;
+    uint8_t * _arg2;
+    uint16_t * _arg3;
+    uint64_t * _arg4;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint8_t  temp;
+    uint16_t  temp0;
+    uint64_t  temp1;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 6) || (objc > 6)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madMcMemberRec_send_get { madMcMemberRec * } pFromNode fromPort destLid comp_mask ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madMcMemberRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madMcMemberRec_send_get. Expected _madMcMemberRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  
+  void *ptr;
+  if (ibmsGetSimNodePtrByTclName(objv[2], &ptr) != TCL_OK) {
+	 char err[128];
+	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[2]) );
+	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+  }
+	 
+  _arg1 = (IBMSNode *)ptr;
+}
+{
+  /* the format is always: <type>:<idx>[:<name>] */
+  
+  // get the type from the given source 
+  char buf[128];
+  strcpy(buf, Tcl_GetStringFromObj(objv[2],0));
+  char *colonIdx = index(buf,':');
+  if (!colonIdx) {
+	 char err[128];
+	 sprintf(err, "-E- Bad formatted ibdm object:%s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;
+  }
+  *colonIdx = '\0';
+
+  if (!strcmp("IBMSNode ", "IBMSNode ")) {
+    if (strcmp(buf, "simnode")) {
+      char err[256];
+      sprintf(err, "-E- basetype is IBMSNode  but received obj of type %s", buf);
+      Tcl_SetStringObj(tcl_result, err, strlen(err));
+      return TCL_ERROR;	 
+    }
+  } else {
+	 char err[256];
+	 sprintf(err, "-E- basetype 'IBMSNode ' is unknown");
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+  }
+}
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[3],NULL), NULL, 0);
+  _arg2 = &temp;
+}
+{
+  temp0 = strtoul(Tcl_GetStringFromObj(objv[4],NULL), NULL, 0);
+  _arg3 = &temp0;
+}
+{
+  temp1 = strtoull(Tcl_GetStringFromObj(objv[5],NULL), NULL,16);
+  _arg4 = &temp1;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (int )madMcMemberRec_send_get(_arg0,_arg1,*_arg2,*_arg3,*_arg4);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+    Tcl_SetIntObj(tcl_result,(long) _result);
+    return TCL_OK;
+}
+static int  madMcMemberRec_send_del(madMcMemberRec *self,IBMSNode * pFromNode,uint8_t  fromPort,uint16_t  destLid,uint64_t  comp_mask) {
+      return( send_sa_mad(
+                pFromNode, 
+                fromPort, 
+                destLid,
+                IB_MCLASS_SUBN_ADM,
+                IB_MAD_METHOD_DELETE,
+                cl_ntoh16(IB_MAD_ATTR_MCMEMBER_RECORD),
+                comp_mask,
+                (uint8_t*)self,
+                sizeof(madMcMemberRec)
+                )
+              );
+    }
+static int _wrap_madMcMemberRec_send_del(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    int  _result;
+    madMcMemberRec * _arg0;
+    IBMSNode * _arg1;
+    uint8_t * _arg2;
+    uint16_t * _arg3;
+    uint64_t * _arg4;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint8_t  temp;
+    uint16_t  temp0;
+    uint64_t  temp1;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 6) || (objc > 6)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madMcMemberRec_send_del { madMcMemberRec * } pFromNode fromPort destLid comp_mask ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madMcMemberRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madMcMemberRec_send_del. Expected _madMcMemberRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  
+  void *ptr;
+  if (ibmsGetSimNodePtrByTclName(objv[2], &ptr) != TCL_OK) {
+	 char err[128];
+	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[2]) );
+	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+  }
+	 
+  _arg1 = (IBMSNode *)ptr;
+}
+{
+  /* the format is always: <type>:<idx>[:<name>] */
+  
+  // get the type from the given source 
+  char buf[128];
+  strcpy(buf, Tcl_GetStringFromObj(objv[2],0));
+  char *colonIdx = index(buf,':');
+  if (!colonIdx) {
+	 char err[128];
+	 sprintf(err, "-E- Bad formatted ibdm object:%s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;
+  }
+  *colonIdx = '\0';
+
+  if (!strcmp("IBMSNode ", "IBMSNode ")) {
+    if (strcmp(buf, "simnode")) {
+      char err[256];
+      sprintf(err, "-E- basetype is IBMSNode  but received obj of type %s", buf);
+      Tcl_SetStringObj(tcl_result, err, strlen(err));
+      return TCL_ERROR;	 
+    }
+  } else {
+	 char err[256];
+	 sprintf(err, "-E- basetype 'IBMSNode ' is unknown");
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+  }
+}
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[3],NULL), NULL, 0);
+  _arg2 = &temp;
+}
+{
+  temp0 = strtoul(Tcl_GetStringFromObj(objv[4],NULL), NULL, 0);
+  _arg3 = &temp0;
+}
+{
+  temp1 = strtoull(Tcl_GetStringFromObj(objv[5],NULL), NULL,16);
+  _arg4 = &temp1;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (int )madMcMemberRec_send_del(_arg0,_arg1,*_arg2,*_arg3,*_arg4);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+    Tcl_SetIntObj(tcl_result,(long) _result);
+    return TCL_OK;
+}
+/* delcmd.swg : Tcl object deletion method */
+
+static void TclDeletemadMcMemberRec(ClientData clientData) {
+    delete_madMcMemberRec((madMcMemberRec *) clientData);
+}
+
+/* methodcmd8.swg : Tcl8.x method invocation */
+
+static int TclmadMcMemberRecMethodCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST _objv[]) {
+  int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
+  char *_str;
+  int rcode;
+  Tcl_Obj **objv;
+  Tcl_Obj *oldarg,*tcl_result,*obj;
+  int length;
+  char c;
+
+  tcl_result = Tcl_GetObjResult(interp);
+  objv = (Tcl_Obj **) _objv; 
+  if (objc < 2) {
+    Tcl_SetStringObj(tcl_result,"madMcMemberRec methods : { dump cget configure send_set send_get send_del  }",-1);
+    return TCL_ERROR;
+  }
+  obj = Tcl_NewObj();
+  SWIG_SetPointerObj(obj,(void *) clientData,"_madMcMemberRec_p");
+  _str = Tcl_GetStringFromObj(objv[1],&length);
+  c = *_str;
+  if (0);
+      if (strcmp(_str,"send_set") == 0) {
+        cmd = _wrap_madMcMemberRec_send_set;
+    }    else if (strcmp(_str,"send_get") == 0) {
+        cmd = _wrap_madMcMemberRec_send_get;
+    }    else if (strcmp(_str,"send_del") == 0) {
+        cmd = _wrap_madMcMemberRec_send_del;
+    }
+    else if ((c == 'c') && (strncmp(_str,"configure",length) == 0) && (length >= 2)) {
+      int i = 2;
+      cmd = 0;
+      while (i+1 < objc) {
+        _str = Tcl_GetStringFromObj(objv[i],&length);
+                        if (strcmp(_str,"-mgid") == 0) {
+                    cmd = _wrap_madMcMemberRec_mgid_set;
+                }  else if (strcmp(_str,"-port_gid") == 0) {
+                    cmd = _wrap_madMcMemberRec_port_gid_set;
+                }  else if (strcmp(_str,"-qkey") == 0) {
+                    cmd = _wrap_madMcMemberRec_qkey_set;
+                }  else if (strcmp(_str,"-mlid") == 0) {
+                    cmd = _wrap_madMcMemberRec_mlid_set;
+                }  else if (strcmp(_str,"-mtu") == 0) {
+                    cmd = _wrap_madMcMemberRec_mtu_set;
+                }  else if (strcmp(_str,"-tclass") == 0) {
+                    cmd = _wrap_madMcMemberRec_tclass_set;
+                }  else if (strcmp(_str,"-pkey") == 0) {
+                    cmd = _wrap_madMcMemberRec_pkey_set;
+                }  else if (strcmp(_str,"-rate") == 0) {
+                    cmd = _wrap_madMcMemberRec_rate_set;
+                }  else if (strcmp(_str,"-pkt_life") == 0) {
+                    cmd = _wrap_madMcMemberRec_pkt_life_set;
+                }  else if (strcmp(_str,"-sl_flow_hop") == 0) {
+                    cmd = _wrap_madMcMemberRec_sl_flow_hop_set;
+                }  else if (strcmp(_str,"-scope_state") == 0) {
+                    cmd = _wrap_madMcMemberRec_scope_state_set;
+                } 
+          if (cmd) {
+            oldarg = objv[i];
+            objv[i] = obj;
+            rcode = (*cmd)(clientData,interp,3,&objv[i-1]);
+            objv[i] = oldarg;
+            if (rcode == TCL_ERROR) return rcode;
+            cmd = 0;
+          } else {
+            Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be { -mgid -port_gid -qkey -mlid -mtu -tclass -pkey -rate -pkt_life -sl_flow_hop -scope_state  }",-1);
+            return TCL_ERROR;
+          }
+        i+=2;
+      }
+      if ((i < objc) || (i == 2)) {
+        Tcl_SetStringObj(tcl_result,"{ -mgid -port_gid -qkey -mlid -mtu -tclass -pkey -rate -pkt_life -sl_flow_hop -scope_state  }",-1);
+        return TCL_ERROR;
+      }
+      return TCL_OK;
+    } else if ((c == 'c') && (strncmp(_str,"cget",length) == 0) && (length >= 2)) {
+      if (objc == 3) {
+        _str = Tcl_GetStringFromObj(objv[2],&length);
+        if (0) {}
+                        if (strcmp(_str,"-mgid") == 0) {
+                    cmd = _wrap_madMcMemberRec_mgid_get;
+                }  else if (strcmp(_str,"-port_gid") == 0) {
+                    cmd = _wrap_madMcMemberRec_port_gid_get;
+                }  else if (strcmp(_str,"-qkey") == 0) {
+                    cmd = _wrap_madMcMemberRec_qkey_get;
+                }  else if (strcmp(_str,"-mlid") == 0) {
+                    cmd = _wrap_madMcMemberRec_mlid_get;
+                }  else if (strcmp(_str,"-mtu") == 0) {
+                    cmd = _wrap_madMcMemberRec_mtu_get;
+                }  else if (strcmp(_str,"-tclass") == 0) {
+                    cmd = _wrap_madMcMemberRec_tclass_get;
+                }  else if (strcmp(_str,"-pkey") == 0) {
+                    cmd = _wrap_madMcMemberRec_pkey_get;
+                }  else if (strcmp(_str,"-rate") == 0) {
+                    cmd = _wrap_madMcMemberRec_rate_get;
+                }  else if (strcmp(_str,"-pkt_life") == 0) {
+                    cmd = _wrap_madMcMemberRec_pkt_life_get;
+                }  else if (strcmp(_str,"-sl_flow_hop") == 0) {
+                    cmd = _wrap_madMcMemberRec_sl_flow_hop_get;
+                }  else if (strcmp(_str,"-scope_state") == 0) {
+                    cmd = _wrap_madMcMemberRec_scope_state_get;
+                } 
+          else if (strcmp(_str,"-this") == 0) {
+            SWIG_SetPointerObj(tcl_result,(void *) clientData, "_madMcMemberRec_p");
+            return TCL_OK;
+          }
+        if (cmd) {
+          oldarg = objv[2];
+          objv[2] = obj;
+          rcode = (*cmd)(clientData,interp,objc-1,&objv[1]);
+          objv[2] = oldarg;
+          return rcode;
+        } else {
+          Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this -mgid -port_gid -qkey -mlid -mtu -tclass -pkey -rate -pkt_life -sl_flow_hop -scope_state  }",-1);
+          return TCL_ERROR;
+        }
+      } else {
+        Tcl_SetStringObj(tcl_result,"{ -this -mgid -port_gid -qkey -mlid -mtu -tclass -pkey -rate -pkt_life -sl_flow_hop -scope_state  }", -1);
+        return TCL_ERROR;
+      }
+    } else if ((c == 'd') && (strncmp(_str,"dump",length) == 0) && (length >= 2)) {
+      if (objc == 2) {
+        Tcl_Obj *pDumpObj;
+        pDumpObj = Tcl_NewStringObj("",-1);
+        Tcl_IncrRefCount(pDumpObj);
+                cmd = _wrap_madMcMemberRec_mgid_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-mgid ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_madMcMemberRec_port_gid_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-port_gid ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_madMcMemberRec_qkey_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-qkey ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_madMcMemberRec_mlid_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-mlid ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_madMcMemberRec_mtu_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-mtu ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_madMcMemberRec_tclass_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-tclass ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_madMcMemberRec_pkey_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-pkey ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_madMcMemberRec_rate_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-rate ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_madMcMemberRec_pkt_life_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-pkt_life ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_madMcMemberRec_sl_flow_hop_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-sl_flow_hop ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_madMcMemberRec_scope_state_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-scope_state ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+
+        Tcl_DecrRefCount(pDumpObj);
+        return TCL_OK;
+      } else {
+        Tcl_SetStringObj(tcl_result,"no parameters are allowed for dump", -1);
+        return TCL_ERROR;
+      }
+    }
+  if (!cmd) {
+    Tcl_SetStringObj(tcl_result,"Invalid Method. Must be { dump cget configure send_set send_get send_del }",-1);
+    return TCL_ERROR;
+  }
+  oldarg = objv[1];
+  objv[1] = obj;
+  rcode = (*cmd)(clientData,interp,objc,objv);
+  objv[1] = oldarg;
+  return rcode;
+}
+
+
+
+/* objcmd8.swg : Tcl 8.x object creation */
+
+static int TclmadMcMemberRecCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+    void (*del)(ClientData) = 0;
+    char *name = 0;
+    int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
+    madMcMemberRec * newObj = 0;
+    int firstarg = 0;
+    int thisarg = 0;
+    int length;
+    char *_str;
+    Tcl_Obj *tcl_result;
+
+    tcl_result = Tcl_GetObjResult(interp);
+    if (objc == 1) {
+        cmd = _wrap_new_madMcMemberRec;
+    } else {
+      _str = Tcl_GetStringFromObj(objv[1],&length);
+      if (strcmp(_str,"-this") == 0) thisarg = 2;
+      else if (strcmp(_str,"-args") == 0) {
+	firstarg = 1;
+	cmd = _wrap_new_madMcMemberRec;
+      } else if (objc == 2) {
+	firstarg = 1;
+	name = _str;
+	cmd = _wrap_new_madMcMemberRec;
+      } else if (objc >= 3) {
+	name = _str;
+	_str = Tcl_GetStringFromObj(objv[2],&length);
+	if (strcmp(_str,"-this") == 0) thisarg = 3;
+	else {
+	  firstarg = 1;
+	  cmd = _wrap_new_madMcMemberRec;
+	}
+      }
+    }
+    if (cmd) {
+        int result;
+        result = (*cmd)(clientData,interp,objc-firstarg,&objv[firstarg]);
+        if (result == TCL_OK) {
+            SWIG_GetPointerObj(interp,tcl_result,(void **) &newObj,"_madMcMemberRec_p");
+        } else { return result; }
+        if (!name) name = Tcl_GetStringFromObj(tcl_result,&length);
+        del = TclDeletemadMcMemberRec;
+    } else if (thisarg > 0) { 
+        if (thisarg < objc) {
+            char *r;
+            r = SWIG_GetPointerObj(interp,objv[thisarg],(void **) &newObj,"_madMcMemberRec_p");
+            if (r) {
+	      Tcl_SetStringObj(tcl_result,"Type error. not a madMcMemberRec object.",-1);
+	      return TCL_ERROR;
+            }
+        if (!name) name = Tcl_GetStringFromObj(objv[thisarg],&length);
+	Tcl_SetStringObj(tcl_result,name,-1);
+        } else {
+            Tcl_SetStringObj(tcl_result,"wrong # args.",-1);
+            return TCL_ERROR;
+        }
+    } else {
+        Tcl_SetStringObj(tcl_result,"No constructor available.",-1);
+        return TCL_ERROR;
+    }
+    {
+      Tcl_CmdInfo dummy;
+      if (!Tcl_GetCommandInfo(interp,name,&dummy)) {
+	Tcl_CreateObjCommand(interp,name, TclmadMcMemberRecMethodCmd, (ClientData) newObj, del);
+	return TCL_OK;
+      } else {
+	Tcl_SetStringObj(tcl_result,"Object name already exists!",-1);
+	return TCL_ERROR;
+      }
+    }
+}
+
+
 SWIGEXPORT(int,Ibdm_Init)(Tcl_Interp *interp) {
 	 if (interp == 0) 
 		 return TCL_ERROR;
@@ -23868,6 +26917,8 @@ SWIGEXPORT(int,Ibdm_Init)(Tcl_Interp *interp) {
 	 Tcl_LinkVar(interp, SWIG_prefix "MsgShowFrames", (char *) &_wrap_const_MsgShowFrames, TCL_LINK_INT | TCL_LINK_READ_ONLY);
 	 Tcl_LinkVar(interp, SWIG_prefix "MsgShowAll", (char *) &_wrap_const_MsgShowAll, TCL_LINK_INT | TCL_LINK_READ_ONLY);
 	 Tcl_LinkVar(interp, SWIG_prefix "MsgDefault", (char *) &_wrap_const_MsgDefault, TCL_LINK_INT | TCL_LINK_READ_ONLY);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "rmRand", _wrap_rmRand, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "rmSeed", _wrap_rmSeed, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 
 
   /* mixing declarations .... */
@@ -24205,9 +27256,39 @@ SWIGEXPORT(int,Ibdm_Init)(Tcl_Interp *interp) {
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "IBMSNode_getPortInfo", _wrap_IBMSNode_getPortInfo, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "IBMSNode_getNodeInfo", _wrap_IBMSNode_getNodeInfo, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "IBMSNode_getSwitchInfo", _wrap_IBMSNode_getSwitchInfo, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "IBMSNode_getPKeyTblBlock", _wrap_IBMSNode_getPKeyTblBlock, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "IBMSNode_setPKeyTblBlock", _wrap_IBMSNode_setPKeyTblBlock, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "IBMSNode_setCrSpace", _wrap_IBMSNode_setCrSpace, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "IBMSNode_getCrSpace", _wrap_IBMSNode_getCrSpace, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp,SWIG_prefix "IBMSNode",TclIBMSNodeCmd, (ClientData) NULL, NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "new_madMcMemberRec", _wrap_new_madMcMemberRec, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "delete_madMcMemberRec", _wrap_delete_madMcMemberRec, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madMcMemberRec_mgid_set", _wrap_madMcMemberRec_mgid_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madMcMemberRec_mgid_get", _wrap_madMcMemberRec_mgid_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madMcMemberRec_port_gid_set", _wrap_madMcMemberRec_port_gid_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madMcMemberRec_port_gid_get", _wrap_madMcMemberRec_port_gid_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madMcMemberRec_qkey_set", _wrap_madMcMemberRec_qkey_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madMcMemberRec_qkey_get", _wrap_madMcMemberRec_qkey_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madMcMemberRec_mlid_set", _wrap_madMcMemberRec_mlid_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madMcMemberRec_mlid_get", _wrap_madMcMemberRec_mlid_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madMcMemberRec_mtu_set", _wrap_madMcMemberRec_mtu_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madMcMemberRec_mtu_get", _wrap_madMcMemberRec_mtu_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madMcMemberRec_tclass_set", _wrap_madMcMemberRec_tclass_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madMcMemberRec_tclass_get", _wrap_madMcMemberRec_tclass_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madMcMemberRec_pkey_set", _wrap_madMcMemberRec_pkey_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madMcMemberRec_pkey_get", _wrap_madMcMemberRec_pkey_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madMcMemberRec_rate_set", _wrap_madMcMemberRec_rate_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madMcMemberRec_rate_get", _wrap_madMcMemberRec_rate_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madMcMemberRec_pkt_life_set", _wrap_madMcMemberRec_pkt_life_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madMcMemberRec_pkt_life_get", _wrap_madMcMemberRec_pkt_life_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madMcMemberRec_sl_flow_hop_set", _wrap_madMcMemberRec_sl_flow_hop_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madMcMemberRec_sl_flow_hop_get", _wrap_madMcMemberRec_sl_flow_hop_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madMcMemberRec_scope_state_set", _wrap_madMcMemberRec_scope_state_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madMcMemberRec_scope_state_get", _wrap_madMcMemberRec_scope_state_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madMcMemberRec_send_set", _wrap_madMcMemberRec_send_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madMcMemberRec_send_get", _wrap_madMcMemberRec_send_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madMcMemberRec_send_del", _wrap_madMcMemberRec_send_del, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp,SWIG_prefix "madMcMemberRec",TclmadMcMemberRecCmd, (ClientData) NULL, NULL);
 /*
  * These are the pointer type-equivalency mappings. 
  * (Used by the SWIG pointer type-checker).
@@ -24215,6 +27296,7 @@ SWIGEXPORT(int,Ibdm_Init)(Tcl_Interp *interp) {
 	 SWIG_RegisterMapping("_signed_long","_long",0);
 	 SWIG_RegisterMapping("_ib_lft_record_t","_struct__ib_lft_record",0);
 	 SWIG_RegisterMapping("_ib_lft_record_t","__ib_lft_record",0);
+	 SWIG_RegisterMapping("_struct_madMcMemberRec","_madMcMemberRec",0);
 	 SWIG_RegisterMapping("_IBPort","_class_IBPort",0);
 	 SWIG_RegisterMapping("_struct__ib_port_info","_ib_port_info_t",0);
 	 SWIG_RegisterMapping("_struct__ib_port_info","__ib_port_info",0);
@@ -24240,6 +27322,7 @@ SWIGEXPORT(int,Ibdm_Init)(Tcl_Interp *interp) {
 	 SWIG_RegisterMapping("_unsigned_long","_long",0);
 	 SWIG_RegisterMapping("_struct__ib_lft_record","_ib_lft_record_t",0);
 	 SWIG_RegisterMapping("_struct__ib_lft_record","__ib_lft_record",0);
+	 SWIG_RegisterMapping("_madMcMemberRec","_struct_madMcMemberRec",0);
 	 SWIG_RegisterMapping("_signed_int","_int",0);
 	 SWIG_RegisterMapping("_IBMSNode","_class_IBMSNode",0);
 	 SWIG_RegisterMapping("_IBSysPort","_class_IBSysPort",0);

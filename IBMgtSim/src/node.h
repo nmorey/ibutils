@@ -29,7 +29,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
- * $Id: node.h,v 1.14 2005/02/23 20:43:49 eitan Exp $
+ * $Id: node.h,v 1.23 2005/07/07 21:15:29 eitan Exp $
  */
 
 #ifndef IBMS_NODE_H
@@ -37,7 +37,7 @@
 
 /****h* IBMS/Node
 * NAME
-*	IB Management Simulator Node object and acompany Mad Processor
+*	IB Management Simulator Node object and accompany Mad Processor
 *
 * DESCRIPTION
 *	The simulator routes mad messages to the target node. This node 
@@ -58,6 +58,8 @@
 typedef std::list< class IBMSMadProcessor * > list_mad_processor;
 typedef std::vector< list_mad_processor > vec_mad_proc_list;
 typedef std::list< uint16_t > list_uint16;
+typedef std::list< uint8_t > list_uint8;
+
 
 #include <iba/ib_types.h>
 #include "simmsg.h"
@@ -70,10 +72,9 @@ inline void ibmsSetIBNodeSimNode(IBNode *pIBNode, class IBMSNode *pSimNode) {
   pIBNode->appData1.ptr = pSimNode;
 };
 
-/* This class holds the variables defining statistical behaviour of the
+/* This class holds the variables defining statistical behavior of the
    port counters */
 class IBMSPortErrProfile {
-
  public:
   /* the rate of packets dropped from the total passed */
   float packetDropRate;
@@ -81,12 +82,19 @@ class IBMSPortErrProfile {
   /* the variance of the rate */
   float packetDropRateVar;
 
+  /* to be able to filter we need to have some history */
+  boolean_t drop;
+
+  /* this variable counts the number of packet from last decision */
+  unsigned int numPacketFromLastChange;
+  
   /* total number of packets passed */
   uint64_t numPackets;
 
   /* constructor */
   IBMSPortErrProfile() { 
     packetDropRate = packetDropRateVar = 0;
+    numPacketFromLastChange = 10000; /* force first decision */
     numPackets = 0ULL;
   };
 
@@ -95,7 +103,7 @@ class IBMSPortErrProfile {
   boolean_t isDropped();
 };
 
-/* Mad proccessor class is a pure virtual class that 
+/* Mad processor class is a pure virtual class that 
    supports handling of mads of specific classes        */
 class IBMSMadProcessor {
 
@@ -105,26 +113,26 @@ protected:
   
   list_uint16 mgtClasses;
 
-  /* add a single mad proccessor to the sim node */
+  /* add a single mad processor to the sim node */
   void addProcToNode(uint16_t mgtClass);
   
 public:  
 
   /* Actually handle the mad. Might result with a call to the
      outstandingMads->push() with a result                     */
-  virtual int processMad(uint8_t inPort, ibms_mad_msg_t &madMsg) = 0;
+  virtual int processMad(uint8_t inPort, ibms_mad_msg_t &madMsg) {return(0);};
   
   /* constructors - should register class in the  in the node. */
   IBMSMadProcessor(class IBMSNode *pSNode, uint16_t mgtClass);
   IBMSMadProcessor(class IBMSNode *pSNode, list_uint16 &mgtClasses);
   
   /* destructor - clean up from the node too */
-  ~IBMSMadProcessor();
+  virtual ~IBMSMadProcessor();
 };
 
 /* Every IB node have this simulator node attached */
 class IBMSNode {
-  /* Holds the lists of mad proccessors per mgt class */
+  /* Holds the lists of mad processors per mgt class */
   vec_mad_proc_list madProccessors;
 
   /* back pointer to the simulator main object */
@@ -139,9 +147,6 @@ class IBMSNode {
   /* a vector holding the error statistics for the particular port */
   std::vector < class IBMSPortErrProfile > phyPortErrProfiles;
 
-  /* thy node CR space - implemented as a map to be non continoues */
-  std::map < uint32_t , uint32_t, std::less < uint32_t > > crSpace;
-
   /* node lock : used to avoid races from changes to the node and usage */
   pthread_mutex_t lock;
 
@@ -149,7 +154,6 @@ class IBMSNode {
   ib_switch_info_t switchInfo;
   ib_node_info_t nodeInfo;
   std::vector < ib_port_info_t > nodePortsInfo;
-  std::vector < ib_pkey_table_t > nodePKeyTableEntry;
   std::vector < std::vector < ib_pkey_table_t > > nodePortPKeyTable;
   std::vector < ib_mft_table_t > switchMftMlidEntry;
   std::vector < std::vector < ib_mft_table_t > > switchMftPortsEntry;
@@ -157,6 +161,8 @@ class IBMSNode {
   std::vector < std::vector < ib_slvl_table_t > > sl2VlInPortEntry;
   std::vector < ib_vl_arb_table_t > vlArbPriority;
   std::vector < std::vector < ib_vl_arb_table_t > > vlArbPortEntry;
+  /* thy node CR space - implemented as a map to be non continues */
+  std::map < uint32_t , uint32_t, std::less < uint32_t > > crSpace;
 
   /* constructor */
   IBMSNode(class IBMgtSim *pS, class IBNode *pN);
@@ -196,10 +202,10 @@ class IBMSNode {
     getPhyPortPMCounter(uint8_t portNum, uint32_t counterSelect);
   
   /* set CR Space Value */
-  int setCrSpace(uint32_t addr, uint32_t &data);
+  int setCrSpace(uint32_t startAddr,uint32_t length,uint32_t data[] );
   
   /* get CR Space Value */
-  int getCrSpace(uint32_t addr, uint32_t &data);
+  int getCrSpace(uint32_t startAddr,uint32_t length,uint32_t data[] );
 
   /* get a specific port info */
   ib_port_info_t * getPortInfo(uint8_t portNum) {
@@ -214,9 +220,48 @@ class IBMSNode {
 
   /* get the switch info */
   ib_switch_info_t *getSwitchInfo() {
-    return NULL;
+    return &switchInfo;
   };
- 
+
+  /* get pkey table block */
+  ib_pkey_table_t *getPKeyTblBlock(uint8_t portNum, uint16_t blockNum) {
+    if (portNum >= nodePortPKeyTable.size())
+    {
+      printf("-E- Given port number out of range:%u > %u\n",
+             portNum, (unsigned int)(nodePortPKeyTable.size() - 1));
+      return NULL;
+    }
+    if (blockNum >= nodePortPKeyTable[portNum].size())
+    {
+      printf("-E- Given block number out of range:%u > %u\n",
+             blockNum, (unsigned int)(nodePortPKeyTable[portNum].size() - 1));
+      return NULL;
+    }
+    return &((nodePortPKeyTable[portNum])[blockNum]);
+  }
+
+  int setPKeyTblBlock(uint8_t portNum, uint16_t blockNum, 
+                      ib_pkey_table_t *tbl) {
+    
+    if (portNum >= nodePortPKeyTable.size())
+    {
+      printf("-E- Given port number out of range:%u > %u\n",
+             portNum, (unsigned int)(nodePortPKeyTable.size() - 1));
+      return 1;
+    }
+
+    if (blockNum >= nodePortPKeyTable[portNum].size())
+    {
+      ib_pkey_table_t emptyTable;
+      memset(&emptyTable, 0, sizeof(ib_pkey_table_t));
+      for( uint16_t i = nodePortPKeyTable[portNum].size(); 
+           i <= blockNum; i++)
+        nodePortPKeyTable[portNum].push_back(emptyTable);
+    }
+    (nodePortPKeyTable[portNum])[blockNum] = *tbl;
+    return(0);
+  };
+
   /*
     Get remote node by given port number. 
     Handle both HCA and SW.

@@ -29,7 +29,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
- * $Id: ib_types.i,v 1.3 2005/03/20 11:20:02 eitan Exp $
+ * $Id: ib_types.i,v 1.7 2005/05/25 12:42:07 sezer Exp $
  */
 
 /* Holds ib_types.h MAD structs in and out TypeMaps */
@@ -41,7 +41,6 @@
   int ibmsGetIBStructObjNameByPtr(Tcl_Obj *objPtr, void *ptr, char *type) {
 	 char tclName[128];
 	 string uiType;
-	 char *spacePtr;
 	 char name[128];
     
     /* check that the string starts with _ib_ and ends with _t_p */
@@ -103,6 +102,7 @@
   strcpy(buf, Tcl_GetStringFromObj($source,NULL));
   p_prefix = strtok_r(buf,":", &str_token);
   p_guid = strtok_r(NULL, " ", &str_token);
+  errno = 0;
   temp.unicast.prefix = cl_hton64(strtoull(p_prefix, NULL, 16));
   if (errno) {
     printf("Wrong format for gid prefix:%s\n", p_prefix);
@@ -125,6 +125,39 @@
           cl_ntoh64($source->unicast.interface_id) 
           );
   Tcl_SetStringObj($target,buff,strlen(buff));
+}
+
+%typemap(tcl8,out) ib_pkey_table_t* {
+  char buff[36];
+  int i;
+  for (i = 0; i < 32; i++) 
+  {
+    sprintf(buff, "0x%04x ", cl_ntoh16($source->pkey_entry[i]));
+    Tcl_AppendToObj($target,buff,strlen(buff));
+  }
+}
+
+%typemap(tcl8,in) ib_pkey_table_t* (ib_pkey_table_t tmp) {
+  char buf[256];
+  char *p_pkey;
+  char *str_token;
+  int i = 0;
+
+  strncpy(buf, Tcl_GetStringFromObj($source,NULL), 255);
+  buf[255] = '\0';
+  p_pkey = strtok_r(buf," ", &str_token);
+  while (p_pkey && (i < 32))
+  {
+    errno = 0;
+    tmp.pkey_entry[i++] = cl_hton16(strtoul(p_pkey, NULL, 0));
+    if (errno) {
+      printf("Wrong format for pkey:%s\n", p_pkey);
+      return TCL_ERROR;
+    }
+    
+    p_pkey = strtok_r(NULL," ", &str_token);
+  }
+  $target = &tmp;
 }
 
 %{

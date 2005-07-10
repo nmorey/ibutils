@@ -29,13 +29,13 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
-# $Id: Makefile.am,v 1.3 2005/02/23 20:43:40 eitan Exp $
+# $Id: Makefile.am,v 1.4 2005/04/12 12:25:19 eitan Exp $
 #--
 
 #AUTOMAKE_OPTIONS 	= gnits
 
 # note that order matters: make the lib first then use it
-SUBDIRS 		= src utils
+SUBDIRS 		= src utils tests
 
 # this will control the update of the files in order
 MAINTAINERCLEANFILES = Makefile.in aclocal.m4 configure config-h.in 

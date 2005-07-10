@@ -29,7 +29,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
- * $Id: tcpcomm.h,v 1.3 2005/02/23 20:43:50 eitan Exp $
+ * $Id: tcpcomm.h,v 1.5 2005/07/07 21:15:29 eitan Exp $
  */
 
 #ifndef IBMS_TCPCOMM_H
@@ -60,7 +60,7 @@
 /* 
    The server:
    allows multiple clients to connect and handles each one by 
-   a separate therad
+   a separate thread
 */
 class GenServer {
  protected:
@@ -107,7 +107,7 @@ class GenServer {
   GenServer(unsigned short portNum, int maxMsgLen);
   
   /* destructor */
-  ~GenServer();
+  virtual ~GenServer();
 
   /* return 1 if the server is well */
   int isAlive() { if (serverSock > 0) return 1; else return 0;};
@@ -119,7 +119,7 @@ class GenServer {
     int &resLen, char *(pResponse[]) );
 
   /* virtual function called when a client is closed - under a lock */
-  virtual int closingClient(int clientSock) {};
+  virtual int closingClient(int clientSock) {return(0);};
 };
 
 /* 

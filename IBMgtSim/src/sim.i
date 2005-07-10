@@ -29,7 +29,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
- * $Id: sim.i,v 1.6 2005/03/20 11:20:02 eitan Exp $
+ * $Id: sim.i,v 1.12 2005/07/07 21:15:29 eitan Exp $
  */
 
 /*
@@ -39,7 +39,7 @@
  *
  */
 
-%title "IB Management Simulator - TCL Extention"
+%title "IB Management Simulator - TCL Extension"
 
 //
 // FIX OF SWIG TO SUPPORT NAME ALTERNATE MANGLING 
@@ -53,8 +53,10 @@
 #include <getopt.h>
 #include <inttypes.h>
 #include <ibdm/Fabric.h>
+#include <errno.h>
 #include "sim.h"
 #include "node.h"
+#include "randmgr.h"
 
 # if __WORDSIZE == 64
 #  define __PRI64_PREFIX   "l"
@@ -121,7 +123,7 @@
   int ibmsGetSimNodePtrByTclName(Tcl_Obj *objPtr, void **ptr) {
 	 /* we need to parse the name and get the type etc. */
 	 char buf[256];
-	 char *type, *name, *fabIdxStr;
+	 char *type, *name = 0, *fabIdxStr;
 	 char *colonIdx, *slashIdx;
 	 int fabricIdx;
 	 *ptr = NULL;
@@ -141,7 +143,7 @@
 	 type = buf;
 	 fabIdxStr = ++colonIdx;
 	 
-	 /* now separate the fabric section if tyep is not fabric */
+	 /* now separate the fabric section if type is not fabric */
 	 if (strcmp(type, "fabric")) {
 		slashIdx = index(fabIdxStr,':');
 		if (!slashIdx) {
@@ -153,7 +155,7 @@
 		name = ++slashIdx;
 	 }
 
-	 /* Ok so now get the fabic pointer */
+	 /* OK so now get the fabric pointer */
 	 fabricIdx = atoi(fabIdxStr);
 	 
 	 IBFabric *p_fabric = ibdmGetFabricPtrByIdx(fabricIdx);
@@ -251,7 +253,7 @@
   }
 }
 
-/* we describe a port err profile as a record of key val pairs */
+/* we describe a port err profile as a record of key value pairs */
 %typemap(tcl8,in) IBMSPortErrProfile *RefIn (IBMSPortErrProfile tmp) { 
   if (sscanf(Tcl_GetStringFromObj($source,0), 
              "-drop-rate-avg %g -drop-rate-var %g",
@@ -268,7 +270,7 @@
   $target = &tmp; 
 }
 
-%typemap(tcl8,out)  IBMSPortErrProfile * { 
+%typemap(tcl8,out)  IBMSPortErrProfile *(IBMSPortErrProfile tmp) { 
   char buff[128];
   if ($source) { 
     sprintf(buff, "-drop-rate-avg %g -drop-rate-var %g", 
@@ -293,6 +295,7 @@
   } 
 } 
 
+%include inttypes.i
 %include ib_types.i
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -329,7 +332,7 @@ class msgManager {
   int getVerbLevel(string module = MsgAllModules);
   int clrVerbLevel(string module  = MsgAllModules);
   void setVerbLevel(int vl, string module = MsgAllModules);
-  // we will prvide a wrapper method giving file name ...
+  // we will provide a wrapper method giving file name ...
   // void setOutStream(std::ostream * o) {outStreamP = o;};
 
   // get number of outstanding messages of the given severity
@@ -358,6 +361,23 @@ class msgManager {
       return 1;
   }
 };
+
+%section "Random Manager Functions",pre
+%{
+  float rmRand() {
+    return RandMgr()->random();
+  }
+  
+  int rmSeed(int seed) {
+    return RandMgr()->setRandomSeed(seed);
+  }
+%}
+
+float rmRand();
+/* obtain a random number in the range 0.0 - 1.0 */
+
+int rmSeed(int seed);
+/* initialize the seed for the random manager */
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -395,7 +415,7 @@ class IBMgtSim {
 class IBMSNode {
  public:
 
-  /* avoid freinship: */
+  /* avoid friendship: */
   IBNode *getIBNode() {return pNode;};
 
   /* get the link status of the given port */
@@ -423,13 +443,22 @@ class IBMSNode {
 
   /* get the switch info */
   ib_switch_info_t *getSwitchInfo();
- 
+
+  /* get pkey table block */
+  ib_pkey_table_t *getPKeyTblBlock(uint8_t portNum, uint16_t blockNum);
+
+  /* set pkey table block */
+  int setPKeyTblBlock(uint8_t portNum, uint16_t blockNum, ib_pkey_table_t *tbl);
+
   /* set CR Space Value */
-  int setCrSpace(uint32_t addr, uint32_t &data);
-  
+  int setCrSpace(uint32_t startAddr,uint32_t length,uint32_t data[] );
+
   /* get CR Space Value */
-  int getCrSpace(uint32_t addr, uint32_t &data);
+  int getCrSpace(uint32_t startAddr,uint32_t length,uint32_t data[] );
+
 };
+
+%include mads.i
 
 //
 // INIT CODE
