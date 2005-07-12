@@ -34,7 +34,7 @@ if [[ $am_maj = 1 && $am_min = 9 && $am_sub < 3 ]]; then
     exit
 fi
 
-aclocal -I config
+aclocal -I config 2>&1 | grep -v "warning: underquoted definition "
 libtoolize --automake
 automake --add-missing --gnu
 autoconf
