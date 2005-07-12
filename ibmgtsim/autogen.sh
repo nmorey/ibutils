@@ -1,9 +1,9 @@
 #!/bin/sh 
 
 DIR=`cd ${0%*/*};pwd`
-\rm -rf ../autom4te.cache
-\rm -rf ../aclocal.m4
-\rm -f missing install-sh depcomp mkinstalldirs ltmain.sh config.sub config.guess
+\rm -rf autom4te.cache
+\rm -rf aclocal.m4
+\rm -f config/missing config/install-sh config/depcomp config/mkinstalldirs config/ltmain.sh config/config.sub config/config.guess
 # make sure autoconf is up-to-date
 ac_ver=`autoconf --version | head -1 | awk '{print $NF}'`
 ac_maj=`echo $ac_ver|sed 's/\..*//'`
