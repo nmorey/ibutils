@@ -1,0 +1,49 @@
+dnl Process this file with autoconf to produce a configure script.
+
+AC_INIT(autogen.sh)
+
+dnl use local config dir for extras
+AC_CONFIG_AUX_DIR(config)
+
+dnl Defines the Language
+AC_LANG_C
+
+dnl Auto make
+AM_INIT_AUTOMAKE(ibuser,1.0)
+
+dnl Provides control over re-making of all auto files
+dnl We also use it to define swig dependencies so end
+dnl users do not see them.
+AM_MAINTAINER_MODE
+
+MLX_PROG_SWIG(1.1.5, eq)
+
+dnl Get the TCL defs: TCL_LIBS TCL_CPPFLAGS
+MLX_LANG_TCL
+
+dnl Define an input config option to control debug compile
+AC_ARG_ENABLE(debug,
+[  --enable-debug    Turn on debugging],
+[case "${enableval}" in
+  yes) debug=true ;;
+  no)  debug=false ;;
+  *) AC_MSG_ERROR(bad value ${enableval} for --enable-debug) ;;
+esac],[debug=false])
+
+dnl the include/ibdm directory holding Fabric.h
+AC_ARG_WITH(ibdm,
+[  --with-ibdm=<dir> Let IBMgtSim know where to find IBDM],
+AC_MSG_NOTICE(Using IBDM=$with_ibdm),
+with_ibdm="$prefix")
+AC_SUBST(with_ibdm)
+
+dnl Define an input config option to allow the simulator know where 
+dnl the OSM is installed. This should point to one directory above 
+dnl the include directory holding opensm/osm_build_id.h
+OPENIB_APP_OSM
+
+AC_CONFIG_SUBDIRS(ibis ibdm ibmgtsim)
+
+dnl Create the following Makefiles
+AC_OUTPUT(Makefile)
+
