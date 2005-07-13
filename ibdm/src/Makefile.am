@@ -40,7 +40,7 @@
 
 AM_CPPFLAGS = -I$(top_srcdir)/datamodel
 
-bin_PROGRAMS = ibdmchk ibdmtr topotest ibnlparse
+bin_PROGRAMS = ibdmchk ibdmtr ibtopodiff ibnlparse
 LDADD = -L../datamodel -libdmcom
 AM_LDFLAGS = -static
 
@@ -48,13 +48,13 @@ AM_LDFLAGS = -static
 # Deprecated : ibdmsim_DEPENDENCIES=../datamodel/libibdmcom.la
 ibdmtr_DEPENDENCIES=../datamodel/libibdmcom.la
 ibdmchk_DEPENDENCIES=../datamodel/libibdmcom.la
-topotest_DEPENDENCIES=../datamodel/libibdmcom.la
+ibtopodiff_DEPENDENCIES=../datamodel/libibdmcom.la
 ibnlparse_DEPENDENCIES=../datamodel/libibdmcom.la
 
 # Deprecated : ibdmsim_SOURCES = fabric_sim.cpp 
 ibdmtr_SOURCES = fabric_tr.cpp 
 ibdmchk_SOURCES = osm_check.cpp 
-topotest_SOURCES = test_topo_match.cpp
+ibtopodiff_SOURCES = test_topo_match.cpp
 ibnlparse_SOURCES = test_ibnl_parser.cpp
 
 #regexp_test_SOURCES = regexp_test.cpp 

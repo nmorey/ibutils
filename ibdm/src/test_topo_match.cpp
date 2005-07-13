@@ -47,7 +47,7 @@ Reads a Topology file and OpenSM subnet file, try to match and report errors.
 #include <getopt.h>
 
 static char TopoMatchTestUsage[] = 
-"Usage: topotest [-v][-h] -t <topo file> -d <subnet file> -s <start system name> -p <start port num> -g <start port guid>";
+"Usage: ibtopodiff [-v][-h] -t <topo file> -d <subnet file> -s <start node name> -p <start port num> -g <start port guid>";
 
 void
 show_usage() {
@@ -57,7 +57,7 @@ show_usage() {
 void 
 show_help() {
   cout << "\n"
-       << " Fabric Topology Matcher Tester\n"
+       << " Fabric Topology Matcher\n"
        << "-------------------------------\n"
        << "\n"
        << TopoMatchTestUsage << "\n"
@@ -68,7 +68,7 @@ show_help() {
        << "  -t|--topology <file> = Topology file [ibdm.topo].\n"
        << "   The format is defined in the IBDM user manual.\n"
        << "  -d|--discovered <file> = [subnet.lst] file produced by OpenSM.\n"
-       << "  -s|--start-system <name> = The name of the start system [H-1].\n"
+       << "  -s|--start-node <name> = The name of the start node [H-1/U1].\n"
        << "  -p|--port-num <num> = The number of the start port [1].\n"
        << "  -g|--port-guid <guid> = The guid of the start port [none].\n"
        << "\n"
@@ -184,10 +184,10 @@ int main (int argc, char **argv) {
 	 exit(1);
   }
 
-  printf(" Fabric Topology Match Testing:\n");
+  printf(" Fabric Topology Match:\n");
   printf(" Topology File .. %s\n", topoFileName);
   printf(" Subnet File .... %s\n", subnetFileName);
-  printf(" Start System.... %s\n", startSystemName);
+  printf(" Start Node ..... %s\n", startSystemName);
   printf(" Start Port ..... %u\n", startPortNum);
   printf(" Start Guid ..... 0x%016Lx\n", startPortGuid);
   printf("-------------------------------------------------\n");

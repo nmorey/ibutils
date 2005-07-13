@@ -1,19 +1,18 @@
-#!/bin/sh 
-
+#!/bin/bash 
 cd ${0%*/*}
-\rm -rf autom4te.cache
+# remove previous
+\rm -rf autom4te.cache 
 \rm -rf aclocal.m4
-\rm -f config/missing config/install-sh config/depcomp config/mkinstalldirs config/ltmain.sh config/config.sub config/config.guess
 # make sure autoconf is up-to-date
 ac_ver=`autoconf --version | head -1 | awk '{print $NF}'`
 ac_maj=`echo $ac_ver|sed 's/\..*//'`
 ac_min=`echo $ac_ver|sed 's/.*\.//'`
 if [[ $ac_maj < 2 ]]; then 
-    echo "autoconf version is too old:$ac_maj.$ac_min < required 2.59"
+    echo Min autoconf version is 2.59
     exit
 fi
 if [[ $ac_maj = 2 && $ac_min < 59 ]]; then 
-    echo "autoconf version is too old:$ac_maj.$ac_min < required 2.59"
+    echo Min autoconf version is 2.59
     exit
 fi
 # make sure automake is up-to-date
@@ -50,7 +49,7 @@ if [[ $lt_maj = 1 && $lt_min = 4 && $lt_sub < 2 ]]; then
     echo "automake version is too old:$lt_maj.$lt_min.$lt_sub < required 1.4.2"
     exit
 fi
-
+    
 aclocal -I config 2>&1 | grep -v "warning: underquoted definition "
 libtoolize --automake
 automake --add-missing --gnu

@@ -83,18 +83,18 @@ Options:
   -h|--help = provide this help message
 
 
-topotest
+ibtopodiff
 --------
 Tests a topology file matching vs subnet.lst. 
 
-Usage: topotest [-v][-h] -t <topo file> -d <subnet file> -s <start system name> -p <start port num> -g <start port guid>
+Usage: ibtopodiff [-v][-h] -t <topo file> -d <subnet file> -s <start node name> -p <start port num> -g <start port guid>
 
 Description:
 
 Arguments:
   -t|--topology <file> = Topology file [ibadm.topo].
   -d|--discovered <file> = [subnet.lst] file produced by OpenSM.
-  -s|--start-system <name> = The name of the start system [H-1].
+  -s|--start-node <name> = The name of the start node [H-1/U1].
   -p|--port-num <num> = The number of the start port [1].
   -g|--port-guid <guid> = The guid of the start port [none].
 
