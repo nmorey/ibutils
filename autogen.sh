@@ -1,5 +1,5 @@
 #!/bin/bash 
-DIR=`cd ${0%*/*};pwd`
+cd ${0%*/*}
 
 # make sure autoconf is up-to-date
 ac_ver=`autoconf --version | head -1 | awk '{print $NF}'`
@@ -50,9 +50,12 @@ if [[ $lt_maj = 1 && $lt_min = 4 && $lt_sub < 2 ]]; then
     exit
 fi
 
+# cleanup
+find . \( -name Makefile.in -o -name aclocal.m4 -o -name autom4te.cache -o -name configure -o -name aclocal.m4 \) -exec \rm -rf {} \;
+
 # handle our own autoconf:
 aclocal -I config 2>&1 |  grep -v "arning: underquoted definition of"
-automake --add-missing --gnu
+automake --add-missing --gnu 
 autoconf
 
 # visit all sub directories with autogen.sh    

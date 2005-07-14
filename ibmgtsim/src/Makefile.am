@@ -43,13 +43,28 @@ endif
 
 AM_CXXFLAGS = $(DBG)
 
+if IBDM_REF_IS_USED
 INCLUDES		= -I$(with_ibdm)/include -I$(with_osm)/include $(TCL_CPPFLAGS)
+else
+INCLUDES		= -I$(with_ibdm)/datamodel -I$(with_osm)/include $(TCL_CPPFLAGS)
+endif
 
 AM_CPPFLAGS = -I$(top_srcdir)/datamodel $(OSM_DEBUG_FLAGS)
 
 bin_PROGRAMS = ibmssh ibmsquit #ibmgtsim test_msgmgr test_client test_server ibmgt_client 
 
-LDADD = -L$(with_ibdm)/lib -libdmcom -L$(with_osm)/lib -lcomplib
+if IBDM_REF_IS_USED
+# we assume we are building a parallel tree
+IBDM_PREFIX=$prefix
+PWD=`pwd`
+IBDM_LIB=-L$(PWD)/../../ibdm/datamodel -libdmcom 
+else
+IBDM_PREFIX=$(with_ibdm)
+IBDM_LIB=-L$(with_ibdm)/lib -libdmcom
+endif
+
+LDADD = $(IBDM_LIB) -L$(with_osm)/lib -lcomplib
+
 # AM_LDFLAGS = -static
 
 # this is the main simulator
@@ -62,9 +77,9 @@ ibmssh_SOURCES = sim.cpp server.cpp node.cpp dispatcher.cpp \
 
 ibmssh_LDFLAGS = -static -Wl,-rpath -Wl,$(TCL_PREFIX)/lib \
 	-Wl,-rpath -Wl,$(with_osm)/lib \
-	-Wl,-rpath -Wl,$(with_ibdm)/lib 
+	-Wl,-rpath -Wl,$(IBDM_PREFIX)/lib 
 
-ibmssh_LDADD = -libmscli -L$(with_ibdm)/lib -libdmcom -L$(with_osm)/lib -lcomplib $(TCL_LIBS) 
+ibmssh_LDADD = -libmscli $(IBDM_LIB) -L$(with_osm)/lib -lcomplib $(TCL_LIBS)
 
 # SWIG FILES:
 SWIG_IFC_FILES= $(srcdir)/sim.i $(srcdir)/ib_types.i $(srcdir)/ibdm.i

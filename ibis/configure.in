@@ -61,17 +61,6 @@ AC_ARG_ENABLE(debug,
 esac],[debug=false])
 AM_CONDITIONAL(DEBUG, test x$debug = xtrue)
 
-dnl Define an input config option to allow the simulator know where 
-dnl the IBDM is installed. This should point to one directory above 
-dnl the include/ibdm directory holding Fabric.h
-AC_ARG_WITH(ibdm,
-[  --with-ibdm=<dir> Let IBMgtSim know where to find IBDM],
-AC_MSG_NOTICE(Using IBDM=$with_ibdm),
-with_ibdm="/usr")
-AC_SUBST(with_ibdm)
-AC_CHECK_FILE($with_ibdm/include/ibdm/Fabric.h,,
-   AC_MSG_ERROR([ could not find $with_ibdm/include/ibdm/Fabric.h.]))
-
 dnl Define an input config option to allow ibis know where 
 dnl the OSM is installed. This should point to one directory above 
 dnl the include directory holding opensm/osm_build_id.h
