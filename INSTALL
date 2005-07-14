@@ -137,24 +137,6 @@ find the X include and library files automatically, but if it doesn't,
 you can use the `configure' options `--x-includes=DIR' and
 `--x-libraries=DIR' to specify their locations.
 
-Specific IB Utilities Features 
-==============================
-
-The following configuration options are available:
-
-Optional Features:
-  --enable-maintainer-mode  enable remake of TCL wrappers when *.i file change or bison/flex
-                            outputs when the *.yy or the *.ll change
-  --enable-debug    Turn on debugging
-
-Optional Packages:
-  --with-tclconfig=PATH   use tclConfig.sh from PATH
-                          (configure gets Tcl configuration from here)
-  --with-tcl=PATH         use Tcl from PATH
-  --with-tclsh=TCLSH      use TCLSH as the tclsh program
-                          (let configure find Tcl using this program)
-  --with-osm=<dir> define where to find OSM
-
 Specifying the System Type
 ==========================
 
