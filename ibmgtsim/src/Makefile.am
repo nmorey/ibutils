@@ -38,18 +38,18 @@
 if DEBUG
 DBG = -O0 -g -Wall -Werror
 else
-DBG = -O6 -Wall -Werror
+DBG = -O2 -Wall -Werror
 endif
 
 AM_CXXFLAGS = $(DBG)
 
 if IBDM_REF_IS_USED
-INCLUDES		= -I$(with_ibdm)/include -I$(with_osm)/include $(TCL_CPPFLAGS)
+INCLUDES		= -I$(with_ibdm)/datamodel $(TCL_CPPFLAGS)
 else
-INCLUDES		= -I$(with_ibdm)/datamodel -I$(with_osm)/include $(TCL_CPPFLAGS)
+INCLUDES		= -I$(with_ibdm)/include $(TCL_CPPFLAGS)
 endif
 
-AM_CPPFLAGS = -I$(top_srcdir)/datamodel $(OSM_DEBUG_FLAGS)
+AM_CPPFLAGS = -I$(INCLUDES) $(OSM_CFLAGS)
 
 bin_PROGRAMS = ibmssh ibmsquit #ibmgtsim test_msgmgr test_client test_server ibmgt_client 
 
@@ -63,7 +63,7 @@ IBDM_PREFIX=$(with_ibdm)
 IBDM_LIB=-L$(with_ibdm)/lib -libdmcom
 endif
 
-LDADD = $(IBDM_LIB) -L$(with_osm)/lib -lcomplib
+LDADD = $(IBDM_LIB) $(OSM_LDFLAGS)
 
 # AM_LDFLAGS = -static
 
@@ -76,10 +76,9 @@ ibmssh_SOURCES = sim.cpp server.cpp node.cpp dispatcher.cpp \
 	 ibmssh_wrap.cpp sma.cpp pma.cpp vsa.cpp randmgr.cpp
 
 ibmssh_LDFLAGS = -static -Wl,-rpath -Wl,$(TCL_PREFIX)/lib \
-	-Wl,-rpath -Wl,$(with_osm)/lib \
 	-Wl,-rpath -Wl,$(IBDM_PREFIX)/lib 
 
-ibmssh_LDADD = -libmscli $(IBDM_LIB) -L$(with_osm)/lib -lcomplib $(TCL_LIBS)
+ibmssh_LDADD = -libmscli $(IBDM_LIB) $(OSM_LDFLAGS) $(TCL_LIBS)
 
 # SWIG FILES:
 SWIG_IFC_FILES= $(srcdir)/sim.i $(srcdir)/ib_types.i $(srcdir)/ibdm.i
@@ -106,7 +105,7 @@ EXTRA_DIST = swig_alternate_mangling.cpp
 
 # Quiter for the server
 ibmsquit_SOURCES = client.cpp msgmgr.cpp simmsg.cpp tcpcomm.cpp
-ibmsquit_CPPFLAGS = -DBUILD_QUIT_CLIENT=1
+ibmsquit_CPPFLAGS = -DBUILD_QUIT_CLIENT=1 -I$(INCLUDES) $(OSM_CFLAGS)
 
 # tester of the client code 
 #ibmgt_client_SOURCES = client.cpp msgmgr.cpp simmsg.cpp tcpcomm.cpp

@@ -35,7 +35,7 @@ if test "x$with_ibdm" = xnone; then
 fi
 
 dnl validate the defined path
-if test -f $with_ibdm/include/Fabric.h; then
+if test -f $with_ibdm/include/ibdm/Fabric.h; then
    AC_MSG_NOTICE([IBDM was installed in $with_ibdm])
    ibdm_ref_is_used=0
 elif test -f $with_ibdm/datamodel/Fabric.h; then
@@ -45,7 +45,7 @@ elif test -f $with_ibdm/datamodel/Fabric.h; then
    fi
    ibdm_ref_is_used=1
 else
-   AC_MSG_ERROR([ IBDM Fabric.h not found under $with_ibdm])
+   AC_MSG_ERROR([ IBDM Fabric.h not found under $with_ibdm/include/ibdm/])
 fi
 
 AM_CONDITIONAL([IBDM_REF_IS_USED], test $ibdm_ref_is_used = 1)

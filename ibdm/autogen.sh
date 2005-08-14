@@ -1,4 +1,6 @@
 #!/bin/bash 
+
+# We change dir since the later utilities assume to work in the project dir
 cd ${0%*/*}
 # remove previous
 \rm -rf autom4te.cache 
