@@ -51,7 +51,7 @@ if [[ $lt_maj = 1 && $lt_min = 4 && $lt_sub < 2 ]]; then
 fi
 
 # cleanup
-find . \( -name Makefile.in -o -name aclocal.m4 -o -name autom4te.cache -o -name configure -o -name aclocal.m4 \) -exec \rm -rf {} \;
+find . \( -name Makefile.in -o -name aclocal.m4 -o -name autom4te.cache -o -name configure -o -name aclocal.m4 \) -exec \rm -rf {} \; -prune
 
 # handle our own autoconf:
 aclocal -I config 2>&1 |  grep -v "arning: underquoted definition of"
@@ -62,7 +62,7 @@ autoconf
 anyErr=0
 for a in `ls */autogen.sh`; do
     echo Visiting $a
-    $a
+    $a 2>&1 | sed 's/^/|/'
     if test $? != 0; then
         echo $a failed
         anyErr=1

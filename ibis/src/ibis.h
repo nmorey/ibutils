@@ -47,11 +47,16 @@
 #define _IBIS_H_
 
 #include <opensm/osm_log.h>
-#include <opensm/osm_vendor_api.h>
 #include <opensm/osm_mad_pool.h>
 #include <opensm/osm_helper.h>
 #include "ibis_api.h"
 #include "ibis_gsi_mad_ctrl.h"
+
+#ifdef OSM_VENDOR_INTF_OPENIB
+#include <vendor/osm_vendor_api.h>
+#else
+#include <opensm/osm_vendor_api.h>
+#endif
 
 /****h* IBIS/IBIS
  * NAME

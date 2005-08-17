@@ -36,10 +36,10 @@
 
 %module ibis
 %{
+#undef panic
 #include "stdio.h"
 #include <stdlib.h>
 #include <getopt.h>
-#include <opensm/osm_vendor_api.h>
 #include <opensm/osm_log.h>
 #include <complib/cl_qmap.h>
 #include <complib/cl_map.h>

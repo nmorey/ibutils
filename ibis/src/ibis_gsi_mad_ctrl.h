@@ -47,7 +47,6 @@
 #define _IBIS_GSI_MAD_CTRL_H_
 
 #include <iba/ib_types.h>
-#include <opensm/cl_dispatcher.h>
 #include <opensm/osm_madw.h>
 #include <opensm/osm_mad_pool.h>
 #include <opensm/osm_log.h>

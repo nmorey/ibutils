@@ -46,10 +46,17 @@
 #define _IBIS_API_H_
 
 #include <iba/ib_types.h>
+#ifdef OSM_VENDOR_INTF_OPENIB
+#include <complib/cl_dispatcher.h>
+//#include <vendor/osm_vendor_api.h>
+#else
 #include <opensm/cl_dispatcher.h>
+//#include <opensm/osm_vendor_api.h>
+#endif
 #include <complib/cl_vector.h>
 #include <opensm/osm_log.h>
-#include <opensm/osm_vendor_api.h>
+#include <opensm/osm_mad_pool.h>
+
 #include "ibis_base.h"
 
 /****h* IBIS: API/IBIS Interface
@@ -149,7 +156,7 @@ typedef struct _ibis_gsi_mad_ctrl
 {
   osm_log_t             *p_log;
   osm_mad_pool_t        *p_mad_pool;
-  osm_vendor_t          *p_vendor;
+  struct _osm_vendor    *p_vendor;
   cl_dispatcher_t       *p_disp;
   struct _ibis          *p_ibis;
   cl_vector_t            class_vector;

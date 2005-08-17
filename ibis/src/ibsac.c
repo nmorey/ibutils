@@ -32,9 +32,13 @@
  * $Id: Makefile.am,v 1.14 2005/05/24 11:59:20 eitan Exp $
  */
 
-#include "ibis_api.h"
+#include "ibis.h"
 #include <opensm/osm_helper.h>
+#ifdef OSM_VENDOR_INTF_OPENIB
+#include <vendor/osm_vendor_sa_api.h>
+#else
 #include <opensm/osm_vendor_sa_api.h>
+#endif
 
 #define IB_MAD_STATUS_CLASS_MASK       (CL_HTON16(0xFF00))
 

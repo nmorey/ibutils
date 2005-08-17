@@ -40,11 +40,8 @@
 #include "ibis.h"
 #include "ibis_api.h"
 #include <opensm/osm_log.h>
-#include <opensm/osm_vendor_api.h>
-#include <opensm/osm_vendor.h>
 #include <opensm/osm_mad_pool.h>
 #include <opensm/osm_helper.h>
-#include <opensm/cl_dispatcher.h>
 
 
 /****g* IBIS/IbisObj

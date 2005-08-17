@@ -46,6 +46,10 @@ if test "x$with_osm" = xnone; then
       AC_MSG_ERROR([--with-osm must be provided - fail to find standard OpenSM installation])
    fi
    AC_MSG_NOTICE(Found OSM in:$with_osm)
+else
+   if test -d $with_osm/include/infiniband; then
+      OSM_STACK=openib
+   fi
 fi
 
 OSM_LDFLAGS="-Wl,-rpath -Wl,$with_osm/lib -L$with_osm/lib"
@@ -53,22 +57,22 @@ dnl based on the with_osm dir we can try and decide what vendor was used:
 if test -f $with_osm/lib/libosmsvc_ts.so; then
    OSM_VENDOR=ts
    OSM_STACK=gen1
-   OSM_LDFLAGS="$OSM_LDFLAGS -losmsvc_ts"
+   OSM_LDFLAGS="$OSM_LDFLAGS -losmsvc_ts -lcomplib"
    osm_vendor_sel="-DOSM_VENDOR_INTF_TS"
 elif test -f $with_osm/lib/libosmsvc_mtl.so; then
    OSM_VENDOR=mtl
    OSM_STACK=gen1
-   OSM_LDFLAGS="$OSM_LDFLAGS -losmsvc_mtl"
+   OSM_LDFLAGS="$OSM_LDFLAGS -losmsvc_mtl -lcomplib " 
    osm_vendor_sel="-DOSM_VENDOR_INTF_MTL"
 elif test -f $with_osm/lib/libosmsvc_sim.so; then
    OSM_STACK=gen1
    OSM_VENDOR=sim
-   OSM_LDFLAGS="$OSM_LDFLAGS -losmsvc_sim"
+   OSM_LDFLAGS="$OSM_LDFLAGS -losmsvc_sim -lcomplib"
    osm_vendor_sel="-DOSM_VENDOR_INTF_SIM"
 elif test -f $with_osm/lib/libosmvendor.a; then
    OSM_VENDOR=ts
-   osm_vendor_sel="-DOSM_OPENIB"
-   OSM_LDFLAGS="$OSM_LDFLAGS -losmcomp -losmvendor -lopensm"
+   osm_vendor_sel="-DOSM_VENDOR_INTF_OPENIB"
+   OSM_LDFLAGS="$OSM_LDFLAGS -lopensm -losmvendor -losmcomp"
 else
    AC_MSG_ERROR([fail to find any valid OSM vendor library in $with_osm/lib])
 fi
@@ -99,7 +103,7 @@ else
    osm_debug_flags=
 fi
 
-OSM_CFLAGS="-I$osm_include_dir $osm_debug_flags $osm_vendor_sel"
+OSM_CFLAGS="-I$osm_include_dir $osm_debug_flags $osm_vendor_sel -D_XOPEN_SOURCE=600 -D_BSD_SOURCE=1"
 
 AC_SUBST(with_osm)
 AC_SUBST(OSM_CFLAGS)

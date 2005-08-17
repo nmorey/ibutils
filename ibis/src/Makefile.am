@@ -38,29 +38,12 @@
 if DEBUG
 DBG = -O0 -g -Wall -Werror
 else
-DBG = -O6 -Wall -Werror
+DBG = -O2 -Wall -Werror
 endif
 
-INCLUDES		= -I$(with_osm)/include $(TCL_CPPFLAGS)
+INCLUDES = -I$(with_osm)/include $(TCL_CPPFLAGS)
 
-AM_CFLAGS = -I$(top_srcdir)/datamodel $(OSM_DEBUG_FLAGS) $(DBG) 
-
-# Complib uses new POSIX for rwlocks
-AM_CFLAGS += -D_XOPEN_SOURCE=600 -D_BSD_SOURCE=1
-
-# based on the vendor declare some defines:
-if OSM_VENDOR_MTL
-AM_CFLAGS += -DOSM_VENDOR_INTF_MTL
-OSM_LIB = -losmsvc_mtl
-endif
-if OSM_VENDOR_TS
-AM_CFLAGS += -DOSM_VENDOR_INTF_TS
-OSM_LIB = -losmsvc_ts
-endif
-if OSM_VENDOR_SIM
-AM_CFLAGS += -DOSM_VENDOR_INTF_SIM
-OSM_LIB = -losmsvc_sim
-endif
+AM_CFLAGS = -I$(top_srcdir)/datamodel $(OSM_CFLAGS) $(DBG) -fno-strict-aliasing
 
 # ibis shared library version triplet is:
 # API_ID:API_VER:NUM_PREV_API_SUP = x:y:z
@@ -82,19 +65,19 @@ libibis_la_SOURCES = ibis_wrap.c
 #  -Wl,-rpath -Wl,$(TCL_PREFIX)/lib
 libibis_la_LDFLAGS = -version-info $(LIB_VER_TRIPLET) -no-undefined  \
 	.libs/libibiscom.a -Wl,-rpath -Wl,$(with_osm)/lib \
-	-L$(with_osm)/lib -lcomplib $(OSM_LIB) $(TCL_LIBS)
+	$(OSM_LDFLAGS) $(TCL_LIBS)
 
 bin_PROGRAMS = ibis
 
-LDADD = -L$(with_osm)/lib -lcomplib
+# this is used for the libraries link
+LDADD = $(OSM_LDFLAGS)
 # AM_LDFLAGS = -static
 
 ibis_SOURCES = ibissh_wrap.c
 
-ibis_LDFLAGS = -static -Wl,-rpath -Wl,$(TCL_PREFIX)/lib \
-	-Wl,-rpath -Wl,$(with_osm)/lib $(OSM_LIB)
-
-ibis_LDADD = -L$(with_osm)/lib -lcomplib $(TCL_LIBS) -libiscom
+ibis_LDFLAGS = -static 
+# note the order of the libraries does matter as we static link
+ibis_LDADD = -libiscom $(OSM_LDFLAGS) $(TCL_LIBS) 
 
 
 # SWIG FILES:

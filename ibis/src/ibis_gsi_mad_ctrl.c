@@ -50,7 +50,6 @@
 #include <iba/ib_types.h>
 #include "ibis_gsi_mad_ctrl.h"
 #include "ibis.h"
-#include <opensm/osm_vendor_api.h>
 #include <stdio.h>
 
 /**********************************************************************

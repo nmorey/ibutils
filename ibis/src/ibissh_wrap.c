@@ -301,10 +301,10 @@ SWIGEXPORT(int,Ibis_Init)(Tcl_Interp *);
 }
 #endif
 
+#undef panic
 #include "stdio.h"
 #include <stdlib.h>
 #include <getopt.h>
-#include <opensm/osm_vendor_api.h>
 #include <opensm/osm_log.h>
 #include <complib/cl_qmap.h>
 #include <complib/cl_map.h>
@@ -1300,7 +1300,11 @@ ibbbm_read_fw_ver_vpd_global(
 #include <complib/cl_map.h>
 #include <complib/cl_debug.h>
 #include "ibis_api.h"
+#ifdef OSM_VENDOR_INTF_OPENIB
+#include <vendor/osm_vendor_sa_api.h>
+#else
 #include <opensm/osm_vendor_sa_api.h>
+#endif
 #include "ibsac.h"
 
   /* 
