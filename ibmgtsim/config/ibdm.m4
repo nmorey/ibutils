@@ -43,6 +43,8 @@ elif test -f $with_ibdm/datamodel/Fabric.h; then
    if test ! -d ../ibdm; then
      AC_MSG_ERROR([IBDM sources provided - but ibdm was not built in ../ibdm])
    fi
+   dnl we actually want to create a link to the ibdm sources
+   ln -s $with_ibdm/datamodel src/ibdm
    ibdm_ref_is_used=1
 else
    AC_MSG_ERROR([ IBDM Fabric.h not found under $with_ibdm/include/ibdm/])
