@@ -38,7 +38,7 @@
 if DEBUG
 DBG = -O0 -g -Wall -Werror
 else
-DBG = -O2 -Wall -Werror
+DBG = -O2 -Wall
 endif
 
 INCLUDES = -I$(with_osm)/include $(TCL_CPPFLAGS)
