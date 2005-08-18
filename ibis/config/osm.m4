@@ -72,7 +72,7 @@ elif test -f $with_osm/lib/libosmsvc_sim.so; then
 elif test -f $with_osm/lib/libosmvendor.a; then
    OSM_VENDOR=ts
    osm_vendor_sel="-DOSM_VENDOR_INTF_OPENIB"
-   OSM_LDFLAGS="$OSM_LDFLAGS -lopensm -losmvendor -losmcomp"
+   OSM_LDFLAGS="$OSM_LDFLAGS -lopensm -losmvendor -losmcomp -libcommon"
 else
    AC_MSG_ERROR([fail to find any valid OSM vendor library in $with_osm/lib])
 fi
