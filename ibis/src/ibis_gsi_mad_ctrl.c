@@ -651,7 +651,7 @@ ibis_gsi_mad_ctrl_bind(
   }
 
   bind_info.class_version = 1;
-  bind_info.is_responder = TRUE;
+  bind_info.is_responder = FALSE;
   bind_info.is_report_processor = FALSE;
   bind_info.is_trap_processor = FALSE;
   bind_info.mad_class = mad_class;
