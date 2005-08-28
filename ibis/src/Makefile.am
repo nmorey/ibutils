@@ -110,7 +110,21 @@ swigclean:
 	rm -f $(srcdir)/ibis_wrap.c $(srcdir)/ibissh_wrap.c *wrap.o
 
 # we need there extra in the distribution as their dependency is not defined
-EXTRA_DIST = swig_extended_obj.c fixSwigWrapper pkgIndex.tcl
+EXTRA_DIST = swig_extended_obj.c fixSwigWrapper pkgIndex.tcl \
+	 ibbbm_base.h \
+	 ibbbm.h \
+	 ibcr_base.h \
+	 ibcr.h \
+	 ibis_api.h \
+	 ibis_base.h \
+	 ibis_gsi_mad_ctrl.h \
+	 ibis.h \
+	 ibpm_base.h \
+	 ibpm.h \
+	 ibsac.h \
+	 ibsm.h \
+	 ibvs_base.h \
+	 ibvs.h
 
 # we do not want the temporary and the archive libs installed:
 install-libLTLIBRARIES:
