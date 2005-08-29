@@ -111,7 +111,7 @@ ib_api_status_t
 ibsm_bind(
   IN ibsm_t *p_ibsm )
 {
-  ib_api_status_t status;
+  ib_api_status_t status = IB_SUCCESS;
 
   OSM_LOG_ENTER( &(IbisObj.log), ibsm_bind);
 
