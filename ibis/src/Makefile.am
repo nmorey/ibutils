@@ -44,6 +44,7 @@ endif
 INCLUDES = -I$(with_osm)/include $(TCL_CPPFLAGS)
 
 AM_CFLAGS = -I$(top_srcdir)/datamodel $(OSM_CFLAGS) $(DBG) -fno-strict-aliasing
+AM_CXXFLAGS = -I$(top_srcdir)/datamodel $(OSM_CFLAGS) $(DBG) -fno-strict-aliasing
 
 # ibis shared library version triplet is:
 # API_ID:API_VER:NUM_PREV_API_SUP = x:y:z
@@ -73,7 +74,7 @@ bin_PROGRAMS = ibis
 LDADD = $(OSM_LDFLAGS)
 # AM_LDFLAGS = -static
 
-ibis_SOURCES = ibissh_wrap.c
+ibis_SOURCES = ibissh_wrap.cpp
 
 ibis_LDFLAGS = -static 
 # note the order of the libraries does matter as we static link
@@ -99,15 +100,15 @@ ibis_wrap.c: @MAINTAINER_MODE_TRUE@ $(SWIG_IFC_FILES)
 	cp ibis_wrap.c $(srcdir)/ibis_wrap.c
 	rm -f swig_wrap.c	
 
-ibissh_wrap.c: @MAINTAINER_MODE_TRUE@ $(SWIG_IFC_FILES)
+ibissh_wrap.cpp: @MAINTAINER_MODE_TRUE@ $(SWIG_IFC_FILES)
 	swig -I$(srcdir) -dhtml -tcl8  -ltclsh.i -o swig_wrap.c $(srcdir)/ibis.i
-	$(srcdir)/fixSwigWrapper -g -s -p -r ibis -o ibissh_wrap.c
-	cp ibissh_wrap.c $(srcdir)/ibissh_wrap.c
+	$(srcdir)/fixSwigWrapper -g -s -p -r ibis -o ibissh_wrap.cpp
+	cp ibissh_wrap.cpp $(srcdir)/ibissh_wrap.cpp
 	rm -f swig_wrap.c
 endif
 
 swigclean:
-	rm -f $(srcdir)/ibis_wrap.c $(srcdir)/ibissh_wrap.c *wrap.o
+	rm -f $(srcdir)/ibis_wrap.c $(srcdir)/ibissh_wrap.cpp *wrap.o
 
 # we need there extra in the distribution as their dependency is not defined
 EXTRA_DIST = swig_extended_obj.c fixSwigWrapper pkgIndex.tcl \
