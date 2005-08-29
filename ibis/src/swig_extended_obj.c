@@ -273,7 +273,7 @@ void SWIG_SetPointerObj(Tcl_Obj *objPtr, void *_ptr, char *type) {
   /* only if this type was pre-registered as SWIG Alt Mangling */
   strToUInt64(type, &type_key);
   //  printf("Looking for key:%s\n", type);
-  p_type = cl_map_get(&SWIG_AltMnglTypeToPrefix, type_key);
+  p_type = (char *)cl_map_get(&SWIG_AltMnglTypeToPrefix, type_key);
 
   if (p_type != NULL)
   {
@@ -335,7 +335,7 @@ char *SWIG_GetPointerObj(Tcl_Interp *interp, Tcl_Obj *objPtr, void **ptr, char *
 
   /* only we have this type registered for alt mangling */
   strToUInt64(_t, &type_key);
-  p_type = cl_map_get(&SWIG_AltMnglTypeToPrefix, type_key);
+  p_type = (char *)cl_map_get(&SWIG_AltMnglTypeToPrefix, type_key);
   if (p_type != NULL)
   {
     /* get the object name by the given pointer */

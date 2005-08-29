@@ -280,7 +280,7 @@ ibsac_query( IN ibis_t *   const p_ibis,
              IN void *     const p_attr,
              IN ib_net64_t const comp_mask,
              IN uint8_t    const method,
-             OUT int            *result_count,
+             OUT uint32_t       *result_count,
              OUT osm_madw_t    **pp_result_madw)
 {
   ib_api_status_t status = IB_SUCCESS;

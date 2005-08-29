@@ -44,6 +44,16 @@
 #ifndef _IBIS_BASE_H_
 #define _IBIS_BASE_H_
 
+#ifdef __cplusplus
+#  define BEGIN_C_DECLS extern "C" {
+#  define END_C_DECLS   }
+#else /* !__cplusplus */
+#  define BEGIN_C_DECLS
+#  define END_C_DECLS
+#endif /* __cplusplus */
+
+BEGIN_C_DECLS
+
 #ifndef WIN32
 #include <limits.h>
 #endif
@@ -57,5 +67,7 @@
 
 #define GUID_ARRAY_SIZE 4
 #define DISP_HANDLE_MAX 32
+
+END_C_DECLS
 
 #endif /* _IBIS_BASE_H_ */

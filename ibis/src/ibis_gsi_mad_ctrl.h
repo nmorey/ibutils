@@ -46,6 +46,17 @@
 #ifndef _IBIS_GSI_MAD_CTRL_H_
 #define _IBIS_GSI_MAD_CTRL_H_
 
+#ifdef __cplusplus
+#  define BEGIN_C_DECLS extern "C" {
+#  define END_C_DECLS   }
+#else /* !__cplusplus */
+#  define BEGIN_C_DECLS
+#  define END_C_DECLS
+#endif /* __cplusplus */
+
+BEGIN_C_DECLS
+
+#include <complib/cl_types.h>
 #include <iba/ib_types.h>
 #include <opensm/osm_madw.h>
 #include <opensm/osm_mad_pool.h>
@@ -67,7 +78,7 @@ typedef struct _ibis_gsi_cb_msg_pair
 {
   cl_pfn_msgrcv_cb_t	    pfn_callback;
   cl_disp_msgid_t   	    msg_id;
-  uint8_t                class;
+  uint8_t                mgt_class;
   uint16_t               attr;
   cl_disp_reg_handle_t   h_disp;
 } ibis_gsi_cb_msg_pair_t;
@@ -226,5 +237,5 @@ ibis_gsi_mad_ctrl_init(
 *	GSI MAD Controller object, ibis_gsi_mad_ctrl_construct,
 *	ibis_gsi_mad_ctrl_destroy, ibis_gsi_mad_ctrl_is_inited
 *********/
-
+END_C_DECLS
 #endif	/* _IBIS_GSI_MAD_CTRL_H_ */

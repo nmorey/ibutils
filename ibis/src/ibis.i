@@ -37,6 +37,17 @@
 %module ibis
 %{
 #undef panic
+
+#ifdef __cplusplus
+#  define BEGIN_C_DECLS extern "C" {
+#  define END_C_DECLS   }
+#else /* !__cplusplus */
+#  define BEGIN_C_DECLS
+#  define END_C_DECLS
+#endif /* __cplusplus */
+
+BEGIN_C_DECLS
+
 #include "stdio.h"
 #include <stdlib.h>
 #include <getopt.h>
@@ -49,7 +60,23 @@
 #include "ibpm.h"
 #include "ibvs.h"
 #include "ibbbm.h"
+#include "ibsac.h"
 #include "ibsm.h"
+
+END_C_DECLS
+
+#ifndef PRIx64
+#if __WORDSIZE == 64
+#define __PRI64_PREFIX	"l"
+#else
+#define __PRI64_PREFIX	"L"
+#endif
+
+#define PRId64		__PRI64_PREFIX"d"
+#define PRIo64		__PRI64_PREFIX"o"
+#define PRIu64		__PRI64_PREFIX"u"
+#define PRIx64		__PRI64_PREFIX"x"
+#endif
 
 /**********************************************************************
  **********************************************************************/

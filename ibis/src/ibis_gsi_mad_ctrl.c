@@ -79,7 +79,7 @@ __init_attr_entry(
   ibis_gsi_cb_msg_pair_t  *p_cb_msg_pair;
 
   p_cb_msg_pair = (ibis_gsi_cb_msg_pair_t *) p_element;
-  p_cb_msg_pair->class = 0;
+  p_cb_msg_pair->mgt_class = 0;
   p_cb_msg_pair->msg_id = CL_DISP_MSGID_NONE;
   p_cb_msg_pair->pfn_callback = NULL;
   p_cb_msg_pair->attr = 0;
@@ -765,7 +765,7 @@ ibis_gsi_mad_ctrl_set_class_attr_cb(
   /* now we get the pointer to the vector */
   p_cb_msg_pair =
     (ibis_gsi_cb_msg_pair_t *)cl_vector_get_ptr(p_attr_vector, attr);
-  p_cb_msg_pair->class = mad_class;
+  p_cb_msg_pair->mgt_class = mad_class;
   p_cb_msg_pair->attr = attr;
   p_cb_msg_pair->msg_id = mid;
   p_cb_msg_pair->pfn_callback = class_attr_cb;
