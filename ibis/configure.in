@@ -5,8 +5,8 @@ AC_INIT(src/ibis_api.h)
 dnl use local config dir for extras
 AC_CONFIG_AUX_DIR(config)
 
-dnl Defines the Language
-AC_LANG_C
+dnl Defines the Language - we need g++ linker ...
+AC_LANG_CPLUSPLUS
 
 dnl we use auto cheader
 AM_CONFIG_HEADER(config.h)
@@ -28,6 +28,8 @@ AC_PROG_LN_S
 MLX_PROG_SWIG(1.1.5, eq)
 
 dnl We will use libtool for making ...
+AC_PROG_CXX
+AC_PROG_CPP
 AC_PROG_LIBTOOL
 
 dnl Get the TCL defs: TCL_LIBS TCL_CPPFLAGS
