@@ -302,6 +302,17 @@ SWIGEXPORT(int,Ibis_Init)(Tcl_Interp *);
 #endif
 
 #undef panic
+
+#ifdef __cplusplus
+#  define BEGIN_C_DECLS extern "C" {
+#  define END_C_DECLS   }
+#else /* !__cplusplus */
+#  define BEGIN_C_DECLS
+#  define END_C_DECLS
+#endif /* __cplusplus */
+
+BEGIN_C_DECLS
+
 #include "stdio.h"
 #include <stdlib.h>
 #include <getopt.h>
@@ -314,7 +325,23 @@ SWIGEXPORT(int,Ibis_Init)(Tcl_Interp *);
 #include "ibpm.h"
 #include "ibvs.h"
 #include "ibbbm.h"
+#include "ibsac.h"
 #include "ibsm.h"
+
+END_C_DECLS
+
+#ifndef PRIx64
+#if __WORDSIZE == 64
+#define __PRI64_PREFIX	"l"
+#else
+#define __PRI64_PREFIX	"L"
+#endif
+
+#define PRId64		__PRI64_PREFIX"d"
+#define PRIo64		__PRI64_PREFIX"o"
+#define PRIu64		__PRI64_PREFIX"u"
+#define PRIx64		__PRI64_PREFIX"x"
+#endif
 
 /**********************************************************************
  **********************************************************************/
@@ -1379,7 +1406,7 @@ ibbbm_read_fw_ver_vpd_global(
 	 ib_node_record_t *p_rec;
 	 uint32_t i;
 	 ib_api_status_t status;
-	 int num_recs = 0;
+	 uint32_t num_recs = 0;
 	 osm_madw_t *p_result_madw;
 	 char *p_res_str = NULL, *tmp;
 	 Tcl_Obj *p_tclObj;
@@ -1437,7 +1464,7 @@ ibbbm_read_fw_ver_vpd_global(
 	 ib_portinfo_record_t *p_rec;
 	 uint32_t i;
 	 ib_api_status_t status;
-	 int num_recs = 0;
+	 uint32_t num_recs = 0;
 	 osm_madw_t *p_result_madw;
 	 char *p_res_str = NULL, *tmp;
 	 Tcl_Obj *p_tclObj;
@@ -1495,7 +1522,7 @@ ibbbm_read_fw_ver_vpd_global(
 	 ib_sminfo_record_t *p_rec;
 	 uint32_t i;
 	 ib_api_status_t status;
-	 int num_recs = 0;
+	 uint32_t num_recs = 0;
 	 osm_madw_t *p_result_madw;
 	 char *p_res_str = NULL, *tmp;
 	 Tcl_Obj *p_tclObj;
@@ -1553,7 +1580,7 @@ ibbbm_read_fw_ver_vpd_global(
 	 ib_switch_info_record_t *p_rec;
 	 uint32_t i;
 	 ib_api_status_t status;
-	 int num_recs = 0;
+	 uint32_t num_recs = 0;
 	 osm_madw_t *p_result_madw;
 	 char *p_res_str = NULL, *tmp;
 	 Tcl_Obj *p_tclObj;
@@ -1611,7 +1638,7 @@ ibbbm_read_fw_ver_vpd_global(
 	 ib_path_rec_t *p_rec;
 	 uint32_t i;
 	 ib_api_status_t status;
-	 int num_recs = 0;
+	 uint32_t num_recs = 0;
 	 osm_madw_t *p_result_madw;
 	 char *p_res_str = NULL, *tmp;
 	 Tcl_Obj *p_tclObj;
@@ -1668,7 +1695,7 @@ ibbbm_read_fw_ver_vpd_global(
 	 ib_link_record_t *p_rec;
 	 uint32_t i;
 	 ib_api_status_t status;
-	 int num_recs = 0;
+	 uint32_t num_recs = 0;
 	 osm_madw_t *p_result_madw;
 	 char *p_res_str = NULL, *tmp;
 	 Tcl_Obj *p_tclObj;
@@ -1725,7 +1752,7 @@ ibbbm_read_fw_ver_vpd_global(
 	 ib_lft_record_t *p_rec;
 	 uint32_t i;
 	 ib_api_status_t status;
-	 int num_recs = 0;
+	 uint32_t num_recs = 0;
 	 osm_madw_t *p_result_madw;
 	 char *p_res_str = NULL, *tmp;
 	 Tcl_Obj *p_tclObj;
@@ -1782,7 +1809,7 @@ ibbbm_read_fw_ver_vpd_global(
 	 ib_member_rec_t *p_rec;
 	 uint32_t i;
 	 ib_api_status_t status;
-	 int num_recs = 0;
+	 uint32_t num_recs = 0;
 	 osm_madw_t *p_result_madw;
 	 char *p_res_str = NULL, *tmp;
 	 Tcl_Obj *p_tclObj;
@@ -1839,7 +1866,7 @@ ibbbm_read_fw_ver_vpd_global(
 	 ib_class_port_info_t *p_rec;
 	 uint32_t i;
 	 ib_api_status_t status;
-	 int num_recs = 0;
+	 uint32_t num_recs = 0;
 	 osm_madw_t *p_result_madw;
 	 char *p_res_str = NULL, *tmp;
 	 Tcl_Obj *p_tclObj;
@@ -1896,7 +1923,7 @@ ibbbm_read_fw_ver_vpd_global(
 	 ib_inform_info_t *p_rec;
 	 uint32_t i;
 	 ib_api_status_t status;
-	 int num_recs = 0;
+	 uint32_t num_recs = 0;
 	 osm_madw_t *p_result_madw;
 	 char *p_res_str = NULL, *tmp;
 	 Tcl_Obj *p_tclObj;
@@ -1954,7 +1981,7 @@ ibbbm_read_fw_ver_vpd_global(
 	 ib_service_record_t *p_rec;
 	 uint32_t i;
 	 ib_api_status_t status;
-	 int num_recs = 0;
+	 uint32_t num_recs = 0;
 	 osm_madw_t *p_result_madw;
 	 char *p_res_str = NULL, *tmp;
 	 Tcl_Obj *p_tclObj;
@@ -2011,7 +2038,7 @@ ibbbm_read_fw_ver_vpd_global(
 	 ib_slvl_table_record_t *p_rec;
 	 uint32_t i;
 	 ib_api_status_t status;
-	 int num_recs = 0;
+	 uint32_t num_recs = 0;
 	 osm_madw_t *p_result_madw;
 	 char *p_res_str = NULL, *tmp;
 	 Tcl_Obj *p_tclObj;
@@ -2069,7 +2096,7 @@ ibbbm_read_fw_ver_vpd_global(
 	 ib_vl_arb_table_record_t *p_rec;
 	 uint32_t i;
 	 ib_api_status_t status;
-	 int num_recs = 0;
+	 uint32_t num_recs = 0;
 	 osm_madw_t *p_result_madw;
 	 char *p_res_str = NULL, *tmp;
 	 Tcl_Obj *p_tclObj;
@@ -2126,7 +2153,7 @@ ibbbm_read_fw_ver_vpd_global(
 	 ib_pkey_table_record_t *p_rec;
 	 uint32_t i;
 	 ib_api_status_t status;
-	 int num_recs = 0;
+	 uint32_t num_recs = 0;
 	 osm_madw_t *p_result_madw;
 	 char *p_res_str = NULL, *tmp;
 	 Tcl_Obj *p_tclObj;
