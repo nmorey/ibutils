@@ -56,7 +56,7 @@
 BEGIN_C_DECLS
 
 #include <iba/ib_types.h>
-#ifdef OSM_VENDOR_INTF_OPENIB
+#ifdef OSM_BUILD_OPENIB
 #include <complib/cl_dispatcher.h>
 //#include <vendor/osm_vendor_api.h>
 #else

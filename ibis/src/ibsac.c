@@ -34,7 +34,7 @@
 
 #include "ibis.h"
 #include <opensm/osm_helper.h>
-#ifdef OSM_VENDOR_INTF_OPENIB
+#ifdef OSM_BUILD_OPENIB
 #include <vendor/osm_vendor_sa_api.h>
 #else
 #include <opensm/osm_vendor_sa_api.h>

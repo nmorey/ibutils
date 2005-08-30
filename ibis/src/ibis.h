@@ -52,7 +52,7 @@
 #include "ibis_api.h"
 #include "ibis_gsi_mad_ctrl.h"
 
-#ifdef OSM_VENDOR_INTF_OPENIB
+#ifdef OSM_BUILD_OPENIB
 #include <vendor/osm_vendor_api.h>
 #else
 #include <opensm/osm_vendor_api.h>

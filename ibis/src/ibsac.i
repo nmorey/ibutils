@@ -43,7 +43,7 @@
 #include <complib/cl_map.h>
 #include <complib/cl_debug.h>
 #include "ibis_api.h"
-#ifdef OSM_VENDOR_INTF_OPENIB
+#ifdef OSM_BUILD_OPENIB
 #include <vendor/osm_vendor_sa_api.h>
 #else
 #include <opensm/osm_vendor_sa_api.h>
