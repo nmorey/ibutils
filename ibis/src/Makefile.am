@@ -41,10 +41,8 @@ else
 DBG = -O2 -Wall
 endif
 
-INCLUDES = -I$(with_osm)/include $(TCL_CPPFLAGS)
-
-AM_CFLAGS = -I$(top_srcdir)/datamodel $(OSM_CFLAGS) $(DBG) -fno-strict-aliasing
-AM_CXXFLAGS = -I$(top_srcdir)/datamodel $(OSM_CFLAGS) $(DBG) -fno-strict-aliasing
+AM_CFLAGS = -I$(top_srcdir)/datamodel $(TCL_CPPFLAGS) $(OSM_CFLAGS) $(DBG) -fno-strict-aliasing
+AM_CXXFLAGS = -I$(top_srcdir)/datamodel $(TCL_CPPFLAGS) $(OSM_CFLAGS) $(DBG) -fno-strict-aliasing
 
 # ibis shared library version triplet is:
 # API_ID:API_VER:NUM_PREV_API_SUP = x:y:z
@@ -63,10 +61,8 @@ libibiscom_la_SOURCES = ibbbm.c ibcr.c	ibis.c ibis_gsi_mad_ctrl.c \
 # client library to be used by IBIS TCL package:
 libibis_la_SOURCES = ibis_wrap.c 
 
-#  -Wl,-rpath -Wl,$(TCL_PREFIX)/lib
 libibis_la_LDFLAGS = -version-info $(LIB_VER_TRIPLET) -no-undefined  \
-	.libs/libibiscom.a -Wl,-rpath -Wl,$(with_osm)/lib \
-	$(OSM_LDFLAGS) $(TCL_LIBS)
+	.libs/libibiscom.a $(OSM_LDFLAGS) $(TCL_LIBS)
 
 bin_PROGRAMS = ibis
 
