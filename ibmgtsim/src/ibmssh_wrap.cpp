@@ -26924,7 +26924,9 @@ SWIGEXPORT(int,Ibdm_Init)(Tcl_Interp *interp) {
 	 Tcl_PkgProvide(interp,"ibms", "1.0");	 
 
     /* we use static linking with complib so init just in case */
+#ifdef OSM_BUILD_OPENIB
     complib_init();
+#endif
 
 	 // Register the objects for alternate mangling
     SWIG_AlternateObjMangling["_IBMSNode_p"] = &ibmsGetSimNodeTclNameByPtr;

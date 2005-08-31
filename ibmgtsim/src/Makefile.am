@@ -75,8 +75,14 @@ LDADD = $(IBDM_LIB) $(OSM_LDFLAGS)
 ibmssh_SOURCES = sim.cpp server.cpp node.cpp dispatcher.cpp \
 	 ibmssh_wrap.cpp sma.cpp pma.cpp vsa.cpp randmgr.cpp
 
+# Only teh OpenIB builds of OpenSM can really be linked staticlly
+if OSM_BUILD_OPENIB
 ibmssh_LDFLAGS = -static -Wl,-rpath -Wl,$(TCL_PREFIX)/lib \
 	-Wl,-rpath -Wl,$(IBDM_PREFIX)/lib 
+else
+ibmssh_LDFLAGS = -static -Wl,-rpath -Wl,$(TCL_PREFIX)/lib \
+	-Wl,-rpath -Wl,$(IBDM_PREFIX)/lib 
+endif
 
 ibmssh_LDADD = -libmscli $(IBDM_LIB) $(OSM_LDFLAGS) $(TCL_LIBS)
 
