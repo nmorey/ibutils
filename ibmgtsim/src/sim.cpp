@@ -263,7 +263,9 @@ int main(int argc, char **argv)
 		{	"topology",	     1,	NULL,	't'},
 		{	NULL,		0,	NULL,	 0 }	/* Required at the end of the array */
 	 };
-  
+
+  complib_init();
+
   printf("-----------------------------------------------------\n\n");
   printf("    Mellanox Technologies IB Management Simulator\n");
   printf("   -----------------------------------------------\n\n");
@@ -334,6 +336,8 @@ int main(int argc, char **argv)
   
   while (1) 
     sleep(1000);
+
+  complib_exit();
 
   return 0;
 }
