@@ -26,7 +26,7 @@
 #define SWIGTCL
 #define SWIGTCL8
 /*
- * $Header: /mswg/cvsroot/IBMgtSim/src/ibmssh_wrap.cpp,v 1.6 2005/07/07 21:15:28 eitan Exp $
+ * $Header: /b2/dmb/SWIG/SWIG1.0b3/swig_lib/tcl/RCS/swigtcl.cfg,v 1.1 1996/05/22 19:47:45 beazley Exp $
  * 
  * swigtcl.cfg
  *
@@ -35,10 +35,7 @@
  * files to work on Unix, Windows, and Macintosh.
  *
  * Revision History
- * $Log: ibmssh_wrap.cpp,v $
- * Revision 1.6  2005/07/07 21:15:28  eitan
- * Spelling fixes
- *
+ * $Log: swigtcl.cfg,v $
  * Revision 1.1  1996/05/22 19:47:45  beazley
  * Initial revision
  *
@@ -106,7 +103,7 @@ DllEntryPoint(HINSTANCE hInst, DWORD reason, LPVOID reserved)
 #endif
 
 /**************************************************************************
- * $Header: /mswg/cvsroot/IBMgtSim/src/ibmssh_wrap.cpp,v 1.6 2005/07/07 21:15:28 eitan Exp $
+ * $Header:$
  *
  * tcl8ptr.swg
  *
@@ -552,6 +549,7 @@ static int  _wrap_const_FABU_LOG_VERBOSE = 0x4;
 #include <getopt.h>
 #include <inttypes.h>
 #include <ibdm/Fabric.h>
+#include <complib/cl_debug.h>
 #include <errno.h>
 #include "sim.h"
 #include "node.h"
@@ -26924,6 +26922,9 @@ SWIGEXPORT(int,Ibdm_Init)(Tcl_Interp *interp) {
   /* mixing declarations .... */
   {
 	 Tcl_PkgProvide(interp,"ibms", "1.0");	 
+
+    /* we use static linking with complib so init just in case */
+    complib_init();
 
 	 // Register the objects for alternate mangling
     SWIG_AlternateObjMangling["_IBMSNode_p"] = &ibmsGetSimNodeTclNameByPtr;

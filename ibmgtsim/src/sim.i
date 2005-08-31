@@ -53,6 +53,7 @@
 #include <getopt.h>
 #include <inttypes.h>
 #include <ibdm/Fabric.h>
+#include <complib/cl_debug.h>
 #include <errno.h>
 #include "sim.h"
 #include "node.h"
@@ -468,6 +469,9 @@ class IBMSNode {
   /* mixing declarations .... */
   {
 	 Tcl_PkgProvide(interp,"ibms", "1.0");	 
+
+    /* we use static linking with complib so init just in case */
+    complib_init();
 
 	 // Register the objects for alternate mangling
     SWIG_AlternateObjMangling["_IBMSNode_p"] = &ibmsGetSimNodeTclNameByPtr;
