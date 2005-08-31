@@ -55,7 +55,7 @@ find . \( -name Makefile.in -o -name aclocal.m4 -o -name autom4te.cache -o -name
 
 # handle our own autoconf:
 aclocal -I config 2>&1 |  grep -v "arning: underquoted definition of"
-automake --add-missing --gnu 
+automake --add-missing --gnu --copy --force
 autoconf
 
 # visit all sub directories with autogen.sh    

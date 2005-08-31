@@ -52,6 +52,6 @@ if [[ $lt_maj = 1 && $lt_min = 4 && $lt_sub < 2 ]]; then
 fi
 
 aclocal -I config 2>&1 |  grep -v "arning: underquoted definition of"
-libtoolize --automake
-automake --add-missing --gnu
+libtoolize --automake --copy 
+automake --add-missing --gnu --copy --force
 autoconf
