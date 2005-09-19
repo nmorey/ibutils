@@ -90,20 +90,23 @@ if test $OSM_BUILD = openib; then
    if test -L $with_osm/lib/libosmvendor_gen1.so; then
       OSM_VENDOR=ts
       osm_vendor_sel="-DOSM_VENDOR_INTF_TS"
+      OSM_LDFLAGS="$OSM_LDFLAGS -lopensm -losmvendor -losmcomp"
    elif test -L $with_osm/lib/libosmvendor_mtl.so; then
       OSM_VENDOR=mtl
       osm_vendor_sel="-DOSM_VENDOR_INTF_MTL"
+      OSM_LDFLAGS="$OSM_LDFLAGS -lopensm -losmvendor -losmcomp"
    elif test -L $with_osm/lib/libosmvendor_sim.so; then
       OSM_VENDOR=sim
       osm_vendor_sel="-DOSM_VENDOR_INTF_SIM"
+      OSM_LDFLAGS="$OSM_LDFLAGS -lopensm -losmvendor -losmcomp"
    elif test -L $with_osm/lib/libopensm.so; then
       OSM_VENDOR=openib
       osm_vendor_sel="-DOSM_VENDOR_INTF_OPENIB "
+      OSM_LDFLAGS="$OSM_LDFLAGS -lopensm -losmvendor -losmcomp -libumad -libcommon"
    else
       AC_MSG_ERROR([OSM: Fail to recognize vendor type])
    fi
    osm_vendor_sel="$osm_vendor_sel -DOSM_BUILD_OPENIB"
-   OSM_LDFLAGS="$OSM_LDFLAGS -lopensm -losmvendor -losmcomp"
 else
    # we are in gen1 build
    osm_include_dir="$with_osm/include"
