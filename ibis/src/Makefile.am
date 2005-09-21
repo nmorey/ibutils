@@ -41,8 +41,8 @@ else
 DBG = -O2 -Wall
 endif
 
-AM_CFLAGS = -I$(top_srcdir)/datamodel $(TCL_CPPFLAGS) $(OSM_CFLAGS) $(DBG) -fno-strict-aliasing
-AM_CXXFLAGS = -I$(top_srcdir)/datamodel $(TCL_CPPFLAGS) $(OSM_CFLAGS) $(DBG) -fno-strict-aliasing
+AM_CFLAGS = $(TCL_CPPFLAGS) $(OSM_CFLAGS) $(DBG) -fno-strict-aliasing -fPIC
+AM_CXXFLAGS = $(TCL_CPPFLAGS) $(OSM_CFLAGS) $(DBG) -fno-strict-aliasing -fPIC
 
 # ibis shared library version triplet is:
 # API_ID:API_VER:NUM_PREV_API_SUP = x:y:z
