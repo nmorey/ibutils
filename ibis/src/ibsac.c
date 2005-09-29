@@ -366,7 +366,7 @@ ibsac_query( IN ibis_t *   const p_ibis,
   req.query_context = p_context;
   req.pfn_query_cb = ibsac_query_res_cb;
   req.p_query_input = &user;
-  req.sm_key = 0;
+  req.sm_key = cl_ntoh64(p_ibis->p_opt->sm_key);
 
   *result_count = 0;
   *pp_result_madw = p_context->result.p_result_madw = NULL;

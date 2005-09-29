@@ -176,7 +176,7 @@ ibisp_is_debug(void)
   ibis_t    IbisObj;
   static ibis_opt_t  *ibis_opt_p;
   ibis_opt_t IbisOpts;
-
+  
   /* initialize the ibis object - is not done during init so we 
      can play with the options ... */
   int ibis_ui_init(void) 
@@ -465,6 +465,12 @@ typedef struct _ibis_opt {
   /* The log levels to be used */
   char log_file[1024]; 
   /* The name of the log file used (read only) */
+  uint64_t sm_key;
+  /* The SM_Key to be used when sending SubnetMgt and SubnetAdmin MADs */
+  uint64_t m_key;
+  /* The M_Key to be used when sending SubnetMgt */
+  uint64_t v_key;
+  /* The Vendor Key to be used when sending Vendor Specific MADs. */
 } ibis_opt_t;
 
 %name(ibis_init) int ibis_ui_init();
@@ -516,6 +522,9 @@ ibis_get_local_ports_info
       IbisOpts.transaction_timeout = 4*OSM_DEFAULT_TRANS_TIMEOUT_MILLISEC;
       IbisOpts.single_thread = TRUE;
       IbisOpts.force_log_flush = TRUE;
+      IbisOpts.sm_key = 0;
+      IbisOpts.m_key = 0;
+      IbisOpts.v_key = 0;
       IbisOpts.log_flags = OSM_LOG_ERROR;
       strcpy(IbisOpts.log_file,"/tmp/ibis.log");
 
@@ -784,7 +793,39 @@ ibis_get_local_ports_info
 
 
 	 Tcl_PkgProvide(interp,"ibis", "1.0");	 
-    
+
+    /*
+      use an embedded Tcl code for doing init if given command line 
+      parameters: -port_num <port num> 
+    */
+    Tcl_GlobalEval(
+      interp,
+      "if {[file tail $argv0] == \"ibis\"} {\n"
+      " set _ibis_port_num_arg_idx [lsearch $argv -port_num]\n"
+      " if {$_ibis_port_num_arg_idx >= 0} {\n"
+      "  if {[llength $argv] < $_ibis_port_num_arg_idx + 2} {\n"
+      "    puts {ibis given -port_num with no actual port number argument}\n"
+      "  } else { \n"
+      "    set _ibis_port_num [lindex $argv [expr $_ibis_port_num_arg_idx + 1]]\n"
+      "    set argv [lreplace $argv $_ibis_port_num_arg_idx [expr $_ibis_port_num_arg_idx + 1]]\n"
+      "    ibis_init\n"
+      "    set _ibis_all_ports [ibis_get_local_ports_info]\n"
+      "    set first_port_idx [lsearch -all $_ibis_all_ports [lindex $_ibis_all_ports 0]]\n"
+      "    if {[llength $first_port_idx] > 1} {\n"
+      "      set _ibis_port_info [lindex $_ibis_all_ports $_ibis_port_num]\n"
+      "    } else {\n"
+      "      set _ibis_port_info [lindex $_ibis_all_ports [expr $_ibis_port_num - 1]]\n"
+      "    }\n"
+      "    if {[lindex $_ibis_port_info 2] != \"ACTIVE\"} {\n"
+      "       puts \"Port $_ibis_port_num is not ACTIVE: $_ibis_port_info\"\n"
+      "       exit 1\n"
+      "    } else { \n"
+      "       ibis_set_port [lindex $_ibis_port_info 0]\n"
+      "       puts \"Port set to:[lindex $_ibis_port_info 0]\"\n"
+      "    }\n"
+      "  }\n"
+      " }\n"
+      "}\n");
   }
 %}
   

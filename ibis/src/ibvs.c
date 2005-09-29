@@ -234,8 +234,6 @@ __ibvs_init_mad_hdr(
   ((ib_mad_t *)p_madw->p_mad)->attr_id = cl_hton16(attr_id);
   ((ib_mad_t *)p_madw->p_mad)->attr_mod = cl_hton32(attr_mod);
   ((ib_mad_t *)p_madw->p_mad)->trans_id = ibis_get_tid();
-
-  ((ib_vs_t *)p_madw->p_mad)->vendor_key = 0;
 }
 
 /**********************************************************************
@@ -280,6 +278,7 @@ __ibvs_prep_ext_port_access_mad(
   *pp_madw = p_madw;
 
   __ibvs_init_mad_hdr(method, VS_EXT_PORT_ACCESS, ext_port, p_madw);
+  ((ib_vs_t *)p_madw->p_mad)->vendor_key = cl_hton64(IbisObj.p_opt->v_key);
 
   if (ext_port == EXT_CPU_PORT)
   {
@@ -756,6 +755,7 @@ __ibvs_prep_sw_reset_mad(
   *pp_madw = p_madw;
 
   __ibvs_init_mad_hdr(method, VS_DEVICE_SOFT_RESET, 0, p_madw);
+  ((ib_vs_t *)p_madw->p_mad)->vendor_key = cl_hton64(IbisObj.p_opt->v_key);
 
   OSM_LOG_EXIT(&(IbisObj.log));
 }
@@ -854,6 +854,7 @@ __ibvs_prep_flash_access_mad(
   *pp_madw = p_madw;
 
   __ibvs_init_mad_hdr(method, attr_id, attr_mod, p_madw);
+  ((ib_vs_t *)p_madw->p_mad)->vendor_key = cl_hton64(IbisObj.p_opt->v_key);
 
   ((ib_vs_flash_t *)p_madw->p_mad)->size = cl_hton32(size);
   ((ib_vs_flash_t *)p_madw->p_mad)->offset = cl_hton32(address);

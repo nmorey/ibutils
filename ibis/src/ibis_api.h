@@ -485,30 +485,46 @@ ibis_gsi_send_sync_mad_batch(
 */
 typedef struct _ibis_opt
 {
-  uint32_t          transaction_timeout; /* The maximal time for a GetResp to be waited on before retry (100ms). */
-  boolean_t         single_thread; /* run single threaded */
-  boolean_t         force_log_flush; /* If TRUE - forces flash after each log message (TRUE). */
-  osm_log_level_t   log_flags; /* The log levels to be used */
+  uint32_t          transaction_timeout; 
+  boolean_t         single_thread; 
+  boolean_t         force_log_flush; 
+  osm_log_level_t   log_flags; 
   char              log_file[1024];
+  uint64_t          sm_key;
+  uint64_t          m_key;
+  uint64_t          v_key;
 } ibis_opt_t;
-
 /*
  * FIELDS
  *
  * transaction_timeout
  *   Transaction timeout before retry in msec
  * 
- * retry_count
- *   Max number of retries before MAD transaction failure.
+ * single_thread
+ *   Control the number of dispatcher threads to be created. If set to TRUE only
+ *   one thread will be used. The dispatcher threads pull MADs from the incomming 
+ *   MADs FIFO and invoke the appropriate callback for handling the MAD.
+ * 
+ * force_log_flush
+ *   Forces log file flush every logged event.
  *
-* force_log_flush
-*   Forces log file flush every logged event.
-*
-* log_file
-*   The name of the log file to be used.
-*
-* SEE ALSO
-*********/
+ * log_flags 
+ *    The log levels to be used 
+ *
+ * log_file
+ *   The name of the log file to be used.
+ *
+ * sm_key 
+ *   The SM_Key to be used when sending SubnetMgt and SubnetAdmin MADs
+ * 
+ * m_key 
+ *   The M_Key to be used when sending SubnetMgt
+ *  
+ * v_key 
+ *   The Vendor Key to be used when sending Vendor Specific MADs.
+ * 
+ * SEE ALSO
+ *********/
 
 /****s* IBIS/ibis_t
  * NAME

@@ -335,7 +335,7 @@ ibsm_send_mad_by_dr(
     cl_hton16(attr),
     cl_hton32(mod),
     dr->count,
-    0, /* mkey */
+    cl_hton64(IbisObj.p_opt->m_key), /* mkey */
     dr->path,
     0xffff,
     0xffff);

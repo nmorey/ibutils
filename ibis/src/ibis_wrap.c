@@ -2702,7 +2702,7 @@ typedef struct {
   ibis_t    IbisObj;
   static ibis_opt_t  *ibis_opt_p;
   ibis_opt_t IbisOpts;
-
+  
   /* initialize the ibis object - is not done during init so we 
      can play with the options ... */
   int ibis_ui_init(void) 
@@ -56510,6 +56510,192 @@ static int _wrap_ibis_opt_t_log_file_get(ClientData clientData, Tcl_Interp *inte
     Tcl_SetStringObj(tcl_result,_result,-1);
     return TCL_OK;
 }
+#define _ibis_opt_sm_key_set(_swigobj,_swigval) (_swigobj->sm_key = *(_swigval),_swigval)
+static int _wrap_ibis_opt_t_sm_key_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint64_t * _result;
+    ibis_opt_t * _arg0;
+    uint64_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint64_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ibis_opt_t_sm_key_set { ibis_opt_t * } { uint64_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ibis_opt_t_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ibis_opt_t_sm_key_set. Expected _ibis_opt_t_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = strtoull(Tcl_GetStringFromObj(objv[2],NULL), NULL,16);
+  _arg1 = &temp;
+}
+    _result = (uint64_t *)_ibis_opt_sm_key_set(_arg0,_arg1);
+    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "0x%016" PRIx64, *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ibis_opt_sm_key_get(_swigobj) (&_swigobj->sm_key)
+static int _wrap_ibis_opt_t_sm_key_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint64_t * _result;
+    ibis_opt_t * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ibis_opt_t_sm_key_get { ibis_opt_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ibis_opt_t_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ibis_opt_t_sm_key_get. Expected _ibis_opt_t_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+    _result = (uint64_t *)_ibis_opt_sm_key_get(_arg0);
+    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "0x%016" PRIx64, *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ibis_opt_m_key_set(_swigobj,_swigval) (_swigobj->m_key = *(_swigval),_swigval)
+static int _wrap_ibis_opt_t_m_key_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint64_t * _result;
+    ibis_opt_t * _arg0;
+    uint64_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint64_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ibis_opt_t_m_key_set { ibis_opt_t * } { uint64_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ibis_opt_t_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ibis_opt_t_m_key_set. Expected _ibis_opt_t_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = strtoull(Tcl_GetStringFromObj(objv[2],NULL), NULL,16);
+  _arg1 = &temp;
+}
+    _result = (uint64_t *)_ibis_opt_m_key_set(_arg0,_arg1);
+    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "0x%016" PRIx64, *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ibis_opt_m_key_get(_swigobj) (&_swigobj->m_key)
+static int _wrap_ibis_opt_t_m_key_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint64_t * _result;
+    ibis_opt_t * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ibis_opt_t_m_key_get { ibis_opt_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ibis_opt_t_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ibis_opt_t_m_key_get. Expected _ibis_opt_t_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+    _result = (uint64_t *)_ibis_opt_m_key_get(_arg0);
+    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "0x%016" PRIx64, *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ibis_opt_v_key_set(_swigobj,_swigval) (_swigobj->v_key = *(_swigval),_swigval)
+static int _wrap_ibis_opt_t_v_key_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint64_t * _result;
+    ibis_opt_t * _arg0;
+    uint64_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint64_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ibis_opt_t_v_key_set { ibis_opt_t * } { uint64_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ibis_opt_t_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ibis_opt_t_v_key_set. Expected _ibis_opt_t_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = strtoull(Tcl_GetStringFromObj(objv[2],NULL), NULL,16);
+  _arg1 = &temp;
+}
+    _result = (uint64_t *)_ibis_opt_v_key_set(_arg0,_arg1);
+    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "0x%016" PRIx64, *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ibis_opt_v_key_get(_swigobj) (&_swigobj->v_key)
+static int _wrap_ibis_opt_t_v_key_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint64_t * _result;
+    ibis_opt_t * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ibis_opt_t_v_key_get { ibis_opt_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ibis_opt_t_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ibis_opt_t_v_key_get. Expected _ibis_opt_t_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+    _result = (uint64_t *)_ibis_opt_v_key_get(_arg0);
+    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "0x%016" PRIx64, *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
 /* methodcmd8.swg : Tcl8.x method invocation */
 
 static int Tclibis_opt_tMethodCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST _objv[]) {
@@ -56546,6 +56732,12 @@ static int Tclibis_opt_tMethodCmd(ClientData clientData, Tcl_Interp *interp, int
                     cmd = _wrap_ibis_opt_t_log_flags_set;
                 }  else if (strcmp(_str,"-log_file") == 0) {
                     cmd = _wrap_ibis_opt_t_log_file_set;
+                }  else if (strcmp(_str,"-sm_key") == 0) {
+                    cmd = _wrap_ibis_opt_t_sm_key_set;
+                }  else if (strcmp(_str,"-m_key") == 0) {
+                    cmd = _wrap_ibis_opt_t_m_key_set;
+                }  else if (strcmp(_str,"-v_key") == 0) {
+                    cmd = _wrap_ibis_opt_t_v_key_set;
                 } 
           if (cmd) {
             oldarg = objv[i];
@@ -56555,13 +56747,13 @@ static int Tclibis_opt_tMethodCmd(ClientData clientData, Tcl_Interp *interp, int
             if (rcode == TCL_ERROR) return rcode;
             cmd = 0;
           } else {
-            Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be { -single_thread -force_log_flush -log_flags -log_file  }",-1);
+            Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be { -single_thread -force_log_flush -log_flags -log_file -sm_key -m_key -v_key  }",-1);
             return TCL_ERROR;
           }
         i+=2;
       }
       if ((i < objc) || (i == 2)) {
-        Tcl_SetStringObj(tcl_result,"{ -single_thread -force_log_flush -log_flags -log_file  }",-1);
+        Tcl_SetStringObj(tcl_result,"{ -single_thread -force_log_flush -log_flags -log_file -sm_key -m_key -v_key  }",-1);
         return TCL_ERROR;
       }
       return TCL_OK;
@@ -56577,6 +56769,12 @@ static int Tclibis_opt_tMethodCmd(ClientData clientData, Tcl_Interp *interp, int
                     cmd = _wrap_ibis_opt_t_log_flags_get;
                 }  else if (strcmp(_str,"-log_file") == 0) {
                     cmd = _wrap_ibis_opt_t_log_file_get;
+                }  else if (strcmp(_str,"-sm_key") == 0) {
+                    cmd = _wrap_ibis_opt_t_sm_key_get;
+                }  else if (strcmp(_str,"-m_key") == 0) {
+                    cmd = _wrap_ibis_opt_t_m_key_get;
+                }  else if (strcmp(_str,"-v_key") == 0) {
+                    cmd = _wrap_ibis_opt_t_v_key_get;
                 } 
           else if (strcmp(_str,"-this") == 0) {
             SWIG_SetPointerObj(tcl_result,(void *) clientData, "_ibis_opt_t_p");
@@ -56589,11 +56787,11 @@ static int Tclibis_opt_tMethodCmd(ClientData clientData, Tcl_Interp *interp, int
           objv[2] = oldarg;
           return rcode;
         } else {
-          Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this -single_thread -force_log_flush -log_flags -log_file  }",-1);
+          Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this -single_thread -force_log_flush -log_flags -log_file -sm_key -m_key -v_key  }",-1);
           return TCL_ERROR;
         }
       } else {
-        Tcl_SetStringObj(tcl_result,"{ -this -single_thread -force_log_flush -log_flags -log_file  }", -1);
+        Tcl_SetStringObj(tcl_result,"{ -this -single_thread -force_log_flush -log_flags -log_file -sm_key -m_key -v_key  }", -1);
         return TCL_ERROR;
       }
     } else if ((c == 'd') && (strncmp(_str,"dump",length) == 0) && (length >= 2)) {
@@ -56628,6 +56826,27 @@ static int Tclibis_opt_tMethodCmd(ClientData clientData, Tcl_Interp *interp, int
         rcode = (*cmd)(clientData,interp,objc,&objv[1]);
         objv[2] = oldarg;
         Tcl_AppendStringsToObj(pDumpObj, "-log_file ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ibis_opt_t_sm_key_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-sm_key ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ibis_opt_t_m_key_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-m_key ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ibis_opt_t_v_key_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-v_key ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
         Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
 
         Tcl_DecrRefCount(pDumpObj);
@@ -56983,6 +57202,9 @@ SWIGEXPORT(int,Ibis_Init)(Tcl_Interp *interp) {
       IbisOpts.transaction_timeout = 4*OSM_DEFAULT_TRANS_TIMEOUT_MILLISEC;
       IbisOpts.single_thread = TRUE;
       IbisOpts.force_log_flush = TRUE;
+      IbisOpts.sm_key = 0;
+      IbisOpts.m_key = 0;
+      IbisOpts.v_key = 0;
       IbisOpts.log_flags = OSM_LOG_ERROR;
       strcpy(IbisOpts.log_file,"/tmp/ibis.log");
 
@@ -57251,7 +57473,39 @@ SWIGEXPORT(int,Ibis_Init)(Tcl_Interp *interp) {
 
 
 	 Tcl_PkgProvide(interp,"ibis", "1.0");	 
-    
+
+    /*
+      use an embedded Tcl code for doing init if given command line 
+      parameters: -port_num <port num> 
+    */
+    Tcl_GlobalEval(
+      interp,
+      "if {[file tail $argv0] == \"ibis\"} {\n"
+      " set _ibis_port_num_arg_idx [lsearch $argv -port_num]\n"
+      " if {$_ibis_port_num_arg_idx >= 0} {\n"
+      "  if {[llength $argv] < $_ibis_port_num_arg_idx + 2} {\n"
+      "    puts {ibis given -port_num with no actual port number argument}\n"
+      "  } else { \n"
+      "    set _ibis_port_num [lindex $argv [expr $_ibis_port_num_arg_idx + 1]]\n"
+      "    set argv [lreplace $argv $_ibis_port_num_arg_idx [expr $_ibis_port_num_arg_idx + 1]]\n"
+      "    ibis_init\n"
+      "    set _ibis_all_ports [ibis_get_local_ports_info]\n"
+      "    set first_port_idx [lsearch -all $_ibis_all_ports [lindex $_ibis_all_ports 0]]\n"
+      "    if {[llength $first_port_idx] > 1} {\n"
+      "      set _ibis_port_info [lindex $_ibis_all_ports $_ibis_port_num]\n"
+      "    } else {\n"
+      "      set _ibis_port_info [lindex $_ibis_all_ports [expr $_ibis_port_num - 1]]\n"
+      "    }\n"
+      "    if {[lindex $_ibis_port_info 2] != \"ACTIVE\"} {\n"
+      "       puts \"Port $_ibis_port_num is not ACTIVE: $_ibis_port_info\"\n"
+      "       exit 1\n"
+      "    } else { \n"
+      "       ibis_set_port [lindex $_ibis_port_info 0]\n"
+      "       puts \"Port set to:[lindex $_ibis_port_info 0]\"\n"
+      "    }\n"
+      "  }\n"
+      " }\n"
+      "}\n");
   }
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "sacNodeInfo_base_version_set", _wrap_sacNodeInfo_base_version_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "sacNodeInfo_base_version_get", _wrap_sacNodeInfo_base_version_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
@@ -57979,6 +58233,12 @@ SWIGEXPORT(int,Ibis_Init)(Tcl_Interp *interp) {
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ibis_opt_t_log_flags_get", _wrap_ibis_opt_t_log_flags_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ibis_opt_t_log_file_set", _wrap_ibis_opt_t_log_file_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ibis_opt_t_log_file_get", _wrap_ibis_opt_t_log_file_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ibis_opt_t_sm_key_set", _wrap_ibis_opt_t_sm_key_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ibis_opt_t_sm_key_get", _wrap_ibis_opt_t_sm_key_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ibis_opt_t_m_key_set", _wrap_ibis_opt_t_m_key_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ibis_opt_t_m_key_get", _wrap_ibis_opt_t_m_key_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ibis_opt_t_v_key_set", _wrap_ibis_opt_t_v_key_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ibis_opt_t_v_key_get", _wrap_ibis_opt_t_v_key_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp,SWIG_prefix "ibis_opt_t",Tclibis_opt_tCmd, (ClientData) NULL, NULL);
 /*
  * These are the pointer type-equivalency mappings. 
