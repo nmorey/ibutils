@@ -70,6 +70,10 @@ while [ "$1" ]; do
           IBDM_PREFIX=$2
           shift
           ;;
+    "--with-tclsh")
+          TCLSH=$2
+          shift
+          ;;
     "--with-osm")
           OSM_PREFIX=$2
           shift
@@ -78,12 +82,13 @@ while [ "$1" ]; do
           NO_BAR=1
           ;;
     *)
-     echo "Usage: $0 [--prefix <dir>][--with-osm <dir>][--with-ibdm <dir>][--batch]"
+     echo "Usage: $0 [--prefix <dir>][--with-osm <dir>][--with-ibdm <dir>][--with-tclsh <path>][--batch]"
      echo ""
      echo "Options:"
      echo "   --prefix <dir> : place bin/lib/include into <dir>"
      echo "   --with-osm <dir> : use this OpenSM installation dir"
      echo "   --with-ibdm <dir>: use this IBDM installation dir"
+     echo "   --with-tclsh <path>: use this tclsh executable (should be linked with g++)"
      echo "   --batch option : do not use progress bar"
      exit 1
   esac
@@ -139,12 +144,17 @@ if test ! -z $IBDM_PREFIX; then
     cfg="$cfg --with-ibdm=$IBDM_PREFIX"
 fi
 
-# prefer the local tcl installation if available:
-local_tclsh=/mswg/projects/ibadm/BINS/`uname -m`/bin/tclsh8.4
-if test -f $local_tclsh; then
-    echo " Using tclsh from:$local_tclsh"
-    cfg="$cfg --with-tclsh=$local_tclsh"
-fi
+if test -z $TCLSH; then
+ # prefer the local tcl installation if available:
+ local_tclsh=/mswg/projects/ibadm/BINS/`uname -m`/bin/tclsh8.4
+ if test -f $local_tclsh; then
+     echo " Using tclsh from:$local_tclsh"
+     cfg="$cfg --with-tclsh=$local_tclsh"
+ fi
+else
+ echo " Using tclsh from:$TCLSH"
+ cfg="$cfg --with-tclsh=$TCLSH"
+fi 
 
 eval $cfg >> $CFGLOG 2>&1 &
 config_pid=$!
