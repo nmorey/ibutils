@@ -107,7 +107,11 @@ ibis_init(
   ibis_construct();
   cl_mem_display();
   status = osm_log_init( &(IbisObj.log),
-                         p_opt->force_log_flush,0x01, p_opt->log_file );
+                         p_opt->force_log_flush,0x01, p_opt->log_file 
+#ifdef OSM_BUILD_OPENIB
+                         , FALSE /* do not accumulate log ... */
+#endif
+                         );
   if( status != IB_SUCCESS )
     return ( status ); // no log ....
 
