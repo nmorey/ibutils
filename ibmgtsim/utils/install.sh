@@ -130,8 +130,10 @@ cp ${PACKAGE_DIR}/LICENSE.txt ${IBMGTSIMHOME}/
 
 echo ""
 echo ""
-
 echo "This installation installs the IBMgtSim components into $PREFIX"
+
+echo " Removing possible previous installations ..."
+$PACKAGE_ORIG_DIR/uninstall.sh 2>&1 > /dev/null
 
 cd $IBMGTSIMHOME
 export PATH=$PATH:${PACKAGE_DIR}

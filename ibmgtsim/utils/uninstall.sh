@@ -20,6 +20,7 @@
 #
 
 function cleanup_ibmgtsim_files() {
+    local PREFIX=$1
     # Clean old distribution
     binApps="IBMgtSim  ibmsquit  ibmssh  mkSimNodeDir  RunSimTest"
 
@@ -48,7 +49,6 @@ function cleanup_ibmgtsim_files() {
     done
 }
 
-PREFIX=/usr
 NO_BAR=0
 
 # parse parameters
@@ -57,6 +57,7 @@ while [ "$1" ]; do
   case $1 in
     "--prefix") 
           PREFIX=$2
+          cleanup_ibmgtsim_files $2
           shift
           ;;
     *)
@@ -69,4 +70,10 @@ while [ "$1" ]; do
   shift
 done
 
-cleanup_ibmgtsim_files
+if test -f /usr/bin/ibmssh || test -L /usr/bin/ibmssh; then
+   cleanup_ibmgtsim_files /usr
+fi
+
+if test -f /usr/local/bin/ibmssh || test -L /usr/local/bin/ibmssh; then
+   cleanup_ibmgtsim_files /usr/local
+fi
