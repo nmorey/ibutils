@@ -164,8 +164,7 @@ string msgManager::msg2string(
 
     return res;
   }
-  else
-    return "";
+  return "";
 }
 
 // get number of outstanding messages of the given severity
