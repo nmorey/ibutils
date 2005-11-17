@@ -131,6 +131,6 @@ EXTRA_DIST = swig_alternate_mangling.cpp fixSwigWrapper pkgIndex.tcl
 
 # this actually over write the lib install
 install-exec-am: install-binPROGRAMS 
-	mkdir -p $(libdir)/ibdm$(VERSION)
-	cp .libs/libibdm.so.$(LIB_FILE_TRIPLET) $(libdir)/ibdm$(VERSION)/libibdm.so.$(VERSION)
-	cp $(srcdir)/pkgIndex.tcl $(libdir)/ibdm$(VERSION)/pkgIndex.tcl
+	mkdir -p $(DESTDIR)/$(libdir)/ibdm$(VERSION)
+	cp .libs/libibdm.so.$(LIB_FILE_TRIPLET) $(DESTDIR)/$(libdir)/ibdm$(VERSION)/libibdm.so.$(VERSION)
+	cp $(srcdir)/pkgIndex.tcl $(DESTDIR)/$(libdir)/ibdm$(VERSION)/pkgIndex.tcl
