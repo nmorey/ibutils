@@ -128,7 +128,7 @@ install-libLTLIBRARIES:
 
 # this actually over write the lib install
 install-exec-am: install-binPROGRAMS 
-	mkdir -p $(libdir)/ibis$(VERSION)
-	cp .libs/libibis.so.$(LIB_FILE_TRIPLET) $(libdir)/ibis$(VERSION)/libibis.so.$(VERSION)
-	sed 's/%VERSION%/'$(VERSION)'/' $(srcdir)/pkgIndex.tcl > $(libdir)/ibis$(VERSION)/pkgIndex.tcl
+	mkdir -p $(DESTDIR)/$(libdir)/ibis$(VERSION)
+	cp .libs/libibis.so.$(LIB_FILE_TRIPLET) $(DESTDIR)/$(libdir)/ibis$(VERSION)/libibis.so.$(VERSION)
+	sed 's/%VERSION%/'$(VERSION)'/' $(srcdir)/pkgIndex.tcl > $(DESTDIR)/$(libdir)/ibis$(VERSION)/pkgIndex.tcl
 
