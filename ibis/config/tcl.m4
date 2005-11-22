@@ -41,7 +41,7 @@ AC_ARG_WITH(tcl,      [  --with-tcl=PATH         use Tcl from PATH],
 	TclLibBase="${withval}/lib")
 AC_ARG_WITH(tclsh,    [  --with-tclsh=TCLSH      use TCLSH as the tclsh program
                           (let configure find Tcl using this program)],
-	TCLSH="${withval}",with_tclsh=/usr/local/bin/tclsh)
+	TCLSH="${withval}",TCLSH=/usr/local/bin/tclsh)
 
 if test "x$TCLSH" = "xno" -o "x$with_tclconfig" = "xno" ; then
   AC_MSG_WARN([Tcl disabled because tclsh or tclconfig specified as "no"])
@@ -49,6 +49,8 @@ if test "x$TCLSH" = "xno" -o "x$with_tclconfig" = "xno" ; then
 fi
 
 if test "x$with_tcl" != xno; then
+  AC_MSG_NOTICE(TCL: using with_tclsh = $TCLSH)
+   
   if test \! -z "$with_tclconfig" -a \! -d "$with_tclconfig" ; then
     AC_MSG_ERROR([--with-tclconfig requires a directory argument.])
   fi
@@ -59,7 +61,7 @@ if test "x$with_tcl" != xno; then
 
   if test X"$TclLibBase" = X; then # do we already know?
     # No? Run tclsh and ask it where it lives.
-
+   
     # Do we know where a tclsh lives?
     if test X"$TCLSH" = X; then
       # Try and find tclsh.  Any tclsh.
@@ -77,7 +79,7 @@ if test "x$with_tcl" != xno; then
       echo "puts \$tcl_library" > /tmp/tcl.conf.$$
       TclLibBase=`${TCLSH} /tmp/tcl.conf.$$ | sed -e 's,[^/]*$,,'`
       rm /tmp/tcl.conf.$$
-       AC_MSG_RESULT($TclLibBase)
+      AC_MSG_RESULT($TclLibBase)
     fi
   fi
 
@@ -150,7 +152,7 @@ if test "x$with_tcl" != xno; then
     if test "X${with_tcl}" != Xno; then
       dnl TCL_LIBS="${TK_LIB_SPEC} ${TK_XLIBSW} ${TCL_LD_SEARCH_FLAGS} ${TCL_LIB_SPEC}"
       dnl we are using libtool so need to convert to -rpath if at all
-      TCL_SEARCH=`echo ${TCL_LD_SEARCH_FLAGS} | sed 's/-Wl,-rpath,/-rpath/'`
+      TCL_RPATH="-rpath ${TCL_PREFIX}/lib"
 
       dnl sometimes we got empty libs: use TCL_LIB_FILE
       if test X"$TCL_LIBS" = X; then
@@ -164,7 +166,7 @@ if test "x$with_tcl" != xno; then
         TCL_LIB_SPEC='-L/usr/lib'
       fi
 
-      TCL_LIBS1="${TCL_LIB_SPEC} ${TCL_LIBS}"
+      TCL_LIBS1="${TCL_LIB_SPEC} ${TCL_LIBS} ${TCL_RPATH}"
       dnl Filter out the ieee - I do not see a shared version for it.
       TCL_LIBS=`echo ${TCL_LIBS1} | sed 's/-lieee//'`
     fi
