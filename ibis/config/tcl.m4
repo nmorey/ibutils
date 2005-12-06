@@ -41,13 +41,22 @@ AC_ARG_WITH(tcl,      [  --with-tcl=PATH         use Tcl from PATH],
 	TclLibBase="${withval}/lib")
 AC_ARG_WITH(tclsh,    [  --with-tclsh=TCLSH      use TCLSH as the tclsh program
                           (let configure find Tcl using this program)],
-	TCLSH="${withval}",TCLSH=/usr/local/bin/tclsh)
+	TCLSH="${withval}",[])
 
 if test "x$TCLSH" = "xno" -o "x$with_tclconfig" = "xno" ; then
   AC_MSG_WARN([Tcl disabled because tclsh or tclconfig specified as "no"])
   with_tcl=no
 fi
 
+dnl if not defined try to find TCLSH in regular places:
+if test -z $TCLSH; then
+  if test -x /usr/local/bin/tclsh8.4; then
+     TCLSH=/usr/local/bin/tclsh8.4
+  elif test -x /usr/bin/tclsh8.4; then
+     TCLSH=/usr/bin/tclsh8.4
+  fi
+fi
+  
 if test "x$with_tcl" != xno; then
   AC_MSG_NOTICE(TCL: using with_tclsh = $TCLSH)
    
