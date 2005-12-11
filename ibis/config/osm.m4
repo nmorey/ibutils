@@ -85,7 +85,7 @@ else
 fi
 AC_MSG_NOTICE(OSM: build type $OSM_BUILD)
 
-OSM_LDFLAGS="-Wl,-rpath -Wl,$prefix/$osm_lib_dir -Wl,-rpath -Wl,$with_osm/$osm_lib_dir -L$with_osm/$osm_lib_dir"
+OSM_LDFLAGS="-Wl,-rpath -Wl,$with_osm/$osm_lib_dir -L$with_osm/$osm_lib_dir"
 dnl based on the with_osm dir and the libs available 
 dnl we can try and decide what vendor was used:
 if test $OSM_BUILD = openib; then
