@@ -59,10 +59,11 @@ libibiscom_la_SOURCES = ibbbm.c ibcr.c	ibis.c ibis_gsi_mad_ctrl.c \
 	ibpm.c ibsac.c ibsm.c ibvs.c
 
 # client library to be used by IBIS TCL package:
-libibis_la_SOURCES = ibis_wrap.c 
+libibis_la_SOURCES = ibis_wrap.c ibbbm.c ibcr.c	ibis.c ibis_gsi_mad_ctrl.c \
+	ibpm.c ibsac.c ibsm.c ibvs.c
 
 libibis_la_LDFLAGS = -version-info $(LIB_VER_TRIPLET) -no-undefined  \
-	.libs/libibiscom.a $(OSM_LDFLAGS) $(TCL_LIBS)
+	 $(OSM_LDFLAGS) $(TCL_LIBS)
 
 bin_PROGRAMS = ibis
 
