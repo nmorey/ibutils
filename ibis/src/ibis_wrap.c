@@ -16913,7 +16913,7 @@ static int _wrap_sacPathRec_dgid_set(ClientData clientData, Tcl_Interp *interp, 
         return TCL_ERROR;
     }
 {
-  char buf[36];
+  char buf[40];
   char *p_prefix, *p_guid;
   char *str_token;
 
@@ -17059,7 +17059,7 @@ static int _wrap_sacPathRec_sgid_set(ClientData clientData, Tcl_Interp *interp, 
         return TCL_ERROR;
     }
 {
-  char buf[36];
+  char buf[40];
   char *p_prefix, *p_guid;
   char *str_token;
 
@@ -19625,7 +19625,7 @@ static int _wrap_sacMCMRec_mgid_set(ClientData clientData, Tcl_Interp *interp, i
         return TCL_ERROR;
     }
 {
-  char buf[36];
+  char buf[40];
   char *p_prefix, *p_guid;
   char *str_token;
 
@@ -19771,7 +19771,7 @@ static int _wrap_sacMCMRec_port_gid_set(ClientData clientData, Tcl_Interp *inter
         return TCL_ERROR;
     }
 {
-  char buf[36];
+  char buf[40];
   char *p_prefix, *p_guid;
   char *str_token;
 
@@ -22042,7 +22042,7 @@ static int _wrap_sacClassPortInfo_redir_gid_set(ClientData clientData, Tcl_Inter
         return TCL_ERROR;
     }
 {
-  char buf[36];
+  char buf[40];
   char *p_prefix, *p_guid;
   char *str_token;
 
@@ -22738,7 +22738,7 @@ static int _wrap_sacClassPortInfo_trap_gid_set(ClientData clientData, Tcl_Interp
         return TCL_ERROR;
     }
 {
-  char buf[36];
+  char buf[40];
   char *p_prefix, *p_guid;
   char *str_token;
 
@@ -23886,7 +23886,7 @@ static int _wrap_sacInformInfo_gid_set(ClientData clientData, Tcl_Interp *interp
         return TCL_ERROR;
     }
 {
-  char buf[36];
+  char buf[40];
   char *p_prefix, *p_guid;
   char *str_token;
 
@@ -27049,7 +27049,7 @@ static int _wrap_sacServiceRec_service_gid_set(ClientData clientData, Tcl_Interp
         return TCL_ERROR;
     }
 {
-  char buf[36];
+  char buf[40];
   char *p_prefix, *p_guid;
   char *str_token;
 
