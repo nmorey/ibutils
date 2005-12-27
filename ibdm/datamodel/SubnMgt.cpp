@@ -346,9 +346,9 @@ SubnMgtCalcMinHopTables (IBFabric *p_fabric) {
 
       // go over all lids found and get the min hop
       for (unsigned int i = 1; i <= p_fabric->maxLid; i += lidStep ) {
-        // please ignore non CA lids:
+        // please ignore non CA lids and ourselves
         IBPort *p_port = p_fabric->PortByLid[i];
-        if (p_port && p_port->p_node->type == IB_CA_NODE) {
+        if (p_port && (p_port->p_node->type == IB_CA_NODE) && (p_caPort != p_port)) {
           int minHops = p_node->getHops(NULL, i);
           if (IB_HOP_UNASSIGNED != minHops) {
             maxHopsHist[minHops]++;
@@ -372,7 +372,7 @@ SubnMgtCalcMinHopTables (IBFabric *p_fabric) {
   // print the histogram:
   cout << "---------------------- CA to CA : MIN HOP HISTOGRAM -----------------------" << endl;
   cout << "The number of CA pairs that are in each number of hops distance." << endl;
-  cout << "The data is based on topology only. Even before any routing is run.\n" << endl;
+  cout << "The data is based on topology only - even before any routing is run.\n" << endl;
   cout << "HOPS NUM-CA-CA-PAIRS" << endl;
   for (int b = 0; b <= maxHops ; b++) 
     if (maxHopsHist[b]) 
@@ -541,7 +541,7 @@ SubnMgtOsmEnhancedRoute(IBFabric *p_fabric) {
                   
       } // all port lids
     } // all lids
-         
+    
     // we want to get some histogram of subsriptions.
     for (unsigned int pn = 1; pn <= p_node->numPorts; pn++) {
       IBPort *p_port = p_node->getPort(pn);
@@ -555,7 +555,7 @@ SubnMgtOsmEnhancedRoute(IBFabric *p_fabric) {
       }
     }
   } // all nodes
-
+#if 0
   // print the histogram:
   cout << "----------------------- LINK SUBSCRIPTIONS HISTOGRAM ----------------------" << endl;
   cout << "Distribution of number of LIDs mapped to each switch out port. Note that " << endl;
@@ -566,7 +566,7 @@ SubnMgtOsmEnhancedRoute(IBFabric *p_fabric) {
     if (subscHist[b]) 
       cout << setw(7) << b << "   " << subscHist[b] << endl;
   cout << "---------------------------------------------------------------------------\n" << endl;
-  
+#endif 
   cout << "-I- Enhanced selection by Sys:" << numSelByOtherSys 
        << " Node:" << numSelByOtherNode
        << " Subscription:" << numSelByMinSubsc << endl;
@@ -689,6 +689,7 @@ SubnMgtOsmRoute(IBFabric *p_fabric) {
     }
   } // all nodes
 
+#if 0 // as we provide LFT based path count we do not need this 
   // print the histogram:
   cout << "----------------------- LINK SUBSCRIPTIONS HISTOGRAM ----------------------" << endl;
   cout << "Distribution of number of LIDs mapped to each switch out port. Note that " << endl;
@@ -699,6 +700,7 @@ SubnMgtOsmRoute(IBFabric *p_fabric) {
     if (subscHist[b]) 
       cout << setw(7) << b << "   " << subscHist[b] << endl;
   cout << "---------------------------------------------------------------------------\n" << endl;
+#endif
   
   return(0);
 }
@@ -1049,7 +1051,10 @@ SubnMgtVerifyAllCaToCaRoutes(IBFabric *p_fabric) {
     cout << "---------------------------------------------------------------------------\n" << endl;
   }
 
-  // report the link over subscription histogram
+  // report the link over subscription histogram and dump out the 
+  // num paths per switch out port
+  ofstream linkUsage("/tmp/ibdmchk.sw_out_port_num_paths");
+  linkUsage << "# NUM-PATHS PORT-NAME " << endl;
   vec_int linkSubscriptionHist(maxLinkSubscriptions + 1,0);
   for (map_pnode_vec_int::iterator nI = switchPathsPerOutPort.begin();
        nI !=  switchPathsPerOutPort.end();
@@ -1061,18 +1066,24 @@ SubnMgtVerifyAllCaToCaRoutes(IBFabric *p_fabric) {
       IBPort *p_port = p_node->getPort(pn);
       if (p_port && p_port->p_remotePort && 
           (p_port->p_remotePort->p_node->type == IB_SW_NODE))
+      {
+        linkUsage << setw(6) << ((*nI).second)[pn]  << " " << p_port->getName() << endl;
         linkSubscriptionHist[((*nI).second)[pn]]++;
+      }
     }
   }
-       
-  cout << "-------------- CA to CA : LINK OVER SUBSCRIPTION HISTOGRAM -----------------" << endl;
-  cout << "Number of subscriptions on every out port of every switch when considering" << endl;
-  cout << "all the CA to CA paths. Last link on every path is ignored (connects to the" << endl;
-  cout << "CA).\n" << endl;
-  cout << "SUBSCRIPTIONS NUM-CA-CA-PAIRS" << endl;
+  linkUsage.close();
+
+  cout << "---------- LFT CA to CA : SWITCH OUT PORT - NUM PATHS HISTOGRAM -----------" << endl;
+  cout << "Number of actual paths going through each switch out port considering" << endl;
+  cout << "all the CA to CA paths. Ports driving CAs are ignored (as they must" << endl;
+  cout << "have = Nca - 1). If the fabric is routed correctly the histogram" << endl;
+  cout << "should be nerrow for all ports on same level of the tree." << endl;
+  cout << "A detailed report is provided in /tmp/ibdmchk.sw_out_port_num_paths.\n" << endl;
+  cout << "NUM-PATHS NUM-SWITCH-PORTS" << endl;
   for (int b = 0; b <= maxLinkSubscriptions; b++) 
     if (linkSubscriptionHist[b]) 
-      cout << setw(12) << b << "   " << linkSubscriptionHist[b] << endl;
+      cout << setw(8) << b << "   " << linkSubscriptionHist[b] << endl;
   cout << "---------------------------------------------------------------------------\n" << endl;
 
   if (anyError) 
