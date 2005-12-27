@@ -26,7 +26,7 @@
 #define SWIGTCL
 #define SWIGTCL8
 /*
- * $Header: /mswg/cvsroot/IBADM/ibdm/datamodel/ibdm_wrap.cpp,v 1.12 2005/07/02 19:09:53 eitan Exp $
+ * $Header: /b2/dmb/SWIG/SWIG1.0b3/swig_lib/tcl/RCS/swigtcl.cfg,v 1.1 1996/05/22 19:47:45 beazley Exp $
  * 
  * swigtcl.cfg
  *
@@ -35,12 +35,7 @@
  * files to work on Unix, Windows, and Macintosh.
  *
  * Revision History
- * $Log: ibdm_wrap.cpp,v $
- * Revision 1.12  2005/07/02 19:09:53  eitan
- * Fix memory leak due to swig allocation of new string on each call to IBPort_getName
- * A new type was defined : new_string - such that its type map delete the allocated
- * string explicitly
- *
+ * $Log: swigtcl.cfg,v $
  * Revision 1.1  1996/05/22 19:47:45  beazley
  * Initial revision
  *
@@ -108,7 +103,7 @@ DllEntryPoint(HINSTANCE hInst, DWORD reason, LPVOID reserved)
 #endif
 
 /**************************************************************************
- * $Header: /mswg/cvsroot/IBADM/ibdm/datamodel/ibdm_wrap.cpp,v 1.12 2005/07/02 19:09:53 eitan Exp $
+ * $Header:$
  *
  * tcl8ptr.swg
  *
@@ -562,6 +557,26 @@ SWIGEXPORT(int,Ibdm_Init)(Tcl_Interp *);
 		return TCL_ERROR;	
 	 }
 	 return TCL_OK;
+  }
+
+  int ibdmReportNonUpDownCa2CaPaths(IBFabric *p_fabric, list_pnode rootNodes) {
+    map_pnode_int nodesRank;
+    if (SubnRankFabricNodesByRootNodes(p_fabric, rootNodes, nodesRank))
+    {
+      printf("-E- fail to rank the fabric by the given rot nodes.\n");
+      return(1);
+    }
+    return( SubnReportNonUpDownCa2CaPaths(p_fabric, nodesRank));
+  }
+
+  int ibdmCheckFabricMCGrpsForCreditLoopPotential(IBFabric *p_fabric, list_pnode rootNodes) {
+    map_pnode_int nodesRank;
+    if (SubnRankFabricNodesByRootNodes(p_fabric, rootNodes, nodesRank))
+    {
+      printf("-E- fail to rank the fabric by the given rot nodes.\n");
+      return(1);
+    }
+    return( SubnMgtCheckFabricMCGrpsForCreditLoopPotential(p_fabric, nodesRank));
   }
 
 
@@ -1261,6 +1276,99 @@ static int _wrap_ibdmVerifyCAtoCARoutes(ClientData clientData, Tcl_Interp *inter
     Tcl_SetIntObj(tcl_result,(long) _result);
     return TCL_OK;
 }
+static int _wrap_ibdmVerifyAllPaths(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    int  _result;
+    IBFabric * _arg0;
+    Tcl_Obj * tcl_result;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ibdmVerifyAllPaths p_fabric ",-1);
+        return TCL_ERROR;
+    }
+{
+  
+  void *ptr;
+  if (ibdmGetObjPtrByTclName(objv[1], &ptr) != TCL_OK) {
+	 char err[128];
+	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
+	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+  }
+	 
+  _arg0 = (IBFabric *)ptr;
+}
+{
+  /* the format is always: <type>:<idx>[:<name>] */
+  
+  // get the type from the given source 
+  char buf[128];
+  strcpy(buf, Tcl_GetStringFromObj(objv[1],0));
+  char *colonIdx = index(buf,':');
+  if (!colonIdx) {
+	 char err[128];
+	 sprintf(err, "-E- Bad formatted ibdm object:%s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;
+  }
+  *colonIdx = '\0';
+
+  if (!strcmp("IBFabric ", "IBFabric ")) {
+	if (strcmp(buf, "fabric")) {
+	 char err[256];
+	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+	}	
+  } else if (!strcmp("IBFabric ", "IBSystem ")) {
+	if (strcmp(buf, "system")) {
+	 char err[256];
+	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+	}
+  } else if (!strcmp("IBFabric ", "IBSysPort ")) {
+	if (strcmp(buf, "sysport")) {
+	 char err[256];
+	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+	}
+  } else if (!strcmp("IBFabric ", "IBNode ")) {
+	if (strcmp(buf, "node")) {
+	 char err[256];
+	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+	}
+  } else if (!strcmp("IBFabric ", "IBPort ")) {
+	if (strcmp(buf, "port")) {
+	 char err[256];
+	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+	}
+  } else {
+	 char err[256];
+	 sprintf(err, "-E- basetype 'IBFabric ' is unknown");
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+  }
+}
+{ 
+  ibdm_tcl_error = 0;
+      _result = (int )SubnMgtVerifyAllRoutes(_arg0);
+; 
+  if (ibdm_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+    Tcl_SetIntObj(tcl_result,(long) _result);
+    return TCL_OK;
+}
 static int _wrap_ibdmAnalyzeLoops(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
 
     int  _result;
@@ -1345,6 +1453,692 @@ static int _wrap_ibdmAnalyzeLoops(ClientData clientData, Tcl_Interp *interp, int
 { 
   ibdm_tcl_error = 0;
       _result = (int )CrdLoopAnalyze(_arg0);
+; 
+  if (ibdm_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+    Tcl_SetIntObj(tcl_result,(long) _result);
+    return TCL_OK;
+}
+static int _wrap_ibdmFindSymmetricalTreeRoots(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    list_pnode * _result;
+    IBFabric * _arg0;
+    Tcl_Obj * tcl_result;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ibdmFindSymmetricalTreeRoots p_fabric ",-1);
+        return TCL_ERROR;
+    }
+{
+  
+  void *ptr;
+  if (ibdmGetObjPtrByTclName(objv[1], &ptr) != TCL_OK) {
+	 char err[128];
+	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
+	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+  }
+	 
+  _arg0 = (IBFabric *)ptr;
+}
+{
+  /* the format is always: <type>:<idx>[:<name>] */
+  
+  // get the type from the given source 
+  char buf[128];
+  strcpy(buf, Tcl_GetStringFromObj(objv[1],0));
+  char *colonIdx = index(buf,':');
+  if (!colonIdx) {
+	 char err[128];
+	 sprintf(err, "-E- Bad formatted ibdm object:%s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;
+  }
+  *colonIdx = '\0';
+
+  if (!strcmp("IBFabric ", "IBFabric ")) {
+	if (strcmp(buf, "fabric")) {
+	 char err[256];
+	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+	}	
+  } else if (!strcmp("IBFabric ", "IBSystem ")) {
+	if (strcmp(buf, "system")) {
+	 char err[256];
+	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+	}
+  } else if (!strcmp("IBFabric ", "IBSysPort ")) {
+	if (strcmp(buf, "sysport")) {
+	 char err[256];
+	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+	}
+  } else if (!strcmp("IBFabric ", "IBNode ")) {
+	if (strcmp(buf, "node")) {
+	 char err[256];
+	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+	}
+  } else if (!strcmp("IBFabric ", "IBPort ")) {
+	if (strcmp(buf, "port")) {
+	 char err[256];
+	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+	}
+  } else {
+	 char err[256];
+	 sprintf(err, "-E- basetype 'IBFabric ' is unknown");
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+  }
+}
+{ 
+  ibdm_tcl_error = 0;
+      _result = new list_pnode (SubnMgtFindTreeRootNodes(_arg0));
+; 
+  if (ibdm_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  // build a TCL list out of the Objec ID's of the ibdm objects in it.
+  list_pnode::const_iterator I = _result->begin();
+  Tcl_Obj *p_tclObj;
+
+  while (I != _result->end()) {
+	 p_tclObj = Tcl_NewObj();
+	 if (ibdmGetObjTclNameByPtr(p_tclObj, (*I), "IBNode *") != TCL_OK) {
+		printf("-E- Fail to map Node Object (a guid map element)\n");
+	 } else {
+		char buf[128];
+		sprintf(buf, "%s", Tcl_GetString(p_tclObj));
+		Tcl_AppendElement(interp, buf);
+	 }
+	 Tcl_DecrRefCount(p_tclObj);
+	 I++;
+  }
+}
+    return TCL_OK;
+}
+static int _wrap_ibdmFindRootNodesByMinHop(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    list_pnode * _result;
+    IBFabric * _arg0;
+    Tcl_Obj * tcl_result;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ibdmFindRootNodesByMinHop p_fabric ",-1);
+        return TCL_ERROR;
+    }
+{
+  
+  void *ptr;
+  if (ibdmGetObjPtrByTclName(objv[1], &ptr) != TCL_OK) {
+	 char err[128];
+	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
+	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+  }
+	 
+  _arg0 = (IBFabric *)ptr;
+}
+{
+  /* the format is always: <type>:<idx>[:<name>] */
+  
+  // get the type from the given source 
+  char buf[128];
+  strcpy(buf, Tcl_GetStringFromObj(objv[1],0));
+  char *colonIdx = index(buf,':');
+  if (!colonIdx) {
+	 char err[128];
+	 sprintf(err, "-E- Bad formatted ibdm object:%s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;
+  }
+  *colonIdx = '\0';
+
+  if (!strcmp("IBFabric ", "IBFabric ")) {
+	if (strcmp(buf, "fabric")) {
+	 char err[256];
+	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+	}	
+  } else if (!strcmp("IBFabric ", "IBSystem ")) {
+	if (strcmp(buf, "system")) {
+	 char err[256];
+	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+	}
+  } else if (!strcmp("IBFabric ", "IBSysPort ")) {
+	if (strcmp(buf, "sysport")) {
+	 char err[256];
+	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+	}
+  } else if (!strcmp("IBFabric ", "IBNode ")) {
+	if (strcmp(buf, "node")) {
+	 char err[256];
+	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+	}
+  } else if (!strcmp("IBFabric ", "IBPort ")) {
+	if (strcmp(buf, "port")) {
+	 char err[256];
+	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+	}
+  } else {
+	 char err[256];
+	 sprintf(err, "-E- basetype 'IBFabric ' is unknown");
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+  }
+}
+{ 
+  ibdm_tcl_error = 0;
+      _result = new list_pnode (SubnMgtFindRootNodesByMinHop(_arg0));
+; 
+  if (ibdm_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  // build a TCL list out of the Objec ID's of the ibdm objects in it.
+  list_pnode::const_iterator I = _result->begin();
+  Tcl_Obj *p_tclObj;
+
+  while (I != _result->end()) {
+	 p_tclObj = Tcl_NewObj();
+	 if (ibdmGetObjTclNameByPtr(p_tclObj, (*I), "IBNode *") != TCL_OK) {
+		printf("-E- Fail to map Node Object (a guid map element)\n");
+	 } else {
+		char buf[128];
+		sprintf(buf, "%s", Tcl_GetString(p_tclObj));
+		Tcl_AppendElement(interp, buf);
+	 }
+	 Tcl_DecrRefCount(p_tclObj);
+	 I++;
+  }
+}
+    return TCL_OK;
+}
+static int _wrap_ibdmReportNonUpDownCa2CaPaths(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    int  _result;
+    IBFabric * _arg0;
+    list_pnode * _arg1;
+    Tcl_Obj * tcl_result;
+    list_pnode  tmpNodeList;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ibdmReportNonUpDownCa2CaPaths p_fabric rootNodes ",-1);
+        return TCL_ERROR;
+    }
+{
+  
+  void *ptr;
+  if (ibdmGetObjPtrByTclName(objv[1], &ptr) != TCL_OK) {
+	 char err[128];
+	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
+	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+  }
+	 
+  _arg0 = (IBFabric *)ptr;
+}
+{
+  /* the format is always: <type>:<idx>[:<name>] */
+  
+  // get the type from the given source 
+  char buf[128];
+  strcpy(buf, Tcl_GetStringFromObj(objv[1],0));
+  char *colonIdx = index(buf,':');
+  if (!colonIdx) {
+	 char err[128];
+	 sprintf(err, "-E- Bad formatted ibdm object:%s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;
+  }
+  *colonIdx = '\0';
+
+  if (!strcmp("IBFabric ", "IBFabric ")) {
+	if (strcmp(buf, "fabric")) {
+	 char err[256];
+	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+	}	
+  } else if (!strcmp("IBFabric ", "IBSystem ")) {
+	if (strcmp(buf, "system")) {
+	 char err[256];
+	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+	}
+  } else if (!strcmp("IBFabric ", "IBSysPort ")) {
+	if (strcmp(buf, "sysport")) {
+	 char err[256];
+	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+	}
+  } else if (!strcmp("IBFabric ", "IBNode ")) {
+	if (strcmp(buf, "node")) {
+	 char err[256];
+	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+	}
+  } else if (!strcmp("IBFabric ", "IBPort ")) {
+	if (strcmp(buf, "port")) {
+	 char err[256];
+	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+	}
+  } else {
+	 char err[256];
+	 sprintf(err, "-E- basetype 'IBFabric ' is unknown");
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+  }
+}
+{
+#if TCL_MINOR_VERSION > 3
+  const char **sub_lists;
+#else
+  char **sub_lists;
+#endif
+  int num_sub_lists;
+  uint8_t idx;
+
+  /* we will use the TCL split list to split into elements */
+  if (Tcl_SplitList(interp, 
+                    Tcl_GetStringFromObj(objv[2],0), 
+                    &num_sub_lists, &sub_lists) != TCL_OK) {
+    printf("-E- Bad formatted list :%s\n",
+           Tcl_GetStringFromObj(objv[2],0));
+    return TCL_ERROR;
+  }
+
+  for (idx = 0; (idx < num_sub_lists); idx++) 
+  {
+    /* we need to double copy since TCL 8.4 requires split res to be const */
+    Tcl_Obj *p_tclObj;
+    void *ptr;
+    char buf[128];
+    char *p_last;
+    strcpy(buf, sub_lists[idx]);
+
+    if (strncmp("node:", buf, 5)) {
+      printf("-E- Bad formatted node (%u) object:%s\n", idx, buf);
+      return TCL_ERROR;
+    }
+
+	 p_tclObj = Tcl_NewObj();
+    Tcl_SetStringObj(p_tclObj, buf, -1);
+    if (ibdmGetObjPtrByTclName(p_tclObj, &ptr) != TCL_OK) {
+      printf("-E- fail to find ibdm obj by id:%s", buf );
+      Tcl_DecrRefCount(p_tclObj);
+      return TCL_ERROR;	
+    }
+    Tcl_DecrRefCount(p_tclObj);
+    tmpNodeList.push_back((IBNode *)ptr);
+  }
+	 
+  _arg1 = &tmpNodeList;
+}
+{ 
+  ibdm_tcl_error = 0;
+      _result = (int )ibdmReportNonUpDownCa2CaPaths(_arg0,*_arg1);
+; 
+  if (ibdm_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+    Tcl_SetIntObj(tcl_result,(long) _result);
+    return TCL_OK;
+}
+static int _wrap_ibdmCheckMulticastGroups(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    int  _result;
+    IBFabric * _arg0;
+    Tcl_Obj * tcl_result;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ibdmCheckMulticastGroups p_fabric ",-1);
+        return TCL_ERROR;
+    }
+{
+  
+  void *ptr;
+  if (ibdmGetObjPtrByTclName(objv[1], &ptr) != TCL_OK) {
+	 char err[128];
+	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
+	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+  }
+	 
+  _arg0 = (IBFabric *)ptr;
+}
+{
+  /* the format is always: <type>:<idx>[:<name>] */
+  
+  // get the type from the given source 
+  char buf[128];
+  strcpy(buf, Tcl_GetStringFromObj(objv[1],0));
+  char *colonIdx = index(buf,':');
+  if (!colonIdx) {
+	 char err[128];
+	 sprintf(err, "-E- Bad formatted ibdm object:%s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;
+  }
+  *colonIdx = '\0';
+
+  if (!strcmp("IBFabric ", "IBFabric ")) {
+	if (strcmp(buf, "fabric")) {
+	 char err[256];
+	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+	}	
+  } else if (!strcmp("IBFabric ", "IBSystem ")) {
+	if (strcmp(buf, "system")) {
+	 char err[256];
+	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+	}
+  } else if (!strcmp("IBFabric ", "IBSysPort ")) {
+	if (strcmp(buf, "sysport")) {
+	 char err[256];
+	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+	}
+  } else if (!strcmp("IBFabric ", "IBNode ")) {
+	if (strcmp(buf, "node")) {
+	 char err[256];
+	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+	}
+  } else if (!strcmp("IBFabric ", "IBPort ")) {
+	if (strcmp(buf, "port")) {
+	 char err[256];
+	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+	}
+  } else {
+	 char err[256];
+	 sprintf(err, "-E- basetype 'IBFabric ' is unknown");
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+  }
+}
+{ 
+  ibdm_tcl_error = 0;
+      _result = (int )SubnMgtCheckFabricMCGrps(_arg0);
+; 
+  if (ibdm_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+    Tcl_SetIntObj(tcl_result,(long) _result);
+    return TCL_OK;
+}
+static int _wrap_ibdmCheckFabricMCGrpsForCreditLoopPotential(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    int  _result;
+    IBFabric * _arg0;
+    list_pnode * _arg1;
+    Tcl_Obj * tcl_result;
+    list_pnode  tmpNodeList;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ibdmCheckFabricMCGrpsForCreditLoopPotential p_fabric rootNodes ",-1);
+        return TCL_ERROR;
+    }
+{
+  
+  void *ptr;
+  if (ibdmGetObjPtrByTclName(objv[1], &ptr) != TCL_OK) {
+	 char err[128];
+	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
+	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+  }
+	 
+  _arg0 = (IBFabric *)ptr;
+}
+{
+  /* the format is always: <type>:<idx>[:<name>] */
+  
+  // get the type from the given source 
+  char buf[128];
+  strcpy(buf, Tcl_GetStringFromObj(objv[1],0));
+  char *colonIdx = index(buf,':');
+  if (!colonIdx) {
+	 char err[128];
+	 sprintf(err, "-E- Bad formatted ibdm object:%s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;
+  }
+  *colonIdx = '\0';
+
+  if (!strcmp("IBFabric ", "IBFabric ")) {
+	if (strcmp(buf, "fabric")) {
+	 char err[256];
+	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+	}	
+  } else if (!strcmp("IBFabric ", "IBSystem ")) {
+	if (strcmp(buf, "system")) {
+	 char err[256];
+	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+	}
+  } else if (!strcmp("IBFabric ", "IBSysPort ")) {
+	if (strcmp(buf, "sysport")) {
+	 char err[256];
+	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+	}
+  } else if (!strcmp("IBFabric ", "IBNode ")) {
+	if (strcmp(buf, "node")) {
+	 char err[256];
+	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+	}
+  } else if (!strcmp("IBFabric ", "IBPort ")) {
+	if (strcmp(buf, "port")) {
+	 char err[256];
+	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+	}
+  } else {
+	 char err[256];
+	 sprintf(err, "-E- basetype 'IBFabric ' is unknown");
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+  }
+}
+{
+#if TCL_MINOR_VERSION > 3
+  const char **sub_lists;
+#else
+  char **sub_lists;
+#endif
+  int num_sub_lists;
+  uint8_t idx;
+
+  /* we will use the TCL split list to split into elements */
+  if (Tcl_SplitList(interp, 
+                    Tcl_GetStringFromObj(objv[2],0), 
+                    &num_sub_lists, &sub_lists) != TCL_OK) {
+    printf("-E- Bad formatted list :%s\n",
+           Tcl_GetStringFromObj(objv[2],0));
+    return TCL_ERROR;
+  }
+
+  for (idx = 0; (idx < num_sub_lists); idx++) 
+  {
+    /* we need to double copy since TCL 8.4 requires split res to be const */
+    Tcl_Obj *p_tclObj;
+    void *ptr;
+    char buf[128];
+    char *p_last;
+    strcpy(buf, sub_lists[idx]);
+
+    if (strncmp("node:", buf, 5)) {
+      printf("-E- Bad formatted node (%u) object:%s\n", idx, buf);
+      return TCL_ERROR;
+    }
+
+	 p_tclObj = Tcl_NewObj();
+    Tcl_SetStringObj(p_tclObj, buf, -1);
+    if (ibdmGetObjPtrByTclName(p_tclObj, &ptr) != TCL_OK) {
+      printf("-E- fail to find ibdm obj by id:%s", buf );
+      Tcl_DecrRefCount(p_tclObj);
+      return TCL_ERROR;	
+    }
+    Tcl_DecrRefCount(p_tclObj);
+    tmpNodeList.push_back((IBNode *)ptr);
+  }
+	 
+  _arg1 = &tmpNodeList;
+}
+{ 
+  ibdm_tcl_error = 0;
+      _result = (int )ibdmCheckFabricMCGrpsForCreditLoopPotential(_arg0,*_arg1);
+; 
+  if (ibdm_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+    Tcl_SetIntObj(tcl_result,(long) _result);
+    return TCL_OK;
+}
+static int _wrap_ibdmLinkCoverageAnalysis(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    int  _result;
+    IBFabric * _arg0;
+    Tcl_Obj * tcl_result;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ibdmLinkCoverageAnalysis p_fabric ",-1);
+        return TCL_ERROR;
+    }
+{
+  
+  void *ptr;
+  if (ibdmGetObjPtrByTclName(objv[1], &ptr) != TCL_OK) {
+	 char err[128];
+	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
+	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+  }
+	 
+  _arg0 = (IBFabric *)ptr;
+}
+{
+  /* the format is always: <type>:<idx>[:<name>] */
+  
+  // get the type from the given source 
+  char buf[128];
+  strcpy(buf, Tcl_GetStringFromObj(objv[1],0));
+  char *colonIdx = index(buf,':');
+  if (!colonIdx) {
+	 char err[128];
+	 sprintf(err, "-E- Bad formatted ibdm object:%s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;
+  }
+  *colonIdx = '\0';
+
+  if (!strcmp("IBFabric ", "IBFabric ")) {
+	if (strcmp(buf, "fabric")) {
+	 char err[256];
+	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+	}	
+  } else if (!strcmp("IBFabric ", "IBSystem ")) {
+	if (strcmp(buf, "system")) {
+	 char err[256];
+	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+	}
+  } else if (!strcmp("IBFabric ", "IBSysPort ")) {
+	if (strcmp(buf, "sysport")) {
+	 char err[256];
+	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+	}
+  } else if (!strcmp("IBFabric ", "IBNode ")) {
+	if (strcmp(buf, "node")) {
+	 char err[256];
+	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+	}
+  } else if (!strcmp("IBFabric ", "IBPort ")) {
+	if (strcmp(buf, "port")) {
+	 char err[256];
+	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+	}
+  } else {
+	 char err[256];
+	 sprintf(err, "-E- basetype 'IBFabric ' is unknown");
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+  }
+}
+{ 
+  ibdm_tcl_error = 0;
+      _result = (int )LinkCoverageAnalysis(_arg0);
 ; 
   if (ibdm_tcl_error) { 
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
@@ -1565,6 +2359,7 @@ static int _wrap_ibdmTraceRouteByLFT(ClientData clientData, Tcl_Interp *interp, 
     Tcl_Obj * tcl_result;
     int tempint;
     char * rettype;
+    list_pnode  tmpNodeList;
 
     clientData = clientData; objv = objv;
     tcl_result = Tcl_GetObjResult(interp);
@@ -1650,11 +2445,51 @@ static int _wrap_ibdmTraceRouteByLFT(ClientData clientData, Tcl_Interp *interp, 
         Tcl_AppendToObj(tcl_result, rettype, -1);
         return TCL_ERROR;
     }
-    if ((rettype = SWIG_GetPointerObj(interp,objv[5],(void **) &_arg4,"_list_pnode_p"))) {
-        Tcl_SetStringObj(tcl_result, "Type error in argument 5 of ibdmTraceRouteByLFT. Expected _list_pnode_p, received ", -1);
-        Tcl_AppendToObj(tcl_result, rettype, -1);
-        return TCL_ERROR;
+{
+#if TCL_MINOR_VERSION > 3
+  const char **sub_lists;
+#else
+  char **sub_lists;
+#endif
+  int num_sub_lists;
+  uint8_t idx;
+
+  /* we will use the TCL split list to split into elements */
+  if (Tcl_SplitList(interp, 
+                    Tcl_GetStringFromObj(objv[5],0), 
+                    &num_sub_lists, &sub_lists) != TCL_OK) {
+    printf("-E- Bad formatted list :%s\n",
+           Tcl_GetStringFromObj(objv[5],0));
+    return TCL_ERROR;
+  }
+
+  for (idx = 0; (idx < num_sub_lists); idx++) 
+  {
+    /* we need to double copy since TCL 8.4 requires split res to be const */
+    Tcl_Obj *p_tclObj;
+    void *ptr;
+    char buf[128];
+    char *p_last;
+    strcpy(buf, sub_lists[idx]);
+
+    if (strncmp("node:", buf, 5)) {
+      printf("-E- Bad formatted node (%u) object:%s\n", idx, buf);
+      return TCL_ERROR;
     }
+
+	 p_tclObj = Tcl_NewObj();
+    Tcl_SetStringObj(p_tclObj, buf, -1);
+    if (ibdmGetObjPtrByTclName(p_tclObj, &ptr) != TCL_OK) {
+      printf("-E- fail to find ibdm obj by id:%s", buf );
+      Tcl_DecrRefCount(p_tclObj);
+      return TCL_ERROR;	
+    }
+    Tcl_DecrRefCount(p_tclObj);
+    tmpNodeList.push_back((IBNode *)ptr);
+  }
+	 
+  _arg4 = &tmpNodeList;
+}
 { 
   ibdm_tcl_error = 0;
       _result = (int )TraceRouteByLFT(_arg0,_arg1,_arg2,_arg3,_arg4);
@@ -2080,99 +2915,6 @@ static int _wrap_ibdmBuildMergedFabric(ClientData clientData, Tcl_Interp *interp
 { 
   ibdm_tcl_error = 0;
       _result = (int )TopoMergeDiscAndSpecFabrics(_arg0,_arg1,_arg2);
-; 
-  if (ibdm_tcl_error) { 
-	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR; 
-  }
-}    tcl_result = Tcl_GetObjResult(interp);
-    Tcl_SetIntObj(tcl_result,(long) _result);
-    return TCL_OK;
-}
-static int _wrap_ibdmCheckMulticastGroups(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
-
-    int  _result;
-    IBFabric * _arg0;
-    Tcl_Obj * tcl_result;
-
-    clientData = clientData; objv = objv;
-    tcl_result = Tcl_GetObjResult(interp);
-    if ((objc < 2) || (objc > 2)) {
-        Tcl_SetStringObj(tcl_result,"Wrong # args. ibdmCheckMulticastGroups p_fabric ",-1);
-        return TCL_ERROR;
-    }
-{
-  
-  void *ptr;
-  if (ibdmGetObjPtrByTclName(objv[1], &ptr) != TCL_OK) {
-	 char err[128];
-	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
-	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	 
-  }
-	 
-  _arg0 = (IBFabric *)ptr;
-}
-{
-  /* the format is always: <type>:<idx>[:<name>] */
-  
-  // get the type from the given source 
-  char buf[128];
-  strcpy(buf, Tcl_GetStringFromObj(objv[1],0));
-  char *colonIdx = index(buf,':');
-  if (!colonIdx) {
-	 char err[128];
-	 sprintf(err, "-E- Bad formatted ibdm object:%s", buf);
-	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;
-  }
-  *colonIdx = '\0';
-
-  if (!strcmp("IBFabric ", "IBFabric ")) {
-	if (strcmp(buf, "fabric")) {
-	 char err[256];
-	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
-	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	 
-	}	
-  } else if (!strcmp("IBFabric ", "IBSystem ")) {
-	if (strcmp(buf, "system")) {
-	 char err[256];
-	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
-	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	 
-	}
-  } else if (!strcmp("IBFabric ", "IBSysPort ")) {
-	if (strcmp(buf, "sysport")) {
-	 char err[256];
-	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
-	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	 
-	}
-  } else if (!strcmp("IBFabric ", "IBNode ")) {
-	if (strcmp(buf, "node")) {
-	 char err[256];
-	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
-	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	 
-	}
-  } else if (!strcmp("IBFabric ", "IBPort ")) {
-	if (strcmp(buf, "port")) {
-	 char err[256];
-	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
-	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	 
-	}
-  } else {
-	 char err[256];
-	 sprintf(err, "-E- basetype 'IBFabric ' is unknown");
-	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	 
-  }
-}
-{ 
-  ibdm_tcl_error = 0;
-      _result = (int )SubnMgtCheckFabricMCGrps(_arg0);
 ; 
   if (ibdm_tcl_error) { 
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
@@ -13168,7 +13910,24 @@ static int _wrap_IBFabric_getNodesByType(ClientData clientData, Tcl_Interp *inte
  	 return TCL_ERROR; 
   }
 }    tcl_result = Tcl_GetObjResult(interp);
-    SWIG_SetPointerObj(tcl_result,(void *) _result,"_list_pnode_p");
+{
+  // build a TCL list out of the Objec ID's of the ibdm objects in it.
+  list_pnode::const_iterator I = _result->begin();
+  Tcl_Obj *p_tclObj;
+
+  while (I != _result->end()) {
+	 p_tclObj = Tcl_NewObj();
+	 if (ibdmGetObjTclNameByPtr(p_tclObj, (*I), "IBNode *") != TCL_OK) {
+		printf("-E- Fail to map Node Object (a guid map element)\n");
+	 } else {
+		char buf[128];
+		sprintf(buf, "%s", Tcl_GetString(p_tclObj));
+		Tcl_AppendElement(interp, buf);
+	 }
+	 Tcl_DecrRefCount(p_tclObj);
+	 I++;
+  }
+}
     return TCL_OK;
 }
 #define IBFabric_makeGenericSystem(_swigobj,_swigarg0)  (_swigobj->makeGenericSystem(_swigarg0))
@@ -15246,13 +16005,19 @@ SWIGEXPORT(int,Ibdm_Init)(Tcl_Interp *interp) {
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ibdmOsmRoute", _wrap_ibdmOsmRoute, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ibdmEnhancedRoute", _wrap_ibdmEnhancedRoute, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ibdmVerifyCAtoCARoutes", _wrap_ibdmVerifyCAtoCARoutes, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ibdmVerifyAllPaths", _wrap_ibdmVerifyAllPaths, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ibdmAnalyzeLoops", _wrap_ibdmAnalyzeLoops, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ibdmFindSymmetricalTreeRoots", _wrap_ibdmFindSymmetricalTreeRoots, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ibdmFindRootNodesByMinHop", _wrap_ibdmFindRootNodesByMinHop, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ibdmReportNonUpDownCa2CaPaths", _wrap_ibdmReportNonUpDownCa2CaPaths, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ibdmCheckMulticastGroups", _wrap_ibdmCheckMulticastGroups, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ibdmCheckFabricMCGrpsForCreditLoopPotential", _wrap_ibdmCheckFabricMCGrpsForCreditLoopPotential, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ibdmLinkCoverageAnalysis", _wrap_ibdmLinkCoverageAnalysis, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ibdmTraceDRPathRoute", _wrap_ibdmTraceDRPathRoute, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ibdmTraceRouteByMinHops", _wrap_ibdmTraceRouteByMinHops, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ibdmTraceRouteByLFT", _wrap_ibdmTraceRouteByLFT, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ibdmMatchFabrics", _wrap_ibdmMatchFabrics, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ibdmBuildMergedFabric", _wrap_ibdmBuildMergedFabric, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
-	 Tcl_CreateObjCommand(interp, SWIG_prefix "ibdmCheckMulticastGroups", _wrap_ibdmCheckMulticastGroups, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 
 
   /* mixing declarations .... */

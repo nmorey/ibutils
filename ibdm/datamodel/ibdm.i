@@ -304,6 +304,26 @@
 	 return TCL_OK;
   }
 
+  int ibdmReportNonUpDownCa2CaPaths(IBFabric *p_fabric, list_pnode rootNodes) {
+    map_pnode_int nodesRank;
+    if (SubnRankFabricNodesByRootNodes(p_fabric, rootNodes, nodesRank))
+    {
+      printf("-E- fail to rank the fabric by the given rot nodes.\n");
+      return(1);
+    }
+    return( SubnReportNonUpDownCa2CaPaths(p_fabric, nodesRank));
+  }
+
+  int ibdmCheckFabricMCGrpsForCreditLoopPotential(IBFabric *p_fabric, list_pnode rootNodes) {
+    map_pnode_int nodesRank;
+    if (SubnRankFabricNodesByRootNodes(p_fabric, rootNodes, nodesRank))
+    {
+      printf("-E- fail to rank the fabric by the given rot nodes.\n");
+      return(1);
+    }
+    return( SubnMgtCheckFabricMCGrpsForCreditLoopPotential(p_fabric, nodesRank));
+  }
+
 %}
 
 
@@ -751,6 +771,72 @@
 }
 %include typemaps.i
 
+%typemap(tcl8,out) list_pnode *,  list_pnode {
+  // build a TCL list out of the Objec ID's of the ibdm objects in it.
+  list_pnode::const_iterator I = $source->begin();
+  Tcl_Obj *p_tclObj;
+
+  while (I != $source->end()) {
+	 p_tclObj = Tcl_NewObj();
+	 if (ibdmGetObjTclNameByPtr(p_tclObj, (*I), "IBNode *") != TCL_OK) {
+		printf("-E- Fail to map Node Object (a guid map element)\n");
+	 } else {
+		char buf[128];
+		sprintf(buf, "%s", Tcl_GetString(p_tclObj));
+		Tcl_AppendElement(interp, buf);
+	 }
+	 Tcl_DecrRefCount(p_tclObj);
+	 I++;
+  }
+}
+
+// given a list of node names - generate the list of nodes
+%typemap(tcl8,in) list_pnode * (list_pnode tmpNodeList) {
+#if TCL_MINOR_VERSION > 3
+  const char **sub_lists;
+#else
+  char **sub_lists;
+#endif
+  int num_sub_lists;
+  uint8_t idx;
+
+  /* we will use the TCL split list to split into elements */
+  if (Tcl_SplitList(interp, 
+                    Tcl_GetStringFromObj($source,0), 
+                    &num_sub_lists, &sub_lists) != TCL_OK) {
+    printf("-E- Bad formatted list :%s\n",
+           Tcl_GetStringFromObj($source,0));
+    return TCL_ERROR;
+  }
+
+  for (idx = 0; (idx < num_sub_lists); idx++) 
+  {
+    /* we need to double copy since TCL 8.4 requires split res to be const */
+    Tcl_Obj *p_tclObj;
+    void *ptr;
+    char buf[128];
+    char *p_last;
+    strcpy(buf, sub_lists[idx]);
+
+    if (strncmp("node:", buf, 5)) {
+      printf("-E- Bad formatted node (%u) object:%s\n", idx, buf);
+      return TCL_ERROR;
+    }
+
+	 p_tclObj = Tcl_NewObj();
+    Tcl_SetStringObj(p_tclObj, buf, -1);
+    if (ibdmGetObjPtrByTclName(p_tclObj, &ptr) != TCL_OK) {
+      printf("-E- fail to find ibdm obj by id:%s", buf );
+      Tcl_DecrRefCount(p_tclObj);
+      return TCL_ERROR;	
+    }
+    Tcl_DecrRefCount(p_tclObj);
+    tmpNodeList.push_back((IBNode *)ptr);
+  }
+	 
+  $target = &tmpNodeList;
+}
+
 //
 // INTERFACE DEFINITION (~copy of h file)
 // 
@@ -790,7 +876,7 @@ int FabricUtilsVerboseLevel;
   IBDM Objects are standard Swig-Tcl objects. 
   As such they have two flavors for their usage: Variables, Objects.
 
-  Variables:
+  Variables/Pointers:
      For each object attribute a "get" and "set" methods are provided.
 	  The format of the methods is: <class>_<attribute>_<get|set>.
      The "set" method is only available for read/write attributes. 
@@ -801,9 +887,9 @@ int FabricUtilsVerboseLevel;
      IBNode_numPorts_get $node
 														  
   Objects:
-     Given an object identifier one can convert it to a Tcl "Object"
+     Given an object pointer one can convert it to a Tcl "Object"
 	  using the following command:
-     <class> <obj_name> -this <obj identifier>
+     <class> <obj_name> -this <obj pointer>
  
      Once declared the <obj-name> can be used in conjunction to 
      with the standard "configure" and "cget" commands.
@@ -812,6 +898,11 @@ int FabricUtilsVerboseLevel;
      IBFabric VaTech -this $fabric
 	  VaTech cget -NodeByName
 
+     To delete an object symbol (and enable its mapping to another 
+     pointer) use:
+     rename <obj name> ""
+     for example:
+     rename VaTech ""
 %}
 
 // 
@@ -1118,9 +1209,43 @@ They all return 0 on succes.
  int SubnMgtVerifyAllCaToCaRoutes(IBFabric *p_fabric);
 // Verify point to point connectivity
 
+%name(ibdmVerifyAllPaths) 
+ int SubnMgtVerifyAllRoutes(IBFabric *p_fabric);
+// Verify all paths
+
 %name(ibdmAnalyzeLoops)
  int CrdLoopAnalyze(IBFabric *p_fabric);
 // Analyze the Fabric for Credit Loops
+
+%name(ibdmFindSymmetricalTreeRoots)
+list_pnode SubnMgtFindTreeRootNodes(IBFabric *p_fabric);
+// Analyze the fabric to find its root nodes assuming it is
+// a pure tree (keeping all levels in place).
+
+%name(ibdmFindRootNodesByMinHop)
+list_pnode SubnMgtFindRootNodesByMinHop(IBFabric *p_fabric);
+// Analyze the fabric to find its root nodes using statistical methods 
+// on the profiles of min hops to CAs
+
+int ibdmReportNonUpDownCa2CaPaths(IBFabric *p_fabric, list_pnode rootNodes);
+// Find any routes that exist in the FDB's from CA to CA and do not adhare to
+// the up/down rules. Report any crossing of the path. Use the given list fo nodes
+// as roots of the tree.
+
+%name(ibdmCheckMulticastGroups)
+int SubnMgtCheckFabricMCGrps(IBFabric *p_fabric);
+// Check all multicast groups :
+// 1. all switches holding it are connected 
+// 2. No loops (i.e. a single BFS with no returns).
+
+int ibdmCheckFabricMCGrpsForCreditLoopPotential(
+  IBFabric *p_fabric, list_pnode rootNodes);
+// Check all multicast groups do not have credit loop potential
+
+%name(ibdmLinkCoverageAnalysis)
+int LinkCoverageAnalysis(IBFabric *p_fabric);
+// Provide sets of port pairs to run BW check from in a way that is
+// full bandwidth. Reide in LinkCover.cpp
 
 %subsection "Tracing Utilities",before,pre
 
@@ -1162,12 +1287,6 @@ TopoMergeDiscAndSpecFabrics(
   IBFabric  *p_merged_fabric);    // Output merged fabric (allocated internaly)
 // Build a merged fabric from a matched discovered and spec fabrics.
 // NOTE: you have to run ibdmMatchFabrics before calling this routine. 
-
-%name(ibdmCheckMulticastGroups)
-int SubnMgtCheckFabricMCGrps(IBFabric *p_fabric);
-// Check all multicast groups :
-// 1. all switches holding it are connected 
-// 2. No loops (i.e. a single BFS with no returns).
 
 //
 // FIX OF SWIG TO SUPPORT NAME ALTERNATE MANGLING 
