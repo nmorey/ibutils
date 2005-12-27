@@ -494,13 +494,14 @@ int main (int argc, char **argv) {
     // rank the fabric by these roots
     map_pnode_int nodesRank;
     SubnRankFabricNodesByRootNodes(&fabric, rootNodes, nodesRank);
-    cout << "-I- Node Ranking:" << endl;
+    ofstream rankFile("/tmp/ibdmchk.node_ranking");
+    rankFile << "-I- Node Ranking:" << endl;
     for(map_pnode_int::iterator nI = nodesRank.begin();
         nI != nodesRank.end(); nI++)
     {
-      cout << (*nI).first->name << " rank:" << (*nI).second << endl;
+      rankFile << (*nI).first->name << " rank:" << (*nI).second << endl;
     }
-    cout << "---------------------------------------------------------------------------\n" << endl;
+    rankFile.close();
     
     // report non up down paths:
     anyErr |= SubnReportNonUpDownCa2CaPaths(&fabric, nodesRank);
@@ -513,5 +514,7 @@ int main (int argc, char **argv) {
     anyErr |= CrdLoopAnalyze(&fabric);
   }
   
+  LinkCoverageAnalysis(&fabric);
+
   exit(anyErr);
 }
