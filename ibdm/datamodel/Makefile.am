@@ -55,7 +55,7 @@ AM_YFLAGS = -d
 
 common_SOURCES = Fabric.cpp \
 	SubnMgt.cpp TraceRoute.cpp CredLoops.cpp TopoMatch.cpp SysDef.cpp \
-	ibnl_parser.cc ibnl_scanner.cc
+	LinkCover.cpp ibnl_parser.cc ibnl_scanner.cc
 
 # Support debug mode through config variable
 if DEBUG
