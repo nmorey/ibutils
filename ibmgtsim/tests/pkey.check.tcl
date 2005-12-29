@@ -212,6 +212,7 @@ proc runner {simDir osmPath osmPortGuid} {
 # Return the exit code
 proc checker {simDir osmPath osmPortGuid} {
    global env
+   global simCtrlSock
 
    set osmTestPath      [file join [file dirname $osmPath] osmtest]
    set osmTestLog       [file join $simDir osmtest.log]
@@ -258,6 +259,35 @@ proc checker {simDir osmPath osmPortGuid} {
       }
    }
    
+   ###### Verifing the pkey manager behaviour ################
+   
+   # Remove the default pkey from the HCA ports (except the SM)
+   puts $simCtrlSock "removeDefaultPKeyFromTableForHcaPorts \$fabric"
+   puts "SIM: [gets $simCtrlSock]"
+
+   #Inject a changebit - to force heavy sweep
+   puts $simCtrlSock "setOneSwitchChangeBit \$fabric"
+   puts "SIM: [gets $simCtrlSock]"
+
+   # wait for sweep to end or exit
+   if {[osmWaitForUpOrDead $osmLog]} {
+      return 1
+   }
+   
+   # wait 3 seconds
+   after 3000  
+
+   #Verify that the default port is in the PKey table of all ports
+   puts "-I- Calling simulator to verify all HCA ports have either 0x7fff or 0xffff"
+   puts $simCtrlSock "verifyDefaultPKeyForAllHcaPorts \$fabric"
+   set res [gets $simCtrlSock]
+   puts "SIM: $res"
+   
+   if {$res == 0} {
    puts "-I- Pkey check flow completed successfuly"
-   return 0
+   } else {
+      puts "-E- Pkey check flow failed"
+   }
+
+   return $res
 }
