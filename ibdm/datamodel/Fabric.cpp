@@ -1674,7 +1674,9 @@ IBFabric::parseMCFdbFile(string fn) {
     p_rexRes = switchLine.apply(sLine);
     if (p_rexRes) {
       // Got a new switch - find the node:
-      p_node = getNode("node:" + p_rexRes->field(1));
+      uint64_t guid;
+      guid = strtoull(p_rexRes->field(1).c_str(), NULL, 16);
+      p_node = getNodeByGuid(guid);
       if (!p_node) {
         cout << "-E- Fail to find switch: node:" << p_rexRes->field(1) << endl;
         anyErr++;

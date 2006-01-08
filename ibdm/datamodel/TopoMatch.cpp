@@ -1481,6 +1481,7 @@ TopoMergeDiscAndSpecFabrics(
       }
     }
   }
+  p_mFabric->minLid = p_dFabric->minLid;  
   return 0;
 }
 
