@@ -533,6 +533,26 @@ CrdLoopReportLoops(IBFabric *p_fabric, int doNotPrintPath) {
 
 //////////////////////////////////////////////////////////////////////////////
 
+// Prepare the data model 
+int 
+CrdLoopPrepare(IBFabric *p_fabric) {
+  IBNode *p_node;
+
+  // Go over all SW nodes in the fabric and cleanup
+  for( map_str_pnode::iterator nI = p_fabric->NodeByName.begin();
+		 nI != p_fabric->NodeByName.end();
+		 nI++) {
+	 
+	 p_node = (*nI).second;
+	 if (p_node->type != IB_SW_NODE) continue;
+	
+	 if (p_node->appData1.ptr) {
+		p_node->appData1.ptr = NULL;
+	 }
+  }
+  return 0;
+}
+
 // Cleanup the data model 
 int 
 CrdLoopCleanup(IBFabric *p_fabric) {
@@ -562,6 +582,8 @@ int
 CrdLoopAnalyze(IBFabric *p_fabric) {
   
   cout << "-I- Analyzing Fabric for Credit Loops (one VL used)." << endl;
+
+  CrdLoopPrepare(p_fabric);
 
   // Allocate routing tables on all switches (appData1.ptr)
   CrdLoopInitRtTbls(p_fabric);
