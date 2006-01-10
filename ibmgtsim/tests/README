@@ -3,15 +3,26 @@ example topology files.
 
 RunSimTest TESTS:
 ------------------
+RunSimTest requires two files: 
+* a "simulator flow": *.sim.tcl file that is run in the simulator
+* a "checker": *.check.tcl file that extends the RunSimTest with
+  a particular flow of execution and checkers for pass/fail
+
 osmLidAssignment - comprehensive test of lid assignment algorithm
 osmMulticastRoutingTest - performs Multicast Join in random order
 osmStability - check if we can get Subnet Up under many bad links
 OsmTest - simply run osmtest after subnet is up
 
-RunSimTest requires two files: 
-* a "simulator flow": *.sim.tcl file that is run in the simulator
-* a "checker": *.check.tcl file that extends the RunSimTest with
-  a particular flow of execution and checkers for pass/fail
+The following are ibdiagnet tests (all of them currently do not have an internal PASS/FAIL)
+ibdiagnet.check.tcl - is a common checker flow that starts the SM and calls post SM 
+   errors injection and then ibdiagnet
+ibdiag-drops.sim.tcl - set some bad links
+ibdiag-dup-node-guid.sim.tcl - duplicate node guid
+ibdiag-dup-port-guid.sim.tcl - duplicate port guid
+ibdiag-lid.sim.tcl - post the SM run duplicate or zero some lids
+ibdiag-mcast.sim.tcl - post SM create 3 MGRPs join some ports, then disconenct some MFT routing
+ibdiag-ucast.sim.tcl - post SM delete some LFT entries
+
 
 OTHERS:
 _______
