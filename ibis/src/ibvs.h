@@ -862,5 +862,79 @@ ibvs_multi_flash_write(
 *********/
 
 
+/****f* IBIS: ibvs/ibvs_mirror_read
+* NAME
+*     ibvs_mirror_read 
+*
+* DESCRIPTION
+*      Read a Mirror Vendor Specific MAD.
+*
+* SYNOPSIS
+*/
+ib_api_status_t
+ibvs_mirror_read(
+  IN ibvs_t* const p_ibvs,
+  IN uint16_t lid,
+  OUT ib_vs_t *p_vs_mad);
+
+/*
+* PARAMETERS
+*       p_ibvs
+*               A pointer to the ibvs_t struct.
+*
+*       lid
+*               The Destination lid of the MAD.
+*
+*       p_vs_mad
+*               A pointer to a Vendor Specific MAD that was received.
+*
+* RETURN VALUE
+*       The status of the function.
+*      
+* NOTES
+*       
+* SEE ALSO
+*       ibvs_mirror_write
+*********/
+
+/****f* IBIS: ibvs/ibvs_mirror_write
+* NAME
+*     ibvs_mirror_write 
+*
+* DESCRIPTION
+*      Send a Mirror Vendor Specific MAD.
+*
+* SYNOPSIS
+*/
+ib_api_status_t
+ibvs_mirror_write(
+  IN ibvs_t* const p_ibvs,
+  IN uint16_t lid,
+  IN uint32_t rx_mirror,
+  IN uint32_t tx_mirror);
+
+/*
+* PARAMETERS
+*       p_ibvs
+*               A pointer to the ibvs_t struct.
+*
+*       lid
+*               The Destination lid of the MAD.
+*
+*       rx_mirror
+*               From which port to mirror 
+*
+*       tx_mirror
+*               To which port to mirror
+*
+* RETURN VALUE
+*       The status of the function.
+*      
+* NOTES
+*       
+* SEE ALSO
+*       ibvs_mirror_read
+*********/
+
 
 #endif /* _IBVS_H_ */

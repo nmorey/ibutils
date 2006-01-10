@@ -447,6 +447,39 @@ ibvs_multi_flash_write_global(
 	return(status);
 }
 
+int
+ibvs_mirror_read_global(
+  IN uint16_t lid,
+  OUT	char **pp_new_mirror_str)
+{		
+   ib_api_status_t status;
+   ib_vs_t         vs_mads[1];
+
+   status = ibvs_mirror_read(p_ibvs_global,lid,vs_mads);
+   if (status) {
+     ibis_set_tcl_error("ERROR : Fail to read mirror");
+   } else {
+     *pp_new_mirror_str = 
+       ibvs_get_vs_str(FALSE, TRUE, 1, IBVS_DATA_MAX, VS_MIRROR_DATA_OFFSET, vs_mads);
+   }
+	return(status);
+}
+
+int
+ibvs_mirror_write_global(
+  IN uint16_t lid,
+  IN uint32_t rx_mirror,
+  IN uint32_t tx_mirror)
+{		
+   ib_api_status_t status;
+
+   status = ibvs_mirror_write(p_ibvs_global,lid,rx_mirror,tx_mirror );
+   if (status) 
+     ibis_set_tcl_error("ERROR : Fail to write mirror");
+	return(status);
+}
+
+
 
 %}
 
@@ -634,4 +667,13 @@ They all return 0 on succes.
   uint8_t size, 
   uint32_t address,
   uint32_vs_data_arr_t data[]);
+	
+%name(vsMirrorRead) int ibvs_mirror_read_global(
+  uint16_t lid,
+  char **pp_new_gpio_str);
+
+%name(vsMirrorWrite) int ibvs_mirror_write_global(
+  uint16_t lid,
+  uint32_t rx_mirror,
+  uint32_t tx_mirror);
 	

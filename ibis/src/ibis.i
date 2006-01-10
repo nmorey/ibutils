@@ -395,10 +395,12 @@ ibisp_is_debug(void)
     {
       
       // start with 1 on host channel adapters.
-      sprintf(res, "0x%016" PRIx64 " 0x%04X %s",
+      sprintf(res, "0x%016" PRIx64 " 0x%04X %s %u",
               cl_ntoh64( attr_array[i].port_guid ),
               attr_array[i].lid,
-              ib_get_port_state_str( attr_array[i].link_state ) );
+              ib_get_port_state_str( attr_array[i].link_state ),
+              attr_array[i].port_num
+              );
       
       p_obj = Tcl_NewStringObj(res, strlen(res));
       Tcl_ListObjAppendElement(interp, tcl_result, p_obj);

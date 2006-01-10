@@ -46,9 +46,11 @@
 #define VS_PHY_CONFIG        0x14
 #define VS_MFT               0x15
 #define VS_IB_PORT_CONFIG    0x16 
+#define VS_MIRROR            0x18
 #define VENDOR_GET           0x01
 #define VENDOR_SET           0x02
 #define VENDOR_GET_RESP      0x81
+#define SWITCH_PORT          0x0  
 #define EXT_CPU_PORT         0x01
 #define EXT_I2C_PORT         0x01
 #define EXT_I2C_PORT_1       0x02
@@ -69,6 +71,7 @@
 #define ATTR_MOD_LAST 0x1
 #define VS_CPU_DATA_OFFSET 0
 #define VS_GPIO_DATA_OFFSET 0
+#define VS_MIRROR_DATA_OFFSET 0
 #define VS_I2C_DATA_OFFSET 3
 #define VS_FLASH_DATA_OFFSET 2
 
