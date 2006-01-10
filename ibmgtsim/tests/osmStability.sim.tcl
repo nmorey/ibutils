@@ -1,12 +1,34 @@
 
 puts "Randomally picking 10 ports and assigning random drop rate on"
+########################################################################
+#
+#  Inject Random Multicast Requests
+#
 
+########################################################################
+#
+# Set Random Bad Links
 proc setNodePortErrProfile {node} {
-   # pick a random port number
-   set portNum [expr int([rmRand]*[IBNode_numPorts_get $node])+1]
+   # pick a random port number - but make sure you picked a connected one
+   set done 0
+   set cnt 0
+   while {!$done && ($cnt < 100) } {
+      set portNum [expr int([rmRand]*[IBNode_numPorts_get $node])+1]
+      set port [IBNode_getPort $node $portNum]
+      if {$port != ""} {
+         if {[IBPort_p_remotePort_get $port] != ""} {
+             set done 1
+         }
+      }
+      incr cnt
+   }
+   if {!$done} {
+      puts "-E- Fail to get connected port for node $node"
+      return
+   }
 
-   # pick a random drop rate in the range 0 - 1 . The higher the number the more chances for 
-   # drop.
+   # pick a random drop rate in the range 0 - 1 . The higher the number
+   # the more chances for drop.
    set dropRate [rmRand]
 
    # set the node drop rate
