@@ -715,6 +715,10 @@ set env(OSM_TMP_DIR) $simDir
 file mkdir $simDir
 cd $simDir
 
+# We also want to verify the correct osmvendor is selected
+set env(LD_LIBRARY_PATH) \
+    "[file join [file dirname [file dirname $osmPath]] lib]"
+
 # if provided a flow file use it
 if {$checkerFlowFile != ""} {
    source $checkerFlowFile
