@@ -63,12 +63,12 @@ proc checker {simDir osmPath osmPortGuid} {
 
    after 5000
 
-   set ibdiscoverLog [file join $simDir ibdiscover.log]
-   set cmd "ibdiscover -o $simDir"
+   set ibdiagnetLog [file join $simDir ibdiagnet.log]
+   set cmd "ibdiagnet -o $simDir"
 
    puts "-I- Invoking $cmd "
-   if {[catch {set res [eval "exec $cmd > $ibdiscoverLog"]} e]} {
-      puts "-E- ibdiscover failed"
+   if {[catch {set res [eval "exec $cmd > $ibdiagnetLog"]} e]} {
+      puts "-E- ibdiagnet failed"
       return 1
    }
    # make sure directory is not remoevd
