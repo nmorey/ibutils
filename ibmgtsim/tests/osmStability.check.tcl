@@ -55,7 +55,7 @@ proc checker {simDir osmPath osmPortGuid} {
    global env
    set osmLog [file join $simDir osm.log]
 
-   puts "-I- Waiting max time of 100sec...."
+   puts "-I- Waiting max time of 1000sec...."
 
    if {[osmWaitForUpOrDeadWithTimeout $osmLog 1000000]} {
       return 1
