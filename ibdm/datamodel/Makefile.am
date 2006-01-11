@@ -75,7 +75,8 @@ endif
 AM_CXXFLAGS = $(DBG) $(IBNL_PATH) $(TCL_CPPFLAGS)
 AM_CFLAGS =   $(DBG) $(IBNL_PATH) $(TCL_CFLAGS)
 
-lib_LTLIBRARIES = libibdmcom.la libibdm.la
+noinst_LTLIBRARIES = libibdmcom.la 
+lib_LTLIBRARIES = libibdm.la
 libibdmcom_la_SOURCES = $(common_SOURCES)
 libibdmcom_la_LDFLAGS = -version-info $(LIB_VER_TRIPLET) 
 
