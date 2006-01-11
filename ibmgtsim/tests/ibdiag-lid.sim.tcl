@@ -38,7 +38,8 @@ proc injectLidErrorOnNode {node} {
    for {set pn 1} {$pn <= $numPorts} {incr pn} {
       set port [IBNode_getPort $node $pn]
       if {($port != "") && ([IBPort_p_remotePort_get $port] != "")} {
-         puts "-I- Setting port:[IBPort_getName $port] lid to $newLid ($errType)"
+         set tmpNewLid [format 0x%04x $newLid]
+         puts "-I- Setting port:[IBPort_getName $port] lid to $tmpNewLid ($errType)"
          set pi [IBMSNode_getPortInfo sim$node $pn]
          ib_port_info_t_base_lid_set $pi $newLid
       }
