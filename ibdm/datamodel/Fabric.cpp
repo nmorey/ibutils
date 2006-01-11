@@ -1550,7 +1550,7 @@ IBFabric::parseSubnetLinks (string fn) {
     return 1;
   }
   
-  cout << "-I- Parsing OpenSM Subnet file:" << fn.c_str() << endl;
+  cout << "-I- Parsing Subnet file:" << fn.c_str() << endl;
   
   int lineNum = 0;
   while (f.good()) {
@@ -1591,7 +1591,7 @@ IBFabric::parseFdbFile(string fn) {
     return 1;
   }
   
-  cout << "-I- Parsing OpenSM FDBs file:" << fn.c_str() << endl;
+  cout << "-I- Parsing FDBs file:" << fn.c_str() << endl;
   
   IBNode *p_node;
   int anyErr = 0;
@@ -1663,7 +1663,7 @@ IBFabric::parseMCFdbFile(string fn) {
     return 1;
   }
   
-  cout << "-I- Parsing OpenSM Multicast FDBs file:" << fn.c_str() << endl;
+  cout << "-I- Parsing Multicast FDBs file:" << fn.c_str() << endl;
   
   IBNode *p_node;
   int anyErr = 0;
