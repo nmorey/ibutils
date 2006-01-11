@@ -31,6 +31,9 @@ proc dupPortGuid {fromNodeNPort toNodeNPort} {
             lappend targetPorts $port
          }
       }
+      set simNodeInfo [IBMSNode_getNodeInfo sim$node]
+      puts "-I- Overriding node:[IBNode_name_get $node] port guid to $newGuid (dup of $fromPortName)"
+      ib_node_info_t_port_guid_set $simNodeInfo $newGuid
    } else {
       set port [IBNode_getPort $node [lindex $toNodeNPort 1]]
       set targetPorts $port
@@ -90,9 +93,18 @@ set fabric [IBMgtSimulator getFabric]
 # get a random order of the end ports:
 set randEndPorts [getEndPortsByRandomOreder $fabric]
 set numEndPorts [llength $randEndPorts]
-set idx [expr int([rmRand]*$numEndPorts)]
 
-set fromNodeNPort [lindex $randEndPorts $idx]
-set toNodeNPort [lindex $randEndPorts [expr $idx+1]]
-
-dupPortGuid $fromNodeNPort $toNodeNPort
+set swaps [expr int([rmRand]*$numEndPorts)*3/5]
+puts "Swapping $swaps PortGuis"
+for {set i 1} {$i <= $swaps } {incr i} {
+    set idx [expr ($i + int([rmRand]*$numEndPorts))%$numEndPorts]
+    set fromNodeNPort [lindex $randEndPorts $idx]
+    set clones [expr int([rmRand]*5)] 
+    puts "Swap #$i with #$clones clones"
+    for {set j 1} {$j <= $clones} {incr j} {
+	set toNodeNPort [lindex $randEndPorts [expr ($idx+$j+1)%$numEndPorts]]
+        if {[catch {dupPortGuid $fromNodeNPort $toNodeNPort} e]} {
+            puts $errorInfo
+        }
+    }
+}
