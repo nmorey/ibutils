@@ -364,6 +364,40 @@ int IBMSNode::setCrSpace(uint32_t startAddr,uint32_t length,uint32_t data[]) {
     return res;
 }
 
+/* get MFT block */
+int IBMSNode::getMFTBlock(uint16_t blockIdx, uint8_t portIdx, ib_mft_table_t *outMftBlock) {
+    MSG_ENTER_FUNC;
+    int res = 1;
+    MSGREG(inf0, 'V', "getting MFT block: blockIdx $ portIdx $ ", "node");
+    MSGSND(inf0, blockIdx, portIdx);
+    if ( (switchMftPortsEntry.size() > blockIdx) &&
+         (switchMftPortsEntry[blockIdx].size() > portIdx))
+    {
+      if (outMftBlock)
+        memcpy(outMftBlock, &(switchMftPortsEntry[blockIdx][portIdx]), sizeof(ib_mft_table_t));
+      res = 0;
+    }
+    MSG_EXIT_FUNC;
+    return res;
+}
+ 
+/* set MFT block */
+int IBMSNode::setMFTBlock(uint16_t blockIdx, uint8_t portIdx, ib_mft_table_t *inMftBlock) {
+    MSG_ENTER_FUNC;
+    int res = 1;
+    MSGREG(inf0, 'V', "setting MFT block: blockIdx $ portIdx $ ", "node");
+    MSGSND(inf0, blockIdx, portIdx);
+    if ( (switchMftPortsEntry.size() > blockIdx) &&
+         (switchMftPortsEntry[blockIdx].size() > portIdx))
+    {
+      if (inMftBlock)
+        memcpy(&(switchMftPortsEntry[blockIdx][portIdx]), inMftBlock, sizeof(ib_mft_table_t));
+      res = 0;
+    }
+    MSG_EXIT_FUNC;
+    return res;  
+}
+
 static void
 ib_net16_inc(ib_net16_t *pVal, unsigned int add = 1)
 {

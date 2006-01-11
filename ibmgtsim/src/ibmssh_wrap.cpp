@@ -862,6 +862,11 @@ static string MsgAllModules("");
 
 #define madMcMemberRec ib_member_rec_t
 
+  /* we need to explicitly exit complib if we explictly started it if static linked */
+  void ibmssh_exit(ClientData clientData ) {
+    complib_exit();
+  }
+
 
 /* A TCL_AppInit() function that lets you build a new copy
  * of tclsh.
@@ -25102,6 +25107,211 @@ static int _wrap_IBMSNode_getCrSpace(ClientData clientData, Tcl_Interp *interp, 
     Tcl_SetIntObj(tcl_result,(long) _result);
     return TCL_OK;
 }
+#define IBMSNode_getMFTBlock(_swigobj,_swigarg0,_swigarg1,_swigarg2)  (_swigobj->getMFTBlock(_swigarg0,_swigarg1,_swigarg2))
+static int _wrap_IBMSNode_getMFTBlock(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    int  _result;
+    IBMSNode * _arg0;
+    uint16_t * _arg1;
+    uint8_t * _arg2;
+    ib_mft_table_t * _arg3;
+    ib_mft_table_t  temp;
+    Tcl_Obj * tcl_result;
+    uint16_t  temp0;
+    uint8_t  temp1;
+
+    clientData = clientData; objv = objv;
+{
+  _arg3 = &temp;
+}
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 4) || (objc > 4)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. IBMSNode_getMFTBlock { IBMSNode * } blockIdx portIdx ",-1);
+        return TCL_ERROR;
+    }
+{
+  
+  void *ptr;
+  if (ibmsGetSimNodePtrByTclName(objv[1], &ptr) != TCL_OK) {
+	 char err[128];
+	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
+	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+  }
+	 
+  _arg0 = (IBMSNode *)ptr;
+}
+{
+  /* the format is always: <type>:<idx>[:<name>] */
+  
+  // get the type from the given source 
+  char buf[128];
+  strcpy(buf, Tcl_GetStringFromObj(objv[1],0));
+  char *colonIdx = index(buf,':');
+  if (!colonIdx) {
+	 char err[128];
+	 sprintf(err, "-E- Bad formatted ibdm object:%s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;
+  }
+  *colonIdx = '\0';
+
+  if (!strcmp("IBMSNode ", "IBMSNode ")) {
+    if (strcmp(buf, "simnode")) {
+      char err[256];
+      sprintf(err, "-E- basetype is IBMSNode  but received obj of type %s", buf);
+      Tcl_SetStringObj(tcl_result, err, strlen(err));
+      return TCL_ERROR;	 
+    }
+  } else {
+	 char err[256];
+	 sprintf(err, "-E- basetype 'IBMSNode ' is unknown");
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+  }
+}
+{
+  temp0 = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
+  _arg1 = &temp0;
+}
+{
+  temp1 = strtoul(Tcl_GetStringFromObj(objv[3],NULL), NULL, 0);
+  _arg2 = &temp1;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (int )IBMSNode_getMFTBlock(_arg0,*_arg1,*_arg2,_arg3);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+    Tcl_SetIntObj(tcl_result,(long) _result);
+{ 
+  /* Argout ib_mft_table_t */
+  char buff[36];
+  int i;
+  /* HACK if we did not have the result show an error ... */
+  if (!_result)
+  {
+    /* we need to cleanup the result 0 ... */
+    Tcl_ResetResult(interp);
+    for (i = 0; i < IB_MCAST_BLOCK_SIZE; i++) 
+    {
+      sprintf(buff, "0x%04x ", cl_ntoh16(_arg3->mft_entry[i]));
+      Tcl_AppendToObj(tcl_result,buff,strlen(buff));
+    }
+  }
+}
+    return TCL_OK;
+}
+#define IBMSNode_setMFTBlock(_swigobj,_swigarg0,_swigarg1,_swigarg2)  (_swigobj->setMFTBlock(_swigarg0,_swigarg1,_swigarg2))
+static int _wrap_IBMSNode_setMFTBlock(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    int  _result;
+    IBMSNode * _arg0;
+    uint16_t * _arg1;
+    uint8_t * _arg2;
+    ib_mft_table_t * _arg3;
+    Tcl_Obj * tcl_result;
+    uint16_t  temp;
+    uint8_t  temp0;
+    ib_mft_table_t  tmp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 5) || (objc > 5)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. IBMSNode_setMFTBlock { IBMSNode * } blockIdx portIdx inMftBlock ",-1);
+        return TCL_ERROR;
+    }
+{
+  
+  void *ptr;
+  if (ibmsGetSimNodePtrByTclName(objv[1], &ptr) != TCL_OK) {
+	 char err[128];
+	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
+	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+  }
+	 
+  _arg0 = (IBMSNode *)ptr;
+}
+{
+  /* the format is always: <type>:<idx>[:<name>] */
+  
+  // get the type from the given source 
+  char buf[128];
+  strcpy(buf, Tcl_GetStringFromObj(objv[1],0));
+  char *colonIdx = index(buf,':');
+  if (!colonIdx) {
+	 char err[128];
+	 sprintf(err, "-E- Bad formatted ibdm object:%s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;
+  }
+  *colonIdx = '\0';
+
+  if (!strcmp("IBMSNode ", "IBMSNode ")) {
+    if (strcmp(buf, "simnode")) {
+      char err[256];
+      sprintf(err, "-E- basetype is IBMSNode  but received obj of type %s", buf);
+      Tcl_SetStringObj(tcl_result, err, strlen(err));
+      return TCL_ERROR;	 
+    }
+  } else {
+	 char err[256];
+	 sprintf(err, "-E- basetype 'IBMSNode ' is unknown");
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+  }
+}
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
+  _arg1 = &temp;
+}
+{
+  temp0 = strtoul(Tcl_GetStringFromObj(objv[3],NULL), NULL, 0);
+  _arg2 = &temp0;
+}
+{
+  char buf[256];
+  char *p_mftEntry;
+  char *str_token;
+  int i = 0;
+
+  strncpy(buf, Tcl_GetStringFromObj(objv[4],NULL), 255);
+  buf[255] = '\0';
+  p_mftEntry = strtok_r(buf," ", &str_token);
+  while (p_mftEntry && (i < IB_MCAST_BLOCK_SIZE))
+  {
+    errno = 0;
+    tmp.mft_entry[i++] = cl_hton16(strtoul(p_mftEntry, NULL, 0));
+    if (errno) {
+      printf("Wrong format for MFT Entry:%s\n", p_mftEntry);
+      return TCL_ERROR;
+    }
+    
+    p_mftEntry = strtok_r(NULL," ", &str_token);
+  }
+  while (i < IB_MCAST_BLOCK_SIZE)
+  {
+    tmp.mft_entry[i++] = 0;
+  }
+  _arg3 = &tmp;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (int )IBMSNode_setMFTBlock(_arg0,*_arg1,*_arg2,_arg3);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+    Tcl_SetIntObj(tcl_result,(long) _result);
+    return TCL_OK;
+}
 /* methodcmd8.swg : Tcl8.x method invocation */
 
 static int TclIBMSNodeMethodCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST _objv[]) {
@@ -25116,7 +25326,7 @@ static int TclIBMSNodeMethodCmd(ClientData clientData, Tcl_Interp *interp, int o
   tcl_result = Tcl_GetObjResult(interp);
   objv = (Tcl_Obj **) _objv; 
   if (objc < 2) {
-    Tcl_SetStringObj(tcl_result,"IBMSNode methods : { dump cget configure getIBNode getLinkStatus setPhyPortErrProfile getPhyPortErrProfile setPhyPortPMCounter getPhyPortPMCounter getPortInfo getNodeInfo getSwitchInfo getPKeyTblBlock setPKeyTblBlock setCrSpace getCrSpace  }",-1);
+    Tcl_SetStringObj(tcl_result,"IBMSNode methods : { dump cget configure getIBNode getLinkStatus setPhyPortErrProfile getPhyPortErrProfile setPhyPortPMCounter getPhyPortPMCounter getPortInfo getNodeInfo getSwitchInfo getPKeyTblBlock setPKeyTblBlock setCrSpace getCrSpace getMFTBlock setMFTBlock  }",-1);
     return TCL_ERROR;
   }
   obj = Tcl_NewObj();
@@ -25150,6 +25360,10 @@ static int TclIBMSNodeMethodCmd(ClientData clientData, Tcl_Interp *interp, int o
         cmd = _wrap_IBMSNode_setCrSpace;
     }    else if (strcmp(_str,"getCrSpace") == 0) {
         cmd = _wrap_IBMSNode_getCrSpace;
+    }    else if (strcmp(_str,"getMFTBlock") == 0) {
+        cmd = _wrap_IBMSNode_getMFTBlock;
+    }    else if (strcmp(_str,"setMFTBlock") == 0) {
+        cmd = _wrap_IBMSNode_setMFTBlock;
     }
     else if ((c == 'c') && (strncmp(_str,"configure",length) == 0) && (length >= 2)) {
       int i = 2;
@@ -25212,7 +25426,7 @@ static int TclIBMSNodeMethodCmd(ClientData clientData, Tcl_Interp *interp, int o
       }
     }
   if (!cmd) {
-    Tcl_SetStringObj(tcl_result,"Invalid Method. Must be { dump cget configure getIBNode getLinkStatus setPhyPortErrProfile getPhyPortErrProfile setPhyPortPMCounter getPhyPortPMCounter getPortInfo getNodeInfo getSwitchInfo getPKeyTblBlock setPKeyTblBlock setCrSpace getCrSpace }",-1);
+    Tcl_SetStringObj(tcl_result,"Invalid Method. Must be { dump cget configure getIBNode getLinkStatus setPhyPortErrProfile getPhyPortErrProfile setPhyPortPMCounter getPhyPortPMCounter getPortInfo getNodeInfo getSwitchInfo getPKeyTblBlock setPKeyTblBlock setCrSpace getCrSpace getMFTBlock setMFTBlock }",-1);
     return TCL_ERROR;
   }
   oldarg = objv[1];
@@ -26926,6 +27140,8 @@ SWIGEXPORT(int,Ibdm_Init)(Tcl_Interp *interp) {
     /* we use static linking with complib so init just in case */
 #ifdef OSM_BUILD_OPENIB
     complib_init();
+
+    Tcl_CreateExitHandler(ibmssh_exit, NULL);
 #endif
 
 	 // Register the objects for alternate mangling
@@ -27263,6 +27479,8 @@ SWIGEXPORT(int,Ibdm_Init)(Tcl_Interp *interp) {
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "IBMSNode_setPKeyTblBlock", _wrap_IBMSNode_setPKeyTblBlock, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "IBMSNode_setCrSpace", _wrap_IBMSNode_setCrSpace, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "IBMSNode_getCrSpace", _wrap_IBMSNode_getCrSpace, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "IBMSNode_getMFTBlock", _wrap_IBMSNode_getMFTBlock, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "IBMSNode_setMFTBlock", _wrap_IBMSNode_setMFTBlock, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp,SWIG_prefix "IBMSNode",TclIBMSNodeCmd, (ClientData) NULL, NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "new_madMcMemberRec", _wrap_new_madMcMemberRec, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "delete_madMcMemberRec", _wrap_delete_madMcMemberRec, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);

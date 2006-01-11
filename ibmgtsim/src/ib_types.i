@@ -160,6 +160,64 @@
   $target = &tmp;
 }
 
+%typemap(tcl8,out) ib_mft_table_t* {
+  char buff[36];
+  int i;
+  for (i = 0; i < IB_MCAST_BLOCK_SIZE; i++) 
+  {
+    sprintf(buff, "0x%04x ", cl_ntoh16($source->mft_entry[i]));
+    Tcl_AppendToObj($target,buff,strlen(buff));
+  }
+}
+
+%typemap(tcl8,ignore) ib_mft_table_t *OUTPUT(ib_mft_table_t temp) {
+  $target = &temp;
+}
+
+%typemap(tcl8,argout) ib_mft_table_t *OUTPUT { 
+  /* Argout ib_mft_table_t */
+  char buff[36];
+  int i;
+  /* HACK if we did not have the result show an error ... */
+  if (!_result)
+  {
+    /* we need to cleanup the result 0 ... */
+    Tcl_ResetResult(interp);
+    for (i = 0; i < IB_MCAST_BLOCK_SIZE; i++) 
+    {
+      sprintf(buff, "0x%04x ", cl_ntoh16($source->mft_entry[i]));
+      Tcl_AppendToObj($target,buff,strlen(buff));
+    }
+  }
+}
+
+%typemap(tcl8,in) ib_mft_table_t* (ib_mft_table_t tmp) {
+  char buf[256];
+  char *p_mftEntry;
+  char *str_token;
+  int i = 0;
+
+  strncpy(buf, Tcl_GetStringFromObj($source,NULL), 255);
+  buf[255] = '\0';
+  p_mftEntry = strtok_r(buf," ", &str_token);
+  while (p_mftEntry && (i < IB_MCAST_BLOCK_SIZE))
+  {
+    errno = 0;
+    tmp.mft_entry[i++] = cl_hton16(strtoul(p_mftEntry, NULL, 0));
+    if (errno) {
+      printf("Wrong format for MFT Entry:%s\n", p_mftEntry);
+      return TCL_ERROR;
+    }
+    
+    p_mftEntry = strtok_r(NULL," ", &str_token);
+  }
+  while (i < IB_MCAST_BLOCK_SIZE)
+  {
+    tmp.mft_entry[i++] = 0;
+  }
+  $target = &tmp;
+}
+
 %{
 #define uint8_array_t uint8_t
 %}

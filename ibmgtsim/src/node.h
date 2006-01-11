@@ -155,7 +155,6 @@ class IBMSNode {
   ib_node_info_t nodeInfo;
   std::vector < ib_port_info_t > nodePortsInfo;
   std::vector < std::vector < ib_pkey_table_t > > nodePortPKeyTable;
-  std::vector < ib_mft_table_t > switchMftMlidEntry;
   std::vector < std::vector < ib_mft_table_t > > switchMftPortsEntry;
   std::vector < ib_slvl_table_t > sl2VlOutPortEntry;
   std::vector < std::vector < ib_slvl_table_t > > sl2VlInPortEntry;
@@ -207,6 +206,12 @@ class IBMSNode {
   /* get CR Space Value */
   int getCrSpace(uint32_t startAddr,uint32_t length,uint32_t data[] );
 
+  /* get MFT block */
+  int getMFTBlock(uint16_t blockIdx, uint8_t portIdx, ib_mft_table_t *outMftBlock);
+
+  /* set MFT block */
+  int setMFTBlock(uint16_t blockIdx, uint8_t portIdx, ib_mft_table_t *inMftBlock);
+  
   /* get a specific port info */
   ib_port_info_t * getPortInfo(uint8_t portNum) {
     if (portNum >= nodePortsInfo.size()) return NULL;

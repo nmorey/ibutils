@@ -411,56 +411,68 @@ class IBMgtSim {
 ///////////////////////////////////////////////////////////////////////////////
 %apply IBMSPortErrProfile *OUTPUT {IBMSPortErrProfile &errProfileOut};
 %apply IBMSPortErrProfile *RefIn {IBMSPortErrProfile &errProfileIn};
+%apply ib_mft_table_t *OUTPUT {ib_mft_table_t *outMftBlock};
 
 /* Every IB node have this simulator node attached */
 class IBMSNode {
  public:
 
-  /* avoid friendship: */
   IBNode *getIBNode() {return pNode;};
+  /* get the IBNode of the IBMSNode */
 
-  /* get the link status of the given port */
   int getLinkStatus(uint8_t outPortNum);
+  /* get the link status of the given port */
 
-  /* set a particular port err profile */
   int setPhyPortErrProfile(uint8_t portNum, IBMSPortErrProfile &errProfileIn);
+  /* set a particular port err profile */
   
-  /* get a particular port err profile */
   int getPhyPortErrProfile(uint8_t portNum, IBMSPortErrProfile &errProfileOut);
+  /* get a particular port err profile */
   
-  /* set a specific port counter */
   int setPhyPortPMCounter(uint8_t portNum, uint32_t counterSelect, 
                           ib_pm_counters_t &countersVal);
+  /* set a specific port counter */
 
-  /* get a specific port counter */
   ib_pm_counters_t *
     getPhyPortPMCounter(uint8_t portNum, uint32_t counterSelect);
+  /* get a specific port counter */
   
-  /* get a specific port info */
   ib_port_info_t * getPortInfo(uint8_t portNum);
+  /* get a specific port info */
 
-  /* get the node info */
   ib_node_info_t * getNodeInfo();
+  /* get the node info */
 
-  /* get the switch info */
   ib_switch_info_t *getSwitchInfo();
+  /* get the switch info */
 
-  /* get pkey table block */
   ib_pkey_table_t *getPKeyTblBlock(uint8_t portNum, uint16_t blockNum);
+  /* get pkey table block */
 
-  /* set pkey table block */
   int setPKeyTblBlock(uint8_t portNum, uint16_t blockNum, ib_pkey_table_t *tbl);
+  /* set pkey table block */
 
-  /* set CR Space Value */
   int setCrSpace(uint32_t startAddr,uint32_t length,uint32_t data[] );
+  /* set CR Space Value */
 
-  /* get CR Space Value */
   int getCrSpace(uint32_t startAddr,uint32_t length,uint32_t data[] );
+  /* get CR Space Value */
 
+  int getMFTBlock(uint16_t blockIdx, uint8_t portIdx, ib_mft_table_t *outMftBlock);
+  /* get MFT block */
+
+  int setMFTBlock(uint16_t blockIdx, uint8_t portIdx, ib_mft_table_t *inMftBlock);
+  /* set MFT block */
 };
 
 %include mads.i
 
+%{
+  /* we need to explicitly exit complib if we explictly started it if static linked */
+  void ibmssh_exit(ClientData clientData ) {
+    complib_exit();
+  }
+%}
 //
 // INIT CODE
 //
@@ -473,6 +485,8 @@ class IBMSNode {
     /* we use static linking with complib so init just in case */
 #ifdef OSM_BUILD_OPENIB
     complib_init();
+
+    Tcl_CreateExitHandler(ibmssh_exit, NULL);
 #endif
 
 	 // Register the objects for alternate mangling
