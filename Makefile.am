@@ -35,7 +35,11 @@
 #AUTOMAKE_OPTIONS 	= gnits
 
 # note that order matters: make the lib first then use it
-SUBDIRS 		= ibis ibdm ibmgtsim
+if BUILD_IBMGTSIM
+SUBDIRS 		= ibis ibdm ibdiag ibmgtsim
+else
+SUBDIRS 		= ibis ibdm ibdiag
+endif
 
 # this will control the update of the files in order
 MAINTAINERCLEANFILES = Makefile.in aclocal.m4 configure config-h.in 
