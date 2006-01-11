@@ -134,6 +134,8 @@ int TraceDRPathRoute (IBPort *p_smNodePort, list_int drPathPortNums) {
   return 0;
 }
 
+typedef set< IBNode *, less< IBNode * > > set_p_node;
+
 // Trace the path between the lids based on min hop count only
 int 
 TraceRouteByMinHops (IBFabric *p_fabric, 
@@ -141,6 +143,7 @@ TraceRouteByMinHops (IBFabric *p_fabric,
   IBPort *p_port = p_fabric->getPortByLid(slid), *p_remPort, *p_nextPort;
   IBNode *p_node, *p_remNode;
   unsigned int hop = 0;
+  set_p_node visitedNodes;
 
   // make sure:
   if (! p_port) {
@@ -183,6 +186,14 @@ TraceRouteByMinHops (IBFabric *p_fabric,
 		if (p_remPort != NULL) {
 		  p_remNode = p_remPort->p_node;
 		  
+        // did we already visit this node?
+        set_p_node::iterator sI = visitedNodes.find(p_remNode);
+        if (sI != visitedNodes.end()) {
+          cout << "-E- Run into loop in min hop path at node:" << p_remNode->name << endl;
+          return 1;
+        }
+        visitedNodes.insert(p_remNode);
+
 		  // The to section:
 		  if (p_remPort->p_sysPort) {
 			 // is external port:
