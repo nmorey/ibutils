@@ -75,12 +75,6 @@ else
    osm_lib_dir="lib"	
 fi
 
-if test "x$with_osm_libs" = "xnone"; then
-   if test "x$with_osm" != "xnone"; then 
-      with_osm_libs=$with_osm/$osm_lib_dir
-   fi
-fi
-
 dnl if the user did not provide --with-osm look for it in reasonable places
 if test "x$with_osm" = xnone; then 
    if test -d /usr/local/ibgd/apps/osm; then
@@ -94,6 +88,10 @@ if test "x$with_osm" = xnone; then
    fi
 fi
 AC_MSG_NOTICE(OSM: used from $with_osm)
+
+if test "x$with_osm_libs" = "xnone"; then
+   with_osm_libs=$with_osm/$osm_lib_dir
+fi
 
 dnl check what build we have gen1 or gen2
 if test -d $with_osm/include/infiniband; then
