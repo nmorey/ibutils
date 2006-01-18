@@ -1,0 +1,40 @@
+%define ver 	@VERSION@
+
+Name: ibdiag
+Summary: IBDIAG Tools
+Requires: ibadm
+Version: %{ver}
+Release: rc1
+
+Group: System Environment/Base
+License: GPL/BSD
+Url: http://openib.org/
+Source: http://openib.org/downloads/ibdiag-%{ver}.tar.gz
+BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
+Vendor: Mellanox Technologies Ltd.
+
+%description
+Infiniband Diagnostic Package
+
+%prep
+%setup -q -n %{name}-%{ver}
+
+%build
+./configure
+make
+
+%install
+%makeinstall
+# make DESTDIR=$RPM_BUILD_ROOT install
+
+%clean
+rm -rf $RPM_BUILD_DIR/%{name}-%{ver}
+	
+%files
+%defattr(-,root,root)
+%{_libdir}/ibdiagnet1.0
+%{_bindir}/ibdiagnet
+
+%changelog
+* Wed Jan 18 2006 Vladimir Sokolovsky <vlad@mellanox.co.il>
+- Initial packaging for gen2 stack

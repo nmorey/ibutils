@@ -42,5 +42,7 @@ MAINTAINERCLEANFILES = Makefile.in aclocal.m4 configure config-h.in
 
 ACLOCAL			= aclocal -I $(ac_aux_dir)
 
-#dist-hook:
-#	cd $(distdir) 
+EXTRA_DIST = ibdiag.spec.in
+
+dist-hook: ibdiag.spec
+	cp ibdiag.spec $(distdir)
