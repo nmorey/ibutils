@@ -852,8 +852,7 @@ ibis_gsi_sync_mad_batch_callback(
     {
       osm_log(p_ctrl->p_log, OSM_LOG_DEBUG,
               "ibis_gsi_sync_mad_batch_callback: "
-              "Ignoring non GetResp method 0x%X\n",
-              cl_ntoh16(p_madw->p_mad->method));
+              "Ignoring non GetResp\n");
       // goto Exit;  
     }
   
