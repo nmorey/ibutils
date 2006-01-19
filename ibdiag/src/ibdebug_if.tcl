@@ -1,40 +1,4 @@
 ######################################################################
-#
-# Copyright (c) 2004 Mellanox Technologies LTD. All rights reserved.
-#
-# This software is available to you under a choice of one of two
-# licenses.  You may choose to be licensed under the terms of the GNU
-# General Public License (GPL) Version 2, available from the file
-# COPYING in the main directory of this source tree, or the
-# OpenIB.org BSD license below:
-#
-#     Redistribution and use in source and binary forms, with or
-#     without modification, are permitted provided that the following
-#     conditions are met:
-#
-#      - Redistributions of source code must retain the above
-#        copyright notice, this list of conditions and the following
-#        disclaimer.
-#
-#      - Redistributions in binary form must reproduce the above
-#        copyright notice, this list of conditions and the following
-#        disclaimer in the documentation and/or other materials
-#        provided with the distribution.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-# NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
-# BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
-# ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
-# CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
-#
-# $Id: node.h,v 1.23 2005/07/07 21:15:29 eitan Exp $
-#
-######################################################################
-
-######################################################################
 ### Procs:
 # putsIn80Chars
 # toolsFlags
@@ -239,23 +203,32 @@ proc toolsFlags { tool } {
 	general	   { return "h V -vars" }
     }
 }
-
+##############################
+#  SYNOPSIS
+#  FUNCTION
+#  INPUTS
+#  OUTPUT
 proc HighPriortyFlag {} {
     global argv
     ## If help is needed ...
-    if { [wordInList "-h" $argv] || [wordInList "--help" $argv] } { 
+   if { [WordInList "-h" $argv] || [WordInList "--help" $argv] } {
 	inform "-H-help"
     }
     ## output the version number
-    if { [wordInList "-V" $argv] || [wordInList "--version" $argv] } { 
+   if { [WordInList "-V" $argv] || [WordInList "--version" $argv] } {
 	inform "-H-version"
     }
     ## list all env-var names
-    if { [wordInList "--vars" $argv] } { 
+   if { [WordInList "--vars" $argv] } {
 	inform "-H-vars"
     }
 }
 
+##############################
+#  SYNOPSIS
+#  FUNCTION
+#  INPUTS
+#  OUTPUT
 proc parseArgv {} {
     global G argv env InfoArgv
 
@@ -335,7 +308,7 @@ proc parseArgv {} {
 	set argvList [lreplace $argvList $index $index]
     }
     # set G(DBId) [open $G(tool).dbg w]
-    # if {[set G(argv,debug) [wordInList "--debug" $argv]]} {
+   # if {[set G(argv,debug) [WordInList "--debug" $argv]]} {
     #     set G(DBId) [open $G(tool).dbg w]
     # }
 
@@ -346,11 +319,11 @@ proc parseArgv {} {
 	set flag  [lindex $argvList 0]
 	set value [lindex $argvList 1]
 
-	if { ! [wordInList $flag $allLegalFlags] } {
+      if { ! [WordInList $flag $allLegalFlags] } {
 	    inform "-E-argv:unknown.flag" -flag $flag
 	}
 	set argvList [lreplace $argvList 0 0]
-	if {[wordInList $flag $argvList]} {
+      if {[WordInList $flag $argvList]} {
 	    inform "-E-argv:flag.twice.specified" -flag $flag
 	}
 
@@ -421,7 +394,7 @@ proc parseArgv {} {
 		}
 		append G(argv,$name) " " [lrange $argvList 0 [expr $I -1]]
 		set argvList [lreplace $argvList 0 [expr $I -1]]
-		if {[wordInList [lindex $argvList 0] $allLegalFlags]} {
+            if {[WordInList [lindex $argvList 0] $allLegalFlags]} {
 		    break
 		} else {
 		    append G(argv,$name) " " [lindex $argvList 0]
@@ -475,7 +448,7 @@ proc parseArgv {} {
     catch { package require ibdm }
 
     ## TODO: check that direct path/LID/name/sysname exist
-    # - this is checked by getArgvPortNames and discoverPath
+   # - this is checked by getArgvPortNames and DiscoverPath
 
     # If topology is not given and -s/-n  flags are specified
     if { ! [info exists G(argv,topo.file)]  } {
@@ -509,14 +482,22 @@ proc parseArgv {} {
 ######################################################################
 ### User messages
 ######################################################################
+
+##############################
+#  SYNOPSIS
+#  FUNCTION
+#  INPUTS
+#  OUTPUT
+
+
 proc putsIn80Chars { string args } { 
     global G
 
     set maxLen 80
     set indent ""
     if { [llength $args] == 1 } { set args [join $args] }
-    set chars  [wordAfterFlag $args "-chars"]
-    set nonewline [wordInList "-nonewline" $args]
+   set chars  [WordAfterFlag $args "-chars"]
+   set nonewline [WordInList "-nonewline" $args]
     foreach line [split $string \n] {
 	if { $chars != "" } {
 	    if { [set idx [string first $chars $line]] >= 0 } {
@@ -532,7 +513,7 @@ proc putsIn80Chars { string args } {
 	set len80 [expr $maxLen - [string length $indent]]
 	while { [string length $line] > 0 } {
 	    set interval [string range $line 0 $len80]
-	    if { [wordInList "-origlen" $args] \
+         if { [WordInList "-origlen" $args] \
 		     || ( [string length $line] <= $len80 ) \
 		     || ( [set spcIdx [string last " " $interval]] == -1 ) } { 
 		append outline "$line"
@@ -543,14 +524,14 @@ proc putsIn80Chars { string args } {
 	    }
 	}
 
-	if { ! [wordInList "-stdout" $args] } {
+      if { ! [WordInList "-stdout" $args] } {
 	    if {$nonewline} {
 		puts -nonewline $outline
 	    } else {
 		puts $outline
 	    }
 	}
-	if { ! [wordInList "-logfile" $args] } {
+      if { ! [WordInList "-logfile" $args] } {
 	    if {$nonewline} {
 		catch { puts -nonewline $G(logFileID) $outline }
 	    } else {
@@ -578,7 +559,7 @@ proc inform { msgCode args } {
 	    return 
 	}
 	set dontShowMads \
-	    [expr ( \"[procName 1]\" == \"discoverFabric\" ) \
+         [expr ( \"[ProcName 1]\" == \"DiscoverFabric\" ) \
 		 && ( \"$G(tool)\" != \"ibdiagnet\" ) \
 		 && ( $G(argv,verbose) < 2 ) ]
     } else { 
@@ -621,7 +602,6 @@ proc inform { msgCode args } {
         exit $G(status,help) 
     }
     ##################################################
-
     set argsList $args 
 
     array set msgF {}
@@ -634,33 +614,71 @@ proc inform { msgCode args } {
 	    set argsList  [lreplace $argsList 0 0]
 	}
     }
-    # TODO fix BUG 33360 - In the following lines there is no I == 1
-    foreach entry [array names msgF DirectPath*] { 
-        regsub {^DirectPath} $entry {} I
 
-        set NodeType${I}     [lstGetParamValue Type $msgF($entry) -byDr]
+   set listOfNames ""
+   set listOfNames_Ports ""
+   set maxType 3
+   set total 0
+   set localDevice 0
+   array set deviceNames { SW "Switch" CA "HCA" Rt "Router" }
 
-        set EntryPort${I}    [format %d [lstGetParamValue PortNum $msgF($entry) -byDr]]
+   foreach entry [array names msgF DirectPath*] {
+      incr total
+      regsub {^DirectPath} $entry {} i
+      set NODE_TYPE($i)  [GetParamValue Type $msgF($entry) -byDr]
+      set NODE_TYPE($i,Name) $deviceNames($NODE_TYPE($i))
+      set PATH($i) "\"$msgF($entry)\""
 
+      if {$NODE_TYPE($i) == "SW"} {
+         set maxType 6
+         set ENTRY_PORT($i) 0
+      } else {
+         set ENTRY_PORT($i) [GetParamValue PortNum $msgF($entry) -byDr]
+         set ENTRY_PORT($i) [format %d $ENTRY_PORT($i)]
+      }
         if { $msgF($entry) == "" } { 
-            set nodeFullName${I} "the local device"
-	    set nodeName${I}     "the local device"
+         set NODE_NAME($i,FullName)  "The Local Device"
+         set NODE_NAME($i,Name)      "The Local Device"
+         set localDevice 1
 	} else { 	    
             set DrPath2Name_1 [DrPath2Name $msgF($entry) -fullName]
             set DrPath2Name_2 [DrPath2Name $msgF($entry)]
-            set nodeFullName${I} "path=\"$msgF($entry)\" $DrPath2Name_1"
-            set nodeName${I}     "path=\"$msgF($entry)\" $DrPath2Name_2"
+         set NODE_NAME($i,FullName)  "$DrPath2Name_1"
+         set NODE_NAME($i,Name)      "$DrPath2Name_2"
+      }
+      if {$NODE_NAME($i,Name) == ""} {
+         if {$NODE_TYPE($i) != "SW"} {
+            set NODE_NAME($i,Name_Port) "PN=$ENTRY_PORT($i)"
+         } else {
+            set NODE_NAME($i,Name_Port) ""
 	}
+      } else {
+         set NODE_NAME($i,Name_Port) "\"$NODE_NAME($i,Name)/P$ENTRY_PORT($i)\""
+         set NODE_NAME($i,Name) "\"$NODE_NAME($i,Name)\""
     }
 
-    set PN0 [retriveEntryFromArray msgF PN0]
-    set PN1 [retriveEntryFromArray msgF PN1]
+      lappend listOfNames $NODE_NAME($i,Name)
+      lappend listOfNames_Ports $NODE_NAME($i,Name_Port)
+   }
+
+   set maxName [LengthMaxWord $listOfNames]
+   set maxName_Port [LengthMaxWord $listOfNames_Ports]
+   for {set i 0} {$i < $total } {incr i} {
+      if {[info exists NODE_NAME($i,Name)]} {
+         set name [AddSpaces $NODE_NAME($i,Name) $maxName]
+         set NODE_TYPE($i,Name) "[AddSpaces $NODE_TYPE($i,Name) $maxType]"
+         set NODE_NAME($i,Name) $name
+         set NODE_NAME($i,Name) $name
+         set name [AddSpaces $NODE_NAME($i,Name_Port) $maxName_Port]
+         set NODE_NAME($i,Name_Port) $name
+      }
+   }
 
     if {[info exists msgF(flag)]} { 
 	set name  ""
 	catch { set name $InfoArgv($msgF(flag),name) }
 	set envVarName "IBDIAG_[string toupper [join [split $name .] _]]"
-	if {[wordInList "$msgF(flag)" $argv]} { 
+      if {[WordInList "$msgF(flag)" $argv]} {
 	    set llegalValMsg "llegal value for $msgF(flag) flag"
 	} elseif {[info exists env($envVarName)]} { 
 	    set llegalValMsg "llegal value for environment variable $envVarName"
@@ -688,57 +706,72 @@ proc inform { msgCode args } {
    ##################################################
    ### decoding msgCode 
    switch -exact -- $msgCode { 
-       -E-argv:unknown.flag { 
+      "-E-argv:unknown.flag" {
 	   append msgText "Illegal agrument: $msgF(flag) - unknown flag."
-       } -E-argv:missing.mandatory.flag {
+      }
+      "-E-argv:missing.mandatory.flag" {
 	   if { [llength $msgF(flag)] > 1 } { 
 	       append msgText "Missing one of the mandatory flags [join $msgF(flag) ,]."
 	   } else { 
 	       append msgText "Missing mandatory flag $msgF(flag)."
 	   }
-       } -E-argv:flag.without.value {
+      }
+      "-E-argv:flag.without.value" {
 	   append msgText "Illegal agruments: flag $msgF(flag) must have a value."
-       } -E-argv:flag.twice.specified { 
+      }
+      "-E-argv:flag.twice.specified" {
 	   append msgText "Illegal agruments: flag $msgF(flag) is specified twice."
-       } -E-argv:nonmutex.flags {
+      }
+      "-E-argv:nonmutex.flags" {
 	   append msgText "Only one of the options [join $msgF(flags) ,] may be active."
-       } -E-argv:nonmutex.modes { 
+      }
+      "-E-argv:nonmutex.modes" {
 	   # TODO: do I ever use this ???
 	   append msgText "Bad arguments; could not figure out the run mode."
-       } -E-argv:too.large.integer {
+      }
+      "-E-argv:too.large.integer" {
 	   append msgText "$msgF(value) - i${llegalValMsg} "
 	   append msgText "(integer value too large to represent)."
-       } -E-argv:not.nonneg.integer {
+      }
+      "-E-argv:not.nonneg.integer" {
 	   append msgText "$msgF(value) - i${llegalValMsg} "
 	   append msgText "(must be a non negative integer number)."
-       } -E-argv:not.pos.integer {
+      }
+      "-E-argv:not.pos.integer" {
 	   append msgText "$msgF(value) - i${llegalValMsg} "
 	   append msgText "(must be a positive integer number)."
-       } -E-argv:not.pos.integers {
+      }
+      "-E-argv:not.pos.integers" {
 	   append msgText "$msgF(value) - i${llegalValMsg}.\n"
 	   append msgText "(lagel value: a positive integer, or a pair of"
 	   append msgText "positive integers separated by a comma)."
-       } -E-argv:too.large.value { 
+      }
+      "-E-argv:too.large.value" {
 	   append msgText "$msgF(value) - i${llegalValMsg}.\n"
 	   switch -exact -- $msgF(flag) { 
 	       "-d"    { append msgText "(maximal legal port number is [expr $msgF(maxValue)])." }
 	       "-l"    { append msgText "(maximal legal LID is $msgF(maxValue))." }
 	       default { append msgText "(it must not exceed $msgF(maxValue))." }
 	   }
-       } -E-argv:bad.path {
+      }
+      "-E-argv:bad.path" {
 	   append msgText "\"$msgF(value)\" - i${llegalValMsg}.\n"
 	   append msgText "(it must be a direct path: "
 	   append msgText "positive integers separated by commas)."
-       } -E-argv:dir.not.found {
+      }
+      "-E-argv:dir.not.found" {
 	   append msgText "$msgF(value) - no such directory. "
 	   append msgText "I${llegalValMsg} (must be an existing directory)."
-       } -E-argv:could.not.create.dir { 
+      }
+      "-E-argv:could.not.create.dir" {
 	   append msgText "Failed to create directory $msgF(value) (for output files).\n"
 	   append msgText "Error message:\n\"$msgF(errMsg)\""
-       } -E-argv:file.not.found { 
+      }
+      "-E-argv:file.not.found" {
 	   append msgText "$msgF(value) - no such file. "
 	   append msgText "I${llegalValMsg} (must be an existing file)."
-       } -E-argv:dir.not.writable { 
+      }
+      "-E-argv:dir.not.writable" {
 	   append msgText "Directory $msgF(value) is write protected."
 	   if { $llegalValMsg != "" } { 
 	       append msgText " I${llegalValMsg}."
@@ -746,29 +779,39 @@ proc inform { msgCode args } {
 	       append msgText "\n(Use the -o flag to use a different directory"
 	       append msgText " for the output files)"
 	   }
-       } -E-argv:file.not.readable { 
+      }
+      "-E-argv:file.not.readable" {
 	   append msgText "File $msgF(value) is read protected. I${llegalValMsg}."
-       } -E-argv:bad.sys.name {
+      }
+      "-E-argv:bad.sys.name" {
 	   append msgText "$msgF(value) - no such system. I${llegalValMsg}.\n"
 	   append msgText "[format $validNames system]"
-       } -E-argv:unknown.sys.name {
+      }
+      "-E-argv:unknown.sys.name" {
 	   ## TODO: add description (in help page, too...)
 	   append msgText "Local system name was not specified.\n"
 	   append msgText "(it must be specified when using a topology file).\n"
 	   append msgText "[format $validNames system]"
-       } -E-argv:bad.node.name {
+      }
+      "-E-argv:bad.node.name" {
 	   append msgText "$msgF(value) - no such node. I${llegalValMsg}.\n"
 	   append msgText "[format $validNames node]"
-       } -E-argv:bad.port.name {; ### Not used
+      }
+      "-E-argv:bad.port.name" {
+         ###TODO  Not used
 	   append msgText "$msgF(value) - no such port. I${llegalValMsg}.\n"
 	   append msgText "[format $validNames port]"
-       } -E-argv:nodename.without.topology { 
+      }
+      "-E-argv:nodename.without.topology" {
 	   append msgText "If node(s) are specified by name - \"$msgF(value)\""
 	   append msgText " - a topology file must be given."
-       } -E-argv:no.such.command {
+      }
+      "-E-argv:no.such.command" {
 	   append msgText "\"$msgF(command)\" - no such command."
-       } -E-argv:command.not.valid.for.device { 
+      }
+      "-E-argv:command.not.valid.for.device" {
 	   append msgText "Command \"$msgF(command)\" is not valid for device $msgF(device)."
+
        } -E-argv:no.such.field { 
 	   append msgText "\"$msgF(errorCode)\" - illegal field for command \"$msgF(command)\"."
        } -E-argv:illegal.field.value {
@@ -840,7 +883,7 @@ proc inform { msgCode args } {
 	   append msgText "Using port $G(argv,port.num) as the local port."
        } -W-localPort:node.inteligently.guessed {
 	   append msgText "Since local system name was not specified (-s flag), "
-	   append msgText "its value was set to $G(argv,sys.name)."
+         append msgText "its set to $G(argv,sys.name)."
        } -I-localPort:is.dr.path.out.port { 
 	   append msgText "Using port $G(argv,port.num) as the local port "
 	   append msgText "(since this is the output port of the direct route)."
@@ -853,49 +896,42 @@ proc inform { msgCode args } {
 	   append msgText "Writing info into $msgF(file1)."
        }
 
+      -E-outfile:not.valid {
+         append msgText "Output file $msgF(file0) is illegal value for $G(tool).\n"
+      }
+     
        -E-discover:local.port.down {
 	   append msgText "Port $msgF(port) of local device if down."
        } -E-discover:local.port.crashed {
 	   append msgText "Discovery at local link failed: $msgF(command) - failed "
-	   append msgText "$numOfRetries consecutive times. Aborting discovery."
+         append msgText "$numOfRetries consecutive times."
        } -E-discover:local.port.failed {
 	   append msgText "Local link is bad: $msgF(command) - failed $msgF(fails) "
 	   append msgText "times during $msgF(attempts) attempts."
        } -E-discover:duplicated.guids { 
-           if {$PN0 != "UNKNOWEN" && $PN1 != "UNKNOWEN"} {
-                set PN0 PN:[retriveEntryFromArray msgF PN0]
-                set PN1 PN:[retriveEntryFromArray msgF PN1]
-           } else {
-                set PN0 ""
-                set PN1 ""
-           }
-           array set deviceNames { SW "a switch" CA "a HCA" Rt "a router" }
+         # TODO Unset NODE_NAME,NODE_TYPE... at the end of inform
+         if {$localDevice} {set G(LocalDeviceDuplicated) 1}
 	   append msgText "Duplicate $msgF(port_or_node) guid detected.\n"
 	   append msgText "The following two different devices:\n"
-	   append msgText "$deviceNames($NodeType0) at $nodeName0 $PN0\n"
-           append msgText "$deviceNames($NodeType1) at $nodeName1 $PN1\n"
+         append msgText "a $NODE_TYPE(0,Name) $NODE_NAME(0,Name_Port) at direct path=$PATH(0)\n"
+         append msgText "a $NODE_TYPE(1,Name) $NODE_NAME(1,Name_Port) at direct path=$PATH(1)\n"
 	   append msgText "have inedtical $msgF(port_or_node) guid $msgF(guid)."
            set noExiting 1
        } "-E-discover:zero/duplicate.IDs.found" {
-	   if { $msgF(value) == 0 } {
-	       append msgText "Device(s) with "
+         if {$total > 1} {
+            append msgText "#$total Devices with "
 	   } else {
-	       append msgText "Devices with identical "
+            append msgText "Device with "
 	   }
-	   append msgText "$msgF(ID) = $msgF(value) found in the fabric:"
-	   set I 0
-	   while 1 { 
-	       if {[catch {append msgText "\n[expr $[list nodeName${I}]]"}]} {
-		   break
-	       }
-	       catch {append msgText " port=$msgF(port${I})"}
-	       incr I
+         if { $msgF(value) != 0 } { append msgText "identical "}
+         append msgText "$msgF(ID) = $msgF(value) found in the fabric:\n"
+        
+         for {set i 0} {$i < $total} {incr i} {
+            append msgText "a $NODE_TYPE($i,Name) $NODE_NAME($i,Name_Port) at direct path=$PATH($i)\n"
 	   }
            set noExiting 1
-       }
-       
-       -E-ibtrace:direct.route.deadend {
-	   ## TODO: check the phrasing ...
+      } -E-ibtrace:direct.route.deadend {
+         ### TODO: check the phrasing ...
 	   append msgText "Bad direct route: the specified direct route passes through "
 	   append msgText "the following device%n"
 	   append msgText "$nodeFullName%n"
@@ -919,13 +955,13 @@ proc inform { msgCode args } {
 	   # set noExiting 1
 	   # puts ""
 	   append msgText "Bad LID: the following device has LID = 0.\n"
-	   if { $NodeType == "SW" } {
+         if { $NODE_TYPE(0) == "SW" } {
 	       append msgText "Switch "
 	   } else { 
 	       append msgText "Port $EntryPort of HCA "
 	   }
 	   append msgText "$nodeFullName%n"
-	   if {[wordInList "+cannotRdPM" $args]} { 
+         if {[WordInList "+cannotRdPM" $args]} {
 	       append msgText "Cannot send pmGetPortCounters mads.\n"
 	   }
 	   append msgText "$rumSMmsg."
@@ -976,6 +1012,10 @@ proc inform { msgCode args } {
 
        "-I-topology:matching.header" {
 	   append msgText "Topology matching results"
+      } "-W-topology:localDevice.Duplicated" {
+         append msgText "Local Device Guid was duplicated. "
+         append msgText "Since local system name was guessed, "
+         append msgText "Topology Matching May Failed."
        } "-I-topology:matching.note" {
 	   append msgText "Note that \"bad\" links and the part of the fabric "
 	   append msgText "to which they led (in the BFS discovery of the fabric, "
@@ -1056,11 +1096,10 @@ proc inform { msgCode args } {
 	   append msgText "Done. Run time was [expr [clock seconds] - $args] seconds."
        }
 
-
        "-V-mad:sent"	{
 	   if {$dontShowMads} { return }
 	   append putsFlags " -nonewline"
-	   append msgText "running $msgF(command) ..." ;#(invoked by [procName 2])
+         append msgText "running $msgF(command) ..." ;#(invoked by [ProcName 2])
        } "-V-mad:received"	{
 	   if {$dontShowMads} { return }
 	   set msgText "" ; # <- this means don't print the "-I-" prefix
@@ -1164,7 +1203,6 @@ proc inform { msgCode args } {
     }
 
     if { $msgType == "-E-" } {
-        putsIn80Chars " "
 	if { ! [info exists noExiting] } {
             set Exiting "Exiting"
 	    if { $msgSource == "discover" } {
@@ -1245,7 +1283,7 @@ ERROR CODES
   1 - Failed to fully discover the fabric
   2 - Failed to parse command line options
   3 - Some packet drop observed 
-  4 - Mismatch with provided topology"
+  4 - Could not use local device/port"
 
 #   The number of retries of sending a specific packet is given by the -f option (default = 3).
 
@@ -1374,7 +1412,7 @@ ERROR CODES
 # -<field-i> <val-i>: specific attribute field and value. Automatically sets the component mask bit.
  ##############################
 
-    set onlySynopsys [wordInList "-sysnopsys" $args]
+   set onlySynopsys [WordInList "-sysnopsys" $args]
     # NAME
     if { ! $onlySynopsys } { 
 	puts "NAME\n  $G(tool)"
@@ -1398,7 +1436,7 @@ ERROR CODES
 	    catch { append flagNdesc " $InfoArgv(-$flag,desc)" }
 	    catch { 
 		if { ( [set defVal $InfoArgv(-$flag,default)] != "" ) \
-			 && ( ! [wordInList $flag "i v"] ) } {
+                    && ( ! [WordInList $flag "i v"] ) } {
 		    append flagNdesc " (default = $defVal)"
 		}
 	    }
