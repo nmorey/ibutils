@@ -29,20 +29,12 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
-# $Id: Makefile.am,v 1.6 2005/02/23 21:08:33 eitan Exp $
+# $Id: Makefile.am,v 1.13 2005/03/23 16:15:39 eitan Exp $
 #--
 
-#AUTOMAKE_OPTIONS 	= gnits
+man_MANS = ibdiagnet.1
+EXTRA_DIST = ibdiagnet.pod ibdiag_pod2man
 
-# note that order matters: make the lib first then use it
-SUBDIRS 		= src doc
+ibdiagnet.1: ibdiagnet.pod
+	$(srcdir)/ibdiag_pod2man $(srcdir)/ibdiagnet.pod ibdiagnet.1
 
-# this will control the update of the files in order
-MAINTAINERCLEANFILES = Makefile.in aclocal.m4 configure config-h.in 
-
-ACLOCAL			= aclocal -I $(ac_aux_dir)
-
-EXTRA_DIST = ibdiag.spec.in
-
-dist-hook: ibdiag.spec
-	cp ibdiag.spec $(distdir)
