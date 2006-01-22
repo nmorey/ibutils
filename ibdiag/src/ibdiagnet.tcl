@@ -20,18 +20,16 @@ source [file join [file dirname [info script]] ibdebug.tcl]
 # End of legal section.
 #
 #  FUNCTION
-#     ibdiagnet discovers the entire network providing text display of the
-#     result as well as subnet.lst, LFT dump (same format as osm.fdbs)
-#     and Multicast dump (same as osm.mcfdbs).  
-#     The discovery exhaustively routes through all the fabric links
-#     multiple times, tracking and reporting packet drop statistics -
-#     indicating bad links if any. 
+#     ibdiagnet discovers the entire network providing text display of the result as well as subnet.lst, 
+#     LFT dump (same format as osm.fdbs) and Multicast dump (same as osm.mcfdbs). 
+#     The discovery exhaustively routes through all the fabric links multiple times, 
+#     tracking and reporting packet drop statistics - indicating bad links if any.
 #
 #  AUTHOR
-#  Ariel Libman. Mellanox Technologies LTD.
+#	Ariel Libman. Mellanox Technologies LTD.
 #
 #  CREATION DATE
-#  19/May/05
+#	19/May/05
 #
 #  MODIFICATION HISTORY
 #  $Revision: 2608 $
@@ -55,12 +53,15 @@ if {[catch {DiscoverFabric} e]} { puts "\n\nERROR $errorInfo $e"}
 DiscoverHiddenFabric
 CheckBadLidsGuids
 RereadLongPaths
+
 set G(detect.bad.links) 0
 
 ### Write the .lst, .fdbs and .mcfdbs files
 writeLstFile
-writeFdbsFile
+writeFdbsFile 
 writeMcfdbsFile
+writeMasksFile
+writeSMFile
 
 ### match topology (if topology is given)
 matchTopology $G(outfiles,.lst)
