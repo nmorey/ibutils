@@ -554,6 +554,20 @@ proc getLdPreloadCmd {} {
    return $res    
 }
 
+# return the absolute file name for the given file or error and exit if the 
+# file does not exists or is not readable
+proc getAbsoluteFileName {fileName} {
+   if {![file exists $fileName]} {
+      puts "-E- Given file:$fileName does not exist"
+      exit 1
+   }
+   if {![file readable $fileName]} {
+      puts "-E- Given file:$fileName is not readable"
+      exit 1
+   }
+   return [file normalize $fileName]
+}
+
 ##############################################################################
 # 
 # Get Opt
@@ -666,11 +680,11 @@ while { [ set err [ getopt $argv "hvV:o:f:c:t:n:p:s:" opt arg ]] } {
 			h {Help; exit 0}
 			v {puts "";puts $version; puts ""; exit 0}
 			o {set osmPath $arg}
-			f {set simulationFlowFile $arg}
-			c {set checkerFlowFile $arg}
+			f {set simulationFlowFile [getAbsoluteFileName $arg]}
+			c {set checkerFlowFile  [getAbsoluteFileName $arg]}
          n {set osmNodeName $arg}
          p {set osmPortNum $arg}
-			t {set topologyFile $arg}
+			t {set topologyFile [getAbsoluteFileName $arg]}
          s {set randomSeed $arg}
 			V {set moduleVerbosityList "top $arg" }
          default {
