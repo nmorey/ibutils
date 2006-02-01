@@ -1,6 +1,23 @@
 
 puts "FLOW: duplicate some port guid"
 
+# duplicate the node guid from the source to the dest
+proc dupNodeGuid {fromNode toNode} {
+   global errorInfo
+   set newGuid [IBNode_guid_get $fromNode]
+   set toNodeName [IBNode_name_get $toNode] 
+   set fromNodeName [IBNode_name_get $fromNode] 
+   puts "-I- Overriding node:$toNodeName guid to $newGuid (dup of $fromNodeName)"
+
+   # IBDM ...
+   IBNode_guid_set $toNode $newGuid
+
+   # But we need to deal with the SIMNODE too:
+   set simNode "sim$toNode"
+   set ni [IBMSNode_getNodeInfo $simNode]
+   ib_node_info_t_node_guid_set $ni $newGuid
+}
+
 # duplicate the port guid from the source to the dest
 proc dupPortGuid {fromNodeNPort toNodeNPort} {
 
@@ -95,19 +112,16 @@ set randEndPorts [getEndPortsByRandomOreder $fabric]
 set numEndPorts [llength $randEndPorts]
 
 set swaps [expr int([rmRand]*$numEndPorts)/5]
-if {!$swaps} {set swaps 1}
-
-puts "Swapping $swaps PortGuis"
+set swaps 1
 for {set i 1} {$i <= $swaps } {incr i} {
-   set idx [expr ($i + int([rmRand]*$numEndPorts))%$numEndPorts]
-   set fromNodeNPort [lindex $randEndPorts $idx]
-   set clones [expr int([rmRand]*2)] 
-   if {!$clones} {set clones 1}
-   puts "Swap #$i with #$clones clones"
-   for {set j 1} {$j <= $clones} {incr j} {
-      set toNodeNPort [lindex $randEndPorts [expr ($idx+$j)%$numEndPorts]]
-      if {[catch {dupPortGuid $fromNodeNPort $toNodeNPort} e]} {
-         puts $errorInfo
-      }
-   }
+    set idx [expr ($i + int([rmRand]*$numEndPorts))%$numEndPorts]
+    set fromNodeNPort [lindex $randEndPorts $idx]
+    set clones [expr int([rmRand]*2)] 
+    for {set j 1} {$j <= $clones} {incr j} {
+       set toNodeNPort [lindex $randEndPorts [expr ($idx+$j)%$numEndPorts]]
+       if {[catch {dupPortGuid $fromNodeNPort $toNodeNPort} e]} {
+          puts $errorInfo
+       }
+       dupNodeGuid [lindex $fromNodeNPort 0] [lindex $toNodeNPort 0]
+    }
 }

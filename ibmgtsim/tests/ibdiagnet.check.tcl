@@ -68,7 +68,7 @@ proc checker {simDir osmPath osmPortGuid} {
    puts "SIM: [gets $simCtrlSock]"
 
    set ibdiagnetLog [file join $simDir ibdiagnet.stdout.log]
-   set cmd "ibdiagnet -r -o $simDir -t $topologyFile"
+   set cmd "ibdiagnet -v -r -o $simDir -t $topologyFile"
 
    puts "-I- Invoking $cmd "
    if {[catch {set res [eval "exec $cmd > $ibdiagnetLog"]} e]} {

@@ -4,7 +4,7 @@ puts "Randomally picking some ports and assigning random drop rate on"
 proc setPortErrProfile {node portNum} {
    # pick a random drop rate in the range 0 - 1 . The higher the number the more chances for 
    # drop.
-   set dropRate [expr [rmRand]*0.1 + 0.9]
+   set dropRate [expr [rmRand]*0.6 + 0.2]
    
    # set the node drop rate
    puts "-I- Setting drop rate:$dropRate on node:$node port:$portNum"
