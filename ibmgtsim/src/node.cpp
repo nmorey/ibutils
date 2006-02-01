@@ -64,36 +64,29 @@
 boolean_t IBMSPortErrProfile::isDropped() 
 {
 
-  /*
-    as we can evenly randomize integers in the range 0 - RAND_MAX we
-    need to reflect that into a binary decision for dropping the packets
-    such that infinitely we will have a drop ratio as defined
-    
-    We use the packetDropRateVar as a measure to filter out changes in the 
-    pass/fail decision. This is useful to sustain a failure over the
-    several retries of the packet send
-  */
-  float d = RandMgr()->random();
-
   //MSGREG(inf1, 'V', "New drop value:$ r:$ dr:$ after:$", "errProfile");
   //MSGREG(inf2, 'V', "No need for new value after:$ (rand was:$)", "errProfile");
 
   /* do we need to change our previous decision */
-  if (numPacketFromLastChange > d * packetDropRateVar) 
+  if ((--numPacketToNextChange) == 0)
   {
+    /*
+      We use the packetDropRateVar as a measure to filter out changes in the 
+      pass/fail decision. This is useful to sustain a failure over the
+      several retries of the packet send
+    */
+
+    float d = RandMgr()->random();
+    /* note a value of 1 means change on next packet */
+    numPacketToNextChange = 2.0 * d * packetDropRateVar + 1;
+
+    /* take a new decision */
     float r = RandMgr()->random();
     if (r < packetDropRate)
       drop = TRUE;
     else
       drop = FALSE;
     //MSGSND(inf1, drop, r, packetDropRate, numPacketFromLastChange);
-    numPacketFromLastChange = 1;
-  }
-  else
-  {
-    //MSGSND(inf2, numPacketFromLastChange, d * packetDropRateVar);
-    /* use previous decision */
-    numPacketFromLastChange++;
   }
   return drop;
 }

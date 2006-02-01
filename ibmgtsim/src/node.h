@@ -85,8 +85,9 @@ class IBMSPortErrProfile {
   /* to be able to filter we need to have some history */
   boolean_t drop;
 
-  /* this variable counts the number of packet from last decision */
-  unsigned int numPacketFromLastChange;
+  /* this variable counts the number of packet to pass until the next drop/pass 
+     random decision is made */
+  unsigned int numPacketToNextChange;
   
   /* total number of packets passed */
   uint64_t numPackets;
@@ -94,7 +95,7 @@ class IBMSPortErrProfile {
   /* constructor */
   IBMSPortErrProfile() { 
     packetDropRate = packetDropRateVar = 0;
-    numPacketFromLastChange = 10000; /* force first decision */
+    numPacketToNextChange = 1; /* force first decision */
     numPackets = 0ULL;
   };
 
