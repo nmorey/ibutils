@@ -32,9 +32,11 @@
 # $Id: Makefile.am,v 1.13 2005/03/23 16:15:39 eitan Exp $
 #--
 
-man_MANS = ibdiagnet.1
-EXTRA_DIST = ibdiagnet.pod ibdiag_pod2man
+man_MANS = ibdiagnet.1 ibdiagpath.1
+EXTRA_DIST = ibdiagnet.pod ibdiagpath.pod ibdiag_pod2man
 
 ibdiagnet.1: ibdiagnet.pod
 	$(srcdir)/ibdiag_pod2man $(srcdir)/ibdiagnet.pod ibdiagnet.1
 
+ibdiagpath.1: ibdiagpath.pod
+	$(srcdir)/ibdiag_pod2man $(srcdir)/ibdiagpath.pod ibdiagpath.1

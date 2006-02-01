@@ -20,6 +20,8 @@ dnl Checks for libraries.
 dnl TODO: check for ibdm tcl package
 
 dnl Create the following Makefiles
-AC_CONFIG_FILES([Makefile src/Makefile doc/Makefile src/ibdiagnet:src/ibdiagnet.in ibdiag.spec])
+AC_CONFIG_FILES([Makefile src/Makefile doc/Makefile 
+   src/ibdiagnet:src/ibdiagnet.in 
+   src/ibdiagpath:src/ibdiagpath.in ibdiag.spec])
 AC_OUTPUT()
 
