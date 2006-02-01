@@ -32,13 +32,20 @@
 # $Id: Makefile.am,v 1.13 2005/03/23 16:15:39 eitan Exp $
 #--
 
-bin_SCRIPTS = ibdiagnet
-EXTRA_DIST = ibdebug_if.tcl ibdebug.tcl ibdiagnet.in ibdiagnet.pkg ibdiagnet.tcl
+bin_SCRIPTS = ibdiagnet ibdiagpath
+EXTRA_DIST = ibdebug_if.tcl ibdebug.tcl ibdiagnet.in ibdiagnet.pkg ibdiagnet.tcl \
+	ibdiagpath.pkg ibdiagpath.tcl
 
-TCL_LIB_DIR=$(DESTDIR)/$(libdir)/ibdiagnet$(VERSION)
+NET_LIB_DIR=$(DESTDIR)/$(libdir)/ibdiagnet$(VERSION)
+PATH_LIB_DIR=$(DESTDIR)/$(libdir)/ibdiagpath$(VERSION)
 install-exec-am: install-binSCRIPTS
-	mkdir -p $(TCL_LIB_DIR)
-	cp $(srcdir)/ibdiagnet.pkg $(TCL_LIB_DIR)/pkgIndex.tcl
-	cp $(srcdir)/ibdebug.tcl $(TCL_LIB_DIR)/ibdebug.tcl
-	cp $(srcdir)/ibdebug_if.tcl $(TCL_LIB_DIR)/ibdebug_if.tcl
-	cp $(srcdir)/ibdiagnet.tcl $(TCL_LIB_DIR)/ibdiagnet.tcl
+	mkdir -p $(NET_LIB_DIR)
+	cp $(srcdir)/ibdiagnet.pkg $(NET_LIB_DIR)/pkgIndex.tcl
+	cp $(srcdir)/ibdebug.tcl $(NET_LIB_DIR)/ibdebug.tcl
+	cp $(srcdir)/ibdebug_if.tcl $(NET_LIB_DIR)/ibdebug_if.tcl
+	cp $(srcdir)/ibdiagnet.tcl $(NET_LIB_DIR)/ibdiagnet.tcl
+	mkdir -p $(PATH_LIB_DIR)
+	cp $(srcdir)/ibdiagpath.pkg $(PATH_LIB_DIR)/pkgIndex.tcl
+	cp $(srcdir)/ibdebug.tcl $(PATH_LIB_DIR)/ibdebug.tcl
+	cp $(srcdir)/ibdebug_if.tcl $(PATH_LIB_DIR)/ibdebug_if.tcl
+	cp $(srcdir)/ibdiagpath.tcl $(PATH_LIB_DIR)/ibdiagpath.tcl

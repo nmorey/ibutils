@@ -45,15 +45,16 @@ source [file join [file dirname [info script]] ibdebug.tcl]
 ######################################################################
 ### Initialize ibis
 InitalizeIBdiag
+InitalizeINFO_LST
 startIBDebug
-
 ### Discover the cluster
 set G(detect.bad.links) 1
 if {[catch {DiscoverFabric} e]} { puts "\n\nERROR $errorInfo $e"}
 DiscoverHiddenFabric
 CheckBadLidsGuids
-RereadLongPaths
+CheckSM
 
+RereadLongPaths
 set G(detect.bad.links) 0
 
 ### Write the .lst, .fdbs and .mcfdbs files
@@ -61,6 +62,7 @@ writeLstFile
 writeFdbsFile 
 writeMcfdbsFile
 writeMasksFile
+#writeNeighborFile
 writeSMFile
 
 ### match topology (if topology is given)
