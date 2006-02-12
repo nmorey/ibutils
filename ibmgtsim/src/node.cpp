@@ -78,7 +78,7 @@ boolean_t IBMSPortErrProfile::isDropped()
 
     float d = RandMgr()->random();
     /* note a value of 1 means change on next packet */
-    numPacketToNextChange = 2.0 * d * packetDropRateVar + 1;
+    numPacketToNextChange = (unsigned int)(2.0 * d * packetDropRateVar + 1);
 
     /* take a new decision */
     float r = RandMgr()->random();
