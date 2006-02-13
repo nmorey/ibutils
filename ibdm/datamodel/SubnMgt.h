@@ -123,7 +123,7 @@ SubnMgtCheckFabricMCGrpsForCreditLoopPotential(
 // Provide sets of port pairs to run BW check from in a way that is
 // full bandwidth. Reide in LinkCover.cpp
 int
-LinkCoverageAnalysis(IBFabric *p_fabric);
+LinkCoverageAnalysis(IBFabric *p_fabric, list_pnode rootNodes);
 
 #endif /* IBDM_SUBN_MGT_H */
 

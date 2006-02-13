@@ -1243,7 +1243,7 @@ int ibdmCheckFabricMCGrpsForCreditLoopPotential(
 // Check all multicast groups do not have credit loop potential
 
 %name(ibdmLinkCoverageAnalysis)
-int LinkCoverageAnalysis(IBFabric *p_fabric);
+int LinkCoverageAnalysis(IBFabric *p_fabric, list_pnode rootNodes);
 // Provide sets of port pairs to run BW check from in a way that is
 // full bandwidth. Reide in LinkCover.cpp
 

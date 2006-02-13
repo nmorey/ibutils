@@ -509,12 +509,14 @@ int main (int argc, char **argv) {
     // report non up down Multicast Groups
     anyErr |= SubnMgtCheckFabricMCGrpsForCreditLoopPotential(&fabric, nodesRank);
 
+    // Analyze the fabric links to generate a list of src,dst pairs list 
+    // to cover all fabric links
+    LinkCoverageAnalysis(&fabric, rootNodes);
+
   } else {
     cout << "-I- Fail to recognize any root nodes. Using full credit loop check." << endl;
     anyErr |= CrdLoopAnalyze(&fabric);
   }
   
-  LinkCoverageAnalysis(&fabric);
-
   exit(anyErr);
 }

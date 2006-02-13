@@ -2121,12 +2121,14 @@ static int _wrap_ibdmLinkCoverageAnalysis(ClientData clientData, Tcl_Interp *int
 
     int  _result;
     IBFabric * _arg0;
+    list_pnode * _arg1;
     Tcl_Obj * tcl_result;
+    list_pnode  tmpNodeList;
 
     clientData = clientData; objv = objv;
     tcl_result = Tcl_GetObjResult(interp);
-    if ((objc < 2) || (objc > 2)) {
-        Tcl_SetStringObj(tcl_result,"Wrong # args. ibdmLinkCoverageAnalysis p_fabric ",-1);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ibdmLinkCoverageAnalysis p_fabric rootNodes ",-1);
         return TCL_ERROR;
     }
 {
@@ -2198,9 +2200,54 @@ static int _wrap_ibdmLinkCoverageAnalysis(ClientData clientData, Tcl_Interp *int
 	 return TCL_ERROR;	 
   }
 }
+{
+#if TCL_MINOR_VERSION > 3
+  const char **sub_lists;
+#else
+  char **sub_lists;
+#endif
+  int num_sub_lists;
+  uint8_t idx;
+
+  /* we will use the TCL split list to split into elements */
+  if (Tcl_SplitList(interp, 
+                    Tcl_GetStringFromObj(objv[2],0), 
+                    &num_sub_lists, &sub_lists) != TCL_OK) {
+    printf("-E- Bad formatted list :%s\n",
+           Tcl_GetStringFromObj(objv[2],0));
+    return TCL_ERROR;
+  }
+
+  for (idx = 0; (idx < num_sub_lists); idx++) 
+  {
+    /* we need to double copy since TCL 8.4 requires split res to be const */
+    Tcl_Obj *p_tclObj;
+    void *ptr;
+    char buf[128];
+    char *p_last;
+    strcpy(buf, sub_lists[idx]);
+
+    if (strncmp("node:", buf, 5)) {
+      printf("-E- Bad formatted node (%u) object:%s\n", idx, buf);
+      return TCL_ERROR;
+    }
+
+	 p_tclObj = Tcl_NewObj();
+    Tcl_SetStringObj(p_tclObj, buf, -1);
+    if (ibdmGetObjPtrByTclName(p_tclObj, &ptr) != TCL_OK) {
+      printf("-E- fail to find ibdm obj by id:%s", buf );
+      Tcl_DecrRefCount(p_tclObj);
+      return TCL_ERROR;	
+    }
+    Tcl_DecrRefCount(p_tclObj);
+    tmpNodeList.push_back((IBNode *)ptr);
+  }
+	 
+  _arg1 = &tmpNodeList;
+}
 { 
   ibdm_tcl_error = 0;
-      _result = (int )LinkCoverageAnalysis(_arg0);
+      _result = (int )LinkCoverageAnalysis(_arg0,*_arg1);
 ; 
   if (ibdm_tcl_error) { 
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);

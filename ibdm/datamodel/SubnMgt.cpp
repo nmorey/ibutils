@@ -637,12 +637,13 @@ SubnMgtOsmRoute(IBFabric *p_fabric) {
           p_node->setLFTPortForLid( bLid + lmcValue, 0);
           continue;
         }
-                  
+        
         // initialize the min subsription to a huge number:
         int minSubsc = 100000;
         unsigned int minSubsPortNum = 0;
-                  
+        
         // look for the port with min profile 
+#if 1
         for (unsigned int pn = 1; pn <= p_node->numPorts; pn++) {
           IBPort *p_port = p_node->getPort(pn);
 
@@ -658,7 +659,25 @@ SubnMgtOsmRoute(IBFabric *p_fabric) {
             }
           }
         }
-                  
+#else
+        // do a random selection
+        {
+          vector<unsigned int> minHopOutPorts;
+          for (unsigned int pn = 1; pn <= p_node->numPorts; pn++) {
+            IBPort *p_port = p_node->getPort(pn);
+
+            if (! p_port) continue;
+            
+            // the hops should match the min 
+            if (p_node->getHops(p_port, bLid) == minHop) {
+              minHopOutPorts.push_back(pn);
+            }
+          }
+          double portRand = 1.0*minHopOutPorts.size()*rand()/RAND_MAX;
+          unsigned int portIdx = int(portRand);
+          minSubsPortNum = minHopOutPorts[portIdx];
+        }
+#endif
         // so now we need to ahve the port number or error
         if (!minSubsPortNum) {
           cout << "-E- Cound not find min hop port!" << endl;
