@@ -64,7 +64,7 @@ typedef union YYSTYPE {
   int        ival;
   char      *sval;
 } YYSTYPE;
-/* Line 1275 of yacc.c.  */
+/* Line 1268 of yacc.c.  */
 #line 69 "ibnl_parser.h"
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1

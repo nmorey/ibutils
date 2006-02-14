@@ -128,8 +128,9 @@ NODE {
 }
 
 2.5G|5G|10G {
-	 yylval.sval = (char *)malloc(strlen(yytext) + 1);
-    strcpy(yylval.sval, yytext);
+	 yylval.sval = (char *)malloc(strlen(yytext));
+    strncpy(yylval.sval, yytext, strlen(yytext) - 1);
+    strcat(yylval.sval, "");
 #ifdef DEBUG
 	 printf("SPEED:%s\n",yylval.sval);
 #endif
