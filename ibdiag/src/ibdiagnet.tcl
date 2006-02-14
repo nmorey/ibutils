@@ -49,20 +49,19 @@ InitalizeINFO_LST
 startIBDebug
 ### Discover the cluster
 set G(detect.bad.links) 1
-if {[catch {DiscoverFabric} e]} { puts "\n\nERROR $errorInfo $e"}
-DiscoverHiddenFabric
+if {[catch {DiscoverFabric 0} e]} { puts "\n\nERROR $errorInfo $e" ; exit 1}
+catch {DiscoverHiddenFabric}
 CheckBadLidsGuids
 CheckSM
-
 RereadLongPaths
 set G(detect.bad.links) 0
 
 ### Write the .lst, .fdbs and .mcfdbs files
+
 writeLstFile
 writeFdbsFile 
 writeMcfdbsFile
 writeMasksFile
-#writeNeighborFile
 writeSMFile
 
 ### match topology (if topology is given)

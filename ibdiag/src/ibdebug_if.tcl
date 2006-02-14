@@ -35,7 +35,7 @@ array set InfoArgv {
     -d,maxvalue	"0xff"
 
     -f,name	"failed.retry"
-    -f,default	3 
+    -f,default	1 
     -f,param	"fail-rtry"
     -f,desc	"number of retries of sending a specific packet"
 
@@ -138,7 +138,6 @@ switch -exact -- $G(tool) {
 	set InfoArgv(-a,desc) "the specific attribute to send"
     }
     "ibcfg"		{ 
-	# unset InfoArgv(-q,optional)  G(-q,newline)
 	array set InfoArgv {
 	    -c,name "config.mode" 
 	    -c,default ""
@@ -240,13 +239,9 @@ proc SetEnvValues {} {
 	set G(argv,$name) $env($envVarName) 
     }
 }
-
+##############################
 
 ##############################
-#  SYNOPSIS	
-#  FUNCTION	
-#  INPUTS	
-#  OUTPUT	
 proc parseArgv {} {
     global G argv env InfoArgv
 
@@ -262,8 +257,6 @@ proc parseArgv {} {
     ## mandatory flags
     # The first foreach is for the case when there are two different operatinal 
     # modes of the tool like the case is for ibmad,ibsac
-    # HACK: I assume that the different sections have disjoint mandatory flags
-    # if this is not true, I'll have to work harder ...
     set toolsFlags [toolsFlags $G(tool)]
     foreach section [split $toolsFlags ";" ] { 
 	foreach item $section { 
@@ -280,7 +273,6 @@ proc parseArgv {} {
 	    }
 	    set infoFlags $section
 	}
-	# if {[info exists infoFlags]} { break }
     }
     if { ! [info exists infoFlags] } {
 	set infoFlags [lindex [split $toolsFlags ";" ] 0]
@@ -343,7 +335,6 @@ proc parseArgv {} {
 	    set value ""
 	} elseif {[info exists InfoArgv($flag,regexp)]} {
 	    scan [split $InfoArgv($flag,regexp) .] {%s %s %s} type sign len
-	    # debug "300" type sign len
 	    if { $type == "integer" } {
 		# Turn values like 010 into 10 (instead of the tcl value - 8)
 		set int "(0x)?0*(\[a-fA-F0-9\]+)"
@@ -453,13 +444,19 @@ proc parseArgv {} {
     if {[catch {set G(logFileID) [open $G(outfiles,.log) w]} e]} {
         inform "-E-loading:cannot.open.file" $G(outfiles,.log)
     }
+
+    if {[string compare [package provide Tcl] 8.4] < 0} {
+        inform "-E-loading:cannot.use.current.tcl.package" -version [package provide Tcl]
+    }
+
+    #ibdmFindRootNodesByMinHop
     if {[catch { package require ibdm } e]} {
         inform "-E-loading:cannot.load.package.ibdm"
     }
 
-    ## TODO: check that direct path/LID/name/sysname exist
-    # - this is checked by getArgvPortNames and DiscoverPath
-
+    if {[info commands ibdmFindRootNodesByMinHop] == ""} {
+        inform "-E-loading:cannot.use.current.ibdm.package" -version [package provide ibdm]
+    }
     # If topology is not given and -s/-n  flags are specified
     if { ! [info exists G(argv,topo.file)]  } {
 	if {[info exists G(argv,sys.name)]} { 
@@ -470,6 +467,7 @@ proc parseArgv {} {
 		-value $G(argv,by-name.route)
 	}
 	inform "-W-argv:no.topology.file"
+
     # If topology is given, check that $G(argv,by-name.route) are names of existing nodes
     # We do the same for G(argv,sys.name), after ibis_init 
     # - to search for sys.name in the description of the source node
@@ -482,22 +480,17 @@ proc parseArgv {} {
 	}
         set G(fabric,.topo) [new_IBFabric]
         IBFabric_parseTopology $G(fabric,.topo) $topoFile
-	# DZ Why is it here : getArgvPortNames
     }
 
     return
 }
-######################################################################
+##############################
 
 ######################################################################
 ### User messages
 ######################################################################
 
 ##############################
-#  SYNOPSIS	
-#  FUNCTION	
-#  INPUTS	
-#  OUTPUT	
 proc putsIn80Chars { string args } { 
     global G
 
@@ -548,6 +541,9 @@ proc putsIn80Chars { string args } {
 	}
     }
 }
+##############################
+
+##############################
 proc retriveEntryFromArray {_arrayName _entry {_defMsg "UNKNOWEN"}} {
     upvar 1 $_arrayName tmpArray
     if {[info exists tmpArray($_entry)]} {
@@ -557,7 +553,9 @@ proc retriveEntryFromArray {_arrayName _entry {_defMsg "UNKNOWEN"}} {
         return $_defMsg
     }
 }
+##############################
 
+##############################
 proc inform { msgCode args } { 
     global G InfoArgv argv env
     regexp {^(\-[A-Z]\-)?([^:]+).*$} $msgCode . msgType msgSource
@@ -607,14 +605,14 @@ proc inform { msgCode args } {
 	catch { putsIn80Chars $msgText }
         exit $G(status,highPriorty) 
     }
-    ##################################################
     set argsList $args 
 
     array set msgF {}
     while { [llength $argsList] > 0 } {
         if {[regsub "^-" [lindex $argsList 0] "" param]} { 
 	    set value [lindex $argsList 1]
-            set msgF($param) $value ; #not [join $value] - because of -I-ibdiagnet:bad.link
+            #not [join $value] - because of -I-ibdiagnet:bad.link
+            set msgF($param) $value ; 
             set argsList  [lreplace $argsList 0 1]
 	} else { 
 	    set argsList  [lreplace $argsList 0 0]
@@ -626,13 +624,16 @@ proc inform { msgCode args } {
     set total 0
     set localDevice 0
     array set deviceNames { SW "Switch" CA "HCA" Rt "Router" }
-    foreach entry [array names msgF DirectPath*] { 
+    foreach entry [array names msgF DirectPath*] {
         set i $total
         incr total
-        set NODE_TYPE($i)      [GetParamValue Type $msgF($entry) -byDr]
-        set NODE_TYPE($i,Name) [GetDeviceFullType $NODE_TYPE($i)]
+        if {[catch {set NODE_TYPE($i) [GetParamValue Type $msgF($entry)]}]} {
+            set NODE_TYPE($i) ""
+            set NODE_TYPE($i,Name) "" 
+        } else {
+            set NODE_TYPE($i,Name) [GetDeviceFullType $NODE_TYPE($i)]
+        }
         set PATH($i) "\"$msgF($entry)\""
-
         if {$NODE_TYPE($i) == "SW"} {
             set maxType 6
             set ENTRY_PORT($i) 0
@@ -642,19 +643,18 @@ proc inform { msgCode args } {
         set DrPath2Name_1 [DrPath2Name $msgF($entry) -fullName]
         set DrPath2Name_2 [DrPath2Name $msgF($entry)]
         set DrPath2Name_3 [DrPath2Name $msgF($entry) -port $ENTRY_PORT($i)]
-        
         if { $msgF($entry) == "" } {
             set NODE_NAME($i,FullName)  "The Local Device $DrPath2Name_1"
-	    set NODE_NAME($i,Name)      "The Local Device $DrPath2Name_2"
-            set NODE_NAME($i,Name_Port) "The Local Device $DrPath2Name_3"
+	    set NODE_NAME($i,Name)      "The Local Device \"$DrPath2Name_2\""
+            set NODE_NAME($i,Name_Port) "The Local Device \"$DrPath2Name_3\""
             set localDevice 1
         } else {
             set NODE_NAME($i,FullName)  "$DrPath2Name_1"
-            set NODE_NAME($i,Name)      "$DrPath2Name_2"
-            set NODE_NAME($i,Name_Port) "$DrPath2Name_3"
+            set NODE_NAME($i,Name)      "\"$DrPath2Name_2\""
+            set NODE_NAME($i,Name_Port) "\"$DrPath2Name_3\""
         }
 
-        if {$NODE_NAME($i,Name) == ""} {
+        if {$DrPath2Name_2 == ""} {
             if {$NODE_TYPE($i) != "SW"} {
                 set NODE_NAME($i,Name_Port) "$DrPath2Name_3"
             } else {
@@ -665,7 +665,6 @@ proc inform { msgCode args } {
         lappend listOfNames $NODE_NAME($i,Name)
         lappend listOfNames_Ports $NODE_NAME($i,Name_Port)
     }
-
     set maxName [LengthMaxWord $listOfNames]
     set maxName_Port [LengthMaxWord $listOfNames_Ports]
     for {set i 0} {$i < $total } {incr i} {
@@ -678,7 +677,6 @@ proc inform { msgCode args } {
             set NODE_NAME($i,Name_Port) $name
         }
     }
-
     if {[info exists msgF(flag)]} { 
 	set name  ""
 	catch { set name $InfoArgv($msgF(flag),name) }
@@ -694,14 +692,12 @@ proc inform { msgCode args } {
 	    set llegalValMsg ""
 	}
     }
-
     if {[info exists msgF(names)]} {
 	set validNames "[lsort -dictionary $msgF(names)]"
 	if { [llength $validNames] > 0 } {
 	    set validNames "Valid %s names are:\n${validNames}"
 	}
     }
-
     set numOfRetries [expr $G(argv,failed.retry) + $G(config,badpath,maxnErrors)]
     set rumSMmsg "To use lid-routing, an SM should be ran on the fabric."
     set bar "${msgType}[bar - 50]"
@@ -873,11 +869,20 @@ proc inform { msgCode args } {
         }
 
 
+        "-E-loading:cannot.use.current.tcl.package" {
+            append msgText "You are using an old version of Tcl: Tcl$msgF(version).%n"
+            append msgText "Please download and install Tcl8.4 or newer."
+        }
         "-E-loading:cannot.load.package.ibdm" {
-            append msgText "Can't load pakage ibdm."
+            append msgText "Could not load the following package : ibdm.%n"
+        }
+        "-E-loading:cannot.use.current.ibdm.package" {
+            append msgText "You are using an old version of IBDM: IBDM$msgF(version).%n"
+            append msgText "Please download and install IBDM1.1 or newer."
         }
         "-E-loading:cannot.open.file" {
-            append msgText "couldn't open \"$args\": permission denied."
+            append msgText "could not open the following file: "
+            append msgText "\"$args\": permission denied."
         }
 
 
@@ -990,9 +995,23 @@ proc inform { msgCode args } {
             }
         }
 
+
+        "-E-ibdiagpath:bad.path.in.name.tracing" {
+            append msgText "Direct Path \"$msgF(dr)\" to \"$msgF(name)\" is bad.%n"
+            append msgText "Try running ibdiagpath again byDr with the provided route."
+        }
+        "-E-ibdiagpath:bad.sysName.or.bad.topoFile" {
+            append msgText "Enable to retrive a route from local host to \"$msgF(name)\".%n"
+            append msgText "Either the given topology file is bad "
+            append msgText "or the local sys name is incorrect."
+        }
         "-E-ibdiagpath:lid.by.name.failed" {
             append msgText "Couldn't retrive $msgF(name) LID%n"
             append msgText "Please check your topology file and given sys name."
+        }
+        "-E-ibdiagpath:lid.by.name.zero" {
+            append msgText "Zero LID Retrived. for $msgF(name).%n"
+            append msgText "at the end of direct route \"$msgF(dr)\""
         }
         "-E-ibdiagpath:direct.route.deadend" {
 	    ### TODO: check the phrasing ...
@@ -1011,28 +1030,19 @@ proc inform { msgCode args } {
  	    append msgText "$NODE_NAME(0,FullName)%n"
  	    append msgText "is DOWN."
         }
-        "-E-ibdiagpath:local.port.not.active" { 
- 	    append msgText "Local link (port \#$msgF(port) of local device) is " 
+        "-E-localPort:local.port.not.active" { 
+            append msgText "Local link (port \#$msgF(port) of local device) is " 
  	    append msgText "in $msgF(state) state.\n"
   	    append msgText "(PortCounters may be queried only over ACTIVE links)."
         }
         "-E-ibdiagpath:reached.lid.0" {
-	    # set noExiting 1
-            puts [array get NODE_NAME]
-            append msgText "Bad LID: the following device has LID = 0.\n"
-            if { $NODE_TYPE(0) == "SW" } {
-	        append msgText "Switch "
-	    } else { 
-	        append msgText "Port /#$ENTRY_PORT(0) of HCA "
-	    }
-	    append msgText "$NODE_NAME(0,FullName)%n"
+	    #set noExiting 1
+            append msgText "Bad LID: the following device has LID = 0x0000.\n"
+            append msgText "$NODE_NAME(0,FullName)%n"
 	    if {[WordInList "+cannotRdPM" $args]} { 
 	        append msgText "Cannot send pmGetPortCounters mads.\n"
 	    }
 	    append msgText "$rumSMmsg."
-        }
-        "-E-ibdiagpath:lid.route.deadend" {
-
         }
         "-E-ibdiagpath:lid.route.deadend" {
 	    set path2Switch [lreplace $DirectPath end end]
@@ -1049,8 +1059,8 @@ proc inform { msgCode args } {
             append msgText "when following the LID-route for LID $msgF(lid) from device%n"
             append msgText "$NODE_NAME(0,FullName)%n"
         }
-        "-E-ibdiagpath:lid.route.zero.entry" {
-            append msgText "0 value in Fdb table detected: "
+        "-E-ibdiagpath:lid.route.dead.end" {
+            append msgText "Reached a dead end.: "
             append msgText "when reading LID $msgF(lid) from Fdb table of device%n"
             append msgText "$NODE_NAME(0,FullName)."
         }
@@ -1088,7 +1098,7 @@ proc inform { msgCode args } {
         "-W-ibdiagpath:ardessing.local.node" { 
             append msgText "Addressing local node. Only local port will be checked."
         }
-        
+
         
         "-I-topology:matching.header" {
             append msgText "Topology matching results"
@@ -1121,6 +1131,9 @@ proc inform { msgCode args } {
         "-I-ibdiagnet:report.fab.qualities.header" {
             append msgText "Fabric qualities report"
         }
+        "-I-ibdiagnet:Checking.bad.guids.lids" {
+            append msgText "Checking bad guids"
+        }
         "-I-ibdiagnet:SM.header" {
             append msgText "Summary Fabric SM-state-priorty"
         }
@@ -1149,9 +1162,19 @@ proc inform { msgCode args } {
         "-I-ibdiagnet:mgid.mlid.hca.header" {
             append msgText "mgid-mlid-HCAs matching table"
         }
+        "-I-ibdiagnet:bad.guids.header" {
+            append msgText "Bad Guids Info"
+        }
+        "-I-ibdiagnet:no.bad.guids.header" {
+            append msgText "Bad Guids Info\n"
+            append msgText "-I- No bad Guids were found"
+        }
+        "-I-ibdiagnet:bad.sm.header" {
+            append msgText "Bad Fabric SM Info"
+        }
         "-I-ibdiagnet:bad.links.header" {
             append msgText "Bad Links Info\n"
-            append msgText "-I- Errors have occurred on the following links "
+            append msgText "-I- Errors have occurred on the following links%n"
             append msgText "(for errors details, look in log file $G(outfiles,.log)):"
         }
         "-I-ibdiagnet:no.bad.paths.header" {
@@ -1160,17 +1183,17 @@ proc inform { msgCode args } {
         }
         "-I-ibdiagnet:bad.link" {
             append putsFlags " -origlen"
-            set msgText "" ; # <- this means don't print the "-I-" prefix
+            set msgText ""
             append msgText $msgF(link)
         }
-        "-I-ibdiagnet:bad.link.errors" { ;# -errors
+        "-I-ibdiagnet:bad.link.errors" {
             append putsFlags " -stdout"
-            set msgText "" ; # <- this means don't print the "-I-" prefix
+            set msgText ""
             append msgText $msgF(errors)
         }
         "-I-ibdiagnet:bad.links.err.types" {
             append putsFlags " -stdout -chars \": \""
-            set msgText "" ; # <- this means don't print the "-I-" prefix
+            set msgText ""
             append msgText "\n Errors types explanation:\n"
             append msgText "   \"noInfo\"  : the link was ACTIVE during discovery "
             append msgText "but, sending MADs across it failed $numOfRetries consecutive times\n"
@@ -1202,11 +1225,11 @@ proc inform { msgCode args } {
         "-V-mad:sent"	{
 	    if {$dontShowMads} { return }
 	    append putsFlags " -nonewline"
-	    append msgText "running $msgF(command) ..." ;#(invoked by [ProcName 2])
+	    append msgText "running $msgF(command) ..."
         }
         "-V-mad:received"	{
 	    if {$dontShowMads} { return }
-	    set msgText "" ; # <- this means don't print the "-I-" prefix
+	    set msgText ""
 	    if {[info exists msgF(status)]} { 
 	        append msgText "status = $msgF(status) (after $msgF(attempts) attempts)"
 	    } else {
@@ -1227,7 +1250,6 @@ proc inform { msgCode args } {
             append msgText "$nodesNum nodes ($swNum Switches & [expr $nodesNum - $swNum] CA-s) discovered"
         }
         "-V-ibdiagnet:bad.links.info"	{
-            # puts "\n$bar\n-V- Bad Links Info\n$bar"
             foreach entry [array names G bad,paths,*] {
                 append msgText "\nFailure(s) for direct route [lindex [split $entry ,] end] : "
                 if { [llength $G($entry)] == 1 } {
@@ -1315,7 +1337,8 @@ proc inform { msgCode args } {
 
     if { $msgType == "-E-" } {
         if { ! [info exists noExiting] } {
-	    if { $msgSource == "discover" } {
+            puts ""
+            if { $msgSource == "discover" } {
 		set Exiting "Aborting discovery"
 	    } else {
                 set Exiting "Exiting"
@@ -1360,7 +1383,7 @@ proc inform { msgCode args } {
             puts ""
         }
 	catch { close $G(logFileID) }
-	exit $exitStatus
+        exit $exitStatus
     }
     return
     ##################################################
@@ -1542,7 +1565,7 @@ ERROR CODES
 
 # OPTIONS
 # -<field-i> <val-i>: specific attribute field and value. Automatically sets the component mask bit.
- ##############################
+##############################
 
     set onlySynopsys [WordInList "-sysnopsys" $args]
     # NAME
@@ -1601,10 +1624,6 @@ ERROR CODES
 	catch { append flagNparam "|$InfoArgv(-$flag,longflag)" }
 	set flagNdesc "$flagNparam:"
 	catch { append flagNdesc " $InfoArgv(-$flag,desc)" }
-	# if {[regexp {\(} $item]} { ; # only mandatory flags have optional flags
-	#     catch { append flagNparam " \[$InfoArgv(-$flag,optional)\]" } 
-	# }
-	# lappend synopsysFlags $flagNparam
 	lappend OPTIONS $flagNdesc
 	lappend lcol [string first ":" $flagNdesc]
     }
@@ -1619,7 +1638,6 @@ ERROR CODES
     foreach option $newOPTIONS { 
 	set colIdx [string first ":" $option]
 	regsub ":" $option "[bar " " [expr $colIndent - $colIdx]]:" option
-# 	regsub "\n" $option "\n[bar " " [expr $colIndent + 3] ]" option
 	lappend OPTIONS $option
     }
     lappend lcol [string first ":" $option]
@@ -1629,7 +1647,6 @@ ERROR CODES
     set read 0
     foreach line $text { 
 	incr index
-	# if { ! [regexp {DESCRIPTION} $line] } { append DESCRIPTION " " [string trim $line] }
 	if { [incr read [expr [regexp "DESCRIPTION" $line] + ( $read && ! [regexp {[^ ]} $line] ) ]] > 1 } {
 	    break
 	}
@@ -1638,7 +1655,6 @@ ERROR CODES
     puts "\n[join [lrange $text 0 [expr $index -1]] \n]"
     putsIn80Chars "[join $OPTIONS "\n  "]" -chars ": "
     putsIn80Chars "\n[join [lrange $text $index end ] \n]" -chars "-"
-    # puts "\n[join [linsert $text $index "[join $OPTIONS "\n  "]\n"] \n]"
 
     return
 }

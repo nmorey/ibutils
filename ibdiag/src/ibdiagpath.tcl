@@ -45,8 +45,7 @@ source [file join [file dirname [info script]] ibdebug.tcl]
 ######################################################################
 proc ibdiagpathMain {} {
     # previously, consisted of 2 procs, ibdiagpathGetPaths & readPerfCountres
-    global G
-    debug "185" -header
+    global G errorInfo
     set addressingLocalPort 0
 
     # lid routing
@@ -72,27 +71,38 @@ proc ibdiagpathMain {} {
         set localNodePtr  [IBFabric_getNode $G(fabric,.topo) $G(argv,sys.name)]
         set localPortPtr  [IBNode_getPort $localNodePtr $G(argv,port.num)]
         set localPortName [IBPort_getName $localPortPtr]
+        if {[catch {set tmpRemote [IBPort_p_remotePort_get $localPortPtr]}]} {
+            continue
+        }
         foreach portPtr [getArgvPortNames] {
             if { $portPtr == $localPortPtr } {
                 lappend targets $G(RootPort,Lid)
             } else {
-                set tmpDR [name2Lid "" $localPortPtr $portPtr]
+                if {[catch {set tmpDR [name2Lid $tmpRemote $portPtr $G(argv,port.num)]} e]} {
+                    inform "-E-ibdiagpath:bad.sysName.or.bad.topoFile" -name [IBPort_getName $portPtr]
+                }
                 if {[lindex $tmpDR end ] == 0} {
-                    set newTarget [SmMadGetByDr PortInfo -base_lid [lrange $tmpDR 0 end-1] 0]
+                    if {[catch {set newTarget [SmMadGetByDr PortInfo -base_lid [lrange $tmpDR 0 end-1] 0]} e]} {
+                        inform "-E-ibdiagpath:bad.path.in.name.tracing" $tmpDR [IBPort_getName $portPtr]
+                    }
                 } else {
-                    set newTarget [SmMadGetByDr PortInfo -base_lid "$tmpDR" [IBPort_num_get $portPtr]]
+                    if {[catch {set newTarget [SmMadGetByDr PortInfo -base_lid "$tmpDR" [IBPort_num_get $portPtr]]} e]} {
+                        inform "-E-ibdiagpath:bad.path.in.name.tracing" -dr $tmpDR -name [IBPort_getName $portPtr]
+                    }
                 }
                 if {($newTarget == -1)} {
                     inform "-E-ibdiagpath:lid.by.name.failed" -name [IBPort_getName $portPtr]
                 }
+                if {($newTarget == 0)} {
+                    inform "-E-ibdiagpath:lid.by.name.zero" -dr $tmpDR -name [IBPort_getName $portPtr]
+                }
+
                 lappend targets $newTarget
             }
         }
         if { "$targets" == $G(RootPort,Lid) } { set addressingLocalPort 1 } 
     }
-    if { [lindex $targets 0] == $G(RootPort,Lid) } { 
-        set targets [lrange $targets 1 end]
-    }
+
     set paths ""
     set G(detect.bad.links) 1
     for {set i 0} {$i < [llength $targets]} {incr i} {
@@ -109,10 +119,8 @@ proc ibdiagpathMain {} {
             }
         }
         set paths [concat $paths [DiscoverPath [lindex $paths end] $address]]
-        #append paths " " [DiscoverPath [lindex $paths end] $address]
     }
     set G(detect.bad.links) 0
-
     ## for the special case when addressing the local node
     if $addressingLocalPort {
         inform "-W-ibdiagpath:ardessing.local.node"
@@ -138,7 +146,6 @@ proc ibdiagpathMain {} {
     }
     set maxLen [lindex [lsort -integer $llen] end]
 
-    ### TODO: read vendor cpecific health queries
     # preparing the list of lid-s and ports for reading the PM counters
     set directPathsList [list $src2trgtPath]
     for { set I $startIdx } { $I < [llength $src2trgtPath] } { incr I } {
@@ -172,22 +179,17 @@ proc ibdiagpathMain {} {
             if { $LID == 0 } {
                 inform "-E-ibdiagpath:reached.lid.0" \
                     -DirectPath "$path" +cannotRdPM
-                # inform "-E-ibdiagpath:lid.0.on.direct.route" [list $path]
             }
 
             append name " lid:$LID port:$port"
-            # lappend portNames "lid:$LID port:$port"
-            # # optimization: don't query $LidPort-s which we already queried
-            # if { [info exists G(badpm,$LidPort)] || [info exists G(goodpm,$LidPort)] } { continue }
             lappend LidPortList "$LID:$port"
-            # lappend LidPortList "$LID:$port:$ShortPath"
             set linkLidsNames($LID:$port) $name
         }
     }
     inform "-I-ibdiagpath:read.pm.header"
     # Initial reading of Performance Counters
     foreach LidPort $LidPortList {
-        if {[catch { set oldValues($LidPort) [join [PmListGet $LidPort]] }]} {
+        if {[catch { set oldValues($LidPort) [join [PmListGet $LidPort]] } e] } {
             inform "-E-ibdiagpath:pmGet.failed" [split $LidPort :]
         }
     }
@@ -199,49 +201,44 @@ proc ibdiagpathMain {} {
     }
     # Final reading of Performance Counters
     foreach LidPort $LidPortList {
-        # if [info exists G(bad,paths,$Path)] { break }
         if [catch { set newValues($LidPort) [join [PmListGet $LidPort]] }] {
             inform "-E-ibdiagpath:pmGet.failed" [split $LidPort :]
         }
         set pmList ""
+        if {![info exists newValues($LidPort)]} {continue}
+        if {![info exists oldValues($LidPort)]} {continue}
         for { set i 0 } { $i < [llength $newValues($LidPort)] } { incr i 2 } {
-            set newValue [lindex $newValues($LidPort) [expr $i + 1]]
             set oldValue [lindex $oldValues($LidPort) [expr $i + 1]]
+            set newValue [lindex $newValues($LidPort) [expr $i + 1]]
             lappend pmList [expr $newValue - $oldValue]
         }
 
-        # set name [lindex $portNames end]
         set name $linkLidsNames($LidPort)
         set rubberLen [expr $maxLen - [string length $name]]
         inform "-V-ibdiagpath:pm.value" "$name [bar " " $rubberLen] $pmList"
-        # TODO : if an error counter surpasses the threshold - register it.
     }
     foreach LidPort $LidPortList {
         set name $linkLidsNames($LidPort)
         append name "[bar " " [expr $maxLen - [string length $name]]]"
         set badValues ""
+
+        if {![info exists newValues($LidPort)]} {continue}
+        if {![info exists oldValues($LidPort)]} {continue}
         foreach entry [ComparePMCounters $oldValues($LidPort) $newValues($LidPort)] {
             scan $entry {%s %s %s} parameter err value
             switch -exact -- $err {
                 "valueChange" {
-
-                    puts SASDAS
-                    regsub -- "->" $value " - " exp
+                    regsub "->" $value " - " exp
                     set value [expr - ($exp)]
-
-                        puts SASDAS
                     lappend badValues "$parameter=$value"
                 }
                 "overflow" {
-
                     lappend badValues "$parameter=$value\(=overflow\)"
                 }
             }
         }
         if { $badValues != "" } {
             putsIn80Chars "-E- $name: [join $badValues ", "]"
-            # userInform "ibdiagpath:bad.pm.counters" [split $LidPort :] $badValues
-            # -E- PM SW1/Spine1/U1/P10: symbol_errors=66176, link_retrain_errors=5
         }
     }
 
@@ -256,14 +253,6 @@ proc ibdiagpathMain {} {
 InitalizeIBdiag
 InitalizeINFO_LST
 startIBDebug
-
-# if [info exists G(argv,topo.file)]  ; # Changed on 15-Sep-05
-#discoverFabric
-#discoverHiddenFabric
-#checkBadLidsGuids
-#write.lstFile -silent
-#matchTopology $G(outfiles,.lst) -noheader
-#reportTopologyMatching -noheader ; #???
 
 ### Figuring out the paths to take and Reading Performance Counters
 set G(detect.bad.links) 1
