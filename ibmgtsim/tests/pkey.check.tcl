@@ -202,7 +202,7 @@ proc runner {simDir osmPath osmPortGuid} {
    
    # start a tracker on the log file and process:
    startOsmLogAnalyzer $osmLog
-     
+   
    return $osmPid
 }
 
@@ -258,7 +258,7 @@ proc checker {simDir osmPath osmPortGuid} {
          return 1
       }
    }
-   
+
    ###### Verifing the pkey manager behaviour ################
    
    # Remove the default pkey from the HCA ports (except the SM)
@@ -284,7 +284,7 @@ proc checker {simDir osmPath osmPortGuid} {
    puts "SIM: $res"
    
    if {$res == 0} {
-   puts "-I- Pkey check flow completed successfuly"
+      puts "-I- Pkey check flow completed successfuly"
    } else {
       puts "-E- Pkey check flow failed"
    }

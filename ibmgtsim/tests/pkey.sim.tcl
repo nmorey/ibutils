@@ -46,7 +46,17 @@ proc getPartialMemberPkeysWithGivenPkey {numPkeys pkeys} {
       set pkeyIdx [expr int([rmRand] * [llength $numPkeys])]
       set res [linsert $res $pkeyIdx [lindex $pkeys $i]]
    }
-      
+
+   # making sure:
+   for {set i 0} {$i < [llength $pkeys]} {incr i} {
+      set pk [lindex $pkeys $i]
+      set idx [lsearch $res $pk]
+      if {$idx < 0 || $idx > $numPkeys} {
+         puts "-E- fail to find $pk in $res"
+         exit 1
+      }
+   }
+   puts "-I- got random pkeys:$res"
    # making sure:
    for {set i 0} {$i < [llength $pkeys]} {incr i} {
       set pk [lindex $pkeys $i]
