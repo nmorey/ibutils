@@ -1513,7 +1513,9 @@ IBFabric::parseSubnetLine(char *line) {
   if (!pch || strncmp(pch,"LOG=",4)) return(28);
 
   // for now we require the state to be ACTIVE ...
-  if (strncmp(pch+4, "ACT",3)) return(0);
+  if (strncmp(pch+4, "ACT",3) && 
+      strncmp(pch+4, "INI",3) &&  
+      strncmp(pch+4, "ARM",3)) return(0);
 
   // speed is optional ... s
   pch = strtok(NULL, " ");
