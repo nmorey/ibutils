@@ -461,7 +461,7 @@ SubnMgtOsmEnhancedRoute(IBFabric *p_fabric) {
           p_node->setLFTPortForLid( bLid + lmcValue, 0);
           continue;
         }
-                  
+
         // we are going to track the min profile under three 
         // possible cases:
         int minSubsShared = 100000;
@@ -472,65 +472,71 @@ SubnMgtOsmEnhancedRoute(IBFabric *p_fabric) {
         unsigned int minPortNumDiffSystems = 0;
         int minSubs;
 
-        // look for the port with min profile 
-        for (unsigned int pn = 1; pn <= p_node->numPorts; pn++) {
-          IBPort *p_port = p_node->getPort(pn);
-          if (! p_port) continue;
+        if (minHop < 255) {
+          // look for the port with min profile 
+          for (unsigned int pn = 1; pn <= p_node->numPorts; pn++) {
+            IBPort *p_port = p_node->getPort(pn);
+            if (! p_port) continue;
+            
+            if (! p_port->p_remotePort) continue;
+            
+            // the hops should match the min 
+            if (p_node->getHops(p_port,bLid) == minHop) {
+              
+              minSubs = portsSubscriptions[pn-1];
+              IBNode   *p_remNode = p_port->p_remotePort->p_node;
+              IBSystem *p_system = p_remNode->p_system;
+              
+              if (goThroughSystems.find(p_system) == goThroughSystems.end()) {
+                if (minSubsDiffSystems > minSubs) {
+                  minSubsDiffSystems = minSubs;
+                  minPortNumDiffSystems = pn;
+                }
+              } 
+              if (goThroughNodes.find(p_remNode) == goThroughNodes.end()) {
+                if (minSubsDiffNodes > minSubs) {
+                  minSubsDiffNodes = minSubs;
+                  minPortNumDiffNodes = pn;
+                }
+              }
+              
+              if (minSubsShared > minSubs) {
+                minSubsShared = minSubs;
+                minPortNumShared = pn;
+              }
+              
+            } // hop = min hops
+          } // all ports
 
-          if (! p_port->p_remotePort) continue;
-        
-          // the hops should match the min 
-          if (p_node->getHops(p_port,bLid) == minHop) {
-                                
-            minSubs = portsSubscriptions[pn-1];
-            IBNode   *p_remNode = p_port->p_remotePort->p_node;
-            IBSystem *p_system = p_remNode->p_system;
-                                
-            if (goThroughSystems.find(p_system) == goThroughSystems.end()) {
-              if (minSubsDiffSystems > minSubs) {
-                minSubsDiffSystems = minSubs;
-                minPortNumDiffSystems = pn;
-              }
-            } 
-            if (goThroughNodes.find(p_remNode) == goThroughNodes.end()) {
-              if (minSubsDiffNodes > minSubs) {
-                minSubsDiffNodes = minSubs;
-                minPortNumDiffNodes = pn;
-              }
-            }
-                                
-            if (minSubsShared > minSubs) {
-              minSubsShared = minSubs;
-              minPortNumShared = pn;
-            }
-                                
-          } // hop = min hops
-        } // all ports
-                  
-        // we always select the system over node over shared:
-        if (minPortNumDiffSystems) {
-          minPortNumShared = minPortNumDiffSystems;
-          numSelByOtherSys++;
-        } else if (minPortNumDiffNodes) {
-          numSelByOtherNode++;
-          minPortNumShared = minPortNumDiffNodes;
+          // we always select the system over node over shared:
+          if (minPortNumDiffSystems) {
+            minPortNumShared = minPortNumDiffSystems;
+            numSelByOtherSys++;
+          } else if (minPortNumDiffNodes) {
+            numSelByOtherNode++;
+            minPortNumShared = minPortNumDiffNodes;
+          } else {
+            numSelByMinSubsc++;
+          }
+
+          // so now we need to have the port number or error
+          if (!minPortNumShared) {
+            cout << "-E- Cound not find min hop port!" << endl;
+            return(1);
+          }
+
+          // Track used systems and nodes
+          IBPort *p_bestPort = p_node->getPort(minPortNumShared);
+          IBNode *p_remNode = p_bestPort->p_remotePort->p_node;
+          IBSystem *p_system = p_node->p_system;
+          
+          goThroughSystems.insert(p_system);
+          goThroughNodes.insert(p_remNode);
+
         } else {
-          numSelByMinSubsc++;
+          // there is no path to that lid...
+          minPortNumShared = 255;
         }
-
-        // so now we need to have the port number or error
-        if (!minPortNumShared) {
-          cout << "-E- Cound not find min hop port!" << endl;
-          return(1);
-        }
-
-        // Track used systems and nodes
-        IBPort *p_bestPort = p_node->getPort(minPortNumShared);
-        IBNode *p_remNode = p_bestPort->p_remotePort->p_node;
-        IBSystem *p_system = p_node->p_system;
-
-        goThroughSystems.insert(p_system);
-        goThroughNodes.insert(p_remNode);
 
         // track subscriptions:
         if (targetIsHCA)
@@ -644,20 +650,24 @@ SubnMgtOsmRoute(IBFabric *p_fabric) {
         
         // look for the port with min profile 
 #if 1
-        for (unsigned int pn = 1; pn <= p_node->numPorts; pn++) {
-          IBPort *p_port = p_node->getPort(pn);
-
-          if (! p_port) continue;
-          
-          // the hops should match the min 
-          if (p_node->getHops(p_port, bLid) == minHop) {
-            // Standard OpenSM Routing:
-            // is it the lowest subscribed port:
-            if (portsSubscriptions[pn-1] < minSubsc) {
-              minSubsPortNum = pn;
-              minSubsc = portsSubscriptions[pn-1];
+        if (minHop != 255) {
+          for (unsigned int pn = 1; pn <= p_node->numPorts; pn++) {
+            IBPort *p_port = p_node->getPort(pn);
+            
+            if (! p_port) continue;
+            
+            // the hops should match the min 
+            if (p_node->getHops(p_port, bLid) == minHop) {
+              // Standard OpenSM Routing:
+              // is it the lowest subscribed port:
+              if (portsSubscriptions[pn-1] < minSubsc) {
+                minSubsPortNum = pn;
+                minSubsc = portsSubscriptions[pn-1];
+              }
             }
           }
+        } else {
+          minSubsPortNum = 255;
         }
 #else
         // do a random selection
@@ -882,11 +892,18 @@ SubnMgtVerifyAllCaToCaRoutes(IBFabric *p_fabric) {
   int CommonSystems[50][16];
   unsigned int maxDepth = 0;
   int maxLinkSubscriptions = 0;
+  int maxDlidPerOutPort = 0;
 
   // to track the actual paths going through each switch port
   // we need to have a map from switch node to a vector of count 
   // per port.
   map_pnode_vec_int switchPathsPerOutPort;
+
+  // track the number of dlids actually routed through each switch port.
+  // to avoid memory scalability we do the path scanning with dest port 
+  // in the external loop. So we only need to look on the aggregated 
+  // vectore per port at the end of all sources and sum up to teh final results
+  map_pnode_vec_int switchDLidsPerOutPort;
 
   cout << "-I- Verifying all CA to CA paths ... " << endl;
   // initialize the histograms:
@@ -898,23 +915,26 @@ SubnMgtVerifyAllCaToCaRoutes(IBFabric *p_fabric) {
 
   // go over all ports in the fabric 
   for (unsigned int i = p_fabric->minLid; i <= p_fabric->maxLid; i += lidStep ) {
-    IBPort *p_srcPort = p_fabric->PortByLid[i]; 
+    IBPort *p_dstPort = p_fabric->PortByLid[i]; 
          
-    if (!p_srcPort || (p_srcPort->p_node->type == IB_SW_NODE)) continue;
-         
-    unsigned int sLid = p_srcPort->base_lid;
+    if (!p_dstPort || (p_dstPort->p_node->type == IB_SW_NODE)) continue;
+    
+    // tracks if a path to current dlid was found per switch out port
+    map_pnode_vec_int switchAnyPathsPerOutPort; 
+  
+    unsigned int dLid = p_dstPort->base_lid;
     // go over all the rest of the ports:
     for (unsigned int j = p_fabric->minLid; j <= p_fabric->maxLid; j += lidStep ) {
-      IBPort *p_dstPort = p_fabric->PortByLid[j]; 
+      IBPort *p_srcPort = p_fabric->PortByLid[j]; 
 
       // Avoid tracing to itself
       if (i == j) continue;
 
-      if (! p_dstPort) continue;
+      if (! p_srcPort) continue;
 
-      if (p_dstPort->p_node->type == IB_SW_NODE) continue;
+      if (p_srcPort->p_node->type == IB_SW_NODE) continue;
 
-      unsigned int dLid = p_dstPort->base_lid;
+      unsigned int sLid = p_srcPort->base_lid;
 
       // go over all LMC combinations:
       for (unsigned int l = 0; l < lidStep; l++) {
@@ -954,6 +974,13 @@ SubnMgtVerifyAllCaToCaRoutes(IBFabric *p_fabric) {
               vec_int tmp(pNode->numPorts + 1,0);
               switchPathsPerOutPort[pNode] = tmp;
             }
+
+            // init the marking of any path through the port if needed:
+            if (switchAnyPathsPerOutPort.find(pNode) == switchAnyPathsPerOutPort.end())
+            {
+              vec_int tmp(pNode->numPorts + 1,0);
+              switchAnyPathsPerOutPort[pNode] = tmp;
+            }
             
             list_pnode::const_iterator nlI = lI;
             nlI++;
@@ -963,6 +990,8 @@ SubnMgtVerifyAllCaToCaRoutes(IBFabric *p_fabric) {
               switchPathsPerOutPort[pNode][outPort]++;
               if (maxLinkSubscriptions < switchPathsPerOutPort[pNode][outPort])
                 maxLinkSubscriptions = switchPathsPerOutPort[pNode][outPort];
+
+              switchAnyPathsPerOutPort[pNode][outPort]++;
             }
           }
           
@@ -1017,12 +1046,38 @@ SubnMgtVerifyAllCaToCaRoutes(IBFabric *p_fabric) {
             path2.clear();
           }
 
+        } // fail to trace route
+      }
+    } // all src lids
+
+    // cleanup the list of nodes
+    path1.clear();
+
+    // add to dlid per port vector:
+    for (map_pnode_vec_int::iterator nI = switchAnyPathsPerOutPort.begin();
+         nI !=  switchAnyPathsPerOutPort.end();
+         nI++)
+    {
+      IBNode *pNode = (*nI).first;
+      for (unsigned int pn = 1; pn <= pNode->numPorts; pn++)
+      {
+        if (switchAnyPathsPerOutPort[pNode][pn])
+        {
+          // init if required:
+          if (switchDLidsPerOutPort.find(pNode) == switchDLidsPerOutPort.end())
+          {
+            vec_int tmp(pNode->numPorts + 1,0);
+            switchDLidsPerOutPort[pNode] = tmp;
+          }
+          
+          switchDLidsPerOutPort[pNode][pn]++;
+          if (switchDLidsPerOutPort[pNode][pn] > maxDlidPerOutPort)
+            maxDlidPerOutPort = switchDLidsPerOutPort[pNode][pn];
         }
       }
     }
-    // cleanup 
-    path1.clear();
-  }
+
+  } // all dlids
 
   cout << "---------------------- CA to CA : LFT ROUTE HOP HISTOGRAM -----------------" << endl;
   cout << "The number of CA pairs that are in each number of hops distance." << endl;
@@ -1070,6 +1125,7 @@ SubnMgtVerifyAllCaToCaRoutes(IBFabric *p_fabric) {
     cout << "---------------------------------------------------------------------------\n" << endl;
   }
 
+#if DO_CA_TO_CA_NUM_PATHS_HIST
   // report the link over subscription histogram and dump out the 
   // num paths per switch out port
   ofstream linkUsage("/tmp/ibdmchk.sw_out_port_num_paths");
@@ -1104,7 +1160,42 @@ SubnMgtVerifyAllCaToCaRoutes(IBFabric *p_fabric) {
     if (linkSubscriptionHist[b]) 
       cout << setw(8) << b << "   " << linkSubscriptionHist[b] << endl;
   cout << "---------------------------------------------------------------------------\n" << endl;
+#endif
 
+  // now do the DLID per out port:
+  ofstream portDlidsUsage("/tmp/ibdmchk.sw_out_port_num_dlids");
+  portDlidsUsage << "# NUM-DLIDS PORT-NAME " << endl;
+  vec_int dlidsSubscriptionHist(maxDlidPerOutPort + 1,0);
+  for (map_pnode_vec_int::iterator nI = switchDLidsPerOutPort.begin();
+       nI != switchDLidsPerOutPort.end();
+       nI++)
+  {
+    IBNode *pNode = (*nI).first;
+    for (unsigned int pn = 1; pn <= pNode->numPorts; pn++)
+    {
+      IBPort *p_port = pNode->getPort(pn);
+      if (p_port && p_port->p_remotePort && 
+          (p_port->p_remotePort->p_node->type == IB_SW_NODE))
+      {
+        portDlidsUsage << setw(6) << ((*nI).second)[pn]  << " " << p_port->getName() << endl;
+        dlidsSubscriptionHist[((*nI).second)[pn]]++;
+      }
+    }
+  }
+  portDlidsUsage.close();
+
+  cout << "---------- LFT CA to CA : SWITCH OUT PORT - NUM DLIDS HISTOGRAM -----------" << endl;
+  cout << "Number of actual Destination LIDs going through each switch out port considering" << endl;
+  cout << "all the CA to CA paths. Ports driving CAs are ignored (as they must" << endl;
+  cout << "have = Nca - 1). If the fabric is routed correctly the histogram" << endl;
+  cout << "should be nerrow for all ports on same level of the tree." << endl;
+  cout << "A detailed report is provided in /tmp/ibdmchk.sw_out_port_num_dlids.\n" << endl;
+  cout << "NUM-DLIDS NUM-SWITCH-PORTS" << endl;
+  for (int b = 0; b <= maxDlidPerOutPort; b++) 
+    if (dlidsSubscriptionHist[b]) 
+      cout << setw(8) << b << "   " << dlidsSubscriptionHist[b] << endl;
+  cout << "---------------------------------------------------------------------------\n" << endl;
+  
   if (anyError) 
     cout << "-E- Found " << anyError << " missing paths" 
          << " out of:" << paths << " paths" << endl;
