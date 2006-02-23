@@ -109,7 +109,7 @@ proc checker {simDir osmPath osmPortGuid} {
    if {[osmWaitForUpOrDeadWithTimeout $osmLog 1000000]} {
       return 1
    }
-   
+
    # check for lid validity:
    puts $simCtrlSock "checkLidValues \$fabric $lmc"
    set res [gets $simCtrlSock]
@@ -121,7 +121,7 @@ proc checker {simDir osmPath osmPortGuid} {
    # we try several iterations of changes:
    for {set i 1} {$i < 2} {incr i} {
       # connect the disconnected
-      puts $simCtrlSock "connectAllDisconnected \$fabric"
+      puts $simCtrlSock "connectAllDisconnected \$fabric 1"
       puts "SIM: [gets $simCtrlSock]"
 
       # refresh the lid database and start the POST_SUBNET_UP mode
@@ -130,13 +130,13 @@ proc checker {simDir osmPath osmPortGuid} {
 
       for {set j 1} {$j < 10} {incr j} {
           # connect the disconnected
-          puts $simCtrlSock "connectAllDisconnected \$fabric"
+          puts $simCtrlSock "connectAllDisconnected \$fabric 1"
           puts "SIM: [gets $simCtrlSock]"
           # Disconnect ports
           puts $simCtrlSock "setPortsDisconnected \$fabric $lmc"
           puts "SIM: [gets $simCtrlSock]"
           # connect the disconnected
-          puts $simCtrlSock "connectAllDisconnected \$fabric"
+          puts $simCtrlSock "connectAllDisconnected \$fabric 1"
           puts "SIM: [gets $simCtrlSock]"
       }
 
@@ -161,7 +161,7 @@ proc checker {simDir osmPath osmPortGuid} {
       }
 
        # start the join requests:
-       puts $simCtrlSock "randomJoinAllHCAPorts fabric:1 10"
+       puts $simCtrlSock "randomJoinAllHCAPorts fabric:1 10 1"
        set  numHcasJoined [gets $simCtrlSock]
        puts "-I- Joined $numHcasJoined HCAs"
        # start the left requests:
@@ -169,10 +169,21 @@ proc checker {simDir osmPath osmPortGuid} {
        set  numHcasLeft [gets $simCtrlSock]
        puts "-I- Left $numHcasLeft HCAs"
        # start again the join requests:
-       puts $simCtrlSock "randomJoinAllHCAPorts fabric:1 10"
+       puts $simCtrlSock "randomJoinAllHCAPorts fabric:1 10 1"
        set  numHcasJoined [gets $simCtrlSock]
        puts "-I- Joined $numHcasJoined HCAs"
-       
+
+       # Path records requests:
+       puts $simCtrlSock "randomPathRecordRequests fabric:1 10"
+       set  numPathRecordRequests [gets $simCtrlSock]
+       puts "-I- numPathRecordRequests $numPathRecordRequests"
+        
+
+       # start Run Flow:
+       puts $simCtrlSock "RunFlow fabric:1"
+       set  returnVal [gets $simCtrlSock]
+       puts "-I- Return Value $returnVal"
+
        # wait for a while :
        after 10000
        
