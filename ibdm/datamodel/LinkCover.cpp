@@ -37,6 +37,7 @@
 #include "TraceRoute.h"
 #include <iomanip>
 #include <fstream>
+#include <sstream>
 #include <map>
 using namespace std;
 
@@ -484,37 +485,6 @@ initFdbForwardPortLidTables(
     }
   } // verbose
 
- 
-#if 0 // we already provided this info during all to all traversal check
-
-  // collect the input paths histogram
-  vec_int numInPathsHist(50,0);
-
-  // Dump out a file of the number of paths going each input port
-  ofstream linkUsage("/tmp/ibdmchk.linkutil");
-  for( map_str_pnode::iterator nI = p_fabric->NodeByName.begin();
-       nI != p_fabric->NodeByName.end();
-       nI++) {
-    p_node = (*nI).second;
-   
-    if (p_node->type != IB_SW_NODE) continue;
-    dumpInPortNumPaths(linkUsage, p_node, switchPinNumPathsMap,
-                       numInPathsHist);
-  }
-  linkUsage.close();
-  cout << "------------------ NUM INPUT PATHS PER PORTS HISTOGRAM --------------------" << endl;
-  cout << "This histogram provides the actual number of paths going through eahc switch port." << endl;
-  cout << "A normal fabric should have few big bins - one for each switch level." << endl;
-  cout << "-I- Traced:" << numPaths << " HCA to HCA Paths through LFT" << endl;
-  cout << "IN-PATHS NUM-SW-PORTS" << endl;
-  for (int b = 0; b < numInPathsHist.size() ; b++)
-    if (numInPathsHist[b])
-      cout << setw(4) << b << "   " << numInPathsHist[b] << endl;
-  cout << "---------------------------------------------------------------------------\n" << endl;
-#endif
-#if 0 // linear program
-  dumpLinearProgram(p_fabric, switchInPortPairsMap);
-#endif
   return(anyError);
 }
 //////////////////////////////////////////////////////////////////////////////
@@ -653,21 +623,24 @@ isFwdPathUnused(
   map_pnode_p_sint &outPortUsedMap)
 {
   int hops = 0;
+  IBNode *pNode = p_node;
+  stringstream vSt;
 
-  while (hops < 100) 
+  while (hops < 16) 
   {
     hops++;
 
     // get the output port
-    int portNum = p_node->getLFTPortForLid(dLid);
+    int portNum = pNode->getLFTPortForLid(dLid);
     if (portNum == IB_LFT_UNASSIGNED)
       return(0);
     
+    vSt << "Out on node:" << pNode->name << " port:" << portNum << endl;
     // also we want to ignore switch targets so any map to port 0
     // is ignored
     if (portNum == 0) return(0);
     
-    IBPort *p_port = p_node->getPort(portNum);
+    IBPort *p_port = pNode->getPort(portNum);
     if (!p_port) return(0);
     
     // check the port is connected
@@ -675,17 +648,18 @@ isFwdPathUnused(
     if (!p_remPort) return(0);
     
     // can not go there if already used!
-    short int *outPortUsedVec = outPortUsedMap[p_node];
+    short int *outPortUsedVec = outPortUsedMap[pNode];
     if (outPortUsedVec[portNum - 1]) return(0);
     
     // HACK assume we got to the point 
     if (p_remPort->p_node->type != IB_SW_NODE) return(1);
     
-    p_node = p_remPort->p_node;
+    pNode = p_remPort->p_node;
   }
 
   cout << "-E- Found loop on the way to:" << dLid
-       << " through:" << p_node->name << endl;
+       << " through:" << pNode->name << endl;
+  cout << vSt.str();
   return(0);
 }
 
@@ -696,6 +670,7 @@ int
 isBwdPathUnused(
   IBNode *p_node,
   short int dLid,
+  map_pnode_p_sint &outPortCoveredMap,
   map_pnode_p_sint &outPortUsedMap,
   map_pnode_p_sint &swInPinDLidTableMap,
   short int &sLid)
@@ -712,33 +687,49 @@ isBwdPathUnused(
     nodesQueue.pop_front();
 
     // go over all input ports marked as providing paths to that dlid
-    for (int pn = 1; pn <= p_node->numPorts; pn++)
+    // we do it twice - first only through ports not marked covered 
+    // then through covered ports
+    for (int throughCoeverd = 0; throughCoeverd <= 1; throughCoeverd++)
     {
-      IBPort *p_port = p_node->getPort(pn);
-      if (! p_port) continue;
-
-      // the port should have a remote port
-      IBPort *p_remPort = p_port->p_remotePort;
-      if (! p_remPort) continue;
-      
-      // The remote port should not be marked used:
-      short int *outPortUsedVec = outPortUsedMap[p_remPort->p_node];
-      if (outPortUsedVec[p_remPort->num - 1]) continue;
-      
-      // is there a path to the dLid through that port?
-      short int *swInPinDLidTable = swInPinDLidTableMap[p_node];
-      int idx = getPinTargetLidTableIndex(p_node->p_fabric, pn, dLid);
-      if (!swInPinDLidTable[idx]) continue;
-      
-      // if we have got to HCA we are done !
-      if (p_remPort->p_node->type != IB_SW_NODE)
+      for (int pn = 1; pn <= p_node->numPorts; pn++)
       {
-        sLid = p_remPort->base_lid;
-        return 1;
-      }
+        IBPort *p_port = p_node->getPort(pn);
+        if (! p_port) continue;
+        
+        // the port should have a remote port
+        IBPort *p_remPort = p_port->p_remotePort;
+        if (! p_remPort) continue;
+        
+        // The remote port should not be marked used:
+        short int *outPortUsedVec = outPortUsedMap[p_remPort->p_node];
+        if (outPortUsedVec[p_remPort->num - 1]) continue;
 
-      // otherwise push into next check
-      nodesQueue.push_back(p_remPort->p_node);
+        // if we limit to uncovered ports first do those.
+        short int *outPortCoveredVec = outPortCoveredMap[p_remPort->p_node];
+        if (!throughCoeverd)
+        {
+          if (outPortCoveredVec[p_remPort->num - 1]) continue;
+        }
+        else
+        {
+          if (!outPortCoveredVec[p_remPort->num - 1]) continue;
+        }
+        
+        // is there a path to the dLid through that port?
+        short int *swInPinDLidTable = swInPinDLidTableMap[p_node];
+        int idx = getPinTargetLidTableIndex(p_node->p_fabric, pn, dLid);
+        if (!swInPinDLidTable[idx]) continue;
+        
+        // if we have got to HCA we are done !
+        if (p_remPort->p_node->type != IB_SW_NODE)
+        {
+          sLid = p_remPort->base_lid;
+          return 1;
+        }
+        
+        // otherwise push into next check
+        nodesQueue.push_back(p_remPort->p_node);
+      }
     }
   }
   return(0);
@@ -854,9 +845,10 @@ findPathThroughPort(
     short int sLid;
     if (isFwdPathUnused(p_node, dLid, outPortUsedMap))
     {
-      // DFS backwards (sorting the min hops as we go)
+      // BFS backwards (sorting the min hops as we go)
       if (isBwdPathUnused(p_node, dLid, 
-                          outPortUsedMap, swInPinDLidTableMap, 
+                          outPortCoveredMap, outPortUsedMap,
+                          swInPinDLidTableMap, 
                           sLid))
       {
         // mark the fwd and backward paths
@@ -888,6 +880,8 @@ typedef list< list_pair_sint_sint > list_list_pair_sint_sint;
 int
 LinkCoverageAnalysis(IBFabric *p_fabric, list_pnode rootNodes)
 {
+  int status = 0;
+
   // map switch nodes to a table of hop(in pin, dlid)
   map_pnode_p_sint swInPinDLidTableMap;
   // map switch nodes to a vector for each out port that tracks if covered
@@ -988,7 +982,12 @@ LinkCoverageAnalysis(IBFabric *p_fabric, list_pnode rootNodes)
  
   if (somePortsUncovered) 
   {
-    cout << "-W- Some switch ports are still not covered.. " << endl;
+    cout << "-E- After " << stage << " stages some switch ports are still not covered: " << endl;
+    status = 1;
+  } 
+  else
+  {
+    cout << "-I- Covered all links in " << stage - 1 << " stages" << endl;
   }
   
   // scan for all uncovered out ports:
@@ -1019,6 +1018,6 @@ LinkCoverageAnalysis(IBFabric *p_fabric, list_pnode rootNodes)
     outPortCoveredMap,
     outPortUsedMap);
  
-  return(0);
+  return(status);
 }
  
