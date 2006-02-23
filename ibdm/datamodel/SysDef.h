@@ -154,6 +154,10 @@ class IBSysDef {
     return 0;
   };
   
+  string getName() {
+    return fileName;
+  };
+
   friend class IBSystemsCollection;
 };
 
