@@ -7071,12 +7071,12 @@ static int _wrap_IBNode_MinHopsTable_get(ClientData clientData, Tcl_Interp *inte
 {
   for (unsigned int i = 0; i < _result->size(); i++) {
 	 Tcl_AppendResult(interp,"{", NULL);
-	 for (unsigned int j = 0; j < _result[i].size(); j++) {
+	 for (unsigned int j = 0; j < (*_result)[i].size(); j++) {
 		char buf[32];
 		sprintf(buf,"%u ", (*_result)[i][j]);
 		Tcl_AppendResult(interp, buf, NULL);
 	 }
-	 Tcl_AppendResult(interp," }", NULL);
+	 Tcl_AppendResult(interp,"} ", NULL);
   }
 }
     return TCL_OK;
