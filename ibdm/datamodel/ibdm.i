@@ -445,12 +445,12 @@
 %typemap(tcl8, out) vec_vec_byte * {
   for (unsigned int i = 0; i < $source->size(); i++) {
 	 Tcl_AppendResult(interp,"{", NULL);
-	 for (unsigned int j = 0; j < $source[i].size(); j++) {
+	 for (unsigned int j = 0; j < (*$source)[i].size(); j++) {
 		char buf[32];
 		sprintf(buf,"%u ", (*$source)[i][j]);
 		Tcl_AppendResult(interp, buf, NULL);
 	 }
-	 Tcl_AppendResult(interp," }", NULL);
+	 Tcl_AppendResult(interp,"} ", NULL);
   }
 }
 
