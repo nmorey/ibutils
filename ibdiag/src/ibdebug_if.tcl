@@ -99,14 +99,18 @@ array set InfoArgv {
     -t,param	"topo-file"
     -t,desc	"Specifies the topology file name"
 
-    -v,name	"verbose"	
+    -v,name	"verbose" 
     -v,desc	"Instructs the tool to run in verbose mode"
-    -v,arglen	0..1
-    -v,regexp	"integer.nonneg.<=1"
-    -v,error	"-E-argv:not.nonneg.integer"
-    -v,save     "-v,arglen 0..1"
-    -v,default  0
-    -v,maxvalue	"0xffff"
+    -v,arglen	0
+
+ #   -v,name	"verbose"	
+ #   -v,desc	"Instructs the tool to run in verbose mode"
+ #   -v,arglen	0..1
+ #   -v,regexp	"integer.nonneg.<=1"
+ #   -v,error	"-E-argv:not.nonneg.integer"
+ #   -v,save     "-v,arglen 0..1"
+ #   -v,default  0
+ #   -v,maxvalue	"0xffff"
 
     -w,name	"wait.time"	
     -w,default	0
@@ -253,7 +257,6 @@ proc parseArgv {} {
 
     ## defining flags values by means of environment variables
     SetEnvValues
-
     ## mandatory flags
     # The first foreach is for the case when there are two different operatinal 
     # modes of the tool like the case is for ibmad,ibsac
@@ -316,12 +319,13 @@ proc parseArgv {} {
 	set value [lindex $argvList 1]
 
 	if { ! [WordInList $flag $allLegalFlags] } {
-	    inform "-E-argv:unknown.flag" -flag $flag
+            inform "-E-argv:unknown.flag" -flag $flag
 	}
-	set argvList [lreplace $argvList 0 0]
+        set argvList [lreplace $argvList 0 0]
 	if {[WordInList $flag $argvList]} {
 	    inform "-E-argv:flag.twice.specified" -flag $flag
 	}
+
 
 	set arglen 1
 	catch { set arglen $InfoArgv($flag,arglen) }
@@ -367,7 +371,7 @@ proc parseArgv {} {
 			inform "$InfoArgv($flag,error)" -flag $flag -value $value
 		    }
 		    if { $sign == "pos" && $item == 0 } {
-			inform "$InfoArgv($flag,error)" -flag $flag -value $value
+                        inform "$InfoArgv($flag,error)" -flag $flag -value $value
 		    }
 		    if { $item > $maxValue } {
 			inform "-E-argv:too.large.value" \
@@ -380,7 +384,6 @@ proc parseArgv {} {
 		set regexp [regexp $InfoArgv($flag,regexp) "$value"]
 	    }
 	}
-
         set name $InfoArgv($flag,name)
 	set G(argv,$name) ""
 	if { $arglen == "1.." } {
@@ -404,10 +407,9 @@ proc parseArgv {} {
 	    set G(argv,$name) "$value"
 	    set argvList [lreplace $argvList 0 0]
 	} else {
-	    inform "$InfoArgv($flag,error)" -flag $flag -value $value
+            inform "$InfoArgv($flag,error)" -flag $flag -value $value
 	}
     }
-
     ## If we are using direct-route addressing, the output port of the direct
     # route must not disagree with the local port number (if specified).
     # If the latter was not specified, it is set to be the former.
@@ -481,7 +483,6 @@ proc parseArgv {} {
         set G(fabric,.topo) [new_IBFabric]
         IBFabric_parseTopology $G(fabric,.topo) $topoFile
     }
-
     return
 }
 ##############################
@@ -493,14 +494,13 @@ proc parseArgv {} {
 ##############################
 proc putsIn80Chars { string args } { 
     global G
-
     set maxLen 80
     set indent ""
     if { [llength $args] == 1 } { set args [join $args] }
     set chars  [WordAfterFlag $args "-chars"]
     set nonewline [WordInList "-nonewline" $args]
     foreach line [split $string \n] {
-	if { $chars != "" } {
+        if { $chars != "" } {
 	    if { [set idx [string first $chars $line]] >= 0 } {
 		set indent "[string range $line 0 [expr $idx -1]]$chars"
 		set line \
@@ -561,17 +561,16 @@ proc inform { msgCode args } {
     regexp {^(\-[A-Z]\-)?([^:]+).*$} $msgCode . msgType msgSource
 
     if { $msgType == "-V-" } { 
-	if { $G(argv,verbose) == 0 } { 
+	if { ![info exists G(argv,verbose)] } { 
 	    return 
 	}
-	set dontShowMads \
+        set dontShowMads \
 	    [expr ( \"[ProcName 1]\" == \"DiscoverFabric\" ) \
 		 && ( \"$G(tool)\" != \"ibdiagnet\" ) \
-		 && ( $G(argv,verbose) < 2 ) ]
+		 && ( ![info exists G(argv,verbose)] ) ]
     } else { 
 	debug "472" -header 
     }
-
     ## Setting Error Codes
     set G(status,highPriorty)		0
     set G(status,discovery.failed)	1
@@ -627,55 +626,53 @@ proc inform { msgCode args } {
     foreach entry [array names msgF DirectPath*] {
         set i $total
         incr total
-        if {[catch {set NODE_TYPE($i) [GetParamValue Type $msgF($entry)]}]} {
-            set NODE_TYPE($i) ""
-            set NODE_TYPE($i,Name) "" 
+        if {[catch {set NODE($i,Type) [GetParamValue Type $msgF($entry)]}]} {
+            set NODE($i,Type) ""
+            set NODE($i,FullType) ""
         } else {
-            set NODE_TYPE($i,Name) [GetDeviceFullType $NODE_TYPE($i)]
+            set NODE($i,FullType) [GetDeviceFullType $NODE($i,Type)]
         }
-        set PATH($i) "\"$msgF($entry)\""
-        if {$NODE_TYPE($i) == "SW"} {
+        if {[catch {set NODE($i,PortGUID) [GetParamValue PortGUID $msgF($entry)]}]} {
+            set NODE($i,PortGUID) ""
+        }
+        set PATH($i) "\"[ArrangeDR $msgF($entry)]\""
+
+        if {$NODE($i,Type) == "SW"} {
             set maxType 6
-            set ENTRY_PORT($i) 0
+            set NODE($i,EntryPort) 0
         } else {
-            set ENTRY_PORT($i) [GetEntryPort $msgF($entry)]
+            set NODE($i,EntryPort) [GetEntryPort $msgF($entry)]
         }
         set DrPath2Name_1 [DrPath2Name $msgF($entry) -fullName]
         set DrPath2Name_2 [DrPath2Name $msgF($entry)]
-        set DrPath2Name_3 [DrPath2Name $msgF($entry) -port $ENTRY_PORT($i)]
+        set DrPath2Name_3 [DrPath2Name $msgF($entry) -port $NODE($i,EntryPort)]
         if { $msgF($entry) == "" } {
-            set NODE_NAME($i,FullName)  "The Local Device $DrPath2Name_1"
-	    set NODE_NAME($i,Name)      "The Local Device \"$DrPath2Name_2\""
-            set NODE_NAME($i,Name_Port) "The Local Device \"$DrPath2Name_3\""
+            set NODE($i,FullName)       "The Local Device $DrPath2Name_1"
+	    set NODE($i,Name)           "The Local Device \"$DrPath2Name_2\""
+            set NODE($i,Name_Port)      "The Local Device \"$DrPath2Name_3\""
             set localDevice 1
         } else {
-            set NODE_NAME($i,FullName)  "$DrPath2Name_1"
-            set NODE_NAME($i,Name)      "\"$DrPath2Name_2\""
-            set NODE_NAME($i,Name_Port) "\"$DrPath2Name_3\""
+            set NODE($i,FullName)       "$DrPath2Name_1"
+            set NODE($i,Name)           "\"$DrPath2Name_2\""
+            set NODE($i,Name_Port)      "\"$DrPath2Name_3\""
         }
-
         if {$DrPath2Name_2 == ""} {
-            if {$NODE_TYPE($i) != "SW"} {
-                set NODE_NAME($i,Name_Port) "$DrPath2Name_3"
+            if {$NODE($i,Type) != "SW"} {
+                set NODE($i,Name_Port) "$DrPath2Name_3"
             } else {
-                set NODE_NAME($i,Name_Port) ""
+                set NODE($i,Name_Port) ""
             }
         }
 
-        lappend listOfNames $NODE_NAME($i,Name)
-        lappend listOfNames_Ports $NODE_NAME($i,Name_Port)
+        lappend listOfNames $NODE($i,Name)
+        lappend listOfNames_Ports $NODE($i,Name_Port)
     }
     set maxName [LengthMaxWord $listOfNames]
     set maxName_Port [LengthMaxWord $listOfNames_Ports]
     for {set i 0} {$i < $total } {incr i} {
-        if {[info exists NODE_NAME($i,Name)]} {
-            set name [AddSpaces $NODE_NAME($i,Name) $maxName]
-            set NODE_TYPE($i,Name) "[AddSpaces $NODE_TYPE($i,Name) $maxType]" 
-            set NODE_NAME($i,Name) $name
-            set NODE_NAME($i,Name) $name
-            set name [AddSpaces $NODE_NAME($i,Name_Port) $maxName_Port]
-            set NODE_NAME($i,Name_Port) $name
-        }
+        set NODE($i,FullType,Spaces)    [AddSpaces $NODE($i,FullType) $maxType]
+        set NODE($i,Name,Spaces)        [AddSpaces $NODE($i,Name) $maxName]
+        set NODE($i,Name_Port,Spaces)   [AddSpaces $NODE($i,Name_Port) $maxName_Port]
     }
     if {[info exists msgF(flag)]} { 
 	set name  ""
@@ -699,6 +696,7 @@ proc inform { msgCode args } {
 	}
     }
     set numOfRetries [expr $G(argv,failed.retry) + $G(config,badpath,maxnErrors)]
+    #DZ
     set rumSMmsg "To use lid-routing, an SM should be ran on the fabric."
     set bar "${msgType}[bar - 50]"
     set putsFlags ""
@@ -833,7 +831,7 @@ proc inform { msgCode args } {
         } 
         "-E-argv:specified.port.not.connected" {
             append msgText "Port $msgF(value) (specified by $msgF(flag) flag) is specified in the "
-            append msgText "topology file as not connected to the fabric."
+            append msgText "topology file is not connected to the fabric."
         }
         "-E-argv:hca.no.port.is.connected" { 
             append msgText "No port of node $msgF(value) (specified by $msgF(flag) flag) was "
@@ -866,6 +864,8 @@ proc inform { msgCode args } {
         }
         "-E-ibis:no.hca" { 
             append msgText "No HCA was found on local machine."
+        #    append msgText "If there is a HCA on the local machine, "
+         #   append msgText "check that the IB driver is up."
         }
 
 
@@ -936,9 +936,7 @@ proc inform { msgCode args } {
             append msgText "Local link is bad: $msgF(command) - failed $msgF(fails) "
             append msgText "times during $msgF(attempts) attempts."
         }
-
-
-
+        
 
         "-W-outfile:not.writable" { 
             append msgText "Output file $msgF(file0) is write protected.\n"
@@ -949,12 +947,17 @@ proc inform { msgCode args } {
         }
 
         
+        "-E-discover:broken.func" {
+            append msgText "Could not complete discovering the fabric.%n"
+            append msgText "Reports will includes only the discovered part.%n"
+            set noExiting 1
+        }
         "-E-discover:duplicated.guids" { 
             if {$localDevice} {set G(LocalDeviceDuplicated) 1}
             append msgText "Duplicate $msgF(port_or_node) guid detected.\n"
             append msgText "The following two different devices:\n"
-            append msgText "a $NODE_TYPE(0,Name) $NODE_NAME(0,Name_Port) at direct path=$PATH(0)\n"
-            append msgText "a $NODE_TYPE(1,Name) $NODE_NAME(1,Name_Port) at direct path=$PATH(1)\n"
+            append msgText "a $NODE(0,Type,Spaces) $NODE(0,Name_Port,Spaces) $NODE(0,PortGUID) direct path=$PATH(0)\n"
+            append msgText "a $NODE(1,Type,Spaces) $NODE(1,Name_Port,Spaces) $NODE(1,PortGUID) direct path=$PATH(1)\n"
 	    append msgText "have inedtical $msgF(port_or_node) guid $msgF(guid)."
             set noExiting 1
         }
@@ -969,13 +972,13 @@ proc inform { msgCode args } {
             append msgText "$msgF(ID) = $msgF(value) found in the fabric:\n"
             
             for {set i 0} {$i < $total} {incr i} {
-               append msgText "a $NODE_TYPE($i,Name) $NODE_NAME($i,Name_Port) at direct path=$PATH($i)\n"
+               append msgText "a $NODE($i,FullType,Spaces) $NODE($i,Name_Port,Spaces) GUID=$NODE($i,PortGUID) direct path=$PATH($i)\n"
             }
             set noExiting 1
         }
         "-I-discover:discovery.status" {
             append putsFlags " -nonewline"
-            if { $G(argv,debug) || $G(argv,verbose) } { return } 
+            if { $G(argv,debug) || ([info exists G(argv,verbose)]) } { return } 
             set nodesNum [expr $G(Counter,SW) + $G(Counter,CA)]
             debug "740" nodesNum swNum
             append msgText "Discovering the subnet ... $nodesNum nodes "
@@ -984,7 +987,7 @@ proc inform { msgCode args } {
       
         }
         "-V-discover:discovery.status" {
-            append msgText "Discovering DirectPath (no. $msgF(index)) \{$msgF(path)\}"
+            append msgText "Discovering DirectPath (no. $msgF(index)) \{[ArrangeDR $msgF(path)]\}"
         }
 
         "-I-reporting:found.roots" {
@@ -996,39 +999,44 @@ proc inform { msgCode args } {
         }
 
 
-        "-E-ibdiagpath:bad.path.in.name.tracing" {
-            append msgText "Direct Path \"$msgF(dr)\" to \"$msgF(name)\" is bad.%n"
+        "-E-topology:bad.path.in.name.tracing" {
+            append msgText "Direct Path \"[ArrangeDR $msgF(path)]\" to \"$msgF(name)\" is bad.%n"
             append msgText "Try running ibdiagpath again byDr with the provided route."
         }
-        "-E-ibdiagpath:bad.sysName.or.bad.topoFile" {
+        "-E-topology:bad.sysName.or.bad.topoFile" {
             append msgText "Enable to retrive a route from local host to \"$msgF(name)\".%n"
             append msgText "Either the given topology file is bad "
             append msgText "or the local sys name is incorrect."
         }
-        "-E-ibdiagpath:lid.by.name.failed" {
+        "-E-topology:lid.by.name.failed" {
             append msgText "Couldn't retrive $msgF(name) LID%n"
             append msgText "Please check your topology file and given sys name."
         }
-        "-E-ibdiagpath:lid.by.name.zero" {
+        "-E-topology:lid.by.name.zero" {
             append msgText "Zero LID Retrived. for $msgF(name).%n"
-            append msgText "at the end of direct route \"$msgF(dr)\""
+            append msgText "at the end of direct route \"[ArrangeDR $msgF(path)]\""
         }
         "-E-ibdiagpath:direct.route.deadend" {
 	    ### TODO: check the phrasing ...
-	    append msgText "Bad direct route: the provided direct route passes through "
-	    append msgText "a HCA:%n"
-	    append msgText "$NODE_NAME(0,FullName)%n"
+	    append msgText "Illegal direct route was issued.\n"
+	    append msgText "The provided direct route passes through a HCA:%n"
+	    append msgText "$NODE(0,FullName)%n"
 	    append msgText "(which cannot forward direct route mads)."
         }
         "-E-ibdiagpath:direct.path.no.such.port" {
-            append msgText "Bad direct route: the following device%n"
- 	    append msgText "$NODE_NAME(0,FullName)%n"
+            append msgText "Illegal direct route was issued.\nThe following device%n"
+ 	    append msgText "$NODE(0,FullName)%n"
  	    append msgText "does not have port number $msgF(port)."
         }
         "-E-ibdiagpath:link.down" {
-            append msgText "Port \#$msgF(port) of the following device%n"
- 	    append msgText "$NODE_NAME(0,FullName)%n"
- 	    append msgText "is DOWN."
+            append msgText "Illegal route was issued.\n"
+            append msgText "Port \#$msgF(port), of the following device, is DOWN.%n"
+ 	    append msgText "$NODE(0,FullName)"
+        }
+        "-E-ibdiagpath:route.failed" {
+            append msgText "Illegal route was issued.%n"
+ 	    append msgText "Can not exit through Port \#$msgF(port) "
+            append msgText "of the following device:%n$NODE(0,FullName)"
         }
         "-E-localPort:local.port.not.active" { 
             append msgText "Local link (port \#$msgF(port) of local device) is " 
@@ -1038,7 +1046,7 @@ proc inform { msgCode args } {
         "-E-ibdiagpath:reached.lid.0" {
 	    #set noExiting 1
             append msgText "Bad LID: the following device has LID = 0x0000.\n"
-            append msgText "$NODE_NAME(0,FullName)%n"
+            append msgText "$NODE(0,FullName)%n"
 	    if {[WordInList "+cannotRdPM" $args]} { 
 	        append msgText "Cannot send pmGetPortCounters mads.\n"
 	    }
@@ -1052,17 +1060,17 @@ proc inform { msgCode args } {
 	    append msgText "Entry $msgF(lid) of LFT of the following switch\n"
 	    append msgText "$switchname\n"
 	    append msgText "is $port, but port $port leads to\n"
-	    append msgText "HCA $NODE_NAME(0,FullName)."
+	    append msgText "HCA $NODE(0,FullName)."
         }
         "-E-ibdiagpath:lid.route.loop" {
             append msgText "Lid route loop detected: "
             append msgText "when following the LID-route for LID $msgF(lid) from device%n"
-            append msgText "$NODE_NAME(0,FullName)%n"
+            append msgText "$NODE(0,FullName)%n"
         }
         "-E-ibdiagpath:lid.route.dead.end" {
             append msgText "Reached a dead end.: "
             append msgText "when reading LID $msgF(lid) from Fdb table of device%n"
-            append msgText "$NODE_NAME(0,FullName)."
+            append msgText "$NODE(0,FullName)."
         }
         "-E-ibdiagpath:read.lft.failure" {
             append msgText "[join $args] - failed $numOfRetries consecutive times." 
@@ -1085,6 +1093,11 @@ proc inform { msgCode args } {
             set from [lindex $args 0]
             set to   [lindex $args 1]
             append msgText "Traversing the path from $from to $to port"
+        }
+        "-I-ibdiagpath:obtain.src.and.dst.lids" {
+            append msgText "Obtaining source and destination LIDs:\n"
+            append msgText "$msgF(name0) \tLID=$msgF(lid0)\n"
+            append msgText "$msgF(name1) \tLID=$msgF(lid1)"
         }
         "-I-ibdiagpath:read.lft.from" {
             append msgText "From: [join $args]"
@@ -1109,7 +1122,7 @@ proc inform { msgCode args } {
             append msgText "Topology Matching May Failed."
         }
         "-I-topology:matching.note" {
-            append msgText "Note that \"bad\" links and the part of the fabric "
+            append msgText "Note that some \"bad\" links and the part of the fabric "
             append msgText "to which they led (in the BFS discovery of the fabric, "
             append msgText "starting at the local node) are not discovered and "
             append msgText "therefore will be reported as \"missing\"."
@@ -1126,7 +1139,12 @@ proc inform { msgCode args } {
             append msgText "Many mismatches between the topology defined in "
             append msgText "$G(argv,topo.file) and the discovered fabric:\n"
         }
-      
+        "-W-topology:Critical.mismatch" {
+            append msgText "Critical mismatch. between the topology defined in "
+            append msgText "$G(argv,topo.file) and the discovered fabric:\n"
+            append msgText "Topology file names will not be used.\n"
+            append msgText "\"$msgF(massage)\""
+        }
 
         "-I-ibdiagnet:report.fab.qualities.header" {
             append msgText "Fabric qualities report"
@@ -1137,6 +1155,12 @@ proc inform { msgCode args } {
         "-I-ibdiagnet:SM.header" {
             append msgText "Summary Fabric SM-state-priorty"
         }
+        "-E-ibdiagnet:no.lst.file" {
+            set noExiting 1
+            append msgText "Fail to find \"$msgF(fileName)\"" 
+        }
+
+
         "-E-ibdiagnet:no.SM" {
             append msgText "Missing master SM in the discover fabric"
             set noExiting 1
@@ -1202,8 +1226,18 @@ proc inform { msgCode args } {
             append msgText "   \"madsLost\": $G(config,badpath,maxnErrors) MADs were "
             append msgText "dropped on the link (drop ratio is given).\n"
         }
-
-        
+        "-I-ibdiagnet:bad.link.logic.header" {
+            append msgText "Link Logical State = INIT"
+        }
+        "-I-ibdiagnet:no.bad.link.logic.header" {
+            append msgText "Link Logical State Info\n"
+            append msgText "-I- No bad Links (logical state = INIT) were found"
+        }
+        "-W-ibdiagnet:report.links.init.state" {
+            append msgText "on the direct path $PATH(1)\n"
+            append msgText "From : a $NODE(0,FullType,Spaces) $NODE(0,Name_Port,Spaces) GUID=$NODE(0,PortGUID)\n"
+            append msgText "To   : a $NODE(1,FullType,Spaces) $NODE(1,Name_Port,Spaces) GUID=$NODE(1,PortGUID)"
+        }
         "-W-report:one.hca.in.fabric" {
             append msgText "The fabric has only one HCA. No fabric qualities report is issued."
         }
@@ -1225,7 +1259,7 @@ proc inform { msgCode args } {
         "-V-mad:sent"	{
 	    if {$dontShowMads} { return }
 	    append putsFlags " -nonewline"
-	    append msgText "running $msgF(command) ..."
+            append msgText "running $msgF(command) ..."
         }
         "-V-mad:received"	{
 	    if {$dontShowMads} { return }
@@ -1265,10 +1299,10 @@ proc inform { msgCode args } {
         }
         "-V-ibdiagnet:detect.bad.links" {
             putsIn80Chars " "
-            append msgText "Searching for bad link(s) on direct route \{$msgF(path)\} ..."
+            append msgText "Searching for bad link(s) on direct route \{[ArrangeDR $msgF(path)]\} ..."
         }
         "-V-ibdiagnet:incremental.bad.links" {
-            append msgText "Sending MADs over increments of the direct route \{$msgF(path)\}"
+            append msgText "Sending MADs over increments of the direct route \{[ArrangeDR $msgF(path)]\}"
         }
         "-V-ibdiagpath:pm.value" {
             append msgText "PM [join $args]"
@@ -1338,13 +1372,17 @@ proc inform { msgCode args } {
     if { $msgType == "-E-" } {
         if { ! [info exists noExiting] } {
             puts ""
-            if { $msgSource == "discover" } {
-		set Exiting "Aborting discovery"
-	    } else {
-                set Exiting "Exiting"
+            switch $msgSource {
+                "discover" {
+	            set Exiting "Aborting discovery"
+                }
+                "ibdiagpath" {
+                    set Exiting "Aborting route tracing"
+                }
+                default {
+                    set Exiting "Exiting"
+                }
             }
-            set Text "[lindex $msgText 0] ${Exiting}."
-            set msgText [linsert [lrange $msgText 1 end] 0 $Text]
             switch -exact -- $msgSource {
         	"ibis" {
                     set exitStatus $G(status,ibis_init) 
@@ -1377,12 +1415,12 @@ proc inform { msgCode args } {
     regsub -all {%n} "[join $msgText \n]" "\n" msgText
     putsIn80Chars $msgText $putsFlags
     if {[info exists exitStatus]} { 
-        puts ""
+        puts "    $Exiting.\n"
         if {[info exists showSynopsys]} { 
             showHelpPage -sysnopsys 
             puts ""
         }
-	catch { close $G(logFileID) }
+        catch { close $G(logFileID) }
         exit $exitStatus
     }
     return
@@ -1436,10 +1474,10 @@ proc showHelpPage { args } {
 ERROR CODES
   1 - Failed to fully discover the fabric
   2 - Failed to parse command line options
-  3 - Failed to intract with IB fabric
+  3 - Failed to interact with IB fabric
   4 - Could not use local device or local port
   5 - Failed to use Topology File
-  6 - Failed to load requierd Package"
+  6 - Failed to load required Package"
 
 #   The number of retries of sending a specific packet is given by the -f option (default = 3).
 ##############################
@@ -1470,8 +1508,10 @@ ERROR CODES
 ERROR CODES
   1 - The path traced is un-healthy
   2 - Failed to parse command line options
-  3 - More then 64 hops are required for traversing the local port to the \"from\" port and then to the \"to\" port.
-  4 - Unable to traverse the LFT data from source to destination"
+  3 - More then 64 hops are required for traversing the local port to the \"Source\" port and then to the \"Destination\" port.
+  4 - Unable to traverse the LFT data from source to destination
+  5 - Failed to use Topology File
+  6 - Failed to load required Package"
 #   The number of retries of sending a specific packet is given by the -f option (default = 3).
 
 ##############################

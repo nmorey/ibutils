@@ -47,7 +47,8 @@ proc ibdiagpathMain {} {
     # previously, consisted of 2 procs, ibdiagpathGetPaths & readPerfCountres
     global G errorInfo
     set addressingLocalPort 0
-
+    # So we could use topology file names
+    set G(matchTopologyResult) [info exists G(argv,topo.file)]
     # lid routing
     if {[info exists G(argv,lid.route)]} {
         set targets [split $G(argv,lid.route) ","]
@@ -79,30 +80,40 @@ proc ibdiagpathMain {} {
                 lappend targets $G(RootPort,Lid)
             } else {
                 if {[catch {set tmpDR [name2Lid $tmpRemote $portPtr $G(argv,port.num)]} e]} {
-                    inform "-E-ibdiagpath:bad.sysName.or.bad.topoFile" -name [IBPort_getName $portPtr]
+                    inform "-E-topology:bad.sysName.or.bad.topoFile" -name [IBPort_getName $portPtr]
                 }
                 if {[lindex $tmpDR end ] == 0} {
-                    if {[catch {set newTarget [SmMadGetByDr PortInfo -base_lid [lrange $tmpDR 0 end-1] 0]} e]} {
-                        inform "-E-ibdiagpath:bad.path.in.name.tracing" $tmpDR [IBPort_getName $portPtr]
+                    if {[catch {set newTarget [GetParamValue LID [lrange $tmpDR 0 end-1] -port 0 -byDr]} e]} {
+                        puts  $e
+                        inform "-E-topology:bad.path.in.name.tracing" -path $tmpDR -name [IBPort_getName $portPtr]
                     }
                 } else {
-                    if {[catch {set newTarget [SmMadGetByDr PortInfo -base_lid "$tmpDR" [IBPort_num_get $portPtr]]} e]} {
-                        inform "-E-ibdiagpath:bad.path.in.name.tracing" -dr $tmpDR -name [IBPort_getName $portPtr]
+                    if {[catch {set newTarget [GetParamValue LID "$tmpDR" -port [IBPort_num_get $portPtr] -byDr]} e]} {
+                        inform "-E-topology:bad.path.in.name.tracing" -path $tmpDR -name [IBPort_getName $portPtr]
                     }
                 }
                 if {($newTarget == -1)} {
-                    inform "-E-ibdiagpath:lid.by.name.failed" -name [IBPort_getName $portPtr]
+                    inform "-E-topology:lid.by.name.failed" -name [IBPort_getName $portPtr]
                 }
                 if {($newTarget == 0)} {
-                    inform "-E-ibdiagpath:lid.by.name.zero" -dr $tmpDR -name [IBPort_getName $portPtr]
+                    inform "-E-topology:lid.by.name.zero" -path $tmpDR -name [IBPort_getName $portPtr]
                 }
-
                 lappend targets $newTarget
+                lappend targetsNames 
             }
+            lappend targetsNames [IBPort_getName $portPtr]
+            if { "$targets" == $G(RootPort,Lid) } { 
+                set addressingLocalPort 1 
+            } 
         }
-        if { "$targets" == $G(RootPort,Lid) } { set addressingLocalPort 1 } 
+        if {[llength $targets] == 2} {
+            inform "-I-ibdiagpath:obtain.src.and.dst.lids" -name0 [lindex $targetsNames 0] \
+                -name1 [lindex $targetsNames 1] -lid0 [lindex $targets 0] -lid1 [lindex $targets 1]
+        } else {
+            inform "-I-ibdiagpath:obtain.src.and.dst.lids" -name0 $localPortName \
+                -name1 [lindex $targetsNames 0] -lid0 $G(RootPort,Lid) -lid1 [lindex $targets 0]
+        }
     }
-
     set paths ""
     set G(detect.bad.links) 1
     for {set i 0} {$i < [llength $targets]} {incr i} {
@@ -137,7 +148,6 @@ proc ibdiagpathMain {} {
         set sourceIsHca [lindex $local2srcPath end]
         incr startIdx -2
     }
-
     # the following loop is only for pretty-priting...
     set llen ""
     for { set i $startIdx } { $i < [llength $src2trgtPath] } { incr i } {
@@ -145,7 +155,6 @@ proc ibdiagpathMain {} {
         lappend llen [string length [lindex $portNames 0]] [string length [lindex $portNames 1]]
     }
     set maxLen [lindex [lsort -integer $llen] end]
-
     # preparing the list of lid-s and ports for reading the PM counters
     set directPathsList [list $src2trgtPath]
     for { set I $startIdx } { $I < [llength $src2trgtPath] } { incr I } {
@@ -258,7 +267,6 @@ startIBDebug
 set G(detect.bad.links) 1
 ibdiagpathMain
 set G(detect.bad.links) 0
-
 ### Finishing
 finishIBDebug
 ######################################################################

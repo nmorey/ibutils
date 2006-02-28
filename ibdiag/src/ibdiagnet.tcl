@@ -2,12 +2,12 @@
 source [file join [file dirname [info script]] ibdebug.tcl]
 
 ######################################################################
-#****h* IB Debug Tools/ibdiagnet
+#  IB Debug Tools
 #  NAME
-#     ibdiagnet
+#       ibdiagnet
 #
 #  COPYRIGHT
-#                 - Mellanox Confidential and Proprietary -
+#               - Mellanox Confidential and Proprietary -
 #
 # Copyright (C) Jan. 2004, Mellanox Technologies Ltd.  ALL RIGHTS RESERVED.
 #
@@ -20,13 +20,13 @@ source [file join [file dirname [info script]] ibdebug.tcl]
 # End of legal section.
 #
 #  FUNCTION
-#     ibdiagnet discovers the entire network providing text display of the result as well as subnet.lst, 
+#     ibdiagnet discovers the entire network. providing text display of the result as well as subnet.lst, 
 #     LFT dump (same format as osm.fdbs) and Multicast dump (same as osm.mcfdbs). 
 #     The discovery exhaustively routes through all the fabric links multiple times, 
 #     tracking and reporting packet drop statistics - indicating bad links if any.
 #
 #  AUTHOR
-#	Ariel Libman. Mellanox Technologies LTD.
+#	Danny Zarko. Mellanox Technologies LTD.
 #
 #  CREATION DATE
 #	19/May/05
@@ -43,29 +43,38 @@ source [file join [file dirname [info script]] ibdebug.tcl]
 ######################################################################
 ### Action 
 ######################################################################
-### Initialize ibis
+### Initialize ibis and pre-setting for ibdiag
 InitalizeIBdiag
 InitalizeINFO_LST
 startIBDebug
-### Discover the cluster
 set G(detect.bad.links) 1
-if {[catch {DiscoverFabric 0} e]} { puts "\n\nERROR $errorInfo $e" ; exit 1}
-catch {DiscoverHiddenFabric}
-CheckBadLidsGuids
+### Discover the cluster
+if {[catch {DiscoverFabric 0} e]} { 
+    ### Discover the hidden cluster
+    if {[catch {DiscoverHiddenFabric} e]} { 
+        inform "-I-discover:discovery.status"
+        inform "-I-exit:\\r"
+        inform "-V-discover:end.discovery.header"
+        inform "-E-discover:broken.func" $errorInfo $e
+    }
+}
+
+### Write the .lst
+writeLstFile
+
+### match topology (if topology was given)
+set G(matchTopologyResult) [matchTopology $G(outfiles,.lst)]
+DumpBadLidsGuids
+DumpBadLinksLogic
 CheckSM
 RereadLongPaths
-set G(detect.bad.links) 0
 
-### Write the .lst, .fdbs and .mcfdbs files
-
-writeLstFile
+### Write the .fdbs, .mcfdbs, .masks and .sm files
 writeFdbsFile 
 writeMcfdbsFile
 writeMasksFile
 writeSMFile
 
-### match topology (if topology is given)
-matchTopology $G(outfiles,.lst)
 ### output info about bad/broken links
 BadLinksUserInform
 
@@ -73,7 +82,8 @@ BadLinksUserInform
 reportTopologyMatching
 
 ### report fabric qualities
-reportFabQualities
+if {[catch {reportFabQualities} e]} { puts "\n\nERROR $errorInfo $e" ; exit 1}
+#reportFabQualities
 
 ### Finishing
 finishIBDebug
