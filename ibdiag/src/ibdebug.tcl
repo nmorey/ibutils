@@ -1436,6 +1436,10 @@ proc ProcName { args } {
     return [lindex [info level [expr [info level] -1 -$upLevels]] 0]
 }
 
+proc removeLeadingZeros {num} {
+  return [string trimleft $num 0] 
+}
+
 ##############################
 # get a list of numbers and generate a nice consolidated sub list
 proc groupNumRanges {nums} {
@@ -1445,12 +1449,14 @@ proc groupNumRanges {nums} {
 
    set start -1
    set res ""
-   set snums [lsort -integer $nums]
+   if {[catch {set snums [lsort -integer $nums]}]} {
+     set snums [lsort $nums]
+   }
    set last [lrange $snums end end]
    set start [lindex $snums 0]
    set end $start
    foreach n $snums {
-      if {($n > $end + 1)} {
+      if {([removeLeadingZeros $n] > [removeLeadingZeros $end] + 1)} {
          if {$start == $end} {
             append res "$end,"
          } else {
@@ -1489,7 +1495,7 @@ proc groupingEngine {groups} {
 
       append prefix $w1
       set suffix $w3
-      set key "$prefix $suffix"
+      set key "$prefix $suffix" 
       lappend NEW_GROUPS($key) $num
    }
 
