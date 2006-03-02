@@ -862,6 +862,63 @@ static string MsgAllModules("");
 
 #define madMcMemberRec ib_member_rec_t
 
+#define madPathRec ib_path_rec_t
+
+#define madServiceRec ib_service_record_t
+
+#include <complib/cl_packon.h>
+typedef struct _ib_mad_notice_attr128    
+{
+  uint8_t	        generic_type;      
+  uint8_t		prod_type_msb;
+  ib_net16_t	        prod_type_lsb;
+  ib_net16_t	        trap_num; 
+  ib_net16_t		issuer_lid;    
+  ib_net16_t		toggle_count;  
+  ib_net16_t            sw_lid; // the sw lid of which link state changed - for 128 only
+  ib_gid_t		issuer_gid;    
+}	PACK_SUFFIX ib_mad_notice_attr128_t;
+#include <complib/cl_packoff.h>
+
+#define madNotice128 ib_mad_notice_attr128_t
+
+#include <complib/cl_packon.h>
+typedef struct _ib_mad_notice_attr129    
+{
+  uint8_t	        generic_type;      
+  uint8_t		prod_type_msb;
+  ib_net16_t	        prod_type_lsb;
+  ib_net16_t	        trap_num; 
+  ib_net16_t		issuer_lid;    
+  ib_net16_t		toggle_count;  
+  ib_net16_t            pad;      //129
+  ib_net16_t            lid;	  // 129 lid and port number of the violation
+  uint8_t               port_num; //129  
+  ib_gid_t		issuer_gid;    
+}	PACK_SUFFIX ib_mad_notice_attr129_t;
+#include <complib/cl_packoff.h>
+
+#define madNotice129 ib_mad_notice_attr129_t
+
+#include <complib/cl_packon.h>
+typedef struct _ib_mad_notice_attr144    
+{
+  uint8_t	        generic_type;      
+  uint8_t		prod_type_msb;
+  ib_net16_t	        prod_type_lsb;
+  ib_net16_t	        trap_num; 
+  ib_net16_t		issuer_lid;    
+  ib_net16_t		toggle_count;  
+  ib_net16_t            pad1;         // 144
+  ib_net16_t            lid;	      // 144 lid where capability mask changed
+  ib_net16_t            pad2;         // 144
+  ib_net32_t            new_cap_mask; // 144 new capability mask
+  ib_gid_t		issuer_gid;    
+}	PACK_SUFFIX ib_mad_notice_attr144_t;
+#include <complib/cl_packoff.h>
+
+#define madNotice144 ib_mad_notice_attr144_t
+
   /* we need to explicitly exit complib if we explictly started it if static linked */
   void ibmssh_exit(ClientData clientData ) {
     complib_exit();
@@ -24619,6 +24676,84 @@ static int _wrap_IBMSNode_getPortInfo(ClientData clientData, Tcl_Interp *interp,
     SWIG_SetPointerObj(tcl_result,(void *) _result,"_ib_port_info_t_p");
     return TCL_OK;
 }
+#define IBMSNode_setLinkStatus(_swigobj,_swigarg0,_swigarg1)  (_swigobj->setLinkStatus(_swigarg0,_swigarg1))
+static int _wrap_IBMSNode_setLinkStatus(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    int  _result;
+    IBMSNode * _arg0;
+    uint8_t * _arg1;
+    uint8_t * _arg2;
+    Tcl_Obj * tcl_result;
+    uint8_t  temp;
+    uint8_t  temp0;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 4) || (objc > 4)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. IBMSNode_setLinkStatus { IBMSNode * } portNum newState ",-1);
+        return TCL_ERROR;
+    }
+{
+  
+  void *ptr;
+  if (ibmsGetSimNodePtrByTclName(objv[1], &ptr) != TCL_OK) {
+	 char err[128];
+	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
+	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+  }
+	 
+  _arg0 = (IBMSNode *)ptr;
+}
+{
+  /* the format is always: <type>:<idx>[:<name>] */
+  
+  // get the type from the given source 
+  char buf[128];
+  strcpy(buf, Tcl_GetStringFromObj(objv[1],0));
+  char *colonIdx = index(buf,':');
+  if (!colonIdx) {
+	 char err[128];
+	 sprintf(err, "-E- Bad formatted ibdm object:%s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;
+  }
+  *colonIdx = '\0';
+
+  if (!strcmp("IBMSNode ", "IBMSNode ")) {
+    if (strcmp(buf, "simnode")) {
+      char err[256];
+      sprintf(err, "-E- basetype is IBMSNode  but received obj of type %s", buf);
+      Tcl_SetStringObj(tcl_result, err, strlen(err));
+      return TCL_ERROR;	 
+    }
+  } else {
+	 char err[256];
+	 sprintf(err, "-E- basetype 'IBMSNode ' is unknown");
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+  }
+}
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
+  _arg1 = &temp;
+}
+{
+  temp0 = strtoul(Tcl_GetStringFromObj(objv[3],NULL), NULL, 0);
+  _arg2 = &temp0;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (int )IBMSNode_setLinkStatus(_arg0,*_arg1,*_arg2);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+    Tcl_SetIntObj(tcl_result,(long) _result);
+    return TCL_OK;
+}
 #define IBMSNode_getNodeInfo(_swigobj)  (_swigobj->getNodeInfo())
 static int _wrap_IBMSNode_getNodeInfo(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
 
@@ -25326,7 +25461,7 @@ static int TclIBMSNodeMethodCmd(ClientData clientData, Tcl_Interp *interp, int o
   tcl_result = Tcl_GetObjResult(interp);
   objv = (Tcl_Obj **) _objv; 
   if (objc < 2) {
-    Tcl_SetStringObj(tcl_result,"IBMSNode methods : { dump cget configure getIBNode getLinkStatus setPhyPortErrProfile getPhyPortErrProfile setPhyPortPMCounter getPhyPortPMCounter getPortInfo getNodeInfo getSwitchInfo getPKeyTblBlock setPKeyTblBlock setCrSpace getCrSpace getMFTBlock setMFTBlock  }",-1);
+    Tcl_SetStringObj(tcl_result,"IBMSNode methods : { dump cget configure getIBNode getLinkStatus setPhyPortErrProfile getPhyPortErrProfile setPhyPortPMCounter getPhyPortPMCounter getPortInfo setLinkStatus getNodeInfo getSwitchInfo getPKeyTblBlock setPKeyTblBlock setCrSpace getCrSpace getMFTBlock setMFTBlock  }",-1);
     return TCL_ERROR;
   }
   obj = Tcl_NewObj();
@@ -25348,6 +25483,8 @@ static int TclIBMSNodeMethodCmd(ClientData clientData, Tcl_Interp *interp, int o
         cmd = _wrap_IBMSNode_getPhyPortPMCounter;
     }    else if (strcmp(_str,"getPortInfo") == 0) {
         cmd = _wrap_IBMSNode_getPortInfo;
+    }    else if (strcmp(_str,"setLinkStatus") == 0) {
+        cmd = _wrap_IBMSNode_setLinkStatus;
     }    else if (strcmp(_str,"getNodeInfo") == 0) {
         cmd = _wrap_IBMSNode_getNodeInfo;
     }    else if (strcmp(_str,"getSwitchInfo") == 0) {
@@ -25426,7 +25563,7 @@ static int TclIBMSNodeMethodCmd(ClientData clientData, Tcl_Interp *interp, int o
       }
     }
   if (!cmd) {
-    Tcl_SetStringObj(tcl_result,"Invalid Method. Must be { dump cget configure getIBNode getLinkStatus setPhyPortErrProfile getPhyPortErrProfile setPhyPortPMCounter getPhyPortPMCounter getPortInfo getNodeInfo getSwitchInfo getPKeyTblBlock setPKeyTblBlock setCrSpace getCrSpace getMFTBlock setMFTBlock }",-1);
+    Tcl_SetStringObj(tcl_result,"Invalid Method. Must be { dump cget configure getIBNode getLinkStatus setPhyPortErrProfile getPhyPortErrProfile setPhyPortPMCounter getPhyPortPMCounter getPortInfo setLinkStatus getNodeInfo getSwitchInfo getPKeyTblBlock setPKeyTblBlock setCrSpace getCrSpace getMFTBlock setMFTBlock }",-1);
     return TCL_ERROR;
   }
   oldarg = objv[1];
@@ -27068,6 +27205,7103 @@ static int TclmadMcMemberRecCmd(ClientData clientData, Tcl_Interp *interp, int o
 }
 
 
+#define new_madPathRec() (new madPathRec())
+static int _wrap_new_madPathRec(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    madPathRec * _result;
+    Tcl_Obj * tcl_result;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 1) || (objc > 1)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. new_madPathRec ",-1);
+        return TCL_ERROR;
+    }
+{ 
+  ibms_tcl_error = 0;
+      _result = (madPathRec *)new_madPathRec();
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+    SWIG_SetPointerObj(tcl_result,(void *) _result,"_madPathRec_p");
+    return TCL_OK;
+}
+#define delete_madPathRec(_swigobj) (delete _swigobj)
+static int _wrap_delete_madPathRec(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    madPathRec * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. delete_madPathRec { madPathRec * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madPathRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of delete_madPathRec. Expected _madPathRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{ 
+  ibms_tcl_error = 0;
+      delete_madPathRec(_arg0);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+    return TCL_OK;
+}
+static uint8_array_t * madPathRec_resv0_set(madPathRec *obj, uint8_array_t val[8]) {
+{
+	int i;
+	for (i=0; i <8 ; i++) {
+		obj->resv0[i] = *(val+i);
+	}
+}
+    return (uint8_array_t *) val;
+}
+static int _wrap_madPathRec_resv0_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_array_t * _result;
+    madPathRec * _arg0;
+    uint8_array_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint8_t  entrys[8];
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madPathRec_resv0_set { madPathRec * } { uint8_array_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madPathRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madPathRec_resv0_set. Expected _madPathRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  char *buff;
+  char *p_ch;
+  char *last;
+  long int entry;
+
+  int i = 0;
+  buff = (char *)malloc((strlen(Tcl_GetStringFromObj(objv[2],NULL))+1)*sizeof(char));
+  strcpy(buff, Tcl_GetStringFromObj(objv[2],NULL));
+  p_ch = strtok_r(buff, " \t",&last);
+  while (p_ch && (i < 8)) 
+  {    
+    entry = strtol(p_ch, NULL, 0);
+    if (entry > 0xff)
+    {
+      printf("Error: wrong format or out of range value for expected uint8_t entry: %s\n", p_ch);
+      return TCL_ERROR;
+    }
+    entrys[i++] = entry;
+    p_ch = strtok_r(NULL, " \t", &last);
+  }
+  for (; i < 8; i++) entrys[i] = 0;
+
+  free(buff);
+  _arg1 = entrys;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (uint8_array_t *)madPathRec_resv0_set(_arg0,_arg1);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  int i;
+  char buff[8];
+  for (i=0; i <8 ; i++) {
+    sprintf(buff, "0x%02x ", *(_result+i));
+    Tcl_AppendResult(interp, buff, NULL);
+  }
+}
+    return TCL_OK;
+}
+#define madPathRec_resv0_get(_swigobj) ((uint8_array_t *) _swigobj->resv0)
+static int _wrap_madPathRec_resv0_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_array_t * _result;
+    madPathRec * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madPathRec_resv0_get { madPathRec * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madPathRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madPathRec_resv0_get. Expected _madPathRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{ 
+  ibms_tcl_error = 0;
+      _result = (uint8_array_t *)madPathRec_resv0_get(_arg0);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  int i;
+  char buff[8];
+  for (i=0; i <8 ; i++) {
+    sprintf(buff, "0x%02x ", *(_result+i));
+    Tcl_AppendResult(interp, buff, NULL);
+  }
+}
+    return TCL_OK;
+}
+#define madPathRec_dgid_set(_swigobj,_swigval) (_swigobj->dgid = *(_swigval),_swigval)
+static int _wrap_madPathRec_dgid_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_gid_t * _result;
+    madPathRec * _arg0;
+    ib_gid_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_gid_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madPathRec_dgid_set { madPathRec * } { ib_gid_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madPathRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madPathRec_dgid_set. Expected _madPathRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  char buf[36];
+  char *p_prefix, *p_guid;
+  char *str_token;
+
+  strcpy(buf, Tcl_GetStringFromObj(objv[2],NULL));
+  p_prefix = strtok_r(buf,":", &str_token);
+  p_guid = strtok_r(NULL, " ", &str_token);
+  errno = 0;
+  temp.unicast.prefix = cl_hton64(strtoull(p_prefix, NULL, 16));
+  if (errno) {
+    printf("Wrong format for gid prefix:%s\n", p_prefix);
+    return TCL_ERROR;
+  }
+
+  temp.unicast.interface_id = cl_hton64(strtoull(p_guid, NULL, 16));
+  if (errno) {
+    printf("Wrong format for gid guid:%s\n", p_guid);
+    return TCL_ERROR;
+  }
+  
+  _arg1 = &temp;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_gid_t *)madPathRec_dgid_set(_arg0,_arg1);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[36];
+  sprintf(buff, "0x%016" PRIx64 ":0x%016" PRIx64, 
+          cl_ntoh64(_result->unicast.prefix), 
+          cl_ntoh64(_result->unicast.interface_id) 
+          );
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madPathRec_dgid_get(_swigobj) (&_swigobj->dgid)
+static int _wrap_madPathRec_dgid_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_gid_t * _result;
+    madPathRec * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madPathRec_dgid_get { madPathRec * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madPathRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madPathRec_dgid_get. Expected _madPathRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_gid_t *)madPathRec_dgid_get(_arg0);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[36];
+  sprintf(buff, "0x%016" PRIx64 ":0x%016" PRIx64, 
+          cl_ntoh64(_result->unicast.prefix), 
+          cl_ntoh64(_result->unicast.interface_id) 
+          );
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madPathRec_sgid_set(_swigobj,_swigval) (_swigobj->sgid = *(_swigval),_swigval)
+static int _wrap_madPathRec_sgid_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_gid_t * _result;
+    madPathRec * _arg0;
+    ib_gid_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_gid_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madPathRec_sgid_set { madPathRec * } { ib_gid_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madPathRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madPathRec_sgid_set. Expected _madPathRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  char buf[36];
+  char *p_prefix, *p_guid;
+  char *str_token;
+
+  strcpy(buf, Tcl_GetStringFromObj(objv[2],NULL));
+  p_prefix = strtok_r(buf,":", &str_token);
+  p_guid = strtok_r(NULL, " ", &str_token);
+  errno = 0;
+  temp.unicast.prefix = cl_hton64(strtoull(p_prefix, NULL, 16));
+  if (errno) {
+    printf("Wrong format for gid prefix:%s\n", p_prefix);
+    return TCL_ERROR;
+  }
+
+  temp.unicast.interface_id = cl_hton64(strtoull(p_guid, NULL, 16));
+  if (errno) {
+    printf("Wrong format for gid guid:%s\n", p_guid);
+    return TCL_ERROR;
+  }
+  
+  _arg1 = &temp;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_gid_t *)madPathRec_sgid_set(_arg0,_arg1);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[36];
+  sprintf(buff, "0x%016" PRIx64 ":0x%016" PRIx64, 
+          cl_ntoh64(_result->unicast.prefix), 
+          cl_ntoh64(_result->unicast.interface_id) 
+          );
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madPathRec_sgid_get(_swigobj) (&_swigobj->sgid)
+static int _wrap_madPathRec_sgid_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_gid_t * _result;
+    madPathRec * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madPathRec_sgid_get { madPathRec * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madPathRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madPathRec_sgid_get. Expected _madPathRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_gid_t *)madPathRec_sgid_get(_arg0);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[36];
+  sprintf(buff, "0x%016" PRIx64 ":0x%016" PRIx64, 
+          cl_ntoh64(_result->unicast.prefix), 
+          cl_ntoh64(_result->unicast.interface_id) 
+          );
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madPathRec_dlid_set(_swigobj,_swigval) (_swigobj->dlid = *(_swigval),_swigval)
+static int _wrap_madPathRec_dlid_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    madPathRec * _arg0;
+    ib_net16_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_net16_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madPathRec_dlid_set { madPathRec * } { ib_net16_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madPathRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madPathRec_dlid_set. Expected _madPathRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  _arg1 = &temp;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_net16_t *)madPathRec_dlid_set(_arg0,_arg1);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madPathRec_dlid_get(_swigobj) (&_swigobj->dlid)
+static int _wrap_madPathRec_dlid_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    madPathRec * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madPathRec_dlid_get { madPathRec * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madPathRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madPathRec_dlid_get. Expected _madPathRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_net16_t *)madPathRec_dlid_get(_arg0);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madPathRec_slid_set(_swigobj,_swigval) (_swigobj->slid = *(_swigval),_swigval)
+static int _wrap_madPathRec_slid_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    madPathRec * _arg0;
+    ib_net16_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_net16_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madPathRec_slid_set { madPathRec * } { ib_net16_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madPathRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madPathRec_slid_set. Expected _madPathRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  _arg1 = &temp;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_net16_t *)madPathRec_slid_set(_arg0,_arg1);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madPathRec_slid_get(_swigobj) (&_swigobj->slid)
+static int _wrap_madPathRec_slid_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    madPathRec * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madPathRec_slid_get { madPathRec * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madPathRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madPathRec_slid_get. Expected _madPathRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_net16_t *)madPathRec_slid_get(_arg0);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madPathRec_hop_flow_raw_set(_swigobj,_swigval) (_swigobj->hop_flow_raw = *(_swigval),_swigval)
+static int _wrap_madPathRec_hop_flow_raw_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net32_t * _result;
+    madPathRec * _arg0;
+    ib_net32_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_net32_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madPathRec_hop_flow_raw_set { madPathRec * } { ib_net32_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madPathRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madPathRec_hop_flow_raw_set. Expected _madPathRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton32(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
+  _arg1 = &temp;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_net32_t *)madPathRec_hop_flow_raw_set(_arg0,_arg1);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_ntoh32(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madPathRec_hop_flow_raw_get(_swigobj) (&_swigobj->hop_flow_raw)
+static int _wrap_madPathRec_hop_flow_raw_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net32_t * _result;
+    madPathRec * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madPathRec_hop_flow_raw_get { madPathRec * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madPathRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madPathRec_hop_flow_raw_get. Expected _madPathRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_net32_t *)madPathRec_hop_flow_raw_get(_arg0);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_ntoh32(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madPathRec_tclass_set(_swigobj,_swigval) (_swigobj->tclass = *(_swigval),_swigval)
+static int _wrap_madPathRec_tclass_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    madPathRec * _arg0;
+    uint8_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint8_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madPathRec_tclass_set { madPathRec * } { uint8_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madPathRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madPathRec_tclass_set. Expected _madPathRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
+  _arg1 = &temp;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (uint8_t *)madPathRec_tclass_set(_arg0,_arg1);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madPathRec_tclass_get(_swigobj) (&_swigobj->tclass)
+static int _wrap_madPathRec_tclass_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    madPathRec * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madPathRec_tclass_get { madPathRec * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madPathRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madPathRec_tclass_get. Expected _madPathRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{ 
+  ibms_tcl_error = 0;
+      _result = (uint8_t *)madPathRec_tclass_get(_arg0);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madPathRec_num_path_set(_swigobj,_swigval) (_swigobj->num_path = *(_swigval),_swigval)
+static int _wrap_madPathRec_num_path_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    madPathRec * _arg0;
+    uint8_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint8_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madPathRec_num_path_set { madPathRec * } { uint8_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madPathRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madPathRec_num_path_set. Expected _madPathRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
+  _arg1 = &temp;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (uint8_t *)madPathRec_num_path_set(_arg0,_arg1);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madPathRec_num_path_get(_swigobj) (&_swigobj->num_path)
+static int _wrap_madPathRec_num_path_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    madPathRec * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madPathRec_num_path_get { madPathRec * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madPathRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madPathRec_num_path_get. Expected _madPathRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{ 
+  ibms_tcl_error = 0;
+      _result = (uint8_t *)madPathRec_num_path_get(_arg0);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madPathRec_pkey_set(_swigobj,_swigval) (_swigobj->pkey = *(_swigval),_swigval)
+static int _wrap_madPathRec_pkey_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    madPathRec * _arg0;
+    ib_net16_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_net16_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madPathRec_pkey_set { madPathRec * } { ib_net16_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madPathRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madPathRec_pkey_set. Expected _madPathRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  _arg1 = &temp;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_net16_t *)madPathRec_pkey_set(_arg0,_arg1);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madPathRec_pkey_get(_swigobj) (&_swigobj->pkey)
+static int _wrap_madPathRec_pkey_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    madPathRec * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madPathRec_pkey_get { madPathRec * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madPathRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madPathRec_pkey_get. Expected _madPathRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_net16_t *)madPathRec_pkey_get(_arg0);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madPathRec_sl_set(_swigobj,_swigval) (_swigobj->sl = *(_swigval),_swigval)
+static int _wrap_madPathRec_sl_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    madPathRec * _arg0;
+    ib_net16_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_net16_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madPathRec_sl_set { madPathRec * } { ib_net16_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madPathRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madPathRec_sl_set. Expected _madPathRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  _arg1 = &temp;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_net16_t *)madPathRec_sl_set(_arg0,_arg1);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madPathRec_sl_get(_swigobj) (&_swigobj->sl)
+static int _wrap_madPathRec_sl_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    madPathRec * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madPathRec_sl_get { madPathRec * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madPathRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madPathRec_sl_get. Expected _madPathRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_net16_t *)madPathRec_sl_get(_arg0);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madPathRec_mtu_set(_swigobj,_swigval) (_swigobj->mtu = *(_swigval),_swigval)
+static int _wrap_madPathRec_mtu_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    madPathRec * _arg0;
+    uint8_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint8_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madPathRec_mtu_set { madPathRec * } { uint8_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madPathRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madPathRec_mtu_set. Expected _madPathRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
+  _arg1 = &temp;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (uint8_t *)madPathRec_mtu_set(_arg0,_arg1);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madPathRec_mtu_get(_swigobj) (&_swigobj->mtu)
+static int _wrap_madPathRec_mtu_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    madPathRec * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madPathRec_mtu_get { madPathRec * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madPathRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madPathRec_mtu_get. Expected _madPathRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{ 
+  ibms_tcl_error = 0;
+      _result = (uint8_t *)madPathRec_mtu_get(_arg0);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madPathRec_rate_set(_swigobj,_swigval) (_swigobj->rate = *(_swigval),_swigval)
+static int _wrap_madPathRec_rate_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    madPathRec * _arg0;
+    uint8_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint8_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madPathRec_rate_set { madPathRec * } { uint8_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madPathRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madPathRec_rate_set. Expected _madPathRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
+  _arg1 = &temp;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (uint8_t *)madPathRec_rate_set(_arg0,_arg1);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madPathRec_rate_get(_swigobj) (&_swigobj->rate)
+static int _wrap_madPathRec_rate_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    madPathRec * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madPathRec_rate_get { madPathRec * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madPathRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madPathRec_rate_get. Expected _madPathRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{ 
+  ibms_tcl_error = 0;
+      _result = (uint8_t *)madPathRec_rate_get(_arg0);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madPathRec_pkt_life_set(_swigobj,_swigval) (_swigobj->pkt_life = *(_swigval),_swigval)
+static int _wrap_madPathRec_pkt_life_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    madPathRec * _arg0;
+    uint8_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint8_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madPathRec_pkt_life_set { madPathRec * } { uint8_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madPathRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madPathRec_pkt_life_set. Expected _madPathRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
+  _arg1 = &temp;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (uint8_t *)madPathRec_pkt_life_set(_arg0,_arg1);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madPathRec_pkt_life_get(_swigobj) (&_swigobj->pkt_life)
+static int _wrap_madPathRec_pkt_life_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    madPathRec * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madPathRec_pkt_life_get { madPathRec * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madPathRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madPathRec_pkt_life_get. Expected _madPathRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{ 
+  ibms_tcl_error = 0;
+      _result = (uint8_t *)madPathRec_pkt_life_get(_arg0);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madPathRec_preference_set(_swigobj,_swigval) (_swigobj->preference = *(_swigval),_swigval)
+static int _wrap_madPathRec_preference_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    madPathRec * _arg0;
+    uint8_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint8_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madPathRec_preference_set { madPathRec * } { uint8_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madPathRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madPathRec_preference_set. Expected _madPathRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
+  _arg1 = &temp;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (uint8_t *)madPathRec_preference_set(_arg0,_arg1);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madPathRec_preference_get(_swigobj) (&_swigobj->preference)
+static int _wrap_madPathRec_preference_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    madPathRec * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madPathRec_preference_get { madPathRec * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madPathRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madPathRec_preference_get. Expected _madPathRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{ 
+  ibms_tcl_error = 0;
+      _result = (uint8_t *)madPathRec_preference_get(_arg0);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+static uint8_array_t * madPathRec_resv2_set(madPathRec *obj, uint8_array_t val[6]) {
+{
+	int i;
+	for (i=0; i <6 ; i++) {
+		obj->resv2[i] = *(val+i);
+	}
+}
+    return (uint8_array_t *) val;
+}
+static int _wrap_madPathRec_resv2_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_array_t * _result;
+    madPathRec * _arg0;
+    uint8_array_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint8_t  entrys[6];
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madPathRec_resv2_set { madPathRec * } { uint8_array_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madPathRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madPathRec_resv2_set. Expected _madPathRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  char *buff;
+  char *p_ch;
+  char *last;
+  long int entry;
+
+  int i = 0;
+  buff = (char *)malloc((strlen(Tcl_GetStringFromObj(objv[2],NULL))+1)*sizeof(char));
+  strcpy(buff, Tcl_GetStringFromObj(objv[2],NULL));
+  p_ch = strtok_r(buff, " \t",&last);
+  while (p_ch && (i < 6)) 
+  {    
+    entry = strtol(p_ch, NULL, 0);
+    if (entry > 0xff)
+    {
+      printf("Error: wrong format or out of range value for expected uint8_t entry: %s\n", p_ch);
+      return TCL_ERROR;
+    }
+    entrys[i++] = entry;
+    p_ch = strtok_r(NULL, " \t", &last);
+  }
+  for (; i < 6; i++) entrys[i] = 0;
+
+  free(buff);
+  _arg1 = entrys;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (uint8_array_t *)madPathRec_resv2_set(_arg0,_arg1);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  int i;
+  char buff[8];
+  for (i=0; i <6 ; i++) {
+    sprintf(buff, "0x%02x ", *(_result+i));
+    Tcl_AppendResult(interp, buff, NULL);
+  }
+}
+    return TCL_OK;
+}
+#define madPathRec_resv2_get(_swigobj) ((uint8_array_t *) _swigobj->resv2)
+static int _wrap_madPathRec_resv2_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_array_t * _result;
+    madPathRec * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madPathRec_resv2_get { madPathRec * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madPathRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madPathRec_resv2_get. Expected _madPathRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{ 
+  ibms_tcl_error = 0;
+      _result = (uint8_array_t *)madPathRec_resv2_get(_arg0);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  int i;
+  char buff[8];
+  for (i=0; i <6 ; i++) {
+    sprintf(buff, "0x%02x ", *(_result+i));
+    Tcl_AppendResult(interp, buff, NULL);
+  }
+}
+    return TCL_OK;
+}
+static int  madPathRec_send_get(madPathRec *self,IBMSNode * pFromNode,uint8_t  fromPort,uint16_t  destLid,uint64_t  comp_mask) {
+      return( send_sa_mad(
+                pFromNode, 
+                fromPort, 
+                destLid,
+                IB_MCLASS_SUBN_ADM,
+                IB_MAD_METHOD_GET,
+                cl_ntoh16(IB_MAD_ATTR_PATH_RECORD),
+                comp_mask,
+                (uint8_t*)self,
+                sizeof(madPathRec)
+                )
+              );
+    }
+static int _wrap_madPathRec_send_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    int  _result;
+    madPathRec * _arg0;
+    IBMSNode * _arg1;
+    uint8_t * _arg2;
+    uint16_t * _arg3;
+    uint64_t * _arg4;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint8_t  temp;
+    uint16_t  temp0;
+    uint64_t  temp1;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 6) || (objc > 6)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madPathRec_send_get { madPathRec * } pFromNode fromPort destLid comp_mask ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madPathRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madPathRec_send_get. Expected _madPathRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  
+  void *ptr;
+  if (ibmsGetSimNodePtrByTclName(objv[2], &ptr) != TCL_OK) {
+	 char err[128];
+	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[2]) );
+	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+  }
+	 
+  _arg1 = (IBMSNode *)ptr;
+}
+{
+  /* the format is always: <type>:<idx>[:<name>] */
+  
+  // get the type from the given source 
+  char buf[128];
+  strcpy(buf, Tcl_GetStringFromObj(objv[2],0));
+  char *colonIdx = index(buf,':');
+  if (!colonIdx) {
+	 char err[128];
+	 sprintf(err, "-E- Bad formatted ibdm object:%s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;
+  }
+  *colonIdx = '\0';
+
+  if (!strcmp("IBMSNode ", "IBMSNode ")) {
+    if (strcmp(buf, "simnode")) {
+      char err[256];
+      sprintf(err, "-E- basetype is IBMSNode  but received obj of type %s", buf);
+      Tcl_SetStringObj(tcl_result, err, strlen(err));
+      return TCL_ERROR;	 
+    }
+  } else {
+	 char err[256];
+	 sprintf(err, "-E- basetype 'IBMSNode ' is unknown");
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+  }
+}
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[3],NULL), NULL, 0);
+  _arg2 = &temp;
+}
+{
+  temp0 = strtoul(Tcl_GetStringFromObj(objv[4],NULL), NULL, 0);
+  _arg3 = &temp0;
+}
+{
+  temp1 = strtoull(Tcl_GetStringFromObj(objv[5],NULL), NULL,16);
+  _arg4 = &temp1;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (int )madPathRec_send_get(_arg0,_arg1,*_arg2,*_arg3,*_arg4);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+    Tcl_SetIntObj(tcl_result,(long) _result);
+    return TCL_OK;
+}
+/* delcmd.swg : Tcl object deletion method */
+
+static void TclDeletemadPathRec(ClientData clientData) {
+    delete_madPathRec((madPathRec *) clientData);
+}
+
+/* methodcmd8.swg : Tcl8.x method invocation */
+
+static int TclmadPathRecMethodCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST _objv[]) {
+  int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
+  char *_str;
+  int rcode;
+  Tcl_Obj **objv;
+  Tcl_Obj *oldarg,*tcl_result,*obj;
+  int length;
+  char c;
+
+  tcl_result = Tcl_GetObjResult(interp);
+  objv = (Tcl_Obj **) _objv; 
+  if (objc < 2) {
+    Tcl_SetStringObj(tcl_result,"madPathRec methods : { dump cget configure send_get  }",-1);
+    return TCL_ERROR;
+  }
+  obj = Tcl_NewObj();
+  SWIG_SetPointerObj(obj,(void *) clientData,"_madPathRec_p");
+  _str = Tcl_GetStringFromObj(objv[1],&length);
+  c = *_str;
+  if (0);
+      if (strcmp(_str,"send_get") == 0) {
+        cmd = _wrap_madPathRec_send_get;
+    }
+    else if ((c == 'c') && (strncmp(_str,"configure",length) == 0) && (length >= 2)) {
+      int i = 2;
+      cmd = 0;
+      while (i+1 < objc) {
+        _str = Tcl_GetStringFromObj(objv[i],&length);
+                        if (strcmp(_str,"-resv0") == 0) {
+                    cmd = _wrap_madPathRec_resv0_set;
+                }  else if (strcmp(_str,"-dgid") == 0) {
+                    cmd = _wrap_madPathRec_dgid_set;
+                }  else if (strcmp(_str,"-sgid") == 0) {
+                    cmd = _wrap_madPathRec_sgid_set;
+                }  else if (strcmp(_str,"-dlid") == 0) {
+                    cmd = _wrap_madPathRec_dlid_set;
+                }  else if (strcmp(_str,"-slid") == 0) {
+                    cmd = _wrap_madPathRec_slid_set;
+                }  else if (strcmp(_str,"-hop_flow_raw") == 0) {
+                    cmd = _wrap_madPathRec_hop_flow_raw_set;
+                }  else if (strcmp(_str,"-tclass") == 0) {
+                    cmd = _wrap_madPathRec_tclass_set;
+                }  else if (strcmp(_str,"-num_path") == 0) {
+                    cmd = _wrap_madPathRec_num_path_set;
+                }  else if (strcmp(_str,"-pkey") == 0) {
+                    cmd = _wrap_madPathRec_pkey_set;
+                }  else if (strcmp(_str,"-sl") == 0) {
+                    cmd = _wrap_madPathRec_sl_set;
+                }  else if (strcmp(_str,"-mtu") == 0) {
+                    cmd = _wrap_madPathRec_mtu_set;
+                }  else if (strcmp(_str,"-rate") == 0) {
+                    cmd = _wrap_madPathRec_rate_set;
+                }  else if (strcmp(_str,"-pkt_life") == 0) {
+                    cmd = _wrap_madPathRec_pkt_life_set;
+                }  else if (strcmp(_str,"-preference") == 0) {
+                    cmd = _wrap_madPathRec_preference_set;
+                }  else if (strcmp(_str,"-resv2") == 0) {
+                    cmd = _wrap_madPathRec_resv2_set;
+                } 
+          if (cmd) {
+            oldarg = objv[i];
+            objv[i] = obj;
+            rcode = (*cmd)(clientData,interp,3,&objv[i-1]);
+            objv[i] = oldarg;
+            if (rcode == TCL_ERROR) return rcode;
+            cmd = 0;
+          } else {
+            Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be { -resv0 -dgid -sgid -dlid -slid -hop_flow_raw -tclass -num_path -pkey -sl -mtu -rate -pkt_life -preference -resv2  }",-1);
+            return TCL_ERROR;
+          }
+        i+=2;
+      }
+      if ((i < objc) || (i == 2)) {
+        Tcl_SetStringObj(tcl_result,"{ -resv0 -dgid -sgid -dlid -slid -hop_flow_raw -tclass -num_path -pkey -sl -mtu -rate -pkt_life -preference -resv2  }",-1);
+        return TCL_ERROR;
+      }
+      return TCL_OK;
+    } else if ((c == 'c') && (strncmp(_str,"cget",length) == 0) && (length >= 2)) {
+      if (objc == 3) {
+        _str = Tcl_GetStringFromObj(objv[2],&length);
+        if (0) {}
+                        if (strcmp(_str,"-resv0") == 0) {
+                    cmd = _wrap_madPathRec_resv0_get;
+                }  else if (strcmp(_str,"-dgid") == 0) {
+                    cmd = _wrap_madPathRec_dgid_get;
+                }  else if (strcmp(_str,"-sgid") == 0) {
+                    cmd = _wrap_madPathRec_sgid_get;
+                }  else if (strcmp(_str,"-dlid") == 0) {
+                    cmd = _wrap_madPathRec_dlid_get;
+                }  else if (strcmp(_str,"-slid") == 0) {
+                    cmd = _wrap_madPathRec_slid_get;
+                }  else if (strcmp(_str,"-hop_flow_raw") == 0) {
+                    cmd = _wrap_madPathRec_hop_flow_raw_get;
+                }  else if (strcmp(_str,"-tclass") == 0) {
+                    cmd = _wrap_madPathRec_tclass_get;
+                }  else if (strcmp(_str,"-num_path") == 0) {
+                    cmd = _wrap_madPathRec_num_path_get;
+                }  else if (strcmp(_str,"-pkey") == 0) {
+                    cmd = _wrap_madPathRec_pkey_get;
+                }  else if (strcmp(_str,"-sl") == 0) {
+                    cmd = _wrap_madPathRec_sl_get;
+                }  else if (strcmp(_str,"-mtu") == 0) {
+                    cmd = _wrap_madPathRec_mtu_get;
+                }  else if (strcmp(_str,"-rate") == 0) {
+                    cmd = _wrap_madPathRec_rate_get;
+                }  else if (strcmp(_str,"-pkt_life") == 0) {
+                    cmd = _wrap_madPathRec_pkt_life_get;
+                }  else if (strcmp(_str,"-preference") == 0) {
+                    cmd = _wrap_madPathRec_preference_get;
+                }  else if (strcmp(_str,"-resv2") == 0) {
+                    cmd = _wrap_madPathRec_resv2_get;
+                } 
+          else if (strcmp(_str,"-this") == 0) {
+            SWIG_SetPointerObj(tcl_result,(void *) clientData, "_madPathRec_p");
+            return TCL_OK;
+          }
+        if (cmd) {
+          oldarg = objv[2];
+          objv[2] = obj;
+          rcode = (*cmd)(clientData,interp,objc-1,&objv[1]);
+          objv[2] = oldarg;
+          return rcode;
+        } else {
+          Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this -resv0 -dgid -sgid -dlid -slid -hop_flow_raw -tclass -num_path -pkey -sl -mtu -rate -pkt_life -preference -resv2  }",-1);
+          return TCL_ERROR;
+        }
+      } else {
+        Tcl_SetStringObj(tcl_result,"{ -this -resv0 -dgid -sgid -dlid -slid -hop_flow_raw -tclass -num_path -pkey -sl -mtu -rate -pkt_life -preference -resv2  }", -1);
+        return TCL_ERROR;
+      }
+    } else if ((c == 'd') && (strncmp(_str,"dump",length) == 0) && (length >= 2)) {
+      if (objc == 2) {
+        Tcl_Obj *pDumpObj;
+        pDumpObj = Tcl_NewStringObj("",-1);
+        Tcl_IncrRefCount(pDumpObj);
+                cmd = _wrap_madPathRec_resv0_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-resv0 ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_madPathRec_dgid_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-dgid ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_madPathRec_sgid_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-sgid ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_madPathRec_dlid_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-dlid ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_madPathRec_slid_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-slid ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_madPathRec_hop_flow_raw_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-hop_flow_raw ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_madPathRec_tclass_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-tclass ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_madPathRec_num_path_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-num_path ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_madPathRec_pkey_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-pkey ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_madPathRec_sl_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-sl ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_madPathRec_mtu_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-mtu ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_madPathRec_rate_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-rate ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_madPathRec_pkt_life_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-pkt_life ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_madPathRec_preference_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-preference ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_madPathRec_resv2_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-resv2 ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+
+        Tcl_DecrRefCount(pDumpObj);
+        return TCL_OK;
+      } else {
+        Tcl_SetStringObj(tcl_result,"no parameters are allowed for dump", -1);
+        return TCL_ERROR;
+      }
+    }
+  if (!cmd) {
+    Tcl_SetStringObj(tcl_result,"Invalid Method. Must be { dump cget configure send_get }",-1);
+    return TCL_ERROR;
+  }
+  oldarg = objv[1];
+  objv[1] = obj;
+  rcode = (*cmd)(clientData,interp,objc,objv);
+  objv[1] = oldarg;
+  return rcode;
+}
+
+
+
+/* objcmd8.swg : Tcl 8.x object creation */
+
+static int TclmadPathRecCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+    void (*del)(ClientData) = 0;
+    char *name = 0;
+    int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
+    madPathRec * newObj = 0;
+    int firstarg = 0;
+    int thisarg = 0;
+    int length;
+    char *_str;
+    Tcl_Obj *tcl_result;
+
+    tcl_result = Tcl_GetObjResult(interp);
+    if (objc == 1) {
+        cmd = _wrap_new_madPathRec;
+    } else {
+      _str = Tcl_GetStringFromObj(objv[1],&length);
+      if (strcmp(_str,"-this") == 0) thisarg = 2;
+      else if (strcmp(_str,"-args") == 0) {
+	firstarg = 1;
+	cmd = _wrap_new_madPathRec;
+      } else if (objc == 2) {
+	firstarg = 1;
+	name = _str;
+	cmd = _wrap_new_madPathRec;
+      } else if (objc >= 3) {
+	name = _str;
+	_str = Tcl_GetStringFromObj(objv[2],&length);
+	if (strcmp(_str,"-this") == 0) thisarg = 3;
+	else {
+	  firstarg = 1;
+	  cmd = _wrap_new_madPathRec;
+	}
+      }
+    }
+    if (cmd) {
+        int result;
+        result = (*cmd)(clientData,interp,objc-firstarg,&objv[firstarg]);
+        if (result == TCL_OK) {
+            SWIG_GetPointerObj(interp,tcl_result,(void **) &newObj,"_madPathRec_p");
+        } else { return result; }
+        if (!name) name = Tcl_GetStringFromObj(tcl_result,&length);
+        del = TclDeletemadPathRec;
+    } else if (thisarg > 0) { 
+        if (thisarg < objc) {
+            char *r;
+            r = SWIG_GetPointerObj(interp,objv[thisarg],(void **) &newObj,"_madPathRec_p");
+            if (r) {
+	      Tcl_SetStringObj(tcl_result,"Type error. not a madPathRec object.",-1);
+	      return TCL_ERROR;
+            }
+        if (!name) name = Tcl_GetStringFromObj(objv[thisarg],&length);
+	Tcl_SetStringObj(tcl_result,name,-1);
+        } else {
+            Tcl_SetStringObj(tcl_result,"wrong # args.",-1);
+            return TCL_ERROR;
+        }
+    } else {
+        Tcl_SetStringObj(tcl_result,"No constructor available.",-1);
+        return TCL_ERROR;
+    }
+    {
+      Tcl_CmdInfo dummy;
+      if (!Tcl_GetCommandInfo(interp,name,&dummy)) {
+	Tcl_CreateObjCommand(interp,name, TclmadPathRecMethodCmd, (ClientData) newObj, del);
+	return TCL_OK;
+      } else {
+	Tcl_SetStringObj(tcl_result,"Object name already exists!",-1);
+	return TCL_ERROR;
+      }
+    }
+}
+
+
+#define new_madServiceRec() (new madServiceRec())
+static int _wrap_new_madServiceRec(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    madServiceRec * _result;
+    Tcl_Obj * tcl_result;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 1) || (objc > 1)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. new_madServiceRec ",-1);
+        return TCL_ERROR;
+    }
+{ 
+  ibms_tcl_error = 0;
+      _result = (madServiceRec *)new_madServiceRec();
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+    SWIG_SetPointerObj(tcl_result,(void *) _result,"_madServiceRec_p");
+    return TCL_OK;
+}
+#define delete_madServiceRec(_swigobj) (delete _swigobj)
+static int _wrap_delete_madServiceRec(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    madServiceRec * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. delete_madServiceRec { madServiceRec * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madServiceRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of delete_madServiceRec. Expected _madServiceRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{ 
+  ibms_tcl_error = 0;
+      delete_madServiceRec(_arg0);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+    return TCL_OK;
+}
+#define madServiceRec_service_id_set(_swigobj,_swigval) (_swigobj->service_id = *(_swigval),_swigval)
+static int _wrap_madServiceRec_service_id_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net64_t * _result;
+    madServiceRec * _arg0;
+    ib_net64_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint64_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madServiceRec_service_id_set { madServiceRec * } { ib_net64_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madServiceRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madServiceRec_service_id_set. Expected _madServiceRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton64(strtoull(Tcl_GetStringFromObj(objv[2],NULL), NULL, 16));
+  _arg1 = &temp;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_net64_t *)madServiceRec_service_id_set(_arg0,_arg1);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "0x%016" PRIx64, cl_ntoh64(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madServiceRec_service_id_get(_swigobj) (&_swigobj->service_id)
+static int _wrap_madServiceRec_service_id_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net64_t * _result;
+    madServiceRec * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madServiceRec_service_id_get { madServiceRec * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madServiceRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madServiceRec_service_id_get. Expected _madServiceRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_net64_t *)madServiceRec_service_id_get(_arg0);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "0x%016" PRIx64, cl_ntoh64(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madServiceRec_service_gid_set(_swigobj,_swigval) (_swigobj->service_gid = *(_swigval),_swigval)
+static int _wrap_madServiceRec_service_gid_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_gid_t * _result;
+    madServiceRec * _arg0;
+    ib_gid_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_gid_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madServiceRec_service_gid_set { madServiceRec * } { ib_gid_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madServiceRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madServiceRec_service_gid_set. Expected _madServiceRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  char buf[36];
+  char *p_prefix, *p_guid;
+  char *str_token;
+
+  strcpy(buf, Tcl_GetStringFromObj(objv[2],NULL));
+  p_prefix = strtok_r(buf,":", &str_token);
+  p_guid = strtok_r(NULL, " ", &str_token);
+  errno = 0;
+  temp.unicast.prefix = cl_hton64(strtoull(p_prefix, NULL, 16));
+  if (errno) {
+    printf("Wrong format for gid prefix:%s\n", p_prefix);
+    return TCL_ERROR;
+  }
+
+  temp.unicast.interface_id = cl_hton64(strtoull(p_guid, NULL, 16));
+  if (errno) {
+    printf("Wrong format for gid guid:%s\n", p_guid);
+    return TCL_ERROR;
+  }
+  
+  _arg1 = &temp;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_gid_t *)madServiceRec_service_gid_set(_arg0,_arg1);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[36];
+  sprintf(buff, "0x%016" PRIx64 ":0x%016" PRIx64, 
+          cl_ntoh64(_result->unicast.prefix), 
+          cl_ntoh64(_result->unicast.interface_id) 
+          );
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madServiceRec_service_gid_get(_swigobj) (&_swigobj->service_gid)
+static int _wrap_madServiceRec_service_gid_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_gid_t * _result;
+    madServiceRec * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madServiceRec_service_gid_get { madServiceRec * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madServiceRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madServiceRec_service_gid_get. Expected _madServiceRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_gid_t *)madServiceRec_service_gid_get(_arg0);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[36];
+  sprintf(buff, "0x%016" PRIx64 ":0x%016" PRIx64, 
+          cl_ntoh64(_result->unicast.prefix), 
+          cl_ntoh64(_result->unicast.interface_id) 
+          );
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madServiceRec_service_pkey_set(_swigobj,_swigval) (_swigobj->service_pkey = *(_swigval),_swigval)
+static int _wrap_madServiceRec_service_pkey_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    madServiceRec * _arg0;
+    ib_net16_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_net16_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madServiceRec_service_pkey_set { madServiceRec * } { ib_net16_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madServiceRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madServiceRec_service_pkey_set. Expected _madServiceRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  _arg1 = &temp;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_net16_t *)madServiceRec_service_pkey_set(_arg0,_arg1);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madServiceRec_service_pkey_get(_swigobj) (&_swigobj->service_pkey)
+static int _wrap_madServiceRec_service_pkey_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    madServiceRec * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madServiceRec_service_pkey_get { madServiceRec * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madServiceRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madServiceRec_service_pkey_get. Expected _madServiceRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_net16_t *)madServiceRec_service_pkey_get(_arg0);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madServiceRec_resv_set(_swigobj,_swigval) (_swigobj->resv = *(_swigval),_swigval)
+static int _wrap_madServiceRec_resv_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    madServiceRec * _arg0;
+    ib_net16_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_net16_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madServiceRec_resv_set { madServiceRec * } { ib_net16_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madServiceRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madServiceRec_resv_set. Expected _madServiceRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  _arg1 = &temp;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_net16_t *)madServiceRec_resv_set(_arg0,_arg1);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madServiceRec_resv_get(_swigobj) (&_swigobj->resv)
+static int _wrap_madServiceRec_resv_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    madServiceRec * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madServiceRec_resv_get { madServiceRec * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madServiceRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madServiceRec_resv_get. Expected _madServiceRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_net16_t *)madServiceRec_resv_get(_arg0);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madServiceRec_service_lease_set(_swigobj,_swigval) (_swigobj->service_lease = *(_swigval),_swigval)
+static int _wrap_madServiceRec_service_lease_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net32_t * _result;
+    madServiceRec * _arg0;
+    ib_net32_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_net32_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madServiceRec_service_lease_set { madServiceRec * } { ib_net32_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madServiceRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madServiceRec_service_lease_set. Expected _madServiceRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton32(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
+  _arg1 = &temp;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_net32_t *)madServiceRec_service_lease_set(_arg0,_arg1);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_ntoh32(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madServiceRec_service_lease_get(_swigobj) (&_swigobj->service_lease)
+static int _wrap_madServiceRec_service_lease_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net32_t * _result;
+    madServiceRec * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madServiceRec_service_lease_get { madServiceRec * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madServiceRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madServiceRec_service_lease_get. Expected _madServiceRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_net32_t *)madServiceRec_service_lease_get(_arg0);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_ntoh32(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+static uint8_array_t * madServiceRec_service_key_set(madServiceRec *obj, uint8_array_t val[16]) {
+{
+	int i;
+	for (i=0; i <16 ; i++) {
+		obj->service_key[i] = *(val+i);
+	}
+}
+    return (uint8_array_t *) val;
+}
+static int _wrap_madServiceRec_service_key_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_array_t * _result;
+    madServiceRec * _arg0;
+    uint8_array_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint8_t  entrys[16];
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madServiceRec_service_key_set { madServiceRec * } { uint8_array_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madServiceRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madServiceRec_service_key_set. Expected _madServiceRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  char *buff;
+  char *p_ch;
+  char *last;
+  long int entry;
+
+  int i = 0;
+  buff = (char *)malloc((strlen(Tcl_GetStringFromObj(objv[2],NULL))+1)*sizeof(char));
+  strcpy(buff, Tcl_GetStringFromObj(objv[2],NULL));
+  p_ch = strtok_r(buff, " \t",&last);
+  while (p_ch && (i < 16)) 
+  {    
+    entry = strtol(p_ch, NULL, 0);
+    if (entry > 0xff)
+    {
+      printf("Error: wrong format or out of range value for expected uint8_t entry: %s\n", p_ch);
+      return TCL_ERROR;
+    }
+    entrys[i++] = entry;
+    p_ch = strtok_r(NULL, " \t", &last);
+  }
+  for (; i < 16; i++) entrys[i] = 0;
+
+  free(buff);
+  _arg1 = entrys;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (uint8_array_t *)madServiceRec_service_key_set(_arg0,_arg1);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  int i;
+  char buff[8];
+  for (i=0; i <16 ; i++) {
+    sprintf(buff, "0x%02x ", *(_result+i));
+    Tcl_AppendResult(interp, buff, NULL);
+  }
+}
+    return TCL_OK;
+}
+#define madServiceRec_service_key_get(_swigobj) ((uint8_array_t *) _swigobj->service_key)
+static int _wrap_madServiceRec_service_key_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_array_t * _result;
+    madServiceRec * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madServiceRec_service_key_get { madServiceRec * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madServiceRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madServiceRec_service_key_get. Expected _madServiceRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{ 
+  ibms_tcl_error = 0;
+      _result = (uint8_array_t *)madServiceRec_service_key_get(_arg0);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  int i;
+  char buff[8];
+  for (i=0; i <16 ; i++) {
+    sprintf(buff, "0x%02x ", *(_result+i));
+    Tcl_AppendResult(interp, buff, NULL);
+  }
+}
+    return TCL_OK;
+}
+static uint8_array_t * madServiceRec_service_name_set(madServiceRec *obj, uint8_array_t val[64]) {
+{
+	int i;
+	for (i=0; i <64 ; i++) {
+		obj->service_name[i] = *(val+i);
+	}
+}
+    return (uint8_array_t *) val;
+}
+static int _wrap_madServiceRec_service_name_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_array_t * _result;
+    madServiceRec * _arg0;
+    uint8_array_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint8_t  entrys[64];
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madServiceRec_service_name_set { madServiceRec * } { uint8_array_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madServiceRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madServiceRec_service_name_set. Expected _madServiceRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  char *buff;
+  char *p_ch;
+  char *last;
+  long int entry;
+
+  int i = 0;
+  buff = (char *)malloc((strlen(Tcl_GetStringFromObj(objv[2],NULL))+1)*sizeof(char));
+  strcpy(buff, Tcl_GetStringFromObj(objv[2],NULL));
+  p_ch = strtok_r(buff, " \t",&last);
+  while (p_ch && (i < 64)) 
+  {    
+    entry = strtol(p_ch, NULL, 0);
+    if (entry > 0xff)
+    {
+      printf("Error: wrong format or out of range value for expected uint8_t entry: %s\n", p_ch);
+      return TCL_ERROR;
+    }
+    entrys[i++] = entry;
+    p_ch = strtok_r(NULL, " \t", &last);
+  }
+  for (; i < 64; i++) entrys[i] = 0;
+
+  free(buff);
+  _arg1 = entrys;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (uint8_array_t *)madServiceRec_service_name_set(_arg0,_arg1);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  int i;
+  char buff[8];
+  for (i=0; i <64 ; i++) {
+    sprintf(buff, "0x%02x ", *(_result+i));
+    Tcl_AppendResult(interp, buff, NULL);
+  }
+}
+    return TCL_OK;
+}
+#define madServiceRec_service_name_get(_swigobj) ((uint8_array_t *) _swigobj->service_name)
+static int _wrap_madServiceRec_service_name_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_array_t * _result;
+    madServiceRec * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madServiceRec_service_name_get { madServiceRec * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madServiceRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madServiceRec_service_name_get. Expected _madServiceRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{ 
+  ibms_tcl_error = 0;
+      _result = (uint8_array_t *)madServiceRec_service_name_get(_arg0);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  int i;
+  char buff[8];
+  for (i=0; i <64 ; i++) {
+    sprintf(buff, "0x%02x ", *(_result+i));
+    Tcl_AppendResult(interp, buff, NULL);
+  }
+}
+    return TCL_OK;
+}
+static uint8_array_t * madServiceRec_service_data8_set(madServiceRec *obj, uint8_array_t val[16]) {
+{
+	int i;
+	for (i=0; i <16 ; i++) {
+		obj->service_data8[i] = *(val+i);
+	}
+}
+    return (uint8_array_t *) val;
+}
+static int _wrap_madServiceRec_service_data8_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_array_t * _result;
+    madServiceRec * _arg0;
+    uint8_array_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint8_t  entrys[16];
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madServiceRec_service_data8_set { madServiceRec * } { uint8_array_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madServiceRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madServiceRec_service_data8_set. Expected _madServiceRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  char *buff;
+  char *p_ch;
+  char *last;
+  long int entry;
+
+  int i = 0;
+  buff = (char *)malloc((strlen(Tcl_GetStringFromObj(objv[2],NULL))+1)*sizeof(char));
+  strcpy(buff, Tcl_GetStringFromObj(objv[2],NULL));
+  p_ch = strtok_r(buff, " \t",&last);
+  while (p_ch && (i < 16)) 
+  {    
+    entry = strtol(p_ch, NULL, 0);
+    if (entry > 0xff)
+    {
+      printf("Error: wrong format or out of range value for expected uint8_t entry: %s\n", p_ch);
+      return TCL_ERROR;
+    }
+    entrys[i++] = entry;
+    p_ch = strtok_r(NULL, " \t", &last);
+  }
+  for (; i < 16; i++) entrys[i] = 0;
+
+  free(buff);
+  _arg1 = entrys;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (uint8_array_t *)madServiceRec_service_data8_set(_arg0,_arg1);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  int i;
+  char buff[8];
+  for (i=0; i <16 ; i++) {
+    sprintf(buff, "0x%02x ", *(_result+i));
+    Tcl_AppendResult(interp, buff, NULL);
+  }
+}
+    return TCL_OK;
+}
+#define madServiceRec_service_data8_get(_swigobj) ((uint8_array_t *) _swigobj->service_data8)
+static int _wrap_madServiceRec_service_data8_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_array_t * _result;
+    madServiceRec * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madServiceRec_service_data8_get { madServiceRec * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madServiceRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madServiceRec_service_data8_get. Expected _madServiceRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{ 
+  ibms_tcl_error = 0;
+      _result = (uint8_array_t *)madServiceRec_service_data8_get(_arg0);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  int i;
+  char buff[8];
+  for (i=0; i <16 ; i++) {
+    sprintf(buff, "0x%02x ", *(_result+i));
+    Tcl_AppendResult(interp, buff, NULL);
+  }
+}
+    return TCL_OK;
+}
+static uint16_array_t * madServiceRec_service_data16_set(madServiceRec *obj, uint16_array_t val[8]) {
+{
+	int i;
+	for (i=0; i <8 ; i++) {
+		obj->service_data16[i] = *(val+i);
+	}
+}
+    return (uint16_array_t *) val;
+}
+static int _wrap_madServiceRec_service_data16_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint16_array_t * _result;
+    madServiceRec * _arg0;
+    uint16_array_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint16_t  entrys[8];
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madServiceRec_service_data16_set { madServiceRec * } { uint16_array_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madServiceRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madServiceRec_service_data16_set. Expected _madServiceRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  char *buff;
+  char *p_ch;
+  char *last;
+  long int entry;
+
+  int i = 0;
+  buff = (char *)malloc((strlen(Tcl_GetStringFromObj(objv[2],NULL))+1)*sizeof(char));
+  strcpy(buff, Tcl_GetStringFromObj(objv[2],NULL));
+  p_ch = strtok_r(buff, " \t",&last);
+  while (p_ch && (i < 8)) 
+  {    
+    entry = strtol(p_ch, NULL, 0);
+    if (entry > 0xffff)
+    {
+      printf("Error: wrong format or out of range value for expected uint16_t entry: %s\n", p_ch);
+      return TCL_ERROR;
+    }
+    entrys[i++] = entry;
+    p_ch = strtok_r(NULL, " \t", &last);
+  }
+  for (; i < 8; i++) entrys[i] = 0;
+
+  free(buff);
+  _arg1 = entrys;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (uint16_array_t *)madServiceRec_service_data16_set(_arg0,_arg1);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  int i;
+  char buff[8];
+  for (i=0; i <8 ; i++) {
+    sprintf(buff, "0x%04x ", *(_result+i));
+    Tcl_AppendResult(interp, buff, NULL);
+  }
+}
+    return TCL_OK;
+}
+#define madServiceRec_service_data16_get(_swigobj) ((uint16_array_t *) _swigobj->service_data16)
+static int _wrap_madServiceRec_service_data16_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint16_array_t * _result;
+    madServiceRec * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madServiceRec_service_data16_get { madServiceRec * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madServiceRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madServiceRec_service_data16_get. Expected _madServiceRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{ 
+  ibms_tcl_error = 0;
+      _result = (uint16_array_t *)madServiceRec_service_data16_get(_arg0);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  int i;
+  char buff[8];
+  for (i=0; i <8 ; i++) {
+    sprintf(buff, "0x%04x ", *(_result+i));
+    Tcl_AppendResult(interp, buff, NULL);
+  }
+}
+    return TCL_OK;
+}
+static uint32_array_t * madServiceRec_service_data32_set(madServiceRec *obj, uint32_array_t val[4]) {
+{
+	int i;
+	for (i=0; i <4 ; i++) {
+		obj->service_data32[i] = *(val+i);
+	}
+}
+    return (uint32_array_t *) val;
+}
+static int _wrap_madServiceRec_service_data32_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint32_array_t * _result;
+    madServiceRec * _arg0;
+    uint32_array_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint32_t  entrys[4];
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madServiceRec_service_data32_set { madServiceRec * } { uint32_array_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madServiceRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madServiceRec_service_data32_set. Expected _madServiceRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  char *buff;
+  char *p_ch;
+  char *last;
+  long int entry;
+
+  int i = 0;
+  buff = (char *)malloc((strlen(Tcl_GetStringFromObj(objv[2],NULL))+1)*sizeof(char));
+  strcpy(buff, Tcl_GetStringFromObj(objv[2],NULL));
+  p_ch = strtok_r(buff, " \t",&last);
+  while (p_ch && (i < 4)) 
+  {    
+    entry = strtol(p_ch, NULL, 0);
+    if (entry > (long int)0xffffffff)
+    {
+      printf("Error: wrong format or out of range value for expected uint32_t entry: %s\n", p_ch);
+      return TCL_ERROR;
+    }
+    entrys[i++] = entry;
+    p_ch = strtok_r(NULL, " \t", &last);
+  }
+  for (; i < 4; i++) entrys[i] = 0;
+
+  free(buff);
+  _arg1 = entrys;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (uint32_array_t *)madServiceRec_service_data32_set(_arg0,_arg1);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  int i;
+  char buff[12];
+  for (i=0; i <4 ; i++) {
+    sprintf(buff, "0x%08x ", *(_result+i));
+    Tcl_AppendResult(interp, buff, NULL);
+  }
+}
+    return TCL_OK;
+}
+#define madServiceRec_service_data32_get(_swigobj) ((uint32_array_t *) _swigobj->service_data32)
+static int _wrap_madServiceRec_service_data32_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint32_array_t * _result;
+    madServiceRec * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madServiceRec_service_data32_get { madServiceRec * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madServiceRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madServiceRec_service_data32_get. Expected _madServiceRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{ 
+  ibms_tcl_error = 0;
+      _result = (uint32_array_t *)madServiceRec_service_data32_get(_arg0);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  int i;
+  char buff[12];
+  for (i=0; i <4 ; i++) {
+    sprintf(buff, "0x%08x ", *(_result+i));
+    Tcl_AppendResult(interp, buff, NULL);
+  }
+}
+    return TCL_OK;
+}
+static uint64_array_t * madServiceRec_service_data64_set(madServiceRec *obj, uint64_array_t val[2]) {
+{
+	int i;
+	for (i=0; i <2 ; i++) {
+		obj->service_data64[i] = *(val+i);
+	}
+}
+    return (uint64_array_t *) val;
+}
+static int _wrap_madServiceRec_service_data64_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint64_array_t * _result;
+    madServiceRec * _arg0;
+    uint64_array_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint64_t  entrys[2];
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madServiceRec_service_data64_set { madServiceRec * } { uint64_array_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madServiceRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madServiceRec_service_data64_set. Expected _madServiceRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  char *buff;
+  char *p_ch;
+  char *last;
+  uint64_t entry;
+
+  int i = 0;
+  buff = (char *)malloc((strlen(Tcl_GetStringFromObj(objv[2],NULL))+1)*sizeof(char));
+  strcpy(buff, Tcl_GetStringFromObj(objv[2],NULL));
+  p_ch = strtok_r(buff, " \t",&last);
+  while (p_ch && (i < 2)) 
+  {    
+    entry = strtol(p_ch, NULL, 0);
+    if (entry > 0xffffffffffffffffULL )
+    {
+      printf("Error: wrong format or out of range value for expected uint64_t entry: %s\n", p_ch);
+      return TCL_ERROR;
+    }
+    entrys[i++] = entry;
+    p_ch = strtok_r(NULL, " \t", &last);
+  }
+  for (; i < 2; i++) entrys[i] = 0;
+
+  free(buff);
+  _arg1 = entrys;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (uint64_array_t *)madServiceRec_service_data64_set(_arg0,_arg1);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  int i;
+  char buff[20];
+  for (i=0; i <2 ; i++) {
+    sprintf(buff, "0x%016" PRIx64 " ", *(_result+i));
+    Tcl_AppendResult(interp, buff, NULL);
+  }
+}
+    return TCL_OK;
+}
+#define madServiceRec_service_data64_get(_swigobj) ((uint64_array_t *) _swigobj->service_data64)
+static int _wrap_madServiceRec_service_data64_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint64_array_t * _result;
+    madServiceRec * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madServiceRec_service_data64_get { madServiceRec * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madServiceRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madServiceRec_service_data64_get. Expected _madServiceRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{ 
+  ibms_tcl_error = 0;
+      _result = (uint64_array_t *)madServiceRec_service_data64_get(_arg0);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  int i;
+  char buff[20];
+  for (i=0; i <2 ; i++) {
+    sprintf(buff, "0x%016" PRIx64 " ", *(_result+i));
+    Tcl_AppendResult(interp, buff, NULL);
+  }
+}
+    return TCL_OK;
+}
+static int  madServiceRec_send_set(madServiceRec *self,IBMSNode * pFromNode,uint8_t  fromPort,uint16_t  destLid,uint64_t  comp_mask) {
+      return( send_sa_mad(
+                pFromNode, 
+                fromPort, 
+                destLid,
+                IB_MCLASS_SUBN_ADM,
+                IB_MAD_METHOD_SET,
+                cl_ntoh16(IB_MAD_ATTR_SERVICE_RECORD),
+                comp_mask,
+                (uint8_t*)self,
+                sizeof(madServiceRec)
+                )
+              );
+    }
+static int _wrap_madServiceRec_send_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    int  _result;
+    madServiceRec * _arg0;
+    IBMSNode * _arg1;
+    uint8_t * _arg2;
+    uint16_t * _arg3;
+    uint64_t * _arg4;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint8_t  temp;
+    uint16_t  temp0;
+    uint64_t  temp1;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 6) || (objc > 6)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madServiceRec_send_set { madServiceRec * } pFromNode fromPort destLid comp_mask ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madServiceRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madServiceRec_send_set. Expected _madServiceRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  
+  void *ptr;
+  if (ibmsGetSimNodePtrByTclName(objv[2], &ptr) != TCL_OK) {
+	 char err[128];
+	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[2]) );
+	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+  }
+	 
+  _arg1 = (IBMSNode *)ptr;
+}
+{
+  /* the format is always: <type>:<idx>[:<name>] */
+  
+  // get the type from the given source 
+  char buf[128];
+  strcpy(buf, Tcl_GetStringFromObj(objv[2],0));
+  char *colonIdx = index(buf,':');
+  if (!colonIdx) {
+	 char err[128];
+	 sprintf(err, "-E- Bad formatted ibdm object:%s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;
+  }
+  *colonIdx = '\0';
+
+  if (!strcmp("IBMSNode ", "IBMSNode ")) {
+    if (strcmp(buf, "simnode")) {
+      char err[256];
+      sprintf(err, "-E- basetype is IBMSNode  but received obj of type %s", buf);
+      Tcl_SetStringObj(tcl_result, err, strlen(err));
+      return TCL_ERROR;	 
+    }
+  } else {
+	 char err[256];
+	 sprintf(err, "-E- basetype 'IBMSNode ' is unknown");
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+  }
+}
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[3],NULL), NULL, 0);
+  _arg2 = &temp;
+}
+{
+  temp0 = strtoul(Tcl_GetStringFromObj(objv[4],NULL), NULL, 0);
+  _arg3 = &temp0;
+}
+{
+  temp1 = strtoull(Tcl_GetStringFromObj(objv[5],NULL), NULL,16);
+  _arg4 = &temp1;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (int )madServiceRec_send_set(_arg0,_arg1,*_arg2,*_arg3,*_arg4);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+    Tcl_SetIntObj(tcl_result,(long) _result);
+    return TCL_OK;
+}
+static int  madServiceRec_send_get(madServiceRec *self,IBMSNode * pFromNode,uint8_t  fromPort,uint16_t  destLid,uint64_t  comp_mask) {
+      return( send_sa_mad(
+                pFromNode, 
+                fromPort, 
+                destLid,
+                IB_MCLASS_SUBN_ADM,
+                IB_MAD_METHOD_GET,
+                cl_ntoh16(IB_MAD_ATTR_SERVICE_RECORD),
+                comp_mask,
+                (uint8_t*)self,
+                sizeof(madServiceRec)
+                )
+              );
+    }
+static int _wrap_madServiceRec_send_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    int  _result;
+    madServiceRec * _arg0;
+    IBMSNode * _arg1;
+    uint8_t * _arg2;
+    uint16_t * _arg3;
+    uint64_t * _arg4;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint8_t  temp;
+    uint16_t  temp0;
+    uint64_t  temp1;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 6) || (objc > 6)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madServiceRec_send_get { madServiceRec * } pFromNode fromPort destLid comp_mask ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madServiceRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madServiceRec_send_get. Expected _madServiceRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  
+  void *ptr;
+  if (ibmsGetSimNodePtrByTclName(objv[2], &ptr) != TCL_OK) {
+	 char err[128];
+	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[2]) );
+	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+  }
+	 
+  _arg1 = (IBMSNode *)ptr;
+}
+{
+  /* the format is always: <type>:<idx>[:<name>] */
+  
+  // get the type from the given source 
+  char buf[128];
+  strcpy(buf, Tcl_GetStringFromObj(objv[2],0));
+  char *colonIdx = index(buf,':');
+  if (!colonIdx) {
+	 char err[128];
+	 sprintf(err, "-E- Bad formatted ibdm object:%s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;
+  }
+  *colonIdx = '\0';
+
+  if (!strcmp("IBMSNode ", "IBMSNode ")) {
+    if (strcmp(buf, "simnode")) {
+      char err[256];
+      sprintf(err, "-E- basetype is IBMSNode  but received obj of type %s", buf);
+      Tcl_SetStringObj(tcl_result, err, strlen(err));
+      return TCL_ERROR;	 
+    }
+  } else {
+	 char err[256];
+	 sprintf(err, "-E- basetype 'IBMSNode ' is unknown");
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+  }
+}
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[3],NULL), NULL, 0);
+  _arg2 = &temp;
+}
+{
+  temp0 = strtoul(Tcl_GetStringFromObj(objv[4],NULL), NULL, 0);
+  _arg3 = &temp0;
+}
+{
+  temp1 = strtoull(Tcl_GetStringFromObj(objv[5],NULL), NULL,16);
+  _arg4 = &temp1;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (int )madServiceRec_send_get(_arg0,_arg1,*_arg2,*_arg3,*_arg4);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+    Tcl_SetIntObj(tcl_result,(long) _result);
+    return TCL_OK;
+}
+static int  madServiceRec_send_del(madServiceRec *self,IBMSNode * pFromNode,uint8_t  fromPort,uint16_t  destLid,uint64_t  comp_mask) {
+      return( send_sa_mad(
+                pFromNode, 
+                fromPort, 
+                destLid,
+                IB_MCLASS_SUBN_ADM,
+                IB_MAD_METHOD_DELETE,
+                cl_ntoh16(IB_MAD_ATTR_SERVICE_RECORD),
+                comp_mask,
+                (uint8_t*)self,
+                sizeof(madServiceRec)
+                )
+              );
+    }
+static int _wrap_madServiceRec_send_del(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    int  _result;
+    madServiceRec * _arg0;
+    IBMSNode * _arg1;
+    uint8_t * _arg2;
+    uint16_t * _arg3;
+    uint64_t * _arg4;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint8_t  temp;
+    uint16_t  temp0;
+    uint64_t  temp1;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 6) || (objc > 6)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madServiceRec_send_del { madServiceRec * } pFromNode fromPort destLid comp_mask ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madServiceRec_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madServiceRec_send_del. Expected _madServiceRec_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  
+  void *ptr;
+  if (ibmsGetSimNodePtrByTclName(objv[2], &ptr) != TCL_OK) {
+	 char err[128];
+	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[2]) );
+	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+  }
+	 
+  _arg1 = (IBMSNode *)ptr;
+}
+{
+  /* the format is always: <type>:<idx>[:<name>] */
+  
+  // get the type from the given source 
+  char buf[128];
+  strcpy(buf, Tcl_GetStringFromObj(objv[2],0));
+  char *colonIdx = index(buf,':');
+  if (!colonIdx) {
+	 char err[128];
+	 sprintf(err, "-E- Bad formatted ibdm object:%s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;
+  }
+  *colonIdx = '\0';
+
+  if (!strcmp("IBMSNode ", "IBMSNode ")) {
+    if (strcmp(buf, "simnode")) {
+      char err[256];
+      sprintf(err, "-E- basetype is IBMSNode  but received obj of type %s", buf);
+      Tcl_SetStringObj(tcl_result, err, strlen(err));
+      return TCL_ERROR;	 
+    }
+  } else {
+	 char err[256];
+	 sprintf(err, "-E- basetype 'IBMSNode ' is unknown");
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+  }
+}
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[3],NULL), NULL, 0);
+  _arg2 = &temp;
+}
+{
+  temp0 = strtoul(Tcl_GetStringFromObj(objv[4],NULL), NULL, 0);
+  _arg3 = &temp0;
+}
+{
+  temp1 = strtoull(Tcl_GetStringFromObj(objv[5],NULL), NULL,16);
+  _arg4 = &temp1;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (int )madServiceRec_send_del(_arg0,_arg1,*_arg2,*_arg3,*_arg4);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+    Tcl_SetIntObj(tcl_result,(long) _result);
+    return TCL_OK;
+}
+/* delcmd.swg : Tcl object deletion method */
+
+static void TclDeletemadServiceRec(ClientData clientData) {
+    delete_madServiceRec((madServiceRec *) clientData);
+}
+
+/* methodcmd8.swg : Tcl8.x method invocation */
+
+static int TclmadServiceRecMethodCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST _objv[]) {
+  int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
+  char *_str;
+  int rcode;
+  Tcl_Obj **objv;
+  Tcl_Obj *oldarg,*tcl_result,*obj;
+  int length;
+  char c;
+
+  tcl_result = Tcl_GetObjResult(interp);
+  objv = (Tcl_Obj **) _objv; 
+  if (objc < 2) {
+    Tcl_SetStringObj(tcl_result,"madServiceRec methods : { dump cget configure send_set send_get send_del  }",-1);
+    return TCL_ERROR;
+  }
+  obj = Tcl_NewObj();
+  SWIG_SetPointerObj(obj,(void *) clientData,"_madServiceRec_p");
+  _str = Tcl_GetStringFromObj(objv[1],&length);
+  c = *_str;
+  if (0);
+      if (strcmp(_str,"send_set") == 0) {
+        cmd = _wrap_madServiceRec_send_set;
+    }    else if (strcmp(_str,"send_get") == 0) {
+        cmd = _wrap_madServiceRec_send_get;
+    }    else if (strcmp(_str,"send_del") == 0) {
+        cmd = _wrap_madServiceRec_send_del;
+    }
+    else if ((c == 'c') && (strncmp(_str,"configure",length) == 0) && (length >= 2)) {
+      int i = 2;
+      cmd = 0;
+      while (i+1 < objc) {
+        _str = Tcl_GetStringFromObj(objv[i],&length);
+                        if (strcmp(_str,"-service_id") == 0) {
+                    cmd = _wrap_madServiceRec_service_id_set;
+                }  else if (strcmp(_str,"-service_gid") == 0) {
+                    cmd = _wrap_madServiceRec_service_gid_set;
+                }  else if (strcmp(_str,"-service_pkey") == 0) {
+                    cmd = _wrap_madServiceRec_service_pkey_set;
+                }  else if (strcmp(_str,"-resv") == 0) {
+                    cmd = _wrap_madServiceRec_resv_set;
+                }  else if (strcmp(_str,"-service_lease") == 0) {
+                    cmd = _wrap_madServiceRec_service_lease_set;
+                }  else if (strcmp(_str,"-service_key") == 0) {
+                    cmd = _wrap_madServiceRec_service_key_set;
+                }  else if (strcmp(_str,"-service_name") == 0) {
+                    cmd = _wrap_madServiceRec_service_name_set;
+                }  else if (strcmp(_str,"-service_data8") == 0) {
+                    cmd = _wrap_madServiceRec_service_data8_set;
+                }  else if (strcmp(_str,"-service_data16") == 0) {
+                    cmd = _wrap_madServiceRec_service_data16_set;
+                }  else if (strcmp(_str,"-service_data32") == 0) {
+                    cmd = _wrap_madServiceRec_service_data32_set;
+                }  else if (strcmp(_str,"-service_data64") == 0) {
+                    cmd = _wrap_madServiceRec_service_data64_set;
+                } 
+          if (cmd) {
+            oldarg = objv[i];
+            objv[i] = obj;
+            rcode = (*cmd)(clientData,interp,3,&objv[i-1]);
+            objv[i] = oldarg;
+            if (rcode == TCL_ERROR) return rcode;
+            cmd = 0;
+          } else {
+            Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be { -service_id -service_gid -service_pkey -resv -service_lease -service_key -service_name -service_data8 -service_data16 -service_data32 -service_data64  }",-1);
+            return TCL_ERROR;
+          }
+        i+=2;
+      }
+      if ((i < objc) || (i == 2)) {
+        Tcl_SetStringObj(tcl_result,"{ -service_id -service_gid -service_pkey -resv -service_lease -service_key -service_name -service_data8 -service_data16 -service_data32 -service_data64  }",-1);
+        return TCL_ERROR;
+      }
+      return TCL_OK;
+    } else if ((c == 'c') && (strncmp(_str,"cget",length) == 0) && (length >= 2)) {
+      if (objc == 3) {
+        _str = Tcl_GetStringFromObj(objv[2],&length);
+        if (0) {}
+                        if (strcmp(_str,"-service_id") == 0) {
+                    cmd = _wrap_madServiceRec_service_id_get;
+                }  else if (strcmp(_str,"-service_gid") == 0) {
+                    cmd = _wrap_madServiceRec_service_gid_get;
+                }  else if (strcmp(_str,"-service_pkey") == 0) {
+                    cmd = _wrap_madServiceRec_service_pkey_get;
+                }  else if (strcmp(_str,"-resv") == 0) {
+                    cmd = _wrap_madServiceRec_resv_get;
+                }  else if (strcmp(_str,"-service_lease") == 0) {
+                    cmd = _wrap_madServiceRec_service_lease_get;
+                }  else if (strcmp(_str,"-service_key") == 0) {
+                    cmd = _wrap_madServiceRec_service_key_get;
+                }  else if (strcmp(_str,"-service_name") == 0) {
+                    cmd = _wrap_madServiceRec_service_name_get;
+                }  else if (strcmp(_str,"-service_data8") == 0) {
+                    cmd = _wrap_madServiceRec_service_data8_get;
+                }  else if (strcmp(_str,"-service_data16") == 0) {
+                    cmd = _wrap_madServiceRec_service_data16_get;
+                }  else if (strcmp(_str,"-service_data32") == 0) {
+                    cmd = _wrap_madServiceRec_service_data32_get;
+                }  else if (strcmp(_str,"-service_data64") == 0) {
+                    cmd = _wrap_madServiceRec_service_data64_get;
+                } 
+          else if (strcmp(_str,"-this") == 0) {
+            SWIG_SetPointerObj(tcl_result,(void *) clientData, "_madServiceRec_p");
+            return TCL_OK;
+          }
+        if (cmd) {
+          oldarg = objv[2];
+          objv[2] = obj;
+          rcode = (*cmd)(clientData,interp,objc-1,&objv[1]);
+          objv[2] = oldarg;
+          return rcode;
+        } else {
+          Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this -service_id -service_gid -service_pkey -resv -service_lease -service_key -service_name -service_data8 -service_data16 -service_data32 -service_data64  }",-1);
+          return TCL_ERROR;
+        }
+      } else {
+        Tcl_SetStringObj(tcl_result,"{ -this -service_id -service_gid -service_pkey -resv -service_lease -service_key -service_name -service_data8 -service_data16 -service_data32 -service_data64  }", -1);
+        return TCL_ERROR;
+      }
+    } else if ((c == 'd') && (strncmp(_str,"dump",length) == 0) && (length >= 2)) {
+      if (objc == 2) {
+        Tcl_Obj *pDumpObj;
+        pDumpObj = Tcl_NewStringObj("",-1);
+        Tcl_IncrRefCount(pDumpObj);
+                cmd = _wrap_madServiceRec_service_id_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-service_id ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_madServiceRec_service_gid_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-service_gid ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_madServiceRec_service_pkey_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-service_pkey ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_madServiceRec_resv_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-resv ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_madServiceRec_service_lease_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-service_lease ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_madServiceRec_service_key_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-service_key ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_madServiceRec_service_name_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-service_name ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_madServiceRec_service_data8_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-service_data8 ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_madServiceRec_service_data16_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-service_data16 ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_madServiceRec_service_data32_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-service_data32 ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_madServiceRec_service_data64_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-service_data64 ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+
+        Tcl_DecrRefCount(pDumpObj);
+        return TCL_OK;
+      } else {
+        Tcl_SetStringObj(tcl_result,"no parameters are allowed for dump", -1);
+        return TCL_ERROR;
+      }
+    }
+  if (!cmd) {
+    Tcl_SetStringObj(tcl_result,"Invalid Method. Must be { dump cget configure send_set send_get send_del }",-1);
+    return TCL_ERROR;
+  }
+  oldarg = objv[1];
+  objv[1] = obj;
+  rcode = (*cmd)(clientData,interp,objc,objv);
+  objv[1] = oldarg;
+  return rcode;
+}
+
+
+
+/* objcmd8.swg : Tcl 8.x object creation */
+
+static int TclmadServiceRecCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+    void (*del)(ClientData) = 0;
+    char *name = 0;
+    int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
+    madServiceRec * newObj = 0;
+    int firstarg = 0;
+    int thisarg = 0;
+    int length;
+    char *_str;
+    Tcl_Obj *tcl_result;
+
+    tcl_result = Tcl_GetObjResult(interp);
+    if (objc == 1) {
+        cmd = _wrap_new_madServiceRec;
+    } else {
+      _str = Tcl_GetStringFromObj(objv[1],&length);
+      if (strcmp(_str,"-this") == 0) thisarg = 2;
+      else if (strcmp(_str,"-args") == 0) {
+	firstarg = 1;
+	cmd = _wrap_new_madServiceRec;
+      } else if (objc == 2) {
+	firstarg = 1;
+	name = _str;
+	cmd = _wrap_new_madServiceRec;
+      } else if (objc >= 3) {
+	name = _str;
+	_str = Tcl_GetStringFromObj(objv[2],&length);
+	if (strcmp(_str,"-this") == 0) thisarg = 3;
+	else {
+	  firstarg = 1;
+	  cmd = _wrap_new_madServiceRec;
+	}
+      }
+    }
+    if (cmd) {
+        int result;
+        result = (*cmd)(clientData,interp,objc-firstarg,&objv[firstarg]);
+        if (result == TCL_OK) {
+            SWIG_GetPointerObj(interp,tcl_result,(void **) &newObj,"_madServiceRec_p");
+        } else { return result; }
+        if (!name) name = Tcl_GetStringFromObj(tcl_result,&length);
+        del = TclDeletemadServiceRec;
+    } else if (thisarg > 0) { 
+        if (thisarg < objc) {
+            char *r;
+            r = SWIG_GetPointerObj(interp,objv[thisarg],(void **) &newObj,"_madServiceRec_p");
+            if (r) {
+	      Tcl_SetStringObj(tcl_result,"Type error. not a madServiceRec object.",-1);
+	      return TCL_ERROR;
+            }
+        if (!name) name = Tcl_GetStringFromObj(objv[thisarg],&length);
+	Tcl_SetStringObj(tcl_result,name,-1);
+        } else {
+            Tcl_SetStringObj(tcl_result,"wrong # args.",-1);
+            return TCL_ERROR;
+        }
+    } else {
+        Tcl_SetStringObj(tcl_result,"No constructor available.",-1);
+        return TCL_ERROR;
+    }
+    {
+      Tcl_CmdInfo dummy;
+      if (!Tcl_GetCommandInfo(interp,name,&dummy)) {
+	Tcl_CreateObjCommand(interp,name, TclmadServiceRecMethodCmd, (ClientData) newObj, del);
+	return TCL_OK;
+      } else {
+	Tcl_SetStringObj(tcl_result,"Object name already exists!",-1);
+	return TCL_ERROR;
+      }
+    }
+}
+
+
+#define new_madNotice128() (new madNotice128())
+static int _wrap_new_madNotice128(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    madNotice128 * _result;
+    Tcl_Obj * tcl_result;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 1) || (objc > 1)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. new_madNotice128 ",-1);
+        return TCL_ERROR;
+    }
+{ 
+  ibms_tcl_error = 0;
+      _result = (madNotice128 *)new_madNotice128();
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+    SWIG_SetPointerObj(tcl_result,(void *) _result,"_madNotice128_p");
+    return TCL_OK;
+}
+#define delete_madNotice128(_swigobj) (delete _swigobj)
+static int _wrap_delete_madNotice128(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    madNotice128 * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. delete_madNotice128 { madNotice128 * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madNotice128_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of delete_madNotice128. Expected _madNotice128_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{ 
+  ibms_tcl_error = 0;
+      delete_madNotice128(_arg0);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+    return TCL_OK;
+}
+#define madNotice128_generic_type_set(_swigobj,_swigval) (_swigobj->generic_type = *(_swigval),_swigval)
+static int _wrap_madNotice128_generic_type_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    madNotice128 * _arg0;
+    uint8_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint8_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madNotice128_generic_type_set { madNotice128 * } { uint8_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madNotice128_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madNotice128_generic_type_set. Expected _madNotice128_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
+  _arg1 = &temp;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (uint8_t *)madNotice128_generic_type_set(_arg0,_arg1);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madNotice128_generic_type_get(_swigobj) (&_swigobj->generic_type)
+static int _wrap_madNotice128_generic_type_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    madNotice128 * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madNotice128_generic_type_get { madNotice128 * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madNotice128_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madNotice128_generic_type_get. Expected _madNotice128_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{ 
+  ibms_tcl_error = 0;
+      _result = (uint8_t *)madNotice128_generic_type_get(_arg0);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madNotice128_prod_type_msb_set(_swigobj,_swigval) (_swigobj->prod_type_msb = *(_swigval),_swigval)
+static int _wrap_madNotice128_prod_type_msb_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    madNotice128 * _arg0;
+    uint8_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint8_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madNotice128_prod_type_msb_set { madNotice128 * } { uint8_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madNotice128_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madNotice128_prod_type_msb_set. Expected _madNotice128_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
+  _arg1 = &temp;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (uint8_t *)madNotice128_prod_type_msb_set(_arg0,_arg1);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madNotice128_prod_type_msb_get(_swigobj) (&_swigobj->prod_type_msb)
+static int _wrap_madNotice128_prod_type_msb_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    madNotice128 * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madNotice128_prod_type_msb_get { madNotice128 * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madNotice128_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madNotice128_prod_type_msb_get. Expected _madNotice128_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{ 
+  ibms_tcl_error = 0;
+      _result = (uint8_t *)madNotice128_prod_type_msb_get(_arg0);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madNotice128_prod_type_lsb_set(_swigobj,_swigval) (_swigobj->prod_type_lsb = *(_swigval),_swigval)
+static int _wrap_madNotice128_prod_type_lsb_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    madNotice128 * _arg0;
+    ib_net16_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_net16_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madNotice128_prod_type_lsb_set { madNotice128 * } { ib_net16_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madNotice128_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madNotice128_prod_type_lsb_set. Expected _madNotice128_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  _arg1 = &temp;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_net16_t *)madNotice128_prod_type_lsb_set(_arg0,_arg1);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madNotice128_prod_type_lsb_get(_swigobj) (&_swigobj->prod_type_lsb)
+static int _wrap_madNotice128_prod_type_lsb_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    madNotice128 * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madNotice128_prod_type_lsb_get { madNotice128 * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madNotice128_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madNotice128_prod_type_lsb_get. Expected _madNotice128_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_net16_t *)madNotice128_prod_type_lsb_get(_arg0);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madNotice128_trap_num_set(_swigobj,_swigval) (_swigobj->trap_num = *(_swigval),_swigval)
+static int _wrap_madNotice128_trap_num_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    madNotice128 * _arg0;
+    ib_net16_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_net16_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madNotice128_trap_num_set { madNotice128 * } { ib_net16_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madNotice128_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madNotice128_trap_num_set. Expected _madNotice128_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  _arg1 = &temp;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_net16_t *)madNotice128_trap_num_set(_arg0,_arg1);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madNotice128_trap_num_get(_swigobj) (&_swigobj->trap_num)
+static int _wrap_madNotice128_trap_num_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    madNotice128 * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madNotice128_trap_num_get { madNotice128 * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madNotice128_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madNotice128_trap_num_get. Expected _madNotice128_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_net16_t *)madNotice128_trap_num_get(_arg0);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madNotice128_issuer_lid_set(_swigobj,_swigval) (_swigobj->issuer_lid = *(_swigval),_swigval)
+static int _wrap_madNotice128_issuer_lid_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    madNotice128 * _arg0;
+    ib_net16_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_net16_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madNotice128_issuer_lid_set { madNotice128 * } { ib_net16_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madNotice128_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madNotice128_issuer_lid_set. Expected _madNotice128_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  _arg1 = &temp;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_net16_t *)madNotice128_issuer_lid_set(_arg0,_arg1);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madNotice128_issuer_lid_get(_swigobj) (&_swigobj->issuer_lid)
+static int _wrap_madNotice128_issuer_lid_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    madNotice128 * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madNotice128_issuer_lid_get { madNotice128 * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madNotice128_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madNotice128_issuer_lid_get. Expected _madNotice128_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_net16_t *)madNotice128_issuer_lid_get(_arg0);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madNotice128_toggle_count_set(_swigobj,_swigval) (_swigobj->toggle_count = *(_swigval),_swigval)
+static int _wrap_madNotice128_toggle_count_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    madNotice128 * _arg0;
+    ib_net16_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_net16_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madNotice128_toggle_count_set { madNotice128 * } { ib_net16_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madNotice128_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madNotice128_toggle_count_set. Expected _madNotice128_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  _arg1 = &temp;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_net16_t *)madNotice128_toggle_count_set(_arg0,_arg1);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madNotice128_toggle_count_get(_swigobj) (&_swigobj->toggle_count)
+static int _wrap_madNotice128_toggle_count_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    madNotice128 * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madNotice128_toggle_count_get { madNotice128 * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madNotice128_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madNotice128_toggle_count_get. Expected _madNotice128_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_net16_t *)madNotice128_toggle_count_get(_arg0);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madNotice128_sw_lid_set(_swigobj,_swigval) (_swigobj->sw_lid = *(_swigval),_swigval)
+static int _wrap_madNotice128_sw_lid_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    madNotice128 * _arg0;
+    ib_net16_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_net16_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madNotice128_sw_lid_set { madNotice128 * } { ib_net16_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madNotice128_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madNotice128_sw_lid_set. Expected _madNotice128_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  _arg1 = &temp;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_net16_t *)madNotice128_sw_lid_set(_arg0,_arg1);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madNotice128_sw_lid_get(_swigobj) (&_swigobj->sw_lid)
+static int _wrap_madNotice128_sw_lid_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    madNotice128 * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madNotice128_sw_lid_get { madNotice128 * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madNotice128_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madNotice128_sw_lid_get. Expected _madNotice128_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_net16_t *)madNotice128_sw_lid_get(_arg0);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madNotice128_issuer_gid_set(_swigobj,_swigval) (_swigobj->issuer_gid = *(_swigval),_swigval)
+static int _wrap_madNotice128_issuer_gid_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_gid_t * _result;
+    madNotice128 * _arg0;
+    ib_gid_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_gid_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madNotice128_issuer_gid_set { madNotice128 * } { ib_gid_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madNotice128_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madNotice128_issuer_gid_set. Expected _madNotice128_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  char buf[36];
+  char *p_prefix, *p_guid;
+  char *str_token;
+
+  strcpy(buf, Tcl_GetStringFromObj(objv[2],NULL));
+  p_prefix = strtok_r(buf,":", &str_token);
+  p_guid = strtok_r(NULL, " ", &str_token);
+  errno = 0;
+  temp.unicast.prefix = cl_hton64(strtoull(p_prefix, NULL, 16));
+  if (errno) {
+    printf("Wrong format for gid prefix:%s\n", p_prefix);
+    return TCL_ERROR;
+  }
+
+  temp.unicast.interface_id = cl_hton64(strtoull(p_guid, NULL, 16));
+  if (errno) {
+    printf("Wrong format for gid guid:%s\n", p_guid);
+    return TCL_ERROR;
+  }
+  
+  _arg1 = &temp;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_gid_t *)madNotice128_issuer_gid_set(_arg0,_arg1);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[36];
+  sprintf(buff, "0x%016" PRIx64 ":0x%016" PRIx64, 
+          cl_ntoh64(_result->unicast.prefix), 
+          cl_ntoh64(_result->unicast.interface_id) 
+          );
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madNotice128_issuer_gid_get(_swigobj) (&_swigobj->issuer_gid)
+static int _wrap_madNotice128_issuer_gid_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_gid_t * _result;
+    madNotice128 * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madNotice128_issuer_gid_get { madNotice128 * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madNotice128_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madNotice128_issuer_gid_get. Expected _madNotice128_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_gid_t *)madNotice128_issuer_gid_get(_arg0);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[36];
+  sprintf(buff, "0x%016" PRIx64 ":0x%016" PRIx64, 
+          cl_ntoh64(_result->unicast.prefix), 
+          cl_ntoh64(_result->unicast.interface_id) 
+          );
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+static int  madNotice128_send_set(madNotice128 *self,IBMSNode * pFromNode,uint8_t  fromPort,uint16_t  destLid) {
+      return( send_mad(
+                pFromNode, 
+                fromPort, 
+                destLid,
+                IB_MCLASS_SUBN_LID,
+                IB_MAD_METHOD_SET,
+                cl_ntoh16(IB_MAD_ATTR_NOTICE),
+		0,
+                (uint8_t*)self,
+                sizeof(madNotice128)
+                )
+              );
+    }
+static int _wrap_madNotice128_send_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    int  _result;
+    madNotice128 * _arg0;
+    IBMSNode * _arg1;
+    uint8_t * _arg2;
+    uint16_t * _arg3;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint8_t  temp;
+    uint16_t  temp0;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 5) || (objc > 5)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madNotice128_send_set { madNotice128 * } pFromNode fromPort destLid ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madNotice128_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madNotice128_send_set. Expected _madNotice128_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  
+  void *ptr;
+  if (ibmsGetSimNodePtrByTclName(objv[2], &ptr) != TCL_OK) {
+	 char err[128];
+	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[2]) );
+	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+  }
+	 
+  _arg1 = (IBMSNode *)ptr;
+}
+{
+  /* the format is always: <type>:<idx>[:<name>] */
+  
+  // get the type from the given source 
+  char buf[128];
+  strcpy(buf, Tcl_GetStringFromObj(objv[2],0));
+  char *colonIdx = index(buf,':');
+  if (!colonIdx) {
+	 char err[128];
+	 sprintf(err, "-E- Bad formatted ibdm object:%s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;
+  }
+  *colonIdx = '\0';
+
+  if (!strcmp("IBMSNode ", "IBMSNode ")) {
+    if (strcmp(buf, "simnode")) {
+      char err[256];
+      sprintf(err, "-E- basetype is IBMSNode  but received obj of type %s", buf);
+      Tcl_SetStringObj(tcl_result, err, strlen(err));
+      return TCL_ERROR;	 
+    }
+  } else {
+	 char err[256];
+	 sprintf(err, "-E- basetype 'IBMSNode ' is unknown");
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+  }
+}
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[3],NULL), NULL, 0);
+  _arg2 = &temp;
+}
+{
+  temp0 = strtoul(Tcl_GetStringFromObj(objv[4],NULL), NULL, 0);
+  _arg3 = &temp0;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (int )madNotice128_send_set(_arg0,_arg1,*_arg2,*_arg3);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+    Tcl_SetIntObj(tcl_result,(long) _result);
+    return TCL_OK;
+}
+/* delcmd.swg : Tcl object deletion method */
+
+static void TclDeletemadNotice128(ClientData clientData) {
+    delete_madNotice128((madNotice128 *) clientData);
+}
+
+/* methodcmd8.swg : Tcl8.x method invocation */
+
+static int TclmadNotice128MethodCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST _objv[]) {
+  int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
+  char *_str;
+  int rcode;
+  Tcl_Obj **objv;
+  Tcl_Obj *oldarg,*tcl_result,*obj;
+  int length;
+  char c;
+
+  tcl_result = Tcl_GetObjResult(interp);
+  objv = (Tcl_Obj **) _objv; 
+  if (objc < 2) {
+    Tcl_SetStringObj(tcl_result,"madNotice128 methods : { dump cget configure send_set  }",-1);
+    return TCL_ERROR;
+  }
+  obj = Tcl_NewObj();
+  SWIG_SetPointerObj(obj,(void *) clientData,"_madNotice128_p");
+  _str = Tcl_GetStringFromObj(objv[1],&length);
+  c = *_str;
+  if (0);
+      if (strcmp(_str,"send_set") == 0) {
+        cmd = _wrap_madNotice128_send_set;
+    }
+    else if ((c == 'c') && (strncmp(_str,"configure",length) == 0) && (length >= 2)) {
+      int i = 2;
+      cmd = 0;
+      while (i+1 < objc) {
+        _str = Tcl_GetStringFromObj(objv[i],&length);
+                        if (strcmp(_str,"-generic_type") == 0) {
+                    cmd = _wrap_madNotice128_generic_type_set;
+                }  else if (strcmp(_str,"-prod_type_msb") == 0) {
+                    cmd = _wrap_madNotice128_prod_type_msb_set;
+                }  else if (strcmp(_str,"-prod_type_lsb") == 0) {
+                    cmd = _wrap_madNotice128_prod_type_lsb_set;
+                }  else if (strcmp(_str,"-trap_num") == 0) {
+                    cmd = _wrap_madNotice128_trap_num_set;
+                }  else if (strcmp(_str,"-issuer_lid") == 0) {
+                    cmd = _wrap_madNotice128_issuer_lid_set;
+                }  else if (strcmp(_str,"-toggle_count") == 0) {
+                    cmd = _wrap_madNotice128_toggle_count_set;
+                }  else if (strcmp(_str,"-sw_lid") == 0) {
+                    cmd = _wrap_madNotice128_sw_lid_set;
+                }  else if (strcmp(_str,"-issuer_gid") == 0) {
+                    cmd = _wrap_madNotice128_issuer_gid_set;
+                } 
+          if (cmd) {
+            oldarg = objv[i];
+            objv[i] = obj;
+            rcode = (*cmd)(clientData,interp,3,&objv[i-1]);
+            objv[i] = oldarg;
+            if (rcode == TCL_ERROR) return rcode;
+            cmd = 0;
+          } else {
+            Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be { -generic_type -prod_type_msb -prod_type_lsb -trap_num -issuer_lid -toggle_count -sw_lid -issuer_gid  }",-1);
+            return TCL_ERROR;
+          }
+        i+=2;
+      }
+      if ((i < objc) || (i == 2)) {
+        Tcl_SetStringObj(tcl_result,"{ -generic_type -prod_type_msb -prod_type_lsb -trap_num -issuer_lid -toggle_count -sw_lid -issuer_gid  }",-1);
+        return TCL_ERROR;
+      }
+      return TCL_OK;
+    } else if ((c == 'c') && (strncmp(_str,"cget",length) == 0) && (length >= 2)) {
+      if (objc == 3) {
+        _str = Tcl_GetStringFromObj(objv[2],&length);
+        if (0) {}
+                        if (strcmp(_str,"-generic_type") == 0) {
+                    cmd = _wrap_madNotice128_generic_type_get;
+                }  else if (strcmp(_str,"-prod_type_msb") == 0) {
+                    cmd = _wrap_madNotice128_prod_type_msb_get;
+                }  else if (strcmp(_str,"-prod_type_lsb") == 0) {
+                    cmd = _wrap_madNotice128_prod_type_lsb_get;
+                }  else if (strcmp(_str,"-trap_num") == 0) {
+                    cmd = _wrap_madNotice128_trap_num_get;
+                }  else if (strcmp(_str,"-issuer_lid") == 0) {
+                    cmd = _wrap_madNotice128_issuer_lid_get;
+                }  else if (strcmp(_str,"-toggle_count") == 0) {
+                    cmd = _wrap_madNotice128_toggle_count_get;
+                }  else if (strcmp(_str,"-sw_lid") == 0) {
+                    cmd = _wrap_madNotice128_sw_lid_get;
+                }  else if (strcmp(_str,"-issuer_gid") == 0) {
+                    cmd = _wrap_madNotice128_issuer_gid_get;
+                } 
+          else if (strcmp(_str,"-this") == 0) {
+            SWIG_SetPointerObj(tcl_result,(void *) clientData, "_madNotice128_p");
+            return TCL_OK;
+          }
+        if (cmd) {
+          oldarg = objv[2];
+          objv[2] = obj;
+          rcode = (*cmd)(clientData,interp,objc-1,&objv[1]);
+          objv[2] = oldarg;
+          return rcode;
+        } else {
+          Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this -generic_type -prod_type_msb -prod_type_lsb -trap_num -issuer_lid -toggle_count -sw_lid -issuer_gid  }",-1);
+          return TCL_ERROR;
+        }
+      } else {
+        Tcl_SetStringObj(tcl_result,"{ -this -generic_type -prod_type_msb -prod_type_lsb -trap_num -issuer_lid -toggle_count -sw_lid -issuer_gid  }", -1);
+        return TCL_ERROR;
+      }
+    } else if ((c == 'd') && (strncmp(_str,"dump",length) == 0) && (length >= 2)) {
+      if (objc == 2) {
+        Tcl_Obj *pDumpObj;
+        pDumpObj = Tcl_NewStringObj("",-1);
+        Tcl_IncrRefCount(pDumpObj);
+                cmd = _wrap_madNotice128_generic_type_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-generic_type ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_madNotice128_prod_type_msb_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-prod_type_msb ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_madNotice128_prod_type_lsb_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-prod_type_lsb ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_madNotice128_trap_num_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-trap_num ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_madNotice128_issuer_lid_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-issuer_lid ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_madNotice128_toggle_count_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-toggle_count ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_madNotice128_sw_lid_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-sw_lid ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_madNotice128_issuer_gid_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-issuer_gid ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+
+        Tcl_DecrRefCount(pDumpObj);
+        return TCL_OK;
+      } else {
+        Tcl_SetStringObj(tcl_result,"no parameters are allowed for dump", -1);
+        return TCL_ERROR;
+      }
+    }
+  if (!cmd) {
+    Tcl_SetStringObj(tcl_result,"Invalid Method. Must be { dump cget configure send_set }",-1);
+    return TCL_ERROR;
+  }
+  oldarg = objv[1];
+  objv[1] = obj;
+  rcode = (*cmd)(clientData,interp,objc,objv);
+  objv[1] = oldarg;
+  return rcode;
+}
+
+
+
+/* objcmd8.swg : Tcl 8.x object creation */
+
+static int TclmadNotice128Cmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+    void (*del)(ClientData) = 0;
+    char *name = 0;
+    int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
+    madNotice128 * newObj = 0;
+    int firstarg = 0;
+    int thisarg = 0;
+    int length;
+    char *_str;
+    Tcl_Obj *tcl_result;
+
+    tcl_result = Tcl_GetObjResult(interp);
+    if (objc == 1) {
+        cmd = _wrap_new_madNotice128;
+    } else {
+      _str = Tcl_GetStringFromObj(objv[1],&length);
+      if (strcmp(_str,"-this") == 0) thisarg = 2;
+      else if (strcmp(_str,"-args") == 0) {
+	firstarg = 1;
+	cmd = _wrap_new_madNotice128;
+      } else if (objc == 2) {
+	firstarg = 1;
+	name = _str;
+	cmd = _wrap_new_madNotice128;
+      } else if (objc >= 3) {
+	name = _str;
+	_str = Tcl_GetStringFromObj(objv[2],&length);
+	if (strcmp(_str,"-this") == 0) thisarg = 3;
+	else {
+	  firstarg = 1;
+	  cmd = _wrap_new_madNotice128;
+	}
+      }
+    }
+    if (cmd) {
+        int result;
+        result = (*cmd)(clientData,interp,objc-firstarg,&objv[firstarg]);
+        if (result == TCL_OK) {
+            SWIG_GetPointerObj(interp,tcl_result,(void **) &newObj,"_madNotice128_p");
+        } else { return result; }
+        if (!name) name = Tcl_GetStringFromObj(tcl_result,&length);
+        del = TclDeletemadNotice128;
+    } else if (thisarg > 0) { 
+        if (thisarg < objc) {
+            char *r;
+            r = SWIG_GetPointerObj(interp,objv[thisarg],(void **) &newObj,"_madNotice128_p");
+            if (r) {
+	      Tcl_SetStringObj(tcl_result,"Type error. not a madNotice128 object.",-1);
+	      return TCL_ERROR;
+            }
+        if (!name) name = Tcl_GetStringFromObj(objv[thisarg],&length);
+	Tcl_SetStringObj(tcl_result,name,-1);
+        } else {
+            Tcl_SetStringObj(tcl_result,"wrong # args.",-1);
+            return TCL_ERROR;
+        }
+    } else {
+        Tcl_SetStringObj(tcl_result,"No constructor available.",-1);
+        return TCL_ERROR;
+    }
+    {
+      Tcl_CmdInfo dummy;
+      if (!Tcl_GetCommandInfo(interp,name,&dummy)) {
+	Tcl_CreateObjCommand(interp,name, TclmadNotice128MethodCmd, (ClientData) newObj, del);
+	return TCL_OK;
+      } else {
+	Tcl_SetStringObj(tcl_result,"Object name already exists!",-1);
+	return TCL_ERROR;
+      }
+    }
+}
+
+
+#define new_madNotice129() (new madNotice129())
+static int _wrap_new_madNotice129(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    madNotice129 * _result;
+    Tcl_Obj * tcl_result;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 1) || (objc > 1)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. new_madNotice129 ",-1);
+        return TCL_ERROR;
+    }
+{ 
+  ibms_tcl_error = 0;
+      _result = (madNotice129 *)new_madNotice129();
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+    SWIG_SetPointerObj(tcl_result,(void *) _result,"_madNotice129_p");
+    return TCL_OK;
+}
+#define delete_madNotice129(_swigobj) (delete _swigobj)
+static int _wrap_delete_madNotice129(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    madNotice129 * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. delete_madNotice129 { madNotice129 * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madNotice129_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of delete_madNotice129. Expected _madNotice129_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{ 
+  ibms_tcl_error = 0;
+      delete_madNotice129(_arg0);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+    return TCL_OK;
+}
+#define madNotice129_generic_type_set(_swigobj,_swigval) (_swigobj->generic_type = *(_swigval),_swigval)
+static int _wrap_madNotice129_generic_type_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    madNotice129 * _arg0;
+    uint8_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint8_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madNotice129_generic_type_set { madNotice129 * } { uint8_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madNotice129_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madNotice129_generic_type_set. Expected _madNotice129_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
+  _arg1 = &temp;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (uint8_t *)madNotice129_generic_type_set(_arg0,_arg1);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madNotice129_generic_type_get(_swigobj) (&_swigobj->generic_type)
+static int _wrap_madNotice129_generic_type_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    madNotice129 * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madNotice129_generic_type_get { madNotice129 * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madNotice129_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madNotice129_generic_type_get. Expected _madNotice129_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{ 
+  ibms_tcl_error = 0;
+      _result = (uint8_t *)madNotice129_generic_type_get(_arg0);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madNotice129_prod_type_msb_set(_swigobj,_swigval) (_swigobj->prod_type_msb = *(_swigval),_swigval)
+static int _wrap_madNotice129_prod_type_msb_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    madNotice129 * _arg0;
+    uint8_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint8_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madNotice129_prod_type_msb_set { madNotice129 * } { uint8_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madNotice129_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madNotice129_prod_type_msb_set. Expected _madNotice129_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
+  _arg1 = &temp;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (uint8_t *)madNotice129_prod_type_msb_set(_arg0,_arg1);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madNotice129_prod_type_msb_get(_swigobj) (&_swigobj->prod_type_msb)
+static int _wrap_madNotice129_prod_type_msb_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    madNotice129 * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madNotice129_prod_type_msb_get { madNotice129 * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madNotice129_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madNotice129_prod_type_msb_get. Expected _madNotice129_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{ 
+  ibms_tcl_error = 0;
+      _result = (uint8_t *)madNotice129_prod_type_msb_get(_arg0);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madNotice129_prod_type_lsb_set(_swigobj,_swigval) (_swigobj->prod_type_lsb = *(_swigval),_swigval)
+static int _wrap_madNotice129_prod_type_lsb_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    madNotice129 * _arg0;
+    ib_net16_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_net16_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madNotice129_prod_type_lsb_set { madNotice129 * } { ib_net16_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madNotice129_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madNotice129_prod_type_lsb_set. Expected _madNotice129_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  _arg1 = &temp;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_net16_t *)madNotice129_prod_type_lsb_set(_arg0,_arg1);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madNotice129_prod_type_lsb_get(_swigobj) (&_swigobj->prod_type_lsb)
+static int _wrap_madNotice129_prod_type_lsb_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    madNotice129 * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madNotice129_prod_type_lsb_get { madNotice129 * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madNotice129_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madNotice129_prod_type_lsb_get. Expected _madNotice129_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_net16_t *)madNotice129_prod_type_lsb_get(_arg0);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madNotice129_trap_num_set(_swigobj,_swigval) (_swigobj->trap_num = *(_swigval),_swigval)
+static int _wrap_madNotice129_trap_num_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    madNotice129 * _arg0;
+    ib_net16_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_net16_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madNotice129_trap_num_set { madNotice129 * } { ib_net16_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madNotice129_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madNotice129_trap_num_set. Expected _madNotice129_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  _arg1 = &temp;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_net16_t *)madNotice129_trap_num_set(_arg0,_arg1);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madNotice129_trap_num_get(_swigobj) (&_swigobj->trap_num)
+static int _wrap_madNotice129_trap_num_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    madNotice129 * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madNotice129_trap_num_get { madNotice129 * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madNotice129_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madNotice129_trap_num_get. Expected _madNotice129_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_net16_t *)madNotice129_trap_num_get(_arg0);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madNotice129_issuer_lid_set(_swigobj,_swigval) (_swigobj->issuer_lid = *(_swigval),_swigval)
+static int _wrap_madNotice129_issuer_lid_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    madNotice129 * _arg0;
+    ib_net16_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_net16_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madNotice129_issuer_lid_set { madNotice129 * } { ib_net16_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madNotice129_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madNotice129_issuer_lid_set. Expected _madNotice129_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  _arg1 = &temp;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_net16_t *)madNotice129_issuer_lid_set(_arg0,_arg1);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madNotice129_issuer_lid_get(_swigobj) (&_swigobj->issuer_lid)
+static int _wrap_madNotice129_issuer_lid_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    madNotice129 * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madNotice129_issuer_lid_get { madNotice129 * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madNotice129_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madNotice129_issuer_lid_get. Expected _madNotice129_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_net16_t *)madNotice129_issuer_lid_get(_arg0);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madNotice129_toggle_count_set(_swigobj,_swigval) (_swigobj->toggle_count = *(_swigval),_swigval)
+static int _wrap_madNotice129_toggle_count_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    madNotice129 * _arg0;
+    ib_net16_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_net16_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madNotice129_toggle_count_set { madNotice129 * } { ib_net16_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madNotice129_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madNotice129_toggle_count_set. Expected _madNotice129_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  _arg1 = &temp;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_net16_t *)madNotice129_toggle_count_set(_arg0,_arg1);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madNotice129_toggle_count_get(_swigobj) (&_swigobj->toggle_count)
+static int _wrap_madNotice129_toggle_count_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    madNotice129 * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madNotice129_toggle_count_get { madNotice129 * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madNotice129_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madNotice129_toggle_count_get. Expected _madNotice129_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_net16_t *)madNotice129_toggle_count_get(_arg0);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madNotice129_pad_set(_swigobj,_swigval) (_swigobj->pad = *(_swigval),_swigval)
+static int _wrap_madNotice129_pad_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    madNotice129 * _arg0;
+    ib_net16_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_net16_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madNotice129_pad_set { madNotice129 * } { ib_net16_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madNotice129_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madNotice129_pad_set. Expected _madNotice129_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  _arg1 = &temp;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_net16_t *)madNotice129_pad_set(_arg0,_arg1);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madNotice129_pad_get(_swigobj) (&_swigobj->pad)
+static int _wrap_madNotice129_pad_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    madNotice129 * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madNotice129_pad_get { madNotice129 * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madNotice129_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madNotice129_pad_get. Expected _madNotice129_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_net16_t *)madNotice129_pad_get(_arg0);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madNotice129_lid_set(_swigobj,_swigval) (_swigobj->lid = *(_swigval),_swigval)
+static int _wrap_madNotice129_lid_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    madNotice129 * _arg0;
+    ib_net16_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_net16_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madNotice129_lid_set { madNotice129 * } { ib_net16_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madNotice129_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madNotice129_lid_set. Expected _madNotice129_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  _arg1 = &temp;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_net16_t *)madNotice129_lid_set(_arg0,_arg1);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madNotice129_lid_get(_swigobj) (&_swigobj->lid)
+static int _wrap_madNotice129_lid_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    madNotice129 * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madNotice129_lid_get { madNotice129 * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madNotice129_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madNotice129_lid_get. Expected _madNotice129_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_net16_t *)madNotice129_lid_get(_arg0);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madNotice129_port_num_set(_swigobj,_swigval) (_swigobj->port_num = *(_swigval),_swigval)
+static int _wrap_madNotice129_port_num_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    madNotice129 * _arg0;
+    uint8_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint8_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madNotice129_port_num_set { madNotice129 * } { uint8_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madNotice129_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madNotice129_port_num_set. Expected _madNotice129_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
+  _arg1 = &temp;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (uint8_t *)madNotice129_port_num_set(_arg0,_arg1);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madNotice129_port_num_get(_swigobj) (&_swigobj->port_num)
+static int _wrap_madNotice129_port_num_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    madNotice129 * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madNotice129_port_num_get { madNotice129 * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madNotice129_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madNotice129_port_num_get. Expected _madNotice129_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{ 
+  ibms_tcl_error = 0;
+      _result = (uint8_t *)madNotice129_port_num_get(_arg0);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madNotice129_issuer_gid_set(_swigobj,_swigval) (_swigobj->issuer_gid = *(_swigval),_swigval)
+static int _wrap_madNotice129_issuer_gid_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_gid_t * _result;
+    madNotice129 * _arg0;
+    ib_gid_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_gid_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madNotice129_issuer_gid_set { madNotice129 * } { ib_gid_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madNotice129_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madNotice129_issuer_gid_set. Expected _madNotice129_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  char buf[36];
+  char *p_prefix, *p_guid;
+  char *str_token;
+
+  strcpy(buf, Tcl_GetStringFromObj(objv[2],NULL));
+  p_prefix = strtok_r(buf,":", &str_token);
+  p_guid = strtok_r(NULL, " ", &str_token);
+  errno = 0;
+  temp.unicast.prefix = cl_hton64(strtoull(p_prefix, NULL, 16));
+  if (errno) {
+    printf("Wrong format for gid prefix:%s\n", p_prefix);
+    return TCL_ERROR;
+  }
+
+  temp.unicast.interface_id = cl_hton64(strtoull(p_guid, NULL, 16));
+  if (errno) {
+    printf("Wrong format for gid guid:%s\n", p_guid);
+    return TCL_ERROR;
+  }
+  
+  _arg1 = &temp;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_gid_t *)madNotice129_issuer_gid_set(_arg0,_arg1);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[36];
+  sprintf(buff, "0x%016" PRIx64 ":0x%016" PRIx64, 
+          cl_ntoh64(_result->unicast.prefix), 
+          cl_ntoh64(_result->unicast.interface_id) 
+          );
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madNotice129_issuer_gid_get(_swigobj) (&_swigobj->issuer_gid)
+static int _wrap_madNotice129_issuer_gid_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_gid_t * _result;
+    madNotice129 * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madNotice129_issuer_gid_get { madNotice129 * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madNotice129_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madNotice129_issuer_gid_get. Expected _madNotice129_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_gid_t *)madNotice129_issuer_gid_get(_arg0);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[36];
+  sprintf(buff, "0x%016" PRIx64 ":0x%016" PRIx64, 
+          cl_ntoh64(_result->unicast.prefix), 
+          cl_ntoh64(_result->unicast.interface_id) 
+          );
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+static int  madNotice129_send_set(madNotice129 *self,IBMSNode * pFromNode,uint8_t  fromPort,uint16_t  destLid) {
+      return( send_mad(
+                pFromNode, 
+                fromPort, 
+                destLid,
+                IB_MCLASS_SUBN_LID,
+                IB_MAD_METHOD_SET,
+                cl_ntoh16(IB_MAD_ATTR_NOTICE),
+		0,
+                (uint8_t*)self,
+                sizeof(madNotice129)
+                )
+              );
+    }
+static int _wrap_madNotice129_send_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    int  _result;
+    madNotice129 * _arg0;
+    IBMSNode * _arg1;
+    uint8_t * _arg2;
+    uint16_t * _arg3;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint8_t  temp;
+    uint16_t  temp0;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 5) || (objc > 5)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madNotice129_send_set { madNotice129 * } pFromNode fromPort destLid ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madNotice129_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madNotice129_send_set. Expected _madNotice129_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  
+  void *ptr;
+  if (ibmsGetSimNodePtrByTclName(objv[2], &ptr) != TCL_OK) {
+	 char err[128];
+	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[2]) );
+	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+  }
+	 
+  _arg1 = (IBMSNode *)ptr;
+}
+{
+  /* the format is always: <type>:<idx>[:<name>] */
+  
+  // get the type from the given source 
+  char buf[128];
+  strcpy(buf, Tcl_GetStringFromObj(objv[2],0));
+  char *colonIdx = index(buf,':');
+  if (!colonIdx) {
+	 char err[128];
+	 sprintf(err, "-E- Bad formatted ibdm object:%s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;
+  }
+  *colonIdx = '\0';
+
+  if (!strcmp("IBMSNode ", "IBMSNode ")) {
+    if (strcmp(buf, "simnode")) {
+      char err[256];
+      sprintf(err, "-E- basetype is IBMSNode  but received obj of type %s", buf);
+      Tcl_SetStringObj(tcl_result, err, strlen(err));
+      return TCL_ERROR;	 
+    }
+  } else {
+	 char err[256];
+	 sprintf(err, "-E- basetype 'IBMSNode ' is unknown");
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+  }
+}
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[3],NULL), NULL, 0);
+  _arg2 = &temp;
+}
+{
+  temp0 = strtoul(Tcl_GetStringFromObj(objv[4],NULL), NULL, 0);
+  _arg3 = &temp0;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (int )madNotice129_send_set(_arg0,_arg1,*_arg2,*_arg3);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+    Tcl_SetIntObj(tcl_result,(long) _result);
+    return TCL_OK;
+}
+/* delcmd.swg : Tcl object deletion method */
+
+static void TclDeletemadNotice129(ClientData clientData) {
+    delete_madNotice129((madNotice129 *) clientData);
+}
+
+/* methodcmd8.swg : Tcl8.x method invocation */
+
+static int TclmadNotice129MethodCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST _objv[]) {
+  int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
+  char *_str;
+  int rcode;
+  Tcl_Obj **objv;
+  Tcl_Obj *oldarg,*tcl_result,*obj;
+  int length;
+  char c;
+
+  tcl_result = Tcl_GetObjResult(interp);
+  objv = (Tcl_Obj **) _objv; 
+  if (objc < 2) {
+    Tcl_SetStringObj(tcl_result,"madNotice129 methods : { dump cget configure send_set  }",-1);
+    return TCL_ERROR;
+  }
+  obj = Tcl_NewObj();
+  SWIG_SetPointerObj(obj,(void *) clientData,"_madNotice129_p");
+  _str = Tcl_GetStringFromObj(objv[1],&length);
+  c = *_str;
+  if (0);
+      if (strcmp(_str,"send_set") == 0) {
+        cmd = _wrap_madNotice129_send_set;
+    }
+    else if ((c == 'c') && (strncmp(_str,"configure",length) == 0) && (length >= 2)) {
+      int i = 2;
+      cmd = 0;
+      while (i+1 < objc) {
+        _str = Tcl_GetStringFromObj(objv[i],&length);
+                        if (strcmp(_str,"-generic_type") == 0) {
+                    cmd = _wrap_madNotice129_generic_type_set;
+                }  else if (strcmp(_str,"-prod_type_msb") == 0) {
+                    cmd = _wrap_madNotice129_prod_type_msb_set;
+                }  else if (strcmp(_str,"-prod_type_lsb") == 0) {
+                    cmd = _wrap_madNotice129_prod_type_lsb_set;
+                }  else if (strcmp(_str,"-trap_num") == 0) {
+                    cmd = _wrap_madNotice129_trap_num_set;
+                }  else if (strcmp(_str,"-issuer_lid") == 0) {
+                    cmd = _wrap_madNotice129_issuer_lid_set;
+                }  else if (strcmp(_str,"-toggle_count") == 0) {
+                    cmd = _wrap_madNotice129_toggle_count_set;
+                }  else if (strcmp(_str,"-pad") == 0) {
+                    cmd = _wrap_madNotice129_pad_set;
+                }  else if (strcmp(_str,"-lid") == 0) {
+                    cmd = _wrap_madNotice129_lid_set;
+                }  else if (strcmp(_str,"-port_num") == 0) {
+                    cmd = _wrap_madNotice129_port_num_set;
+                }  else if (strcmp(_str,"-issuer_gid") == 0) {
+                    cmd = _wrap_madNotice129_issuer_gid_set;
+                } 
+          if (cmd) {
+            oldarg = objv[i];
+            objv[i] = obj;
+            rcode = (*cmd)(clientData,interp,3,&objv[i-1]);
+            objv[i] = oldarg;
+            if (rcode == TCL_ERROR) return rcode;
+            cmd = 0;
+          } else {
+            Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be { -generic_type -prod_type_msb -prod_type_lsb -trap_num -issuer_lid -toggle_count -pad -lid -port_num -issuer_gid  }",-1);
+            return TCL_ERROR;
+          }
+        i+=2;
+      }
+      if ((i < objc) || (i == 2)) {
+        Tcl_SetStringObj(tcl_result,"{ -generic_type -prod_type_msb -prod_type_lsb -trap_num -issuer_lid -toggle_count -pad -lid -port_num -issuer_gid  }",-1);
+        return TCL_ERROR;
+      }
+      return TCL_OK;
+    } else if ((c == 'c') && (strncmp(_str,"cget",length) == 0) && (length >= 2)) {
+      if (objc == 3) {
+        _str = Tcl_GetStringFromObj(objv[2],&length);
+        if (0) {}
+                        if (strcmp(_str,"-generic_type") == 0) {
+                    cmd = _wrap_madNotice129_generic_type_get;
+                }  else if (strcmp(_str,"-prod_type_msb") == 0) {
+                    cmd = _wrap_madNotice129_prod_type_msb_get;
+                }  else if (strcmp(_str,"-prod_type_lsb") == 0) {
+                    cmd = _wrap_madNotice129_prod_type_lsb_get;
+                }  else if (strcmp(_str,"-trap_num") == 0) {
+                    cmd = _wrap_madNotice129_trap_num_get;
+                }  else if (strcmp(_str,"-issuer_lid") == 0) {
+                    cmd = _wrap_madNotice129_issuer_lid_get;
+                }  else if (strcmp(_str,"-toggle_count") == 0) {
+                    cmd = _wrap_madNotice129_toggle_count_get;
+                }  else if (strcmp(_str,"-pad") == 0) {
+                    cmd = _wrap_madNotice129_pad_get;
+                }  else if (strcmp(_str,"-lid") == 0) {
+                    cmd = _wrap_madNotice129_lid_get;
+                }  else if (strcmp(_str,"-port_num") == 0) {
+                    cmd = _wrap_madNotice129_port_num_get;
+                }  else if (strcmp(_str,"-issuer_gid") == 0) {
+                    cmd = _wrap_madNotice129_issuer_gid_get;
+                } 
+          else if (strcmp(_str,"-this") == 0) {
+            SWIG_SetPointerObj(tcl_result,(void *) clientData, "_madNotice129_p");
+            return TCL_OK;
+          }
+        if (cmd) {
+          oldarg = objv[2];
+          objv[2] = obj;
+          rcode = (*cmd)(clientData,interp,objc-1,&objv[1]);
+          objv[2] = oldarg;
+          return rcode;
+        } else {
+          Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this -generic_type -prod_type_msb -prod_type_lsb -trap_num -issuer_lid -toggle_count -pad -lid -port_num -issuer_gid  }",-1);
+          return TCL_ERROR;
+        }
+      } else {
+        Tcl_SetStringObj(tcl_result,"{ -this -generic_type -prod_type_msb -prod_type_lsb -trap_num -issuer_lid -toggle_count -pad -lid -port_num -issuer_gid  }", -1);
+        return TCL_ERROR;
+      }
+    } else if ((c == 'd') && (strncmp(_str,"dump",length) == 0) && (length >= 2)) {
+      if (objc == 2) {
+        Tcl_Obj *pDumpObj;
+        pDumpObj = Tcl_NewStringObj("",-1);
+        Tcl_IncrRefCount(pDumpObj);
+                cmd = _wrap_madNotice129_generic_type_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-generic_type ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_madNotice129_prod_type_msb_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-prod_type_msb ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_madNotice129_prod_type_lsb_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-prod_type_lsb ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_madNotice129_trap_num_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-trap_num ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_madNotice129_issuer_lid_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-issuer_lid ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_madNotice129_toggle_count_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-toggle_count ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_madNotice129_pad_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-pad ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_madNotice129_lid_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-lid ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_madNotice129_port_num_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-port_num ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_madNotice129_issuer_gid_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-issuer_gid ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+
+        Tcl_DecrRefCount(pDumpObj);
+        return TCL_OK;
+      } else {
+        Tcl_SetStringObj(tcl_result,"no parameters are allowed for dump", -1);
+        return TCL_ERROR;
+      }
+    }
+  if (!cmd) {
+    Tcl_SetStringObj(tcl_result,"Invalid Method. Must be { dump cget configure send_set }",-1);
+    return TCL_ERROR;
+  }
+  oldarg = objv[1];
+  objv[1] = obj;
+  rcode = (*cmd)(clientData,interp,objc,objv);
+  objv[1] = oldarg;
+  return rcode;
+}
+
+
+
+/* objcmd8.swg : Tcl 8.x object creation */
+
+static int TclmadNotice129Cmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+    void (*del)(ClientData) = 0;
+    char *name = 0;
+    int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
+    madNotice129 * newObj = 0;
+    int firstarg = 0;
+    int thisarg = 0;
+    int length;
+    char *_str;
+    Tcl_Obj *tcl_result;
+
+    tcl_result = Tcl_GetObjResult(interp);
+    if (objc == 1) {
+        cmd = _wrap_new_madNotice129;
+    } else {
+      _str = Tcl_GetStringFromObj(objv[1],&length);
+      if (strcmp(_str,"-this") == 0) thisarg = 2;
+      else if (strcmp(_str,"-args") == 0) {
+	firstarg = 1;
+	cmd = _wrap_new_madNotice129;
+      } else if (objc == 2) {
+	firstarg = 1;
+	name = _str;
+	cmd = _wrap_new_madNotice129;
+      } else if (objc >= 3) {
+	name = _str;
+	_str = Tcl_GetStringFromObj(objv[2],&length);
+	if (strcmp(_str,"-this") == 0) thisarg = 3;
+	else {
+	  firstarg = 1;
+	  cmd = _wrap_new_madNotice129;
+	}
+      }
+    }
+    if (cmd) {
+        int result;
+        result = (*cmd)(clientData,interp,objc-firstarg,&objv[firstarg]);
+        if (result == TCL_OK) {
+            SWIG_GetPointerObj(interp,tcl_result,(void **) &newObj,"_madNotice129_p");
+        } else { return result; }
+        if (!name) name = Tcl_GetStringFromObj(tcl_result,&length);
+        del = TclDeletemadNotice129;
+    } else if (thisarg > 0) { 
+        if (thisarg < objc) {
+            char *r;
+            r = SWIG_GetPointerObj(interp,objv[thisarg],(void **) &newObj,"_madNotice129_p");
+            if (r) {
+	      Tcl_SetStringObj(tcl_result,"Type error. not a madNotice129 object.",-1);
+	      return TCL_ERROR;
+            }
+        if (!name) name = Tcl_GetStringFromObj(objv[thisarg],&length);
+	Tcl_SetStringObj(tcl_result,name,-1);
+        } else {
+            Tcl_SetStringObj(tcl_result,"wrong # args.",-1);
+            return TCL_ERROR;
+        }
+    } else {
+        Tcl_SetStringObj(tcl_result,"No constructor available.",-1);
+        return TCL_ERROR;
+    }
+    {
+      Tcl_CmdInfo dummy;
+      if (!Tcl_GetCommandInfo(interp,name,&dummy)) {
+	Tcl_CreateObjCommand(interp,name, TclmadNotice129MethodCmd, (ClientData) newObj, del);
+	return TCL_OK;
+      } else {
+	Tcl_SetStringObj(tcl_result,"Object name already exists!",-1);
+	return TCL_ERROR;
+      }
+    }
+}
+
+
+#define new_madNotice144() (new madNotice144())
+static int _wrap_new_madNotice144(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    madNotice144 * _result;
+    Tcl_Obj * tcl_result;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 1) || (objc > 1)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. new_madNotice144 ",-1);
+        return TCL_ERROR;
+    }
+{ 
+  ibms_tcl_error = 0;
+      _result = (madNotice144 *)new_madNotice144();
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+    SWIG_SetPointerObj(tcl_result,(void *) _result,"_madNotice144_p");
+    return TCL_OK;
+}
+#define delete_madNotice144(_swigobj) (delete _swigobj)
+static int _wrap_delete_madNotice144(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    madNotice144 * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. delete_madNotice144 { madNotice144 * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madNotice144_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of delete_madNotice144. Expected _madNotice144_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{ 
+  ibms_tcl_error = 0;
+      delete_madNotice144(_arg0);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+    return TCL_OK;
+}
+#define madNotice144_generic_type_set(_swigobj,_swigval) (_swigobj->generic_type = *(_swigval),_swigval)
+static int _wrap_madNotice144_generic_type_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    madNotice144 * _arg0;
+    uint8_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint8_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madNotice144_generic_type_set { madNotice144 * } { uint8_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madNotice144_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madNotice144_generic_type_set. Expected _madNotice144_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
+  _arg1 = &temp;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (uint8_t *)madNotice144_generic_type_set(_arg0,_arg1);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madNotice144_generic_type_get(_swigobj) (&_swigobj->generic_type)
+static int _wrap_madNotice144_generic_type_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    madNotice144 * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madNotice144_generic_type_get { madNotice144 * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madNotice144_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madNotice144_generic_type_get. Expected _madNotice144_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{ 
+  ibms_tcl_error = 0;
+      _result = (uint8_t *)madNotice144_generic_type_get(_arg0);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madNotice144_prod_type_msb_set(_swigobj,_swigval) (_swigobj->prod_type_msb = *(_swigval),_swigval)
+static int _wrap_madNotice144_prod_type_msb_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    madNotice144 * _arg0;
+    uint8_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint8_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madNotice144_prod_type_msb_set { madNotice144 * } { uint8_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madNotice144_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madNotice144_prod_type_msb_set. Expected _madNotice144_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
+  _arg1 = &temp;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (uint8_t *)madNotice144_prod_type_msb_set(_arg0,_arg1);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madNotice144_prod_type_msb_get(_swigobj) (&_swigobj->prod_type_msb)
+static int _wrap_madNotice144_prod_type_msb_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    madNotice144 * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madNotice144_prod_type_msb_get { madNotice144 * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madNotice144_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madNotice144_prod_type_msb_get. Expected _madNotice144_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{ 
+  ibms_tcl_error = 0;
+      _result = (uint8_t *)madNotice144_prod_type_msb_get(_arg0);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madNotice144_prod_type_lsb_set(_swigobj,_swigval) (_swigobj->prod_type_lsb = *(_swigval),_swigval)
+static int _wrap_madNotice144_prod_type_lsb_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    madNotice144 * _arg0;
+    ib_net16_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_net16_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madNotice144_prod_type_lsb_set { madNotice144 * } { ib_net16_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madNotice144_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madNotice144_prod_type_lsb_set. Expected _madNotice144_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  _arg1 = &temp;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_net16_t *)madNotice144_prod_type_lsb_set(_arg0,_arg1);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madNotice144_prod_type_lsb_get(_swigobj) (&_swigobj->prod_type_lsb)
+static int _wrap_madNotice144_prod_type_lsb_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    madNotice144 * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madNotice144_prod_type_lsb_get { madNotice144 * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madNotice144_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madNotice144_prod_type_lsb_get. Expected _madNotice144_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_net16_t *)madNotice144_prod_type_lsb_get(_arg0);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madNotice144_trap_num_set(_swigobj,_swigval) (_swigobj->trap_num = *(_swigval),_swigval)
+static int _wrap_madNotice144_trap_num_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    madNotice144 * _arg0;
+    ib_net16_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_net16_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madNotice144_trap_num_set { madNotice144 * } { ib_net16_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madNotice144_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madNotice144_trap_num_set. Expected _madNotice144_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  _arg1 = &temp;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_net16_t *)madNotice144_trap_num_set(_arg0,_arg1);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madNotice144_trap_num_get(_swigobj) (&_swigobj->trap_num)
+static int _wrap_madNotice144_trap_num_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    madNotice144 * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madNotice144_trap_num_get { madNotice144 * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madNotice144_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madNotice144_trap_num_get. Expected _madNotice144_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_net16_t *)madNotice144_trap_num_get(_arg0);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madNotice144_issuer_lid_set(_swigobj,_swigval) (_swigobj->issuer_lid = *(_swigval),_swigval)
+static int _wrap_madNotice144_issuer_lid_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    madNotice144 * _arg0;
+    ib_net16_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_net16_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madNotice144_issuer_lid_set { madNotice144 * } { ib_net16_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madNotice144_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madNotice144_issuer_lid_set. Expected _madNotice144_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  _arg1 = &temp;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_net16_t *)madNotice144_issuer_lid_set(_arg0,_arg1);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madNotice144_issuer_lid_get(_swigobj) (&_swigobj->issuer_lid)
+static int _wrap_madNotice144_issuer_lid_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    madNotice144 * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madNotice144_issuer_lid_get { madNotice144 * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madNotice144_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madNotice144_issuer_lid_get. Expected _madNotice144_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_net16_t *)madNotice144_issuer_lid_get(_arg0);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madNotice144_toggle_count_set(_swigobj,_swigval) (_swigobj->toggle_count = *(_swigval),_swigval)
+static int _wrap_madNotice144_toggle_count_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    madNotice144 * _arg0;
+    ib_net16_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_net16_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madNotice144_toggle_count_set { madNotice144 * } { ib_net16_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madNotice144_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madNotice144_toggle_count_set. Expected _madNotice144_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  _arg1 = &temp;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_net16_t *)madNotice144_toggle_count_set(_arg0,_arg1);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madNotice144_toggle_count_get(_swigobj) (&_swigobj->toggle_count)
+static int _wrap_madNotice144_toggle_count_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    madNotice144 * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madNotice144_toggle_count_get { madNotice144 * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madNotice144_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madNotice144_toggle_count_get. Expected _madNotice144_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_net16_t *)madNotice144_toggle_count_get(_arg0);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madNotice144_pad1_set(_swigobj,_swigval) (_swigobj->pad1 = *(_swigval),_swigval)
+static int _wrap_madNotice144_pad1_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    madNotice144 * _arg0;
+    ib_net16_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_net16_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madNotice144_pad1_set { madNotice144 * } { ib_net16_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madNotice144_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madNotice144_pad1_set. Expected _madNotice144_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  _arg1 = &temp;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_net16_t *)madNotice144_pad1_set(_arg0,_arg1);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madNotice144_pad1_get(_swigobj) (&_swigobj->pad1)
+static int _wrap_madNotice144_pad1_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    madNotice144 * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madNotice144_pad1_get { madNotice144 * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madNotice144_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madNotice144_pad1_get. Expected _madNotice144_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_net16_t *)madNotice144_pad1_get(_arg0);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madNotice144_lid_set(_swigobj,_swigval) (_swigobj->lid = *(_swigval),_swigval)
+static int _wrap_madNotice144_lid_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    madNotice144 * _arg0;
+    ib_net16_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_net16_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madNotice144_lid_set { madNotice144 * } { ib_net16_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madNotice144_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madNotice144_lid_set. Expected _madNotice144_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  _arg1 = &temp;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_net16_t *)madNotice144_lid_set(_arg0,_arg1);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madNotice144_lid_get(_swigobj) (&_swigobj->lid)
+static int _wrap_madNotice144_lid_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    madNotice144 * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madNotice144_lid_get { madNotice144 * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madNotice144_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madNotice144_lid_get. Expected _madNotice144_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_net16_t *)madNotice144_lid_get(_arg0);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madNotice144_pad2_set(_swigobj,_swigval) (_swigobj->pad2 = *(_swigval),_swigval)
+static int _wrap_madNotice144_pad2_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    madNotice144 * _arg0;
+    ib_net16_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_net16_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madNotice144_pad2_set { madNotice144 * } { ib_net16_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madNotice144_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madNotice144_pad2_set. Expected _madNotice144_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  _arg1 = &temp;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_net16_t *)madNotice144_pad2_set(_arg0,_arg1);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madNotice144_pad2_get(_swigobj) (&_swigobj->pad2)
+static int _wrap_madNotice144_pad2_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    madNotice144 * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madNotice144_pad2_get { madNotice144 * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madNotice144_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madNotice144_pad2_get. Expected _madNotice144_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_net16_t *)madNotice144_pad2_get(_arg0);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madNotice144_new_cap_mask_set(_swigobj,_swigval) (_swigobj->new_cap_mask = *(_swigval),_swigval)
+static int _wrap_madNotice144_new_cap_mask_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net32_t * _result;
+    madNotice144 * _arg0;
+    ib_net32_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_net32_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madNotice144_new_cap_mask_set { madNotice144 * } { ib_net32_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madNotice144_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madNotice144_new_cap_mask_set. Expected _madNotice144_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton32(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
+  _arg1 = &temp;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_net32_t *)madNotice144_new_cap_mask_set(_arg0,_arg1);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_ntoh32(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madNotice144_new_cap_mask_get(_swigobj) (&_swigobj->new_cap_mask)
+static int _wrap_madNotice144_new_cap_mask_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net32_t * _result;
+    madNotice144 * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madNotice144_new_cap_mask_get { madNotice144 * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madNotice144_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madNotice144_new_cap_mask_get. Expected _madNotice144_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_net32_t *)madNotice144_new_cap_mask_get(_arg0);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_ntoh32(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madNotice144_issuer_gid_set(_swigobj,_swigval) (_swigobj->issuer_gid = *(_swigval),_swigval)
+static int _wrap_madNotice144_issuer_gid_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_gid_t * _result;
+    madNotice144 * _arg0;
+    ib_gid_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_gid_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madNotice144_issuer_gid_set { madNotice144 * } { ib_gid_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madNotice144_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madNotice144_issuer_gid_set. Expected _madNotice144_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  char buf[36];
+  char *p_prefix, *p_guid;
+  char *str_token;
+
+  strcpy(buf, Tcl_GetStringFromObj(objv[2],NULL));
+  p_prefix = strtok_r(buf,":", &str_token);
+  p_guid = strtok_r(NULL, " ", &str_token);
+  errno = 0;
+  temp.unicast.prefix = cl_hton64(strtoull(p_prefix, NULL, 16));
+  if (errno) {
+    printf("Wrong format for gid prefix:%s\n", p_prefix);
+    return TCL_ERROR;
+  }
+
+  temp.unicast.interface_id = cl_hton64(strtoull(p_guid, NULL, 16));
+  if (errno) {
+    printf("Wrong format for gid guid:%s\n", p_guid);
+    return TCL_ERROR;
+  }
+  
+  _arg1 = &temp;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_gid_t *)madNotice144_issuer_gid_set(_arg0,_arg1);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[36];
+  sprintf(buff, "0x%016" PRIx64 ":0x%016" PRIx64, 
+          cl_ntoh64(_result->unicast.prefix), 
+          cl_ntoh64(_result->unicast.interface_id) 
+          );
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define madNotice144_issuer_gid_get(_swigobj) (&_swigobj->issuer_gid)
+static int _wrap_madNotice144_issuer_gid_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_gid_t * _result;
+    madNotice144 * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madNotice144_issuer_gid_get { madNotice144 * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madNotice144_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madNotice144_issuer_gid_get. Expected _madNotice144_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_gid_t *)madNotice144_issuer_gid_get(_arg0);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[36];
+  sprintf(buff, "0x%016" PRIx64 ":0x%016" PRIx64, 
+          cl_ntoh64(_result->unicast.prefix), 
+          cl_ntoh64(_result->unicast.interface_id) 
+          );
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+static int  madNotice144_send_set(madNotice144 *self,IBMSNode * pFromNode,uint8_t  fromPort,uint16_t  destLid) {
+      return( send_mad(
+                pFromNode, 
+                fromPort, 
+                destLid,
+                IB_MCLASS_SUBN_LID,
+                IB_MAD_METHOD_SET,
+                cl_ntoh16(IB_MAD_ATTR_NOTICE),
+		0,
+                (uint8_t*)self,
+                sizeof(madNotice144)
+                )
+              );
+    }
+static int _wrap_madNotice144_send_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    int  _result;
+    madNotice144 * _arg0;
+    IBMSNode * _arg1;
+    uint8_t * _arg2;
+    uint16_t * _arg3;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint8_t  temp;
+    uint16_t  temp0;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 5) || (objc > 5)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madNotice144_send_set { madNotice144 * } pFromNode fromPort destLid ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madNotice144_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madNotice144_send_set. Expected _madNotice144_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  
+  void *ptr;
+  if (ibmsGetSimNodePtrByTclName(objv[2], &ptr) != TCL_OK) {
+	 char err[128];
+	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[2]) );
+	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+  }
+	 
+  _arg1 = (IBMSNode *)ptr;
+}
+{
+  /* the format is always: <type>:<idx>[:<name>] */
+  
+  // get the type from the given source 
+  char buf[128];
+  strcpy(buf, Tcl_GetStringFromObj(objv[2],0));
+  char *colonIdx = index(buf,':');
+  if (!colonIdx) {
+	 char err[128];
+	 sprintf(err, "-E- Bad formatted ibdm object:%s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;
+  }
+  *colonIdx = '\0';
+
+  if (!strcmp("IBMSNode ", "IBMSNode ")) {
+    if (strcmp(buf, "simnode")) {
+      char err[256];
+      sprintf(err, "-E- basetype is IBMSNode  but received obj of type %s", buf);
+      Tcl_SetStringObj(tcl_result, err, strlen(err));
+      return TCL_ERROR;	 
+    }
+  } else {
+	 char err[256];
+	 sprintf(err, "-E- basetype 'IBMSNode ' is unknown");
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+  }
+}
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[3],NULL), NULL, 0);
+  _arg2 = &temp;
+}
+{
+  temp0 = strtoul(Tcl_GetStringFromObj(objv[4],NULL), NULL, 0);
+  _arg3 = &temp0;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (int )madNotice144_send_set(_arg0,_arg1,*_arg2,*_arg3);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+    Tcl_SetIntObj(tcl_result,(long) _result);
+    return TCL_OK;
+}
+/* delcmd.swg : Tcl object deletion method */
+
+static void TclDeletemadNotice144(ClientData clientData) {
+    delete_madNotice144((madNotice144 *) clientData);
+}
+
+/* methodcmd8.swg : Tcl8.x method invocation */
+
+static int TclmadNotice144MethodCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST _objv[]) {
+  int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
+  char *_str;
+  int rcode;
+  Tcl_Obj **objv;
+  Tcl_Obj *oldarg,*tcl_result,*obj;
+  int length;
+  char c;
+
+  tcl_result = Tcl_GetObjResult(interp);
+  objv = (Tcl_Obj **) _objv; 
+  if (objc < 2) {
+    Tcl_SetStringObj(tcl_result,"madNotice144 methods : { dump cget configure send_set  }",-1);
+    return TCL_ERROR;
+  }
+  obj = Tcl_NewObj();
+  SWIG_SetPointerObj(obj,(void *) clientData,"_madNotice144_p");
+  _str = Tcl_GetStringFromObj(objv[1],&length);
+  c = *_str;
+  if (0);
+      if (strcmp(_str,"send_set") == 0) {
+        cmd = _wrap_madNotice144_send_set;
+    }
+    else if ((c == 'c') && (strncmp(_str,"configure",length) == 0) && (length >= 2)) {
+      int i = 2;
+      cmd = 0;
+      while (i+1 < objc) {
+        _str = Tcl_GetStringFromObj(objv[i],&length);
+                        if (strcmp(_str,"-generic_type") == 0) {
+                    cmd = _wrap_madNotice144_generic_type_set;
+                }  else if (strcmp(_str,"-prod_type_msb") == 0) {
+                    cmd = _wrap_madNotice144_prod_type_msb_set;
+                }  else if (strcmp(_str,"-prod_type_lsb") == 0) {
+                    cmd = _wrap_madNotice144_prod_type_lsb_set;
+                }  else if (strcmp(_str,"-trap_num") == 0) {
+                    cmd = _wrap_madNotice144_trap_num_set;
+                }  else if (strcmp(_str,"-issuer_lid") == 0) {
+                    cmd = _wrap_madNotice144_issuer_lid_set;
+                }  else if (strcmp(_str,"-toggle_count") == 0) {
+                    cmd = _wrap_madNotice144_toggle_count_set;
+                }  else if (strcmp(_str,"-pad1") == 0) {
+                    cmd = _wrap_madNotice144_pad1_set;
+                }  else if (strcmp(_str,"-lid") == 0) {
+                    cmd = _wrap_madNotice144_lid_set;
+                }  else if (strcmp(_str,"-pad2") == 0) {
+                    cmd = _wrap_madNotice144_pad2_set;
+                }  else if (strcmp(_str,"-new_cap_mask") == 0) {
+                    cmd = _wrap_madNotice144_new_cap_mask_set;
+                }  else if (strcmp(_str,"-issuer_gid") == 0) {
+                    cmd = _wrap_madNotice144_issuer_gid_set;
+                } 
+          if (cmd) {
+            oldarg = objv[i];
+            objv[i] = obj;
+            rcode = (*cmd)(clientData,interp,3,&objv[i-1]);
+            objv[i] = oldarg;
+            if (rcode == TCL_ERROR) return rcode;
+            cmd = 0;
+          } else {
+            Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be { -generic_type -prod_type_msb -prod_type_lsb -trap_num -issuer_lid -toggle_count -pad1 -lid -pad2 -new_cap_mask -issuer_gid  }",-1);
+            return TCL_ERROR;
+          }
+        i+=2;
+      }
+      if ((i < objc) || (i == 2)) {
+        Tcl_SetStringObj(tcl_result,"{ -generic_type -prod_type_msb -prod_type_lsb -trap_num -issuer_lid -toggle_count -pad1 -lid -pad2 -new_cap_mask -issuer_gid  }",-1);
+        return TCL_ERROR;
+      }
+      return TCL_OK;
+    } else if ((c == 'c') && (strncmp(_str,"cget",length) == 0) && (length >= 2)) {
+      if (objc == 3) {
+        _str = Tcl_GetStringFromObj(objv[2],&length);
+        if (0) {}
+                        if (strcmp(_str,"-generic_type") == 0) {
+                    cmd = _wrap_madNotice144_generic_type_get;
+                }  else if (strcmp(_str,"-prod_type_msb") == 0) {
+                    cmd = _wrap_madNotice144_prod_type_msb_get;
+                }  else if (strcmp(_str,"-prod_type_lsb") == 0) {
+                    cmd = _wrap_madNotice144_prod_type_lsb_get;
+                }  else if (strcmp(_str,"-trap_num") == 0) {
+                    cmd = _wrap_madNotice144_trap_num_get;
+                }  else if (strcmp(_str,"-issuer_lid") == 0) {
+                    cmd = _wrap_madNotice144_issuer_lid_get;
+                }  else if (strcmp(_str,"-toggle_count") == 0) {
+                    cmd = _wrap_madNotice144_toggle_count_get;
+                }  else if (strcmp(_str,"-pad1") == 0) {
+                    cmd = _wrap_madNotice144_pad1_get;
+                }  else if (strcmp(_str,"-lid") == 0) {
+                    cmd = _wrap_madNotice144_lid_get;
+                }  else if (strcmp(_str,"-pad2") == 0) {
+                    cmd = _wrap_madNotice144_pad2_get;
+                }  else if (strcmp(_str,"-new_cap_mask") == 0) {
+                    cmd = _wrap_madNotice144_new_cap_mask_get;
+                }  else if (strcmp(_str,"-issuer_gid") == 0) {
+                    cmd = _wrap_madNotice144_issuer_gid_get;
+                } 
+          else if (strcmp(_str,"-this") == 0) {
+            SWIG_SetPointerObj(tcl_result,(void *) clientData, "_madNotice144_p");
+            return TCL_OK;
+          }
+        if (cmd) {
+          oldarg = objv[2];
+          objv[2] = obj;
+          rcode = (*cmd)(clientData,interp,objc-1,&objv[1]);
+          objv[2] = oldarg;
+          return rcode;
+        } else {
+          Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this -generic_type -prod_type_msb -prod_type_lsb -trap_num -issuer_lid -toggle_count -pad1 -lid -pad2 -new_cap_mask -issuer_gid  }",-1);
+          return TCL_ERROR;
+        }
+      } else {
+        Tcl_SetStringObj(tcl_result,"{ -this -generic_type -prod_type_msb -prod_type_lsb -trap_num -issuer_lid -toggle_count -pad1 -lid -pad2 -new_cap_mask -issuer_gid  }", -1);
+        return TCL_ERROR;
+      }
+    } else if ((c == 'd') && (strncmp(_str,"dump",length) == 0) && (length >= 2)) {
+      if (objc == 2) {
+        Tcl_Obj *pDumpObj;
+        pDumpObj = Tcl_NewStringObj("",-1);
+        Tcl_IncrRefCount(pDumpObj);
+                cmd = _wrap_madNotice144_generic_type_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-generic_type ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_madNotice144_prod_type_msb_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-prod_type_msb ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_madNotice144_prod_type_lsb_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-prod_type_lsb ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_madNotice144_trap_num_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-trap_num ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_madNotice144_issuer_lid_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-issuer_lid ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_madNotice144_toggle_count_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-toggle_count ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_madNotice144_pad1_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-pad1 ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_madNotice144_lid_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-lid ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_madNotice144_pad2_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-pad2 ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_madNotice144_new_cap_mask_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-new_cap_mask ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_madNotice144_issuer_gid_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-issuer_gid ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+
+        Tcl_DecrRefCount(pDumpObj);
+        return TCL_OK;
+      } else {
+        Tcl_SetStringObj(tcl_result,"no parameters are allowed for dump", -1);
+        return TCL_ERROR;
+      }
+    }
+  if (!cmd) {
+    Tcl_SetStringObj(tcl_result,"Invalid Method. Must be { dump cget configure send_set }",-1);
+    return TCL_ERROR;
+  }
+  oldarg = objv[1];
+  objv[1] = obj;
+  rcode = (*cmd)(clientData,interp,objc,objv);
+  objv[1] = oldarg;
+  return rcode;
+}
+
+
+
+/* objcmd8.swg : Tcl 8.x object creation */
+
+static int TclmadNotice144Cmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+    void (*del)(ClientData) = 0;
+    char *name = 0;
+    int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
+    madNotice144 * newObj = 0;
+    int firstarg = 0;
+    int thisarg = 0;
+    int length;
+    char *_str;
+    Tcl_Obj *tcl_result;
+
+    tcl_result = Tcl_GetObjResult(interp);
+    if (objc == 1) {
+        cmd = _wrap_new_madNotice144;
+    } else {
+      _str = Tcl_GetStringFromObj(objv[1],&length);
+      if (strcmp(_str,"-this") == 0) thisarg = 2;
+      else if (strcmp(_str,"-args") == 0) {
+	firstarg = 1;
+	cmd = _wrap_new_madNotice144;
+      } else if (objc == 2) {
+	firstarg = 1;
+	name = _str;
+	cmd = _wrap_new_madNotice144;
+      } else if (objc >= 3) {
+	name = _str;
+	_str = Tcl_GetStringFromObj(objv[2],&length);
+	if (strcmp(_str,"-this") == 0) thisarg = 3;
+	else {
+	  firstarg = 1;
+	  cmd = _wrap_new_madNotice144;
+	}
+      }
+    }
+    if (cmd) {
+        int result;
+        result = (*cmd)(clientData,interp,objc-firstarg,&objv[firstarg]);
+        if (result == TCL_OK) {
+            SWIG_GetPointerObj(interp,tcl_result,(void **) &newObj,"_madNotice144_p");
+        } else { return result; }
+        if (!name) name = Tcl_GetStringFromObj(tcl_result,&length);
+        del = TclDeletemadNotice144;
+    } else if (thisarg > 0) { 
+        if (thisarg < objc) {
+            char *r;
+            r = SWIG_GetPointerObj(interp,objv[thisarg],(void **) &newObj,"_madNotice144_p");
+            if (r) {
+	      Tcl_SetStringObj(tcl_result,"Type error. not a madNotice144 object.",-1);
+	      return TCL_ERROR;
+            }
+        if (!name) name = Tcl_GetStringFromObj(objv[thisarg],&length);
+	Tcl_SetStringObj(tcl_result,name,-1);
+        } else {
+            Tcl_SetStringObj(tcl_result,"wrong # args.",-1);
+            return TCL_ERROR;
+        }
+    } else {
+        Tcl_SetStringObj(tcl_result,"No constructor available.",-1);
+        return TCL_ERROR;
+    }
+    {
+      Tcl_CmdInfo dummy;
+      if (!Tcl_GetCommandInfo(interp,name,&dummy)) {
+	Tcl_CreateObjCommand(interp,name, TclmadNotice144MethodCmd, (ClientData) newObj, del);
+	return TCL_OK;
+      } else {
+	Tcl_SetStringObj(tcl_result,"Object name already exists!",-1);
+	return TCL_ERROR;
+      }
+    }
+}
+
+
 SWIGEXPORT(int,Ibdm_Init)(Tcl_Interp *interp) {
 	 if (interp == 0) 
 		 return TCL_ERROR;
@@ -27473,6 +34707,7 @@ SWIGEXPORT(int,Ibdm_Init)(Tcl_Interp *interp) {
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "IBMSNode_setPhyPortPMCounter", _wrap_IBMSNode_setPhyPortPMCounter, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "IBMSNode_getPhyPortPMCounter", _wrap_IBMSNode_getPhyPortPMCounter, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "IBMSNode_getPortInfo", _wrap_IBMSNode_getPortInfo, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "IBMSNode_setLinkStatus", _wrap_IBMSNode_setLinkStatus, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "IBMSNode_getNodeInfo", _wrap_IBMSNode_getNodeInfo, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "IBMSNode_getSwitchInfo", _wrap_IBMSNode_getSwitchInfo, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "IBMSNode_getPKeyTblBlock", _wrap_IBMSNode_getPKeyTblBlock, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
@@ -27510,6 +34745,138 @@ SWIGEXPORT(int,Ibdm_Init)(Tcl_Interp *interp) {
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "madMcMemberRec_send_get", _wrap_madMcMemberRec_send_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "madMcMemberRec_send_del", _wrap_madMcMemberRec_send_del, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp,SWIG_prefix "madMcMemberRec",TclmadMcMemberRecCmd, (ClientData) NULL, NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "new_madPathRec", _wrap_new_madPathRec, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "delete_madPathRec", _wrap_delete_madPathRec, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madPathRec_resv0_set", _wrap_madPathRec_resv0_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madPathRec_resv0_get", _wrap_madPathRec_resv0_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madPathRec_dgid_set", _wrap_madPathRec_dgid_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madPathRec_dgid_get", _wrap_madPathRec_dgid_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madPathRec_sgid_set", _wrap_madPathRec_sgid_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madPathRec_sgid_get", _wrap_madPathRec_sgid_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madPathRec_dlid_set", _wrap_madPathRec_dlid_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madPathRec_dlid_get", _wrap_madPathRec_dlid_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madPathRec_slid_set", _wrap_madPathRec_slid_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madPathRec_slid_get", _wrap_madPathRec_slid_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madPathRec_hop_flow_raw_set", _wrap_madPathRec_hop_flow_raw_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madPathRec_hop_flow_raw_get", _wrap_madPathRec_hop_flow_raw_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madPathRec_tclass_set", _wrap_madPathRec_tclass_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madPathRec_tclass_get", _wrap_madPathRec_tclass_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madPathRec_num_path_set", _wrap_madPathRec_num_path_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madPathRec_num_path_get", _wrap_madPathRec_num_path_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madPathRec_pkey_set", _wrap_madPathRec_pkey_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madPathRec_pkey_get", _wrap_madPathRec_pkey_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madPathRec_sl_set", _wrap_madPathRec_sl_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madPathRec_sl_get", _wrap_madPathRec_sl_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madPathRec_mtu_set", _wrap_madPathRec_mtu_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madPathRec_mtu_get", _wrap_madPathRec_mtu_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madPathRec_rate_set", _wrap_madPathRec_rate_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madPathRec_rate_get", _wrap_madPathRec_rate_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madPathRec_pkt_life_set", _wrap_madPathRec_pkt_life_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madPathRec_pkt_life_get", _wrap_madPathRec_pkt_life_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madPathRec_preference_set", _wrap_madPathRec_preference_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madPathRec_preference_get", _wrap_madPathRec_preference_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madPathRec_resv2_set", _wrap_madPathRec_resv2_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madPathRec_resv2_get", _wrap_madPathRec_resv2_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madPathRec_send_get", _wrap_madPathRec_send_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp,SWIG_prefix "madPathRec",TclmadPathRecCmd, (ClientData) NULL, NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "new_madServiceRec", _wrap_new_madServiceRec, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "delete_madServiceRec", _wrap_delete_madServiceRec, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madServiceRec_service_id_set", _wrap_madServiceRec_service_id_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madServiceRec_service_id_get", _wrap_madServiceRec_service_id_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madServiceRec_service_gid_set", _wrap_madServiceRec_service_gid_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madServiceRec_service_gid_get", _wrap_madServiceRec_service_gid_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madServiceRec_service_pkey_set", _wrap_madServiceRec_service_pkey_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madServiceRec_service_pkey_get", _wrap_madServiceRec_service_pkey_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madServiceRec_resv_set", _wrap_madServiceRec_resv_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madServiceRec_resv_get", _wrap_madServiceRec_resv_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madServiceRec_service_lease_set", _wrap_madServiceRec_service_lease_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madServiceRec_service_lease_get", _wrap_madServiceRec_service_lease_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madServiceRec_service_key_set", _wrap_madServiceRec_service_key_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madServiceRec_service_key_get", _wrap_madServiceRec_service_key_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madServiceRec_service_name_set", _wrap_madServiceRec_service_name_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madServiceRec_service_name_get", _wrap_madServiceRec_service_name_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madServiceRec_service_data8_set", _wrap_madServiceRec_service_data8_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madServiceRec_service_data8_get", _wrap_madServiceRec_service_data8_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madServiceRec_service_data16_set", _wrap_madServiceRec_service_data16_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madServiceRec_service_data16_get", _wrap_madServiceRec_service_data16_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madServiceRec_service_data32_set", _wrap_madServiceRec_service_data32_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madServiceRec_service_data32_get", _wrap_madServiceRec_service_data32_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madServiceRec_service_data64_set", _wrap_madServiceRec_service_data64_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madServiceRec_service_data64_get", _wrap_madServiceRec_service_data64_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madServiceRec_send_set", _wrap_madServiceRec_send_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madServiceRec_send_get", _wrap_madServiceRec_send_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madServiceRec_send_del", _wrap_madServiceRec_send_del, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp,SWIG_prefix "madServiceRec",TclmadServiceRecCmd, (ClientData) NULL, NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "new_madNotice128", _wrap_new_madNotice128, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "delete_madNotice128", _wrap_delete_madNotice128, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madNotice128_generic_type_set", _wrap_madNotice128_generic_type_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madNotice128_generic_type_get", _wrap_madNotice128_generic_type_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madNotice128_prod_type_msb_set", _wrap_madNotice128_prod_type_msb_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madNotice128_prod_type_msb_get", _wrap_madNotice128_prod_type_msb_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madNotice128_prod_type_lsb_set", _wrap_madNotice128_prod_type_lsb_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madNotice128_prod_type_lsb_get", _wrap_madNotice128_prod_type_lsb_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madNotice128_trap_num_set", _wrap_madNotice128_trap_num_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madNotice128_trap_num_get", _wrap_madNotice128_trap_num_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madNotice128_issuer_lid_set", _wrap_madNotice128_issuer_lid_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madNotice128_issuer_lid_get", _wrap_madNotice128_issuer_lid_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madNotice128_toggle_count_set", _wrap_madNotice128_toggle_count_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madNotice128_toggle_count_get", _wrap_madNotice128_toggle_count_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madNotice128_sw_lid_set", _wrap_madNotice128_sw_lid_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madNotice128_sw_lid_get", _wrap_madNotice128_sw_lid_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madNotice128_issuer_gid_set", _wrap_madNotice128_issuer_gid_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madNotice128_issuer_gid_get", _wrap_madNotice128_issuer_gid_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madNotice128_send_set", _wrap_madNotice128_send_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp,SWIG_prefix "madNotice128",TclmadNotice128Cmd, (ClientData) NULL, NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "new_madNotice129", _wrap_new_madNotice129, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "delete_madNotice129", _wrap_delete_madNotice129, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madNotice129_generic_type_set", _wrap_madNotice129_generic_type_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madNotice129_generic_type_get", _wrap_madNotice129_generic_type_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madNotice129_prod_type_msb_set", _wrap_madNotice129_prod_type_msb_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madNotice129_prod_type_msb_get", _wrap_madNotice129_prod_type_msb_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madNotice129_prod_type_lsb_set", _wrap_madNotice129_prod_type_lsb_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madNotice129_prod_type_lsb_get", _wrap_madNotice129_prod_type_lsb_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madNotice129_trap_num_set", _wrap_madNotice129_trap_num_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madNotice129_trap_num_get", _wrap_madNotice129_trap_num_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madNotice129_issuer_lid_set", _wrap_madNotice129_issuer_lid_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madNotice129_issuer_lid_get", _wrap_madNotice129_issuer_lid_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madNotice129_toggle_count_set", _wrap_madNotice129_toggle_count_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madNotice129_toggle_count_get", _wrap_madNotice129_toggle_count_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madNotice129_pad_set", _wrap_madNotice129_pad_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madNotice129_pad_get", _wrap_madNotice129_pad_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madNotice129_lid_set", _wrap_madNotice129_lid_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madNotice129_lid_get", _wrap_madNotice129_lid_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madNotice129_port_num_set", _wrap_madNotice129_port_num_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madNotice129_port_num_get", _wrap_madNotice129_port_num_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madNotice129_issuer_gid_set", _wrap_madNotice129_issuer_gid_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madNotice129_issuer_gid_get", _wrap_madNotice129_issuer_gid_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madNotice129_send_set", _wrap_madNotice129_send_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp,SWIG_prefix "madNotice129",TclmadNotice129Cmd, (ClientData) NULL, NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "new_madNotice144", _wrap_new_madNotice144, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "delete_madNotice144", _wrap_delete_madNotice144, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madNotice144_generic_type_set", _wrap_madNotice144_generic_type_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madNotice144_generic_type_get", _wrap_madNotice144_generic_type_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madNotice144_prod_type_msb_set", _wrap_madNotice144_prod_type_msb_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madNotice144_prod_type_msb_get", _wrap_madNotice144_prod_type_msb_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madNotice144_prod_type_lsb_set", _wrap_madNotice144_prod_type_lsb_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madNotice144_prod_type_lsb_get", _wrap_madNotice144_prod_type_lsb_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madNotice144_trap_num_set", _wrap_madNotice144_trap_num_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madNotice144_trap_num_get", _wrap_madNotice144_trap_num_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madNotice144_issuer_lid_set", _wrap_madNotice144_issuer_lid_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madNotice144_issuer_lid_get", _wrap_madNotice144_issuer_lid_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madNotice144_toggle_count_set", _wrap_madNotice144_toggle_count_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madNotice144_toggle_count_get", _wrap_madNotice144_toggle_count_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madNotice144_pad1_set", _wrap_madNotice144_pad1_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madNotice144_pad1_get", _wrap_madNotice144_pad1_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madNotice144_lid_set", _wrap_madNotice144_lid_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madNotice144_lid_get", _wrap_madNotice144_lid_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madNotice144_pad2_set", _wrap_madNotice144_pad2_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madNotice144_pad2_get", _wrap_madNotice144_pad2_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madNotice144_new_cap_mask_set", _wrap_madNotice144_new_cap_mask_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madNotice144_new_cap_mask_get", _wrap_madNotice144_new_cap_mask_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madNotice144_issuer_gid_set", _wrap_madNotice144_issuer_gid_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madNotice144_issuer_gid_get", _wrap_madNotice144_issuer_gid_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madNotice144_send_set", _wrap_madNotice144_send_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp,SWIG_prefix "madNotice144",TclmadNotice144Cmd, (ClientData) NULL, NULL);
 /*
  * These are the pointer type-equivalency mappings. 
  * (Used by the SWIG pointer type-checker).
@@ -27517,6 +34884,7 @@ SWIGEXPORT(int,Ibdm_Init)(Tcl_Interp *interp) {
 	 SWIG_RegisterMapping("_signed_long","_long",0);
 	 SWIG_RegisterMapping("_ib_lft_record_t","_struct__ib_lft_record",0);
 	 SWIG_RegisterMapping("_ib_lft_record_t","__ib_lft_record",0);
+	 SWIG_RegisterMapping("_madServiceRec","_struct_madServiceRec",0);
 	 SWIG_RegisterMapping("_struct_madMcMemberRec","_madMcMemberRec",0);
 	 SWIG_RegisterMapping("_IBPort","_class_IBPort",0);
 	 SWIG_RegisterMapping("_struct__ib_port_info","_ib_port_info_t",0);
@@ -27535,17 +34903,24 @@ SWIGEXPORT(int,Ibdm_Init)(Tcl_Interp *interp) {
 	 SWIG_RegisterMapping("_class_IBPort","_IBPort",0);
 	 SWIG_RegisterMapping("_struct__ib_node_desc","_ib_node_desc_t",0);
 	 SWIG_RegisterMapping("_struct__ib_node_desc","__ib_node_desc",0);
+	 SWIG_RegisterMapping("_madPathRec","_struct_madPathRec",0);
 	 SWIG_RegisterMapping("_IBMgtSim","_class_IBMgtSim",0);
+	 SWIG_RegisterMapping("_struct_madServiceRec","_madServiceRec",0);
 	 SWIG_RegisterMapping("_class_IBFabric","_IBFabric",0);
 	 SWIG_RegisterMapping("_ib_switch_info_t","_struct__ib_switch_info",0);
 	 SWIG_RegisterMapping("_ib_switch_info_t","__ib_switch_info",0);
 	 SWIG_RegisterMapping("_class_msgManager","_msgManager",0);
 	 SWIG_RegisterMapping("_unsigned_long","_long",0);
+	 SWIG_RegisterMapping("_struct_madNotice128","_madNotice128",0);
+	 SWIG_RegisterMapping("_struct_madNotice129","_madNotice129",0);
 	 SWIG_RegisterMapping("_struct__ib_lft_record","_ib_lft_record_t",0);
 	 SWIG_RegisterMapping("_struct__ib_lft_record","__ib_lft_record",0);
 	 SWIG_RegisterMapping("_madMcMemberRec","_struct_madMcMemberRec",0);
+	 SWIG_RegisterMapping("_struct_madPathRec","_madPathRec",0);
 	 SWIG_RegisterMapping("_signed_int","_int",0);
+	 SWIG_RegisterMapping("_madNotice128","_struct_madNotice128",0);
 	 SWIG_RegisterMapping("_IBMSNode","_class_IBMSNode",0);
+	 SWIG_RegisterMapping("_madNotice129","_struct_madNotice129",0);
 	 SWIG_RegisterMapping("_IBSysPort","_class_IBSysPort",0);
 	 SWIG_RegisterMapping("_ib_pm_counters_t","_struct__ib_pm_counters",0);
 	 SWIG_RegisterMapping("_ib_pm_counters_t","__ib_pm_counters",0);
@@ -27554,10 +34929,12 @@ SWIGEXPORT(int,Ibdm_Init)(Tcl_Interp *interp) {
 	 SWIG_RegisterMapping("_ib_port_info_t","__ib_port_info",0);
 	 SWIG_RegisterMapping("_struct__ib_pm_counters","_ib_pm_counters_t",0);
 	 SWIG_RegisterMapping("_struct__ib_pm_counters","__ib_pm_counters",0);
+	 SWIG_RegisterMapping("_struct_madNotice144","_madNotice144",0);
 	 SWIG_RegisterMapping("__ib_pm_counters","_ib_pm_counters_t",0);
 	 SWIG_RegisterMapping("__ib_pm_counters","_struct__ib_pm_counters",0);
 	 SWIG_RegisterMapping("_signed_short","_short",0);
 	 SWIG_RegisterMapping("_IBNode","_class_IBNode",0);
+	 SWIG_RegisterMapping("_madNotice144","_struct_madNotice144",0);
 	 SWIG_RegisterMapping("_unsigned_int","_int",0);
 	 SWIG_RegisterMapping("_class_IBSysPort","_IBSysPort",0);
 	 SWIG_RegisterMapping("_class_IBSystem","_IBSystem",0);
