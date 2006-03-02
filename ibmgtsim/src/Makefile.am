@@ -87,7 +87,8 @@ endif
 ibmssh_LDADD = -libmscli $(IBDM_LIB) $(OSM_LDFLAGS) $(TCL_LIBS)
 
 # SWIG FILES:
-SWIG_IFC_FILES= $(srcdir)/sim.i $(srcdir)/ib_types.i $(srcdir)/ibdm.i
+SWIG_IFC_FILES= $(srcdir)/sim.i $(srcdir)/ib_types.i $(srcdir)/ibdm.i \
+   $(srcdir)/inttypes.i $(srcdir)/mads.i
 
 # only generate the swig wrappers if they do not exist...
 # so we avoid un-needed swig dependency
