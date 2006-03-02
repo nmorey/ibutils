@@ -440,6 +440,9 @@ class IBMSNode {
   ib_port_info_t * getPortInfo(uint8_t portNum);
   /* get a specific port info */
 
+  int setLinkStatus(uint8_t portNum, uint8_t newState);
+  /* set the Link status including sending trap128 */  
+
   ib_node_info_t * getNodeInfo();
   /* get the node info */
 
