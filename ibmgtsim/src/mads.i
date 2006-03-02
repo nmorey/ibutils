@@ -203,3 +203,310 @@ struct madMcMemberRec
               );
     }
 }
+
+
+%{
+#define madPathRec ib_path_rec_t
+%}
+
+struct madPathRec
+{
+  madPathRec();
+  ~madPathRec();
+
+   uint8_array_t			resv0[8];
+   ib_gid_t				dgid;
+   ib_gid_t				sgid;
+   ib_net16_t				dlid;
+   ib_net16_t				slid;
+   ib_net32_t				hop_flow_raw;
+   uint8_t				tclass;
+   uint8_t				num_path; 
+   ib_net16_t				pkey;
+   ib_net16_t				sl;
+   uint8_t				mtu;
+   uint8_t				rate;
+   uint8_t				pkt_life;
+   uint8_t				preference;
+   uint8_array_t			resv2[6];
+}
+
+%addmethods madPathRec {
+  int send_get(
+    IBMSNode *pFromNode,
+    uint8_t   fromPort,  
+    uint16_t  destLid,
+    uint64_t  comp_mask)
+    {
+      return( send_sa_mad(
+                pFromNode, 
+                fromPort, 
+                destLid,
+                IB_MCLASS_SUBN_ADM,
+                IB_MAD_METHOD_GET,
+                cl_ntoh16(IB_MAD_ATTR_PATH_RECORD),
+                comp_mask,
+                (uint8_t*)self,
+                sizeof(madPathRec)
+                )
+              );
+    }
+}
+
+%{
+#define madServiceRec ib_service_record_t
+%}
+
+struct madServiceRec
+{
+  madServiceRec();
+  ~madServiceRec();
+
+  ib_net64_t		service_id;
+  ib_gid_t		service_gid;
+  ib_net16_t		service_pkey;
+  ib_net16_t		resv;
+  ib_net32_t		service_lease;
+  uint8_array_t	        service_key[16];
+  uint8_array_t	        service_name[64]; 
+  uint8_array_t		service_data8[16];
+  uint16_array_t	service_data16[8];
+  uint32_array_t	service_data32[4];
+  uint64_array_t	service_data64[2];
+}
+
+%addmethods madServiceRec {
+  int send_set(
+    IBMSNode *pFromNode,
+    uint8_t   fromPort,  
+    uint16_t  destLid,
+    uint64_t  comp_mask)
+    {
+      return( send_sa_mad(
+                pFromNode, 
+                fromPort, 
+                destLid,
+                IB_MCLASS_SUBN_ADM,
+                IB_MAD_METHOD_SET,
+                cl_ntoh16(IB_MAD_ATTR_SERVICE_RECORD),
+                comp_mask,
+                (uint8_t*)self,
+                sizeof(madServiceRec)
+                )
+              );
+    }
+  
+  int send_get(
+    IBMSNode *pFromNode,
+    uint8_t   fromPort,  
+    uint16_t  destLid,
+    uint64_t  comp_mask)
+    {
+      return( send_sa_mad(
+                pFromNode, 
+                fromPort, 
+                destLid,
+                IB_MCLASS_SUBN_ADM,
+                IB_MAD_METHOD_GET,
+                cl_ntoh16(IB_MAD_ATTR_SERVICE_RECORD),
+                comp_mask,
+                (uint8_t*)self,
+                sizeof(madServiceRec)
+                )
+              );
+    }
+
+  int send_del(
+    IBMSNode *pFromNode,
+    uint8_t   fromPort,  
+    uint16_t  destLid,
+    uint64_t  comp_mask)
+    {
+      return( send_sa_mad(
+                pFromNode, 
+                fromPort, 
+                destLid,
+                IB_MCLASS_SUBN_ADM,
+                IB_MAD_METHOD_DELETE,
+                cl_ntoh16(IB_MAD_ATTR_SERVICE_RECORD),
+                comp_mask,
+                (uint8_t*)self,
+                sizeof(madServiceRec)
+                )
+              );
+    }
+}
+
+
+%{
+#include <complib/cl_packon.h>
+typedef struct _ib_mad_notice_attr128    
+{
+  uint8_t	        generic_type;      
+  uint8_t		prod_type_msb;
+  ib_net16_t	        prod_type_lsb;
+  ib_net16_t	        trap_num; 
+  ib_net16_t		issuer_lid;    
+  ib_net16_t		toggle_count;  
+  ib_net16_t            sw_lid; // the sw lid of which link state changed - for 128 only
+  ib_gid_t		issuer_gid;    
+}	PACK_SUFFIX ib_mad_notice_attr128_t;
+#include <complib/cl_packoff.h>
+
+#define madNotice128 ib_mad_notice_attr128_t
+%}
+
+struct madNotice128
+{
+  madNotice128();
+  ~madNotice128();
+
+  uint8_t	        generic_type;      
+  uint8_t		prod_type_msb;
+  ib_net16_t	        prod_type_lsb;
+  ib_net16_t	        trap_num; 
+  ib_net16_t		issuer_lid;    
+  ib_net16_t		toggle_count;  
+  ib_net16_t            sw_lid; // the sw lid of which link state changed - for 128 only
+  ib_gid_t		issuer_gid;    
+}
+
+%addmethods madNotice128 {
+  int send_set(
+    IBMSNode *pFromNode,
+    uint8_t   fromPort,  
+    uint16_t  destLid)
+    {
+      return( send_mad(
+                pFromNode, 
+                fromPort, 
+                destLid,
+                IB_MCLASS_SUBN_LID,
+                IB_MAD_METHOD_SET,
+                cl_ntoh16(IB_MAD_ATTR_NOTICE),
+		0,
+                (uint8_t*)self,
+                sizeof(madNotice128)
+                )
+              );
+    }
+}
+
+%{
+#include <complib/cl_packon.h>
+typedef struct _ib_mad_notice_attr129    
+{
+  uint8_t	        generic_type;      
+  uint8_t		prod_type_msb;
+  ib_net16_t	        prod_type_lsb;
+  ib_net16_t	        trap_num; 
+  ib_net16_t		issuer_lid;    
+  ib_net16_t		toggle_count;  
+  ib_net16_t            pad;      //129
+  ib_net16_t            lid;	  // 129 lid and port number of the violation
+  uint8_t               port_num; //129  
+  ib_gid_t		issuer_gid;    
+}	PACK_SUFFIX ib_mad_notice_attr129_t;
+#include <complib/cl_packoff.h>
+
+#define madNotice129 ib_mad_notice_attr129_t
+%}
+
+struct madNotice129
+{
+  madNotice129();
+  ~madNotice129();
+  uint8_t	        generic_type;      
+  uint8_t		prod_type_msb;
+  ib_net16_t	        prod_type_lsb;
+  ib_net16_t	        trap_num; 
+  ib_net16_t		issuer_lid;    
+  ib_net16_t		toggle_count;  
+  ib_net16_t            pad;      //129
+  ib_net16_t            lid;	  // 129 lid and port number of the violation
+  uint8_t               port_num; //129  
+  ib_gid_t		issuer_gid;    
+}
+
+%addmethods madNotice129 {
+  int send_set(
+    IBMSNode *pFromNode,
+    uint8_t   fromPort,  
+    uint16_t  destLid)
+    {
+      return( send_mad(
+                pFromNode, 
+                fromPort, 
+                destLid,
+                IB_MCLASS_SUBN_LID,
+                IB_MAD_METHOD_SET,
+                cl_ntoh16(IB_MAD_ATTR_NOTICE),
+		0,
+                (uint8_t*)self,
+                sizeof(madNotice129)
+                )
+              );
+    }
+}
+
+%{
+#include <complib/cl_packon.h>
+typedef struct _ib_mad_notice_attr144    
+{
+  uint8_t	        generic_type;      
+  uint8_t		prod_type_msb;
+  ib_net16_t	        prod_type_lsb;
+  ib_net16_t	        trap_num; 
+  ib_net16_t		issuer_lid;    
+  ib_net16_t		toggle_count;  
+  ib_net16_t            pad1;         // 144
+  ib_net16_t            lid;	      // 144 lid where capability mask changed
+  ib_net16_t            pad2;         // 144
+  ib_net32_t            new_cap_mask; // 144 new capability mask
+  ib_gid_t		issuer_gid;    
+}	PACK_SUFFIX ib_mad_notice_attr144_t;
+#include <complib/cl_packoff.h>
+
+#define madNotice144 ib_mad_notice_attr144_t
+%}
+
+struct madNotice144
+{
+  madNotice144();
+  ~madNotice144();
+
+  uint8_t	        generic_type;      
+  uint8_t		prod_type_msb;
+  ib_net16_t	        prod_type_lsb;
+  ib_net16_t	        trap_num; 
+  ib_net16_t		issuer_lid;    
+  ib_net16_t		toggle_count;  
+  ib_net16_t            pad1;         // 144
+  ib_net16_t            lid;	      // 144 lid where capability mask changed
+  ib_net16_t            pad2;         // 144
+  ib_net32_t            new_cap_mask; // 144 new capability mask
+  ib_gid_t		issuer_gid;     
+}
+
+%addmethods madNotice144 {
+  int send_set(
+    IBMSNode *pFromNode,
+    uint8_t   fromPort,  
+    uint16_t  destLid)
+    {
+      return( send_mad(
+                pFromNode, 
+                fromPort, 
+                destLid,
+                IB_MCLASS_SUBN_LID,
+                IB_MAD_METHOD_SET,
+                cl_ntoh16(IB_MAD_ATTR_NOTICE),
+		0,
+                (uint8_t*)self,
+                sizeof(madNotice144)
+                )
+              );
+    }
+}
+
+
