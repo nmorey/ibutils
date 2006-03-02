@@ -310,7 +310,7 @@
   int i;
   char buff[20];
   for (i=0; i <$dim0 ; i++) {
-    sprintf(buff, "0x%016 " PRIx64 " ", *($source+i));
+    sprintf(buff, "0x%016" PRIx64 " ", *($source+i));
     Tcl_AppendResult(interp, buff, NULL);
   }
 }
