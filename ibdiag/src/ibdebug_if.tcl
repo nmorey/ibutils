@@ -497,8 +497,11 @@ proc putsIn80Chars { string args } {
     set maxLen 80
     set indent ""
     if { [llength $args] == 1 } { set args [join $args] }
-    set chars  [WordAfterFlag $args "-chars"]
-    set nonewline [WordInList "-nonewline" $args]
+    set chars       [WordAfterFlag $args "-chars"]
+    set nonewline   [WordInList "-nonewline" $args]
+    if {[WordInList "-length" $args]} {
+        set maxLen [WordAfterFlag $args "-length"]
+    }
     foreach line [split $string \n] {
         if { $chars != "" } {
 	    if { [set idx [string first $chars $line]] >= 0 } {
@@ -962,6 +965,7 @@ proc inform { msgCode args } {
             set noExiting 1
         }
         "-E-discover:zero/duplicate.IDs.found" {
+            set dontTrimLine 1
             if {$localDevice} {set G(LocalDeviceDuplicated) 1}
             if {$total > 1} { 
                append msgText "#$total Devices with " 
@@ -972,7 +976,15 @@ proc inform { msgCode args } {
             append msgText "$msgF(ID) = $msgF(value) found in the fabric:\n"
             
             for {set i 0} {$i < $total} {incr i} {
-               append msgText "a $NODE($i,FullType,Spaces) $NODE($i,Name_Port,Spaces) GUID=$NODE($i,PortGUID) direct path=$PATH($i)\n"
+                append msgText "a $NODE($i,FullType,Spaces) $NODE($i,Name_Port,Spaces)"
+                if {$msgF(ID) != "PortGUID"} {
+                    append msgText " GUID=$NODE($i,PortGUID)"
+                }
+                append msgText " at direct path=$PATH($i)"
+                if {[BoolIsMaked $NODE($i,PortGUID)]} {
+                    append msgText " (a duplicate portGUID)"
+                }
+                append msgText "\n"
             }
             set noExiting 1
         }
@@ -1231,7 +1243,7 @@ proc inform { msgCode args } {
         }
         "-I-ibdiagnet:no.bad.link.logic.header" {
             append msgText "Link Logical State Info\n"
-            append msgText "-I- No bad Links (logical state = INIT) were found"
+            append msgText "-I- No bad Links (with logical state = INIT) were found"
         }
         "-W-ibdiagnet:report.links.init.state" {
             append msgText "on the direct path $PATH(1)\n"
@@ -1413,7 +1425,12 @@ proc inform { msgCode args } {
         }
     }
     regsub -all {%n} "[join $msgText \n]" "\n" msgText
-    putsIn80Chars $msgText $putsFlags
+    #dontTrimLine
+    if {[info exists dontTrimLine]} {
+        putsIn80Chars $msgText $putsFlags -length 160
+    } else {
+        putsIn80Chars $msgText $putsFlags
+    }
     if {[info exists exitStatus]} { 
         puts "    $Exiting.\n"
         if {[info exists showSynopsys]} { 
