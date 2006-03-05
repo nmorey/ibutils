@@ -117,7 +117,7 @@
 #  OUTPUT	NULL
 proc InitalizeIBdiag {} {
     global G argv argv0 InfoArgv INFO_LST MASK SECOND_PATH
-    set G(version.num) 1.1.0rc5
+    set G(version.num) 1.2.0rc1
     set G(tool) [file rootname [file tail $argv0]]
     source [file join [file dirname [info script]] ibdebug_if.tcl]
     set G(start.clock.seconds) [clock seconds]
@@ -320,8 +320,9 @@ proc Port_And_Idx_Settings {_ibisInfo} {
     } elseif { $PortNum > 1 } {
 	inform "-I-localPort:one.port.up"
     }
-
-    ibis_set_port $G(RootPort,Guid)
+    if {[catch {ibis_set_port $G(RootPort,Guid)} e]} {
+        puts "-E- Fail to set port - how did we got here? Supposed to be checked by Init_ibis"
+    }
 }
 
 ##############################
@@ -434,7 +435,6 @@ proc startIBDebug {} {
         set portInfo [lrange $portInfo 0 2]
         lappend newIbisInfo $portInfo
     }
-
     set ibisInfo $newIbisInfo
 
     ### denoting the default port
@@ -1449,7 +1449,7 @@ proc groupNumRanges {nums} {
 
    set start -1
    set res ""
-   if {[catch {set snums [lsort -integer $nums]}]} {
+   if {[catch {set snums [lsort -dictionary $nums]}]} {
      set snums [lsort $nums]
    }
    set last [lrange $snums end end]
@@ -1495,7 +1495,7 @@ proc groupingEngine {groups} {
 
       append prefix $w1
       set suffix $w3
-      set key "$prefix $suffix" 
+      set key "$prefix $suffix"
       lappend NEW_GROUPS($key) $num
    }
 
@@ -1577,7 +1577,7 @@ proc GetCurrentMaskGuid {} {
 #  INPUTS    GUID   
 #  OUTPUT    0 or 1
 proc BoolIsMaked { _currentMaskGuid} {
-    return [string equal MASK [string range $_currentMaskGuid 0 3]]
+    return [string equal 0xFFFFFFFF [string range $_currentMaskGuid 0 9]]
 }
 ##############################
 
@@ -2784,7 +2784,7 @@ proc writeLstFile { args } {
     foreach DirectPath $G(list,DirectPath) {
         # seperate the next 3 logical expr to avoid extra work
         if {![llength $DirectPath]  } {continue }
-        if {[PathIsBad $DirectPath] } {continue }
+        if {[PathIsBad $DirectPath] > 1 } {continue }
         if {[catch {linkAtPathEnd $DirectPath}] } {continue }
 	set lstLine ""
         append lstLine "\{ [lstInfo port $path0 $port0] \} "
@@ -2882,9 +2882,7 @@ proc writeFdbsFile { args } {
 
     foreach entry [array names G "DrPathOfGuid,*"] {
         set DirectPath $G($entry)
-        if {[PathIsBad $DirectPath] > 1} { 
-            continue 
-        }
+        if {[PathIsBad $DirectPath] > 1} { continue }
         set NodeType [GetParamValue Type $G($entry)]
         if {$NodeType != "SW"} { continue }
 
@@ -2892,7 +2890,7 @@ proc writeFdbsFile { args } {
         set NodeGuid $G(NodeGuid,$PortGuid) 
 
         set thisSwLid [GetParamValue LID $DirectPath X -noread]
-	if {[PathIsBad $DirectPath]} { continue }
+	if {[PathIsBad $DirectPath] > 1} { continue }
 	if [catch {set LinFDBTop \
 		       [SmMadGetByDr SwitchInfo -lin_top "$DirectPath"]}] { 
 	    continue 
