@@ -120,7 +120,7 @@ if test $OSM_BUILD = openib; then
    elif test -L $with_osm_libs/libosmvendor_sim.so; then
       OSM_VENDOR=sim
       osm_vendor_sel="-DOSM_VENDOR_INTF_SIM"
-      OSM_LDFLAGS="$OSM_LDFLAGS -lopensm -losmvendor -losmcomp"
+      OSM_LDFLAGS="$OSM_LDFLAGS -lopensm -losmvendor -libmscli -losmcomp"
    elif test -L $with_osm_libs/libopensm.so; then
       OSM_VENDOR=openib
       osm_vendor_sel="-DOSM_VENDOR_INTF_OPENIB "
