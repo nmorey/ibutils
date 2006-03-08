@@ -413,6 +413,7 @@ class IBFabric {
     subnCANames = 1;
     lmc = 0;
     minLid = 0;
+    PortByLid.push_back(NULL); // make sure we always have one for LID=0
   };
 
   // Destructor
