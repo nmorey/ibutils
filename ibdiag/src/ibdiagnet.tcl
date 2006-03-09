@@ -29,7 +29,7 @@ source [file join [file dirname [info script]] ibdebug.tcl]
 #	Danny Zarko. Mellanox Technologies LTD.
 #
 #  CREATION DATE
-#	19/May/05
+#	04/Aug/05
 #
 #  MODIFICATION HISTORY
 #  $Revision: 2608 $
@@ -47,8 +47,10 @@ source [file join [file dirname [info script]] ibdebug.tcl]
 InitalizeIBdiag
 InitalizeINFO_LST
 startIBDebug
+
 set G(detect.bad.links) 1
 ### Discover the cluster
+
 if {[catch {DiscoverFabric 0} e]} { 
     ### Discover the hidden cluster
     if {[catch {DiscoverHiddenFabric} e]} { 
@@ -70,6 +72,7 @@ CheckSM
 RereadLongPaths
 
 ### Write the .fdbs, .mcfdbs, .masks and .sm files
+writeMasksFile
 writeFdbsFile 
 writeMcfdbsFile
 writeMasksFile
@@ -83,7 +86,6 @@ reportTopologyMatching
 
 ### report fabric qualities
 if {[catch {reportFabQualities} e]} { puts "\n\nERROR $errorInfo $e" ; exit 1}
-#reportFabQualities
 
 ### Finishing
 finishIBDebug

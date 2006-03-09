@@ -2,9 +2,9 @@
 source [file join [file dirname [info script]] ibdebug.tcl]
 
 ######################################################################
-#****h* IB Debug Tools/ibdiagpath
+#  IB Debug Tools
 #  NAME
-#     ibdiscover
+#       ibdiagpath
 #
 #  COPYRIGHT
 #                 - Mellanox Confidential and Proprietary -
@@ -28,10 +28,10 @@ source [file join [file dirname [info script]] ibdebug.tcl]
 #     ibdiagpath utilizes device-specific health queries for the different devices on the path.
 #
 #  AUTHOR
-#	Ariel Libman. Mellanox Technologies LTD.
+#	Danny Zarko. Mellanox Technologies LTD.
 #
 #  CREATION DATE
-#	2/June/05
+#	04/Aug/05
 #
 #  MODIFICATION HISTORY
 #  $Revision: 2622 $
@@ -205,7 +205,7 @@ proc ibdiagpathMain {} {
     # Sending MADs over the path(s)
     for { set count 0 } { $count < $G(argv,count) } { incr count } {
         foreach path $directPathsList {
-            catch { smMadGetByDr NodeDesc dump "$path"}
+            catch { SmMadGetByDr NodeDesc dump "$path"}
         }
     }
     # Final reading of Performance Counters
