@@ -939,7 +939,12 @@ proc inform { msgCode args } {
             append msgText "Local link is bad: $msgF(command) - failed $msgF(fails) "
             append msgText "times during $msgF(attempts) attempts."
         }
-        
+        "-E-localPort:port.guid.zero" {
+            append msgText "Enable to use PortGUID = $G(RootPort,Guid) as the local port."
+        }
+        "-E-localPort:enable.ibis.set.port" {
+            append msgText "Failed running : \"ibis_set_port $G(RootPort,Guid)\""
+        }        
 
         "-W-outfile:not.writable" { 
             append msgText "Output file $msgF(file0) is write protected.\n"

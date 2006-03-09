@@ -320,8 +320,12 @@ proc Port_And_Idx_Settings {_ibisInfo} {
     } elseif { $PortNum > 1 } {
 	inform "-I-localPort:one.port.up"
     }
+
+    if {$G(RootPort,Guid) == "0x0000000000000000"} {
+        inform "-E-localPort:port.guid.zero"
+    }
     if {[catch {ibis_set_port $G(RootPort,Guid)} e]} {
-        puts "-E- Fail to set port - how did we got here? Supposed to be checked by Init_ibis"
+        inform "-E-localPort:enable.ibis.set.port"
     }
 }
 
@@ -906,6 +910,13 @@ proc DiscoverFabric { PathLimit {startIndex 0}} {
             lappend G(list,DirectPath) [join "$DirectPath $port"]
         }
         if {$endLoop} {continue}
+    }
+    if {$badPathFound} {
+        lappend SECOND_PATH $DirectPath
+        RemoveDirectPath $DirectPath
+        if {[info exists G(GuidByDrPath,$DirectPath)]} {
+            unset G(GuidByDrPath,$DirectPath)
+        }
     }
     if {$G(HiddenFabric) == 0} {
         catch {set tmpHiddenFabric [DiscoverHiddenFabric]}
@@ -1565,7 +1576,7 @@ proc GetCurrentMaskGuid {} {
     global MASK
     set tmp $MASK(CurrentMaskGuid)
     set tmp [format %08x $tmp]
-    set tmp "0xFFFFFFFF${tmp}"
+    set tmp "0xffffffff${tmp}"
     return $tmp
 }
 ##############################
@@ -1577,7 +1588,7 @@ proc GetCurrentMaskGuid {} {
 #  INPUTS    GUID   
 #  OUTPUT    0 or 1
 proc BoolIsMaked { _currentMaskGuid} {
-    return [string equal 0xFFFFFFFF [string range $_currentMaskGuid 0 9]]
+    return [string equal 0xffffffff [string range $_currentMaskGuid 0 9]]
 }
 ##############################
 
@@ -2791,6 +2802,10 @@ proc writeLstFile { args } {
         append lstLine "\{ [lstInfo port $path1 $port1] \} "
         append lstLine "[lstInfo link $path0 $port0]"
         puts $FileID "$lstLine"
+        unset path0
+        unset path1
+        unset port0
+        unset port1
     }
     close $FileID
 
