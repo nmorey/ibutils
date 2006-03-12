@@ -582,7 +582,7 @@ proc inform { msgCode args } {
     set G(status,rootPortGet)		4 
     set G(status,topology.failed)       5
     set G(status,loading)               6
-
+    set G(status,crash)                 7 
 
     ##################################################
     ### When general tool's info is requested (help page, version num etc.)
@@ -622,6 +622,8 @@ proc inform { msgCode args } {
     }
     set listOfNames ""
     set listOfNames_Ports ""
+    set listOfNames_EntryPorts ""
+
     set maxType 3
     set total 0
     set localDevice 0
@@ -638,28 +640,36 @@ proc inform { msgCode args } {
         if {[catch {set NODE($i,PortGUID) [GetParamValue PortGUID $msgF($entry)]}]} {
             set NODE($i,PortGUID) ""
         }
-        set PATH($i) "\"[ArrangeDR $msgF($entry)]\""
+        set PATH($i) [ArrangeDR $msgF($entry)]
+
+        set DrPath2Name_1 [DrPath2Name $msgF($entry) -fullName]
+        set DrPath2Name_2 [DrPath2Name $msgF($entry)]
+
+        set NODE($i,EntryPort) [GetEntryPort $msgF($entry)]
 
         if {$NODE($i,Type) == "SW"} {
             set maxType 6
-            set NODE($i,EntryPort) 0
+            set DrPath2Name_3 [DrPath2Name $msgF($entry) -port 0]
         } else {
-            set NODE($i,EntryPort) [GetEntryPort $msgF($entry)]
+            set DrPath2Name_3 [DrPath2Name $msgF($entry) -port $NODE($i,EntryPort)]
         }
-        set DrPath2Name_1 [DrPath2Name $msgF($entry) -fullName]
-        set DrPath2Name_2 [DrPath2Name $msgF($entry)]
-        set DrPath2Name_3 [DrPath2Name $msgF($entry) -port $NODE($i,EntryPort)]
+
+        set DrPath2Name_4 [DrPath2Name $msgF($entry) -port $NODE($i,EntryPort)]
+
         if { $msgF($entry) == "" } {
             set NODE($i,FullName)       "The Local Device $DrPath2Name_1"
 	    set NODE($i,Name)           "The Local Device \"$DrPath2Name_2\""
             set NODE($i,Name_Port)      "The Local Device \"$DrPath2Name_3\""
+            set NODE($i,Name_EntryPort) "The Local Device \"$DrPath2Name_4\""
             set localDevice 1
         } else {
             set NODE($i,FullName)       "$DrPath2Name_1"
             set NODE($i,Name)           "\"$DrPath2Name_2\""
             set NODE($i,Name_Port)      "\"$DrPath2Name_3\""
+            set NODE($i,Name_EntryPort) "\"$DrPath2Name_4\""
         }
         if {$DrPath2Name_2 == ""} {
+            set NODE($i,Name) ""
             if {$NODE($i,Type) != "SW"} {
                 set NODE($i,Name_Port) "$DrPath2Name_3"
             } else {
@@ -669,13 +679,17 @@ proc inform { msgCode args } {
 
         lappend listOfNames $NODE($i,Name)
         lappend listOfNames_Ports $NODE($i,Name_Port)
+        lappend listOfNames_EntryPorts $NODE($i,Name_EntryPort)
     }
     set maxName [LengthMaxWord $listOfNames]
     set maxName_Port [LengthMaxWord $listOfNames_Ports]
+    set maxName_EntryPort [LengthMaxWord $listOfNames_EntryPorts]
+
     for {set i 0} {$i < $total } {incr i} {
-        set NODE($i,FullType,Spaces)    [AddSpaces $NODE($i,FullType) $maxType]
-        set NODE($i,Name,Spaces)        [AddSpaces $NODE($i,Name) $maxName]
-        set NODE($i,Name_Port,Spaces)   [AddSpaces $NODE($i,Name_Port) $maxName_Port]
+        set NODE($i,FullType,Spaces)        [AddSpaces $NODE($i,FullType) $maxType]
+        set NODE($i,Name,Spaces)            [AddSpaces $NODE($i,Name) $maxName]
+        set NODE($i,Name_Port,Spaces)       [AddSpaces $NODE($i,Name_Port) $maxName_Port]
+        set NODE($i,Name_EntryPort,Spaces)  [AddSpaces $NODE($i,Name_EntryPort) $maxName_EntryPort]
     }
     if {[info exists msgF(flag)]} { 
 	set name  ""
@@ -708,7 +722,7 @@ proc inform { msgCode args } {
     ### decoding msgCode 
     switch -exact -- $msgCode { 
         "-E-argv:unknown.flag" { 
-            append msgText "Illegal agrument: $msgF(flag) - unknown flag."
+            append msgText "Illegal argument: $msgF(flag) - unknown flag."
         } 
         "-E-argv:missing.mandatory.flag" {
             if { [llength $msgF(flag)] > 1 } { 
@@ -718,10 +732,10 @@ proc inform { msgCode args } {
             }
         }
         "-E-argv:flag.without.value" {
-            append msgText "Illegal agruments: flag $msgF(flag) must have a value."
+            append msgText "Illegal arguments: flag $msgF(flag) must have a value."
         }
         "-E-argv:flag.twice.specified" { 
-            append msgText "Illegal agruments: flag $msgF(flag) is specified twice."
+            append msgText "Illegal arguments: flag $msgF(flag) is specified twice."
         }
         "-E-argv:nonmutex.flags" {
             append msgText "Only one of the options [join $msgF(flags) ,] may be active."
@@ -964,8 +978,8 @@ proc inform { msgCode args } {
             if {$localDevice} {set G(LocalDeviceDuplicated) 1}
             append msgText "Duplicate $msgF(port_or_node) guid detected.\n"
             append msgText "The following two different devices:\n"
-            append msgText "a $NODE(0,Type,Spaces) $NODE(0,Name_Port,Spaces) $NODE(0,PortGUID) direct path=$PATH(0)\n"
-            append msgText "a $NODE(1,Type,Spaces) $NODE(1,Name_Port,Spaces) $NODE(1,PortGUID) direct path=$PATH(1)\n"
+            append msgText "a $NODE(0,Type,Spaces) $NODE(0,Name_Port,Spaces) $NODE(0,PortGUID) direct path=\"$PATH(0)\"\n"
+            append msgText "a $NODE(1,Type,Spaces) $NODE(1,Name_Port,Spaces) $NODE(1,PortGUID) direct path=\"$PATH(1)\"\n"
 	    append msgText "have inedtical $msgF(port_or_node) guid $msgF(guid)."
             set noExiting 1
         }
@@ -985,9 +999,13 @@ proc inform { msgCode args } {
                 if {$msgF(ID) != "PortGUID"} {
                     append msgText " GUID=$NODE($i,PortGUID)"
                 }
-                append msgText " at direct path=$PATH($i)"
+                append msgText " at direct path=\"$PATH($i)\""
                 if {[BoolIsMaked $NODE($i,PortGUID)]} {
-                    append msgText " (a duplicate portGUID)"
+                    if {$msgF(ID) != "PortGUID"} {
+                        append msgText " (a duplicate portGUID)"
+                    } else {
+                        append msgText " (masked to a GUID=$NODE($i,PortGUID))"
+                    }
                 }
                 append msgText "\n"
             }
@@ -1176,8 +1194,6 @@ proc inform { msgCode args } {
             set noExiting 1
             append msgText "Fail to find \"$msgF(fileName)\"" 
         }
-
-
         "-E-ibdiagnet:no.SM" {
             append msgText "Missing master SM in the discover fabric"
             set noExiting 1
@@ -1244,16 +1260,18 @@ proc inform { msgCode args } {
             append msgText "dropped on the link (drop ratio is given).\n"
         }
         "-I-ibdiagnet:bad.link.logic.header" {
-            append msgText "Link Logical State = INIT"
+            append msgText "Links With Logical State = INIT"
         }
         "-I-ibdiagnet:no.bad.link.logic.header" {
             append msgText "Link Logical State Info\n"
             append msgText "-I- No bad Links (with logical state = INIT) were found"
         }
         "-W-ibdiagnet:report.links.init.state" {
-            append msgText "on the direct path $PATH(1)\n"
-            append msgText "From : a $NODE(0,FullType,Spaces) $NODE(0,Name_Port,Spaces) GUID=$NODE(0,PortGUID)\n"
-            append msgText "To   : a $NODE(1,FullType,Spaces) $NODE(1,Name_Port,Spaces) GUID=$NODE(1,PortGUID)"
+            append msgText "link with LOG=INI found at direct path \"$PATH(1)\"\n"
+            append msgText "From : a $NODE(0,FullType,Spaces) $NODE(0,Name,Spaces)"
+            append msgText " GUID=$NODE(0,PortGUID) Port=[lindex [split $PATH(1) ,] end]\n"
+            append msgText "To   : a $NODE(1,FullType,Spaces) $NODE(1,Name,Spaces)"
+            append msgText " GUID=$NODE(1,PortGUID) Port=$NODE(1,EntryPort)"
         }
         "-W-report:one.hca.in.fabric" {
             append msgText "The fabric has only one HCA. No fabric qualities report is issued."
@@ -1376,6 +1394,23 @@ proc inform { msgCode args } {
 	   append msgText "[clock format [clock seconds] -format %H:%M:%S] "
 	   append msgText "$us $address seq=$seq $result"
         }
+
+        "-F-crash:failed.build.lst" {
+            set noExiting 1
+            append msgText "IBdiagnet Failed to build $G(outfiles,.lst). Contact Mellanox officials"
+        }
+        "-F-crash:failed.parse.lst" {
+            append msgText "IBFabric_parseSubnetLinks Failed to parse $G(outfiles,.lst)"
+        }
+        "-F-crash:failed.parse.fdbs" {
+            append msgText "IBFabric_parseFdbFile Failed to parse $G(outfiles,.fdbs)"
+        }
+        "-F-crash:failed.parse.mcfdbs" {
+            append msgText "IBFabric_parseMCFdbFile Failed to parse $G(outfiles,.mcfdbs)"
+        }
+
+
+
    }
    ##################################################
 
@@ -1386,7 +1421,7 @@ proc inform { msgCode args } {
         set msgText [concat [list ""] [list $bar] [linsert $msgText 1 $bar]]
     }
 
-    if { $msgType == "-E-" } {
+    if { ($msgType == "-E-") || ($msgType == "-F-") } {
         if { ! [info exists noExiting] } {
             puts ""
             switch $msgSource {
@@ -1422,6 +1457,9 @@ proc inform { msgCode args } {
                 }
                 "loading" {
                     set exitStatus $G(status,topology.failed)
+                }
+                "crash" {
+                    set exitStatus $G(status,crash)
                 }
                 default {
                     set exitStatus $G(status,illegal.flag.value) 

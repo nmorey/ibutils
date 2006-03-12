@@ -526,6 +526,31 @@ proc SmMadGetByDr { mad cget args } {
         return [eval $cgetCmd]
     }
 }
+
+proc SmMadGetByDrNoDetectBadLinks { mad cget args } {
+    global G errorInfo
+    # Setting the send and cget commands
+    set getCmd [concat "sm${mad}Mad getByDr $args"]
+    if {[regexp {^-} $cget]} {
+        set cgetCmd "sm${mad}Mad cget $cget"
+    } else {
+        set cgetCmd "sm${mad}Mad $cget"
+    }
+    
+    set status -1
+    for { set retry 0 } { $retry < $G(argv,failed.retry) } { incr retry } { 
+	if { [set status [eval $getCmd]] == 0 } { 
+            incr retry
+            break 
+        }
+    }
+    if { $status != 0 } {
+        return -code 1 -errorcode $status
+    } else {
+        return [eval $cgetCmd]
+    }
+}
+
 ##############################
 
 ##############################
@@ -685,7 +710,6 @@ proc DiscoverFabric { PathLimit {startIndex 0}} {
         set boolPortGuidknowen [expr ([lsearch $G(list,PortGuids) $PortGuid]!= -1)]
         
         set duplicatedGuidsFound ""
-
         if {$boolPortGuidknowen && !$boolNodeGuidknowen} {
             set preDrPath $G(DrPathOfGuid,$PortGuid)
             set duplicatedGuidsFound port
@@ -713,8 +737,22 @@ proc DiscoverFabric { PathLimit {startIndex 0}} {
             }
         }
         if {$boolPortGuidknowen && $boolNodeGuidknowen } {
-            set preDrPath $G(DrPathOfGuid,$PortGuid)
+            # it's possible to get here with a second entry to a switch
+            # and the previous entry determent that the switch PortGUID
+            # is duplicated, so we need to check that it's not the source
+            # or a knowen duplicated portGUID
+            # TODO, also valid for NodeGUID
 
+            # Dr for the current PG 
+            set preDrPath $G(DrPathOfGuid,$PortGuid)
+            # NG of current PG
+            set preNodeGuid $G(NodeGuid,$PortGuid)
+            # PG of current NG (use only one because HCa has max of 2 ports)
+            # and for switch its the same
+            set tmpPortGuid [lindex [array get G PortGuid,$NodeGuid:*] 1]
+            # Dr for the current NG PG
+            set preDrPath2 $G(DrPathOfGuid,$tmpPortGuid)
+            
             if {[catch {set type_1 [GetParamValue Type $preDrPath]}]} {
                 set badPathFound 1
                 continue
@@ -723,70 +761,140 @@ proc DiscoverFabric { PathLimit {startIndex 0}} {
                 set badPathFound 1
                 continue
             }
-            if {$type_1 != $type_2} { set duplicatedGuidsFound "node port" }
 
-            if {$type_2 != "SW"} {
-                if {[info exists Neighbor($NodeGuid:$EntryPort)]} {
-                    set duplicatedGuidsFound "node port"
-                }
-            } elseif {[CheckDuplicateGuids $NodeGuid $DirectPath 1]} {
-                set duplicatedGuidsFound "node port"
+            if {[catch {set type_3 [GetParamValue Type $preDrPath2]}]} {
+                set badPathFound 1
+                continue
             }
 
-            if {[info exists MASK(PortMask,$PortGuid)]} {
+            # Check if both were togther before
+            if {$NodeGuid == $preNodeGuid } {
+                #check if you reached the source / orignial
+                # return 1 if not the same : current != original
+                if {[CheckDuplicateGuids $NodeGuid $DirectPath 1]} {
+                    set duplicatedGuidsFound "node port"
+                } else {
+                    # It's OK
+                }
+            } else {
+                # Check if we reached an HCA
+                if {$type_2 != "SW"} {
+                    # We are in HCA, PG is uniqe per entry, it must be duplicated PG
+                    lappend duplicatedGuidsFound "port"
+                    if {$type_3 != "SW"} {
+                        if {[info exists Neighbor($preNodeGuid:$EntryPort)]} {
+                            lappend duplicatedGuidsFound "node"
+                        } else {
+                            # It's NG is o.k. - reentering HCA
+                        }
+                    }
+                } else {
+                    # now in switch if type1 || type2 are HCA they are duplicated
+                    set duplicatedGuidsFound "node port"
+                }
+            }
+
+            set DZ 0
+            if {$DZ && [info exists MASK(PortMask,$PortGuid)] && ($duplicatedGuidsFound != "")} {
                 foreach portMask $MASK(PortMask,$PortGuid) {
                     set preDrPath $G(DrPathOfGuid,$portMask)
                     set nodeGuid $G(NodeGuid,$portMask)
 
                     if {[catch {set type_1 [GetParamValue Type $preDrPath]}]} {
-                        set badPathFound 1
                         continue
                     }           
+
                     if {$type_1 != $type_2} { continue }
                     if {$type_1 != "SW"} {
                         if {[info exists Neighbor($NodeGuid:$EntryPort)]} {
                             continue
                         }
-                    } elseif {[CheckDuplicateGuids $NodeGuid $preDrPath 1]} {
+                    } elseif {[CheckDuplicateGuids $nodeGuid $DirectPath 1]} {
                         continue
                     }
                     set duplicatedGuidsFound ""
                     set PortGuid $portMask
+                    # TODO CHECK IT OUT
                     set NodeGuid $nodeGuid
                     break;
                 }
             }
         }
+        
+        if {[lsearch $duplicatedGuidsFound port]!= -1} {
+            # Check if you encounter a knowen duplicate Guid or it's a new one
+            # No - set a new mask GUID, 
+            # Yes - set the current portGUID to the masked one, and break from here
+            set portAllreadyMasked 0
 
-        foreach element $duplicatedGuidsFound {
-            if {$element == "port"} {
-                set tmpGuid $PortGuid
+            if {[info exists MASK(PortMask,$PortGuid)]} {
+                foreach portMask $MASK(PortMask,$PortGuid) {
+                    set preDrPath $G(DrPathOfGuid,$portMask)
+                    set nodeGuid $G(NodeGuid,$portMask)
+                    if {($nodeGuid != $NodeGuid) && (![BoolIsMaked $nodeGuid])} {
+                        continue
+                    }
+                    if {[CheckDuplicateGuids $nodeGuid $DirectPath 1]} {
+                        continue
+                    }
+                    set portAllreadyMasked 1
+                    set PortGuid $portMask
+                    set NodeGuid $nodeGuid
+                    set duplicatedGuidsFound ""
+                    break;
+                }
+            }
+            if {!$portAllreadyMasked} {
+                set preDrPath $G(DrPathOfGuid,$PortGuid)
+
                 if {![info exists DUPandZERO($PortGuid,PortGUID)]} {
                     lappend DUPandZERO($PortGuid,PortGUID) $preDrPath
                 }
                 lappend DUPandZERO($PortGuid,PortGUID) $DirectPath
-            } else {
-                set tmpGuid $NodeGuid
+
+                set currentMaskGuid [GetCurrentMaskGuid]
+                set MASK(PortGuid,$currentMaskGuid) $PortGuid
+                lappend MASK(PortMask,$PortGuid) $currentMaskGuid
+                set PortGuid $currentMaskGuid
+                AdvncedMaskGuid
+            }
+        }
+        if {[lsearch $duplicatedGuidsFound node]!= -1} {
+            # Check if you encounter a knowen duplicate Guid or it's a new one
+            # No - set a new mask GUID, 
+            # Yes - set the current nodeGUID to the masked one, and break from here
+            set nodeAllreadyMasked 0
+            if {[info exists MASK(NodeMask,$NodeGuid)]} {
+                foreach nodeMask $MASK(NodeMask,$NodeGuid) {
+                    set tmpPortGuid [lindex [array get G PortGuid,$nodeMask:*] 1]
+                    if {($tmpPortGuid != $PortGuid) && (![BoolIsMaked $tmpPortGuid])} {
+                        continue
+                    }
+                    if {[CheckDuplicateGuids $nodeMask $DirectPath 1]} {
+                        continue
+                    }
+                    set nodeAllreadyMasked 1
+                    set NodeGuid $NodeMask
+                    set PortGuid $tmpPortGuid
+                    set duplicatedGuidsFound ""
+                    break;
+                }
+            }
+            if {!$nodeAllreadyMasked} {
+                set tmpPortGuid [lindex [array get G PortGuid,$NodeGuid:*] 1]
+                set preDrPath $G(DrPathOfGuid,$tmpPortGuid)
+
                 if {![info exists DUPandZERO($NodeGuid,NodeGUID)]} {
                     lappend DUPandZERO($NodeGuid,NodeGUID) $preDrPath
                 }
                 lappend DUPandZERO($NodeGuid,NodeGUID) $DirectPath
+
+                set currentMaskGuid [GetCurrentMaskGuid]
+                set MASK(NodeGuid,$currentMaskGuid) $NodeGuid
+                lappend MASK(NodeMask,$NodeGuid) $currentMaskGuid
+                set NodeGuid $currentMaskGuid
+                AdvncedMaskGuid
             }
-        }
-        
-        if {[lsearch $duplicatedGuidsFound port]!= -1} {
-            set currentMaskGuid [GetCurrentMaskGuid]
-            set MASK(PortGuid,$currentMaskGuid) $PortGuid
-            lappend MASK(PortMask,$PortGuid) $currentMaskGuid
-            set PortGuid $currentMaskGuid
-            AdvncedMaskGuid
-        }
-        if {[lsearch $duplicatedGuidsFound node]!= -1} {
-            set currentMaskGuid [GetCurrentMaskGuid]
-            set MASK(NodeGuid,$currentMaskGuid) $NodeGuid
-            lappend MASK(NodeMask,$NodeGuid) $currentMaskGuid
-            set NodeGuid $currentMaskGuid
-            AdvncedMaskGuid
         }
 
         set G(GuidByDrPath,$DirectPath) $PortGuid
@@ -944,7 +1052,7 @@ proc DiscoverFabric { PathLimit {startIndex 0}} {
 #  OUTPUT	
 #       return 0/1 if Neighbor exists/not exists (resp.)
 #  DATAMODEL	
-#   G(Neighbor,<NodeGuid>:<PN>) 
+#   Neighbor(<NodeGuid>:<PN>) 
 proc SetNeighbor {_directPath _nodeGuid _entryPort} {
     global G Neighbor
     set previousDirectPath [lrange $_directPath 0 end-1]
@@ -1002,11 +1110,11 @@ proc DiscoverHiddenFabric {} {
 proc CheckDuplicateGuids { _NodeGuid _DirectPath {_checks 1}} {
     global Neighbor
     set i 0
-
+    set noResponseToMad 0
     # we can not DR out of HCA so we can return 1 anyway
     ## If Checking a HCA, one cannot enter and exit the HCA,
     ### So instead we will run the smNodeInfoMad on the partiel Dr.
-    foreach name [array names Neighbor $_NodeGuid,*] {
+    foreach name [array names Neighbor $_NodeGuid:*] {
         if {$i >= $_checks} { break }
         incr i
         if {[regexp {0x[0-9a-fA-F]+:([0-9]+)} $name all PN]} {
@@ -1014,8 +1122,14 @@ proc CheckDuplicateGuids { _NodeGuid _DirectPath {_checks 1}} {
 
             #Found A port that once wasn't down and now it is DWN
             #if { [GetParamValue LOG $_DirectPath $PN] == "DWN"} { return 1 }
-            
-            if {[catch {set NodeInfo [SmMadGetByDr NodeInfo dump "$_DirectPath $PN"]}]} {
+
+            #All knowen exits return error = it's not the same node
+            # we use SmMadGetByDrNoDetectBadLinks, because we assume the direct path
+            # exists (in order to compare its endNode with the knowen node endNode)
+            # and the link is ACTIVE, its not have to be so no need fr setting that dr
+            # as Bad link also.
+            if {[catch {set NodeInfo [SmMadGetByDrNoDetectBadLinks NodeInfo dump "$_DirectPath $PN"]}]} {
+                incr noResponseToMad
                 continue
             }
             set NodeGuid [WordAfterFlag $NodeInfo "-node_guid"]
@@ -1024,6 +1138,11 @@ proc CheckDuplicateGuids { _NodeGuid _DirectPath {_checks 1}} {
                 return 1
             }
         }
+    }
+    # if all the checks ended up with no response - we assume it's
+    # not the same node
+    if {$i == $noResponseToMad} {
+        return 1
     }
     return 0
 }
@@ -1055,7 +1174,6 @@ proc DumpBadLidsGuids { args } {
 	}
         # use eval on the next line because $paramList is a list 
         if {[catch {eval inform "-E-discover:zero/duplicate.IDs.found" -ID $ID -value $value $paramList} e]} {
-            puts "$errorInfo $e"
             continue;
         }
     }
@@ -1601,10 +1719,10 @@ proc RetriveRealPort { _currentMaskGuid} {
     global MASK
     set tmpGuid $_currentMaskGuid
     while {[BoolIsMaked $tmpGuid]} {
-        if {![info exists MASK(PortMask,$tmpGuid)]} {
+        if {![info exists MASK(PortGuid,$tmpGuid)]} {
             return -1
         }
-        set tmpGuid $MASK(PortMask,$tmpGuid)
+        set tmpGuid $MASK(PortGuid,$tmpGuid)
     }
     return $tmpGuid
 }
@@ -2014,10 +2132,17 @@ proc DumpSMReport { {_fileName stdout} }  {
 proc matchTopology { lstFile args } {
     global G
 
+    if {[info exists G(lst.failed)]} {
+        inform "-F-crash:failed.build.lst"
+        return 0
+    }
+
     putsIn80Chars " "
     if { [info exists G(argv,report)] || [info exists G(argv,topo.file)] } {
 	set G(fabric,.lst) [new_IBFabric]
-	IBFabric_parseSubnetLinks $G(fabric,.lst) $lstFile
+	if {[IBFabric_parseSubnetLinks $G(fabric,.lst) $lstFile]} {
+            inform "-F-crash:failed.parse.lst"
+        }
     }
     if { ! [info exists G(argv,topo.file)] } { return 0}
 
@@ -2059,7 +2184,6 @@ proc matchTopology { lstFile args } {
 		 [regsub $missingLinkExp  "$line" {\1 \2} link] } {
 	    set G(missing.links) [concat $G(missing.links) $link]
 	}
-        #DZ puts $G(missing.links)
         set old_line $line
     }
 
@@ -2437,6 +2561,7 @@ proc name2Lid1 {remotePtr localPortPtr destPortPtr allreadyVisited} {
 ##############################
 proc reportFabQualities { } { 
     global G SM
+    if {[info exists G(lst.failed)]} {return }
     if { ! [info exists G(argv,report)] } { return }
     set nodesNum [llength [array names G "NodeInfo,*"]]
     set swNum [llength [array names G "PortInfo,*:0"]]
@@ -2459,16 +2584,19 @@ proc reportFabQualities { } {
 
     inform "-I-ibdiagnet:report.fab.qualities.header"
 
-
     # general reports
-    IBFabric_parseFdbFile $fabric $G(outfiles,.fdbs)
-    IBFabric_parseMCFdbFile $fabric $G(outfiles,.mcfdbs)
+    if {[IBFabric_parseFdbFile $fabric $G(outfiles,.fdbs)]} {
+        inform "-F-crash:failed.parse.fdbs"
+    }
+
+    if {[IBFabric_parseMCFdbFile $fabric $G(outfiles,.mcfdbs)]} {
+        inform "-F-crash:failed.parse.mcfdbs"
+    }
 
     if {![file exists $G(outfiles,.lst)]} {
         inform "-E-ibdiagnet:no.lst.file" -fileName $G(outfiles,.lst)
         return 0
     }
-
 
     # verifying CA to CA routes
     set report [ibdmVerifyCAtoCARoutes $fabric]
@@ -2563,10 +2691,11 @@ proc GetEntryPort { _directPath args} {
         return -code 1 -errorinfo "Can't retrive entry port"
     }
 
-    if {[catch {set tmpGuid [GetParamValue NodeGuid $_directPath -byDr]}]} {
+    if {[catch {set tmpGuid [GetParamValue NodeGUID [lrange $_directPath 0 end-1] -byDr]}]} {
         return ""
     } else {
-        set entryPort $Neighbor($tmpGuid,[lindex $_directPath end])
+        set entryPort $Neighbor($tmpGuid:[lindex $_directPath end])
+        return [lindex [split $entryPort :] end ]
     }
 }
 ##############################
@@ -2670,17 +2799,17 @@ proc GetParamValue { parameter DirectPath args } {
 proc FormatInfo {_value _parameter _directRoute} {
     global G INFO_LST MASK
     set value $_value
-    if {"PortGUID" == $_parameter } {
-        if {[info exists MASK(PortGuid,$_value)]} {
-            return $G(GuidByDrPath,$_directRoute)
-        }
-    }
-    if {"NodeGUID" == $_parameter } {
-        if {[info exists MASK(NodeGuid,$_value)]} {
-            set tmpPortGuid $G(GuidByDrPath,$_directRoute)
-            return $G(NodeGuid,$tmpPortGuid)
-        }
-    }
+    #if {"PortGUID" == $_parameter } {
+    #    if {[info exists MASK(PortMask,$_value)]} {
+    #        set value $G(GuidByDrPath,$_directRoute)
+    #    }
+    #}
+    #if {"NodeGUID" == $_parameter } {
+    #    if {[info exists MASK(NodeMask,$_value)]} {
+    #        set tmpPortGuid $G(GuidByDrPath,$_directRoute)
+    #        set value $G(NodeGuid,$tmpPortGuid)
+    #    }
+    #}
     ParseOptionsList $INFO_LST($_parameter)
     ## Formatting $value
     catch { set value [format %x $value] }
@@ -2746,22 +2875,20 @@ proc lstInfo { type DirectPath port } {
 	    append lstItems "PHY LOG SPD" 
 	}
     }
-
+    
     foreach parameter $lstItems {
 	# The following may fail - then the proc will return with error
+        # Knowen Issue - GetParamValue will return 
         regsub {^0x} [GetParamValue $parameter $DirectPath $port] {} value
 	# .lst formatting of parameters and their values
 	if {[WordInList $parameter "VenID DevID Rev LID PN"]} {
 	    set value [string toupper $value]
 	}
         switch -exact -- $parameter {
-            "PortGUID"  {
-                if {[info exists MASK(PortMask,$value)]} {
-                    set value $MASK(PortMask,$value)
-                }
-                lappend Info "${parameter}${sep}${value}" 
-                 
-            }
+            "Ports"     { set tmpPorts  $value }
+            "PN"        { set tmpPN     $value }
+        }
+        switch -exact -- $parameter {
             "Type"	{ 
                 # Replace CA with CA-SM 
                 if {$value == "CA"} {
@@ -2782,6 +2909,13 @@ proc lstInfo { type DirectPath port } {
 	    "VenID"	{ lappend Info "${parameter}${sep}00${value}" }
 	    default	{ lappend Info "${parameter}${sep}${value}" }
 	}
+    }
+    if {$type == "port"} {
+        if {[info exists tmpPorts] && [info exists tmpPN]} {
+            if {$tmpPorts < $tmpPN} {
+                set G(lst.failed) 1
+            }
+        }
     }
     return [join $Info]
 }
