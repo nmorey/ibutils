@@ -62,6 +62,7 @@ if {[catch {DiscoverFabric 0} e]} {
 }
 
 ### Write the .lst
+writeMasksFile
 writeLstFile
 
 ### match topology (if topology was given)
@@ -75,7 +76,6 @@ RereadLongPaths
 writeMasksFile
 writeFdbsFile 
 writeMcfdbsFile
-writeMasksFile
 writeSMFile
 
 ### output info about bad/broken links
