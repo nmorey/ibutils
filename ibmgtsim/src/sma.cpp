@@ -367,7 +367,7 @@ void IBMSSma::initPortInfo()
       ib_port_info_set_port_state( &tmpPortInfo, IB_LINK_INIT);
       ib_port_info_set_link_speed_sup( linkSpeed, &tmpPortInfo);
       // LinkSpeedEnabled and LinkSpeedActive
-      tmpPortInfo.link_speed = linkSpeed | (linkSpeed << 4);
+      tmpPortInfo.link_speed = linkSpeed | (pNodePortData->speed << 4);
            
     }
        
