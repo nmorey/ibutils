@@ -36,6 +36,8 @@ rm -rf $RPM_BUILD_DIR/%{name}-%{ver}
 %{_libdir}/ibdiagpath1.0
 %{_bindir}/ibdiagnet
 %{_bindir}/ibdiagpath
+%{_mandir}/ibdiagnet.1
+%{_mandir}/ibdiagpath.1
 
 %changelog
 * Tue Mar 14 2006 Vladimir Sokolovsky <vlad@mellanox.co.il>
