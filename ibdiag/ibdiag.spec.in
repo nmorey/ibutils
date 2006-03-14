@@ -33,8 +33,12 @@ rm -rf $RPM_BUILD_DIR/%{name}-%{ver}
 %files
 %defattr(-,root,root)
 %{_libdir}/ibdiagnet1.0
+%{_libdir}/ibdiagpath1.0
 %{_bindir}/ibdiagnet
+%{_bindir}/ibdiagpath
 
 %changelog
+* Tue Mar 14 2006 Vladimir Sokolovsky <vlad@mellanox.co.il>
+- Added ibdiagpath utility
 * Wed Jan 18 2006 Vladimir Sokolovsky <vlad@mellanox.co.il>
 - Initial packaging for gen2 stack
