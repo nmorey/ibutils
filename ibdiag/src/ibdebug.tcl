@@ -117,7 +117,7 @@
 #  OUTPUT	NULL
 proc InitalizeIBdiag {} {
     global G argv argv0 InfoArgv INFO_LST MASK SECOND_PATH
-    set G(version.num) 1.2.0rc1
+    set G(version.num) 1.2.0rc4
     set G(tool) [file rootname [file tail $argv0]]
     source [file join [file dirname [info script]] ibdebug_if.tcl]
     set G(start.clock.seconds) [clock seconds]
@@ -1192,6 +1192,7 @@ proc DumpBadLinksLogic {} {
     } else {
         inform "-I-ibdiagnet:bad.link.logic.header"
         foreach link $LINK_STATE {                                                        
+            if {[PathIsBad $link] > 1} {continue}
             set paramlist "-DirectPath0 \{[lrange $link 0 end-1]\} -DirectPath1 \{$link\}"
             eval inform "-W-ibdiagnet:report.links.init.state" $paramlist                 
         }
@@ -2234,7 +2235,9 @@ proc DrPath2Name { DirectPath args } {
     global G 
     set fullName [WordInList "-fullName" $args]
     set nameOnly [WordInList "-nameOnly" $args]
-    set EntryPort 0
+    if {[catch {set EntryPort [GetEntryPort $DirectPath]}]} {
+        set EntryPort 0
+    }
     if {[set addPort [WordInList "-port" $args]]} { 
 	set port [WordAfterFlag $args "-port"]
         set EntryPort $port
@@ -2694,8 +2697,12 @@ proc GetEntryPort { _directPath args} {
     if {[catch {set tmpGuid [GetParamValue NodeGUID [lrange $_directPath 0 end-1] -byDr]}]} {
         return ""
     } else {
-        set entryPort $Neighbor($tmpGuid:[lindex $_directPath end])
-        return [lindex [split $entryPort :] end ]
+        if {[info exists Neighbor($tmpGuid:[lindex $_directPath end])]} {
+            set entryPort $Neighbor($tmpGuid:[lindex $_directPath end])
+            return [lindex [split $entryPort :] end ]
+        } else {
+            return ""
+        }
     }
 }
 ##############################
