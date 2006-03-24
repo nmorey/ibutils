@@ -1088,9 +1088,9 @@ proc inform { msgCode args } {
 	    append msgText "$rumSMmsg."
         }
         "-E-ibdiagpath:lid.route.deadend" {
-	    set path2Switch [lreplace $DirectPath end end]
-	    set port [lindex $DirectPath end] \
-	        set switchname "[path=\"$path2Switch\" [DrPath2Name $path2Switch -fullName]"
+            set path2Switch [ArrangeDR [lrange [split $PATH(0) ,] 0 end-1]]
+            set port [lindex [split $PATH(0) ,] end]
+	    set switchname "path=\"$path2Switch\" [DrPath2Name $path2Switch -fullName]"
 	    append msgText "LID-route deadend was detected.\n"
 	    append msgText "Entry $msgF(lid) of LFT of the following switch\n"
 	    append msgText "$switchname\n"

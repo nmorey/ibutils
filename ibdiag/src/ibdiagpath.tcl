@@ -237,7 +237,7 @@ proc ibdiagpathMain {} {
             scan $entry {%s %s %s} parameter err value
             switch -exact -- $err {
                 "valueChange" {
-                    regsub "->" $value " - " exp
+                    regsub -- "->" $value " - " exp
                     set value [expr - ($exp)]
                     lappend badValues "$parameter=$value"
                 }
