@@ -62,6 +62,14 @@ proc ibdiagpathMain {} {
         }
     }
     
+    # direct routing
+    if [info exists G(argv,direct.route)] {
+        set targets [list [split $G(argv,direct.route) ","]]
+        if { $G(argv,direct.route) == "" } {
+            set addressingLocalPort 1
+        }
+    }
+
     # CHECK some Where that the names are legal
     if [info exists G(argv,by-name.route)] {
         array set mergedNodesArray [join [IBFabric_NodeByName_get $G(fabric,.topo)]]
