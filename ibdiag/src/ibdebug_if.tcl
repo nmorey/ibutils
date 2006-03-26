@@ -1061,20 +1061,20 @@ proc inform { msgCode args } {
         "-E-ibdiagpath:direct.path.no.such.port" {
             append msgText "Illegal direct route was issued.\nThe following device%n"
  	    append msgText "$NODE(0,FullName)%n"
- 	    append msgText "does not have port number $NODE(0,EntryPort)."
+ 	    append msgText "does not have port number $msgF(port)."
         }
         "-E-ibdiagpath:link.down" {
             append msgText "Illegal route was issued.\n"
-            append msgText "Port \#$NODE(0,EntryPort), of the following device, is DOWN.%n"
+            append msgText "Port \#$msgF(port), of the following device, is DOWN.%n"
  	    append msgText "$NODE(0,FullName)"
         }
         "-E-ibdiagpath:route.failed" {
             append msgText "Illegal route was issued.%n"
- 	    append msgText "Can not exit through Port \#$NODE(0,EntryPort)"
+ 	    append msgText "Can not exit through Port \#$msgF(port)"
             append msgText "of the following device:%n$NODE(0,FullName)"
         }
         "-E-localPort:local.port.not.active" { 
-            append msgText "Local link (port \#$NODE(0,EntryPort) of local device) is " 
+            append msgText "Local link (port \#$msgF(port) of local device) is " 
  	    append msgText "in $msgF(state) state.\n"
   	    append msgText "(PortCounters may be queried only over ACTIVE links)."
         }
@@ -1088,7 +1088,7 @@ proc inform { msgCode args } {
 	    append msgText "$rumSMmsg."
         }
         "-E-ibdiagpath:lid.route.deadend" {
-            set port $NODE(0,EntryPort)
+            set port $msgF(port)
             set switchname $NODE(0,FullName)
             append msgText "LID-route deadend was detected.\n"
 	    append msgText "Entry $msgF(lid) of LFT of the following switch\n"

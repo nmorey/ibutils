@@ -1328,7 +1328,7 @@ proc DiscoverPath { Path2Start node } {
             # If we reached a HCA
             if { ( $NodeType != "SW" ) && ( $DirectPath != $Path2Start ) } {
                 inform "-E-ibdiagpath:lid.route.deadend" \
-                -DirectPath "$DirectPath" -lid $destinationLid 
+                    -DirectPath [lrange $DirectPath 0 end-1] -lid $destinationLid -port [lindex $DirectPath 0]
             } 
             
             # If we returned to an already-visited node: we are in a lid-loop -> exit
