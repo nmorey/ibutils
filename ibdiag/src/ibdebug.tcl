@@ -1353,7 +1353,7 @@ proc DiscoverPath { Path2Start node } {
                 set exitPort [expr [lindex $FDBsBlock $LidMod64]]
                 if { ($exitPort == "0x00") } {
                     inform "-E-ibdiagpath:lid.route.deadend" \
-                    -DirectPath "$DirectPath" -lid $destinationLid 
+                    -DirectPath [lrange $DirectPath 0 end-1] -lid $destinationLid -port [lindex $DirectPath 0]
                 }
                 
                 if { ($exitPort == "0xff")} {
@@ -2237,6 +2237,10 @@ proc DrPath2Name { DirectPath args } {
     set nameOnly [WordInList "-nameOnly" $args]
     if {[catch {set EntryPort [GetEntryPort $DirectPath]}]} {
         set EntryPort 0
+    } else {
+        if {$EntryPort == ""} {
+            set EntryPort 0
+        }
     }
     if {[set addPort [WordInList "-port" $args]]} { 
 	set port [WordAfterFlag $args "-port"]
