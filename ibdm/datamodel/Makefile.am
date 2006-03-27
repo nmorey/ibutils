@@ -35,7 +35,7 @@
 # we would like to export these headers during install
 pkginclude_HEADERS = Fabric.h \
 		 SubnMgt.h TraceRoute.h CredLoops.h Regexp.h \
-		 TopoMatch.h SysDef.h ibnl_parser.h
+		 TopoMatch.h SysDef.h Congestion.h ibnl_parser.h
 
 # ibdm shared library version triplet is:
 # API_ID:API_VER:NUM_PREV_API_SUP = x:y:z
@@ -55,7 +55,7 @@ AM_YFLAGS = -d
 
 common_SOURCES = Fabric.cpp \
 	SubnMgt.cpp TraceRoute.cpp CredLoops.cpp TopoMatch.cpp SysDef.cpp \
-	LinkCover.cpp ibnl_parser.cc ibnl_scanner.cc
+	LinkCover.cpp Congestion.cpp ibnl_parser.cc ibnl_scanner.cc
 
 # Support debug mode through config variable
 if DEBUG
