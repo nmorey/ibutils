@@ -220,9 +220,11 @@ class IBPort {
                 IBLinkWidth w = IB_LINK_WIDTH_4X,
                 IBLinkSpeed s = IB_LINK_SPEED_2_5);
 
+  // disconnect the port. Return 0 if successful
+  int disconnect(int duringSysPortDisconnect = 0);
+
   inline uint64_t guid_get() {return guid;};
   void guid_set(uint64_t g);
-
 };
 
 // 
@@ -332,6 +334,10 @@ class IBSysPort {
   void connect (IBSysPort *p_otherSysPort,
                 IBLinkWidth width = IB_LINK_WIDTH_4X,
                 IBLinkSpeed speed = IB_LINK_SPEED_2_5);
+
+  // disconnect the SysPort (and ports). Return 0 if successful
+  int disconnect(int duringPortDisconnect = 0);
+
 };
 
 // 

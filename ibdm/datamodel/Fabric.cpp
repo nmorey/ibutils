@@ -149,6 +149,34 @@ IBPort::connect (IBPort *p_otherPort,
   p_remotePort->width = width = w;
 }
 
+// disconenct two ports
+int
+IBPort::disconnect(int duringSysPortDisconnect)
+{
+  if (!p_remotePort) 
+  {
+    cout << "-W- Trying to disconenct non connected port." << endl;
+    return(1);
+  }
+
+  if (p_remotePort->p_remotePort != this)
+  {
+    cout << "-W- Remote port does not point back! Disconnecting self only." << endl;
+    p_remotePort = NULL;
+    return(1);
+  }
+  IBPort *p_remPort = p_remotePort;
+  p_remotePort->p_remotePort = NULL;
+  p_remotePort = NULL;
+  if (FabricUtilsVerboseLevel & FABU_LOG_VERBOSE) 
+    cout << "-I- Disconnected port:" << getName() << " from:" << p_remPort->getName() << endl;
+
+  // might need to treat the sys port too - but mark it duringPortDisconenct
+  if (p_sysPort && ! duringSysPortDisconnect) return(p_sysPort->disconnect(1));
+
+  return(0);
+}
+
 //////////////////////////////////////////////////////////////////////////////
 //
 // CLASS IBNode:
@@ -475,6 +503,34 @@ IBSysPort::connect (IBSysPort *p_otherSysPort,
          << p_system->name << "/" << name << " - " 
          << p_remoteSysPort->p_system->name << "/" 
          << p_remoteSysPort->name << endl;
+}
+
+int
+IBSysPort::disconnect(int duringPortDisconnect)
+{
+  if (!p_remoteSysPort) 
+  {
+    cout << "-W- Trying to disconenct non connected system port." << endl;
+    return(1);
+  }
+
+  if (p_remoteSysPort->p_remoteSysPort != this)
+  {
+    cout << "-W- Remote port does not point back! Disconnecting self only." << endl;
+    p_remoteSysPort = NULL;
+    return(1);
+  }
+
+  IBSysPort *p_remSysPort = p_remoteSysPort;
+  p_remoteSysPort->p_remoteSysPort = NULL;
+  p_remoteSysPort = NULL;
+  if (FabricUtilsVerboseLevel & FABU_LOG_VERBOSE) 
+    cout << "-I- Disconnected system port:" << name << " from:" << p_remSysPort->name << endl;
+  
+  // might need to treat the port too - but mark it duringPortDisconenct
+  if (p_nodePort && ! duringPortDisconnect) return(p_nodePort->disconnect(1));
+
+  return(0);
 }
 
 // Constructor:
