@@ -48,11 +48,13 @@
 #include <stdlib.h>
 #include <getopt.h>
 #include <inttypes.h>
+#include <sstream>
 #include "Fabric.h"
 #include "SubnMgt.h"
 #include "CredLoops.h"
 #include "TraceRoute.h"
 #include "TopoMatch.h"
+#include "Congestion.h"
 
 # if __WORDSIZE == 64
 #  define __PRI64_PREFIX   "l"
@@ -735,6 +737,16 @@
   $target = &temp;
 }
 
+
+%typemap(tcl8,argout) ostringstream & {
+  Tcl_SetStringObj($target, $source->str().c_str(), 
+                   $source->str().size() + 1);
+}
+
+%typemap(tcl8,ignore) ostringstream &(ostringstream tempStream) {
+  $target = &tempStream;
+}
+
 %typemap(tcl8,out) boolean_t * {
   if (*$source) {
 	 Tcl_SetStringObj($target,"TRUE", 4);
@@ -931,8 +943,11 @@ class IBPort {
   void connect (IBPort *p_otherPort,
                 IBLinkWidth w = DefaultLinkWidth,
                 IBLinkSpeed s = DefaultLinkSpeed);
-
   // connect the port to another node port
+
+  int disconnect();
+  // disconnect the port. Return 0 if successful
+
 };
 
 // 
@@ -1016,6 +1031,10 @@ class IBSysPort {
                 IBLinkWidth width = UnknownLinkWidth,
                 IBLinkSpeed speed = UnknownLinkSpeed);
   // connect two SysPorts
+
+  int disconnect();
+  // disconnect the SysPort (and ports). Return 0 if successful
+
 };
 
 // 
@@ -1287,6 +1306,27 @@ TopoMergeDiscAndSpecFabrics(
   IBFabric  *p_merged_fabric);    // Output merged fabric (allocated internaly)
 // Build a merged fabric from a matched discovered and spec fabrics.
 // NOTE: you have to run ibdmMatchFabrics before calling this routine. 
+
+%subsection "Congestion Analysis Utilities",before,pre
+
+%name(ibdmCongInit) int CongInit(IBFabric *p_fabric);
+// Initialize a fabric for congestion analysis
+
+%name(ibdmCongCleanup) int CongCleanup(IBFabric *p_fabric);
+// Cleanup congestion analysis data and free memory
+
+%name(ibdmCongClear) int CongZero(IBFabric *p_fabric);
+// Clear the congestion analysis path trace. Does not affect max paths
+
+%name(ibdmCongTrace) 
+int CongTrackPath(IBFabric *p_fabric, uint16_t srcLid, uint16_t dstLid);
+// Trace the path from source to destination tracking the visited links
+
+%name(ibdmCongReport) int CongReport(IBFabric *p_fabric, ostringstream &out);
+// Report the max path count and histogram
+
+%name(ibdmCongDump) int CongDump(IBFabric *p_fabric, ostringstream &out);
+// provide detailed dump of the link usage
 
 //
 // FIX OF SWIG TO SUPPORT NAME ALTERNATE MANGLING 
