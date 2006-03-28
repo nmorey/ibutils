@@ -456,7 +456,7 @@ SWIGEXPORT(int,Ibdm_Init)(Tcl_Interp *);
   int ibdmGetObjPtrByTclName(Tcl_Obj *objPtr, void **ptr) {
 	 /* we need to parse the name and get the type etc. */
 	 char buf[256];
-	 char *type, *name, *fabIdxStr;
+	 char *type, *name=0, *fabIdxStr;
 	 char *colonIdx, *slashIdx;
 	 int fabricIdx;
 	 *ptr = NULL;
@@ -16932,9 +16932,9 @@ SWIGEXPORT(int,Ibdm_Init)(Tcl_Interp *interp) {
     SWIG_AlternateNameToObj  ["_IBSysPort_p"] = &ibdmGetObjPtrByTclName;
 
     SWIG_AlternateObjMangling["_IBNode_p"] = &ibdmGetObjTclNameByPtr;
-    SWIG_AlternateObjMangling["_IBNode_p"] = &ibdmGetObjTclNameByPtr;
+    SWIG_AlternateNameToObj  ["_IBNode_p"] = &ibdmGetObjPtrByTclName;
 
-    SWIG_AlternateNameToObj  ["_IBPort_p"] = &ibdmGetObjPtrByTclName;
+    SWIG_AlternateObjMangling["_IBPort_p"] = &ibdmGetObjTclNameByPtr;
     SWIG_AlternateNameToObj  ["_IBPort_p"] = &ibdmGetObjPtrByTclName;
   }
 
