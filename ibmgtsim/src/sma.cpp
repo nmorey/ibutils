@@ -709,8 +709,14 @@ int IBMSSma::mftMad(ibms_mad_msg_t &respMadMsg, ibms_mad_msg_t &reqMadMsg)
     MSGREG(inf2, 'V', "MFT SubnSet !", "mftMad");
     MSGSND(inf2);
 
+	MSGREG(inf9, 'V', "MFT SubnSet $ base_port:$ block:$ entry 0 value:$", "mftMad");
+
     pMftEntryElm = &(pSimNode->switchMftPortsEntry[mftPortEntryIndex])[mftTableEntryIndex];
     memcpy ((void*)(pMftEntryElm), (void*)(pReqMad->data), sizeof(ib_mft_table_t));
+char buff[16];
+	sprintf(buff,"0x%04x", cl_ntoh16(pMftEntryElm->mft_entry[0]));
+	MSGSND(inf9, pSimNode->getIBNode()->name, 
+			mftPortEntryIndex, mftTableEntryIndex, buff);
     memcpy ((void*)(pRespMad->data), (void*)(pReqMad->data), sizeof(ib_mft_table_t));
   }
 
