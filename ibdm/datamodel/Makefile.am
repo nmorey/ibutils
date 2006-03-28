@@ -35,7 +35,7 @@
 # we would like to export these headers during install
 pkginclude_HEADERS = Fabric.h \
 		 SubnMgt.h TraceRoute.h CredLoops.h Regexp.h \
-		 TopoMatch.h SysDef.h Congestion.h ibnl_parser.h
+		 TopoMatch.h SysDef.h Congestion.h ibnl_parser.h ibdm.i
 
 # ibdm shared library version triplet is:
 # API_ID:API_VER:NUM_PREV_API_SUP = x:y:z
@@ -127,7 +127,7 @@ dist-hook:
 	rm -f $(distdir)/common.h
 
 # we need there extra in the distribution as their dependency is not defined
-EXTRA_DIST = swig_alternate_mangling.cpp fixSwigWrapper pkgIndex.tcl
+EXTRA_DIST = swig_alternate_mangling.cpp fixSwigWrapper pkgIndex.tcl ibdm.i
 
 # this actually over write the lib install
 install-exec-am: install-binPROGRAMS 
