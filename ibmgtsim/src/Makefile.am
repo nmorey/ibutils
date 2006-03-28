@@ -49,7 +49,6 @@ else
 INCLUDES		= -I$(with_ibdm)/include $(TCL_CPPFLAGS)
 endif
 
-AM_CPPFLAGS = -I$(INCLUDES) $(OSM_CFLAGS)
 
 bin_PROGRAMS = ibmssh ibmsquit #ibmgtsim test_msgmgr test_client test_server ibmgt_client 
 
@@ -58,11 +57,16 @@ if IBDM_REF_IS_USED
 IBDM_PREFIX=$prefix
 PWD=`pwd`
 IBDM_LIB=-L$(PWD)/../../ibdm/datamodel -libdmcom 
+IBDM_INC=-I$(PWD)/../../ibdm/datamodel
+IBDM_IFC=$(PWD)/../../ibdm/datamodel/ibdm.i
 else
 IBDM_PREFIX=$(with_ibdm)
 IBDM_LIB=-L$(with_ibdm)/lib -libdmcom
+IBDM_INC=-I$(with_ibdm)/include/ibdm
+IBDM_IFC=$(with_ibdm)/include/ibdm/ibdm.i
 endif
 
+AM_CPPFLAGS = -I$(INCLUDES) $(IBDM_INC) $(OSM_CFLAGS)
 LDADD = $(IBDM_LIB) $(OSM_LDFLAGS)
 
 # AM_LDFLAGS = -static
@@ -87,19 +91,19 @@ endif
 ibmssh_LDADD = -libmscli $(IBDM_LIB) $(OSM_LDFLAGS) $(TCL_LIBS)
 
 # SWIG FILES:
-SWIG_IFC_FILES= $(srcdir)/sim.i $(srcdir)/ib_types.i $(srcdir)/ibdm.i \
+SWIG_IFC_FILES= $(srcdir)/sim.i $(srcdir)/ib_types.i $(IBDM_IFC) \
    $(srcdir)/inttypes.i $(srcdir)/mads.i
 
 # only generate the swig wrappers if they do not exist...
 # so we avoid un-needed swig dependency
 if HAS_SWIG
 $(srcdir)/ibms_wrap.cpp: @MAINTAINER_MODE_TRUE@ $(SWIG_IFC_FILES)
-	swig -I$(srcdir) -c++ -dhtml -tcl8 -o swig_wrap.c $(srcdir)/sim.i
+	swig -I$(srcdir) $(IBDM_INC) -c++ -dhtml -tcl8 -o swig_wrap.c $(srcdir)/sim.i
 	$(srcdir)/../utils/fixSwigWrapper -g -s -p -o $@
 	rm -f swig_wrap.c	
 
 $(srcdir)/ibmssh_wrap.cpp: @MAINTAINER_MODE_TRUE@ $(SWIG_IFC_FILES)
-	swig -I$(srcdir) -c++ -dhtml -tcl8  -ltclsh.i -o swig_wrap.c $(srcdir)/sim.i
+	swig -I$(srcdir) $(IBDM_INC) -c++ -dhtml -tcl8  -ltclsh.i -o swig_wrap.c $(srcdir)/sim.i
 	$(srcdir)/../utils/fixSwigWrapper -g -s -p -r ibms -o $@
 	rm -f swig_wrap.c
 endif
