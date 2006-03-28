@@ -372,7 +372,7 @@ struct madNotice128
 }
 
 %addmethods madNotice128 {
-  int send_set(
+  int send_trap(
     IBMSNode *pFromNode,
     uint8_t   fromPort,  
     uint16_t  destLid)
@@ -382,7 +382,7 @@ struct madNotice128
                 fromPort, 
                 destLid,
                 IB_MCLASS_SUBN_LID,
-                IB_MAD_METHOD_SET,
+                IB_MAD_METHOD_TRAP,
                 cl_ntoh16(IB_MAD_ATTR_NOTICE),
 		0,
                 (uint8_t*)self,
@@ -429,7 +429,7 @@ struct madNotice129
 }
 
 %addmethods madNotice129 {
-  int send_set(
+  int send_trap(
     IBMSNode *pFromNode,
     uint8_t   fromPort,  
     uint16_t  destLid)
@@ -439,7 +439,7 @@ struct madNotice129
                 fromPort, 
                 destLid,
                 IB_MCLASS_SUBN_LID,
-                IB_MAD_METHOD_SET,
+                IB_MAD_METHOD_TRAP,
                 cl_ntoh16(IB_MAD_ATTR_NOTICE),
 		0,
                 (uint8_t*)self,
@@ -489,7 +489,7 @@ struct madNotice144
 }
 
 %addmethods madNotice144 {
-  int send_set(
+  int send_trap(
     IBMSNode *pFromNode,
     uint8_t   fromPort,  
     uint16_t  destLid)
@@ -499,7 +499,7 @@ struct madNotice144
                 fromPort, 
                 destLid,
                 IB_MCLASS_SUBN_LID,
-                IB_MAD_METHOD_SET,
+                IB_MAD_METHOD_TRAP,
                 cl_ntoh16(IB_MAD_ATTR_NOTICE),
 		0,
                 (uint8_t*)self,
