@@ -371,7 +371,7 @@ SWIGEXPORT(int,Ibdm_Init)(Tcl_Interp *);
   */
   IBFabric *new_IBFabric(void) {
 	 IBFabric *p_fabric = new IBFabric();
-    int i;
+    unsigned int i;
 	 if (p_fabric) {
       /* look for an open index in the vector of fabrics */
       for (i = 0; i < ibdm_fabrics.size(); i++)
@@ -1853,7 +1853,6 @@ static int _wrap_ibdmReportNonUpDownCa2CaPaths(ClientData clientData, Tcl_Interp
     Tcl_Obj *p_tclObj;
     void *ptr;
     char buf[128];
-    char *p_last;
     strcpy(buf, sub_lists[idx]);
 
     if (strncmp("node:", buf, 5)) {
@@ -2086,7 +2085,6 @@ static int _wrap_ibdmCheckFabricMCGrpsForCreditLoopPotential(ClientData clientDa
     Tcl_Obj *p_tclObj;
     void *ptr;
     char buf[128];
-    char *p_last;
     strcpy(buf, sub_lists[idx]);
 
     if (strncmp("node:", buf, 5)) {
@@ -2226,7 +2224,6 @@ static int _wrap_ibdmLinkCoverageAnalysis(ClientData clientData, Tcl_Interp *int
     Tcl_Obj *p_tclObj;
     void *ptr;
     char buf[128];
-    char *p_last;
     strcpy(buf, sub_lists[idx]);
 
     if (strncmp("node:", buf, 5)) {
@@ -2580,7 +2577,6 @@ static int _wrap_ibdmTraceRouteByLFT(ClientData clientData, Tcl_Interp *interp, 
     Tcl_Obj *p_tclObj;
     void *ptr;
     char buf[128];
-    char *p_last;
     strcpy(buf, sub_lists[idx]);
 
     if (strncmp("node:", buf, 5)) {
