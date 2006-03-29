@@ -578,7 +578,7 @@ int IBMSNode::setLinkStatus(
                      0);
     pTrapMadData = (ib_mad_notice_attr_t *)(&(noticeMad.data[0]));
 
-    //TODO add support to other traps then 128 (only supported for now)
+    // TODO add support to other traps then 128 (only supported for now)
     {
       uint32_t prodType;
 
@@ -610,15 +610,7 @@ int IBMSNode::setLinkStatus(
     trapMadMsg.header.attr_id = IB_MAD_ATTR_NOTICE;
     trapMadMsg.header.attr_mod = cl_hton32(0);
 
-    printf("--AtTrap128-- nodePortsInfoSize: %d TransId: 0x%llx SLid: 0x%X, DLid: 0x%X \n",
-           nodePortsInfo.size(),
-           trapMadMsg.header.trans_id ,
-           nodePortsInfo[0].base_lid,
-           nodePortsInfo[0].master_sm_base_lid);
-
-    //send trap
-    //ibms_dump_mad( trapMadMsg, SND);
-    int res=pSim->getDispatcher()->dispatchMad(this, 0, trapMadMsg);
+    pSim->getDispatcher()->dispatchMad(this, 0, trapMadMsg);
   }
   return newState;
 }
