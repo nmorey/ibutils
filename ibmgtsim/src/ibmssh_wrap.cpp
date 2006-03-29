@@ -371,7 +371,7 @@ SWIGEXPORT(int,Ibdm_Init)(Tcl_Interp *);
   */
   IBFabric *new_IBFabric(void) {
 	 IBFabric *p_fabric = new IBFabric();
-    int i;
+    unsigned int i;
 	 if (p_fabric) {
       /* look for an open index in the vector of fabrics */
       for (i = 0; i < ibdm_fabrics.size(); i++)
@@ -456,7 +456,7 @@ SWIGEXPORT(int,Ibdm_Init)(Tcl_Interp *);
   int ibdmGetObjPtrByTclName(Tcl_Obj *objPtr, void **ptr) {
 	 /* we need to parse the name and get the type etc. */
 	 char buf[256];
-	 char *type, *name = 0, *fabIdxStr;
+	 char *type, *name=0, *fabIdxStr;
 	 char *colonIdx, *slashIdx;
 	 int fabricIdx;
 	 *ptr = NULL;
@@ -560,7 +560,7 @@ SWIGEXPORT(int,Ibdm_Init)(Tcl_Interp *);
 	 }
 	 return TCL_OK;
   }
-  
+
   int ibdmReportNonUpDownCa2CaPaths(IBFabric *p_fabric, list_pnode rootNodes) {
     map_pnode_int nodesRank;
     if (SubnRankFabricNodesByRootNodes(p_fabric, rootNodes, nodesRank))
@@ -2233,7 +2233,6 @@ static int _wrap_ibdmReportNonUpDownCa2CaPaths(ClientData clientData, Tcl_Interp
     Tcl_Obj *p_tclObj;
     void *ptr;
     char buf[128];
-    char *p_last;
     strcpy(buf, sub_lists[idx]);
 
     if (strncmp("node:", buf, 5)) {
@@ -2466,7 +2465,6 @@ static int _wrap_ibdmCheckFabricMCGrpsForCreditLoopPotential(ClientData clientDa
     Tcl_Obj *p_tclObj;
     void *ptr;
     char buf[128];
-    char *p_last;
     strcpy(buf, sub_lists[idx]);
 
     if (strncmp("node:", buf, 5)) {
@@ -2606,7 +2604,6 @@ static int _wrap_ibdmLinkCoverageAnalysis(ClientData clientData, Tcl_Interp *int
     Tcl_Obj *p_tclObj;
     void *ptr;
     char buf[128];
-    char *p_last;
     strcpy(buf, sub_lists[idx]);
 
     if (strncmp("node:", buf, 5)) {
@@ -2960,7 +2957,6 @@ static int _wrap_ibdmTraceRouteByLFT(ClientData clientData, Tcl_Interp *interp, 
     Tcl_Obj *p_tclObj;
     void *ptr;
     char buf[128];
-    char *p_last;
     strcpy(buf, sub_lists[idx]);
 
     if (strncmp("node:", buf, 5)) {
@@ -3265,7 +3261,7 @@ static int _wrap_ibdmBuildMergedFabric(ClientData clientData, Tcl_Interp *interp
 	 return TCL_ERROR;	 
   }
 }
-{ 
+{
   
   void *ptr;
   if (ibdmGetObjPtrByTclName(objv[2], &ptr) != TCL_OK) {
@@ -3589,7 +3585,7 @@ static int _wrap_ibdmCongCleanup(ClientData clientData, Tcl_Interp *interp, int 
 	 return TCL_ERROR;	 
   }
 }
-{
+{ 
   ibdm_tcl_error = 0;
       _result = (int )CongCleanup(_arg0);
 ; 
@@ -3885,7 +3881,7 @@ static int _wrap_ibdmCongReport(ClientData clientData, Tcl_Interp *interp, int o
 	 return TCL_ERROR;	 
   }
 }
-{
+{ 
   ibdm_tcl_error = 0;
       _result = (int )CongReport(_arg0,*_arg1);
 ; 
@@ -8254,7 +8250,7 @@ static int _wrap_IBNode_MinHopsTable_get(ClientData clientData, Tcl_Interp *inte
 		sprintf(buf,"%u ", (*_result)[i][j]);
 		Tcl_AppendResult(interp, buf, NULL);
 	 }
-	 Tcl_AppendResult(interp," }", NULL);
+	 Tcl_AppendResult(interp,"} ", NULL);
   }
 }
     return TCL_OK;
