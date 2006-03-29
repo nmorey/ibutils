@@ -182,6 +182,10 @@ ibisp_is_debug(void)
   int ibis_ui_init(void) 
   {
     ib_api_status_t status;
+#ifdef OSM_BUILD_OPENIB
+    complib_init();
+#endif
+
 	 status = ibis_init( &IbisOpts, IbisOpts.log_flags );
 	 if( status != IB_SUCCESS ) {
 		printf("-E- Error from ibis_init: %s.\n",
