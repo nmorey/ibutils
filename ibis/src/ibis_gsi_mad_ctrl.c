@@ -190,8 +190,8 @@ __ibis_gsi_mad_ctrl_process(
 
   osm_log( p_ctrl->p_log, OSM_LOG_DEBUG,
            "__ibis_gsi_mad_ctrl_process: "
-           "Class-%x Attr-%x .\n",
-           p_mad->mgmt_class,cl_ntoh16(p_mad->attr_id));
+           "Class-%x Attr-%x Status-%04x.\n",
+           p_mad->mgmt_class,cl_ntoh16(p_mad->attr_id),cl_ntoh16(p_mad->status));
 
   /* we alias SUBN_DR to SUBN_LID callbacks */
   mgmt_class = p_mad->mgmt_class;
