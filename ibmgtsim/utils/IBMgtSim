@@ -1,6 +1,6 @@
 #!/bin/sh
 # the next line restarts using tclsh \
-exec ibmssh "$0" "$@"
+   exec ibmssh "$0" "$@"
 
 #--
 # Copyright (c) 2004 Mellanox Technologies LTD. All rights reserved.
@@ -47,215 +47,216 @@ set ToolUsage "Usage: $argv0 $ToolUsage"
 set version "1.0"
 
 proc Usage {} {
-	global ToolUsage
+   global ToolUsage
 
-	puts "$ToolUsage"
+   puts "$ToolUsage"
 }
 
 ##############################################################################
 
 proc Help {} {
-	global ToolUsage
-	global version
-	
-	puts "
-         Infiniband Management Simulator
-        ---------------------------------
+   global ToolUsage
+   global version
 
-  $ToolUsage
+   puts "
+        Infiniband Management Simulator
+       ---------------------------------
 
-  Simulates the Fabric as defined by the given topology file and 
-  start a server to handle MAD requests from clients like OpenSM.
+ $ToolUsage
 
-  Command Line Arguments (required):
-    -t topology = a topology file describing the fabric.
+ Simulates the Fabric as defined by the given topology file and
+ start a server to handle MAD requests from clients like OpenSM.
 
-  Command Line Options: 
-    -s seed = the seed to be used for random number generation.
-    -f flow-tcl-file = a tcl file to be sourced after the fabric is setup.
-    -l log-file = set the log file of the simulator (default is /tmp/ibsim.log)
-    -p server-port = set the port number the server attaches to (default 46517)
-    -w num-threads = the number of threads processing the mads
-    -V <module-verbosity-pair-list> = Provides a fine grain control over 
-       the log file verbosity. Given list of pairs of simulator software
-       module names and their verbosity levels - every module is separatly 
-       controlled. The first value (missing module name) is controlling the
-       default verbosity for all un-explicitly set modules.
-       Current Verbosity Levels:            Software Modules:
-       MsgShowFatal  = 0x01;                client, server
-       MsgShowError  = 0x02;                dispatcher, node, sma
-       MsgShowWarning= 0x04;                simnode, lftMad, mftMad, 
-       MsgShowInfo   = 0x08;                sl2VlMad, vlArbMad, pKeyMad,
-       MsgShowVerbose= 0x10;                portInfoMad
-       MsgShowContext= 0x20;
-       MsgShowSource = 0x40;
-       MsgShowTime   = 0x80;
-       MsgShowModule = 0x100;
-       MsgShowMads   = 0x200;
-       MsgShowFrames = 0x400;
-       MsgShowAll    = 0xffff;
-       MsgDefault    = 0x62f;
-       
-      Examples -V flag values might be: 
-      -V 0xffff = Full verbosity on all modules
-      -V '0x3 server 0x6f2 sma 0xffff' = Only fatal and error for all modules
-         full verbosity for the SMA module and default verbosity for the Server
-         module.
+ Command Line Arguments (required):
+   -t topology = a topology file describing the fabric.
 
-    -h - help.
-    
- $version                               
+ Command Line Options:
+   -s seed = the seed to be used for random number generation.
+   -f flow-tcl-file = a tcl file to be sourced after the fabric is setup.
+   -l log-file = set the log file of the simulator (default is /tmp/ibsim.log)
+   -p server-port = set the port number the server attaches to (default 46517)
+   -w num-threads = the number of threads processing the mads
+   -V <module-verbosity-pair-list> = Provides a fine grain control over
+      the log file verbosity. Given list of pairs of simulator software
+      module names and their verbosity levels - every module is separatly
+      controlled. The first value (missing module name) is controlling the
+      default verbosity for all un-explicitly set modules.
+      Current Verbosity Levels:            Software Modules:
+      MsgShowFatal  = 0x01;                client, server
+      MsgShowError  = 0x02;                dispatcher, node, sma
+      MsgShowWarning= 0x04;                simnode, lftMad, mftMad,
+      MsgShowInfo   = 0x08;                sl2VlMad, vlArbMad, pKeyMad,
+      MsgShowVerbose= 0x10;                portInfoMad
+      MsgShowContext= 0x20;
+      MsgShowSource = 0x40;
+      MsgShowTime   = 0x80;
+      MsgShowModule = 0x100;
+      MsgShowMads   = 0x200;
+      MsgShowFrames = 0x400;
+      MsgShowAll    = 0xffff;
+      MsgDefault    = 0x62f;
 
-	"
+     Examples -V flag values might be:
+     -V 0xffff = Full verbosity on all modules
+     -V '0x3 server 0x6f2 sma 0xffff' = Only fatal and error for all modules
+        full verbosity for the SMA module and default verbosity for the Server
+        module.
+
+   -h - help.
+
+$version                             
+
+  "
 }
 
 ##############################################################################
-# 
+#
 # Start Control Server = allowing TCL evaluation in the simulator shell.
 #
 
 # Procedure called whenever a new connection is made by a client.
 proc on_connect {newsock clientAddress clientPort} {
-	global endOfVwait
-   
-	puts "-I- Connecting: $newsock $clientAddress $clientPort"
-	fconfigure $newsock -blocking 0 -buffering line
-	fileevent $newsock readable [list handleInput $newsock]
+   global endOfVwait
+
+   puts "-I- Connecting: $newsock $clientAddress $clientPort"
+   fconfigure $newsock -blocking 0 -buffering line
+   fileevent $newsock readable [list handleInput $newsock]
 }
 
 # Procedure called whenever input arrives on a connection.
 proc handleInput {f} {
-	global endOfVwait
-	if {[eof $f]} {
-		fileevent $f readable {}
-		close $f
-		return
-	}
-	
-	set i [read $f]
-	puts -nonewline $i
-	if {[catch {set res [uplevel $i]} e]} {
-		puts "-E- $e"
-      set res "error"
-	}
-	puts $f $res
+   global endOfVwait
+   global errorInfo
+   if {[eof $f]} {
+      fileevent $f readable {}
+      close $f
+      return
+   }
+
+   set i [read $f]
+   puts -nonewline $i
+   if {[catch {set res [uplevel $i]} e]} {
+      puts "-E- $e"
+      set res "error: $errorInfo"
+   }
+   puts $f $res
 }
 
 proc startControlServer {} {
    global env
    set fn [file join $env(IBMGTSIM_DIR) ibmgtsim.ctrl.server]
 
-	if {[catch {set f [open $fn "w"]} e]} {
-		puts "-E- $e"
-		return 1
-	}
-   
+   if {[catch {set f [open $fn "w"]} e]} {
+      puts "-E- $e"
+      return 1
+   }
+
    # invent a port
-	set num [expr int(rand()*(65535-1024)+1024)]
-	set counter 0
-	while {[catch {socket -server on_connect $num}]} {
-		set num [expr int(rand()*(65535-1024)+1024)] 
-		incr counter
-		if {$counter > 10 } {
-			puts "can't create a server"
+   set num [expr int(rand()*(65535-1024)+1024)]
+   set counter 0
+   while {[catch {socket -server on_connect $num}]} {
+      set num [expr int(rand()*(65535-1024)+1024)]
+      incr counter
+      if {$counter > 10 } {
+         puts "can't create a server"
          close $f
-			return 1
-		}
-	}
+         return 1
+      }
+   }
    set hostName [info hostname]
    puts "-I- Started server: $hostName port:$num"
-	puts $f "$hostName $num"
-	close $f
+   puts $f "$hostName $num"
+   close $f
 }
 
 ##############################################################################
-# 
+#
 # Get Opt
 #
 set optind 0
 
 proc getopt { argslist optstring optret argret } {
-	global optind optindc
-	upvar $optret retvar
-	upvar $argret optarg
-	
-	# default settings for a normal return
-	set optarg ""
-	set retvar ""
-	set retval 0
-	
-	# check if we are in a single char mode or support long 
-	# option string
-	if {[string match "* *" $optstring]} {
-		set longOptMode 1
-	} else {
-		set longOptMode 0
-	}
-	
-	# check if we're past the end of the args list
-	if { $optind < [ llength $argslist ] } then {
-		
-		# if we got -- or an option that doesn't begin with -, return (skipping
-		# the --).  otherwise process the option arg.
-		switch -glob -- [ set arg [ lindex $argslist $optind ]] {
-			"--" {
-				incr optind
-			}
-			
-			"-*" {
-				# opt needs to return the name of the option 
-				regexp -- {-([^:]+):?} $arg d1 opt
-				incr optind
+   global optind optindc
+   upvar $optret retvar
+   upvar $argret optarg
 
-				if {$longOptMode} {
-					# options are defined as words optionaly containing ":"
-					if { [ lsearch -regexp $optstring "^$opt:?\$" ] >= 0 } then {
-						set retvar $opt
-						set retval 1
-						if { [ lsearch -regexp $optstring "^$opt:\$" ] >= 0 } then {
-							if { $optind < [ llength $argslist ] } then {
-								set optarg [lindex $argslist $optind]
-								incr optind
-							} else {
-								set optarg "Option requires an argument -- $opt"
-								set retvar $optarg
-								set retval -1
-							}
-						}
-					} else {
-						set optarg "Illegal option -- $opt"
-						set retvar $optarg
-						set retval -1
-					}
-				} else {
-					# traditional single char options
-					if { [ string match "*$opt*" $optstring ] } then {
-						set retvar $opt
-						set retval 1
-						if { [ string match "*$opt:*" $optstring ] } then {
-							if { $optind < [ llength $argslist ] } then {
-								set optarg [lindex $argslist $optind]
-								incr optind
-							} else {
-								set optarg "Option requires an argument -- $opt"
-								set retvar $optarg
-								set retval -1
-							}
-						}
-					} else {
-						set optarg "Illegal option -- $opt"
-						set retvar $optarg
-						set retval -1
-					}
-				}
-			}
-		}
-	}
-	return $retval
+   # default settings for a normal return
+   set optarg ""
+   set retvar ""
+   set retval 0
+
+   # check if we are in a single char mode or support long
+   # option string
+   if {[string match "* *" $optstring]} {
+      set longOptMode 1
+   } else {
+      set longOptMode 0
+   }
+
+   # check if we're past the end of the args list
+   if { $optind < [ llength $argslist ] } then {
+
+      # if we got -- or an option that doesn't begin with -, return (skipping
+      # the --).  otherwise process the option arg.
+      switch -glob -- [ set arg [ lindex $argslist $optind ]] {
+         "--" {
+            incr optind
+         }
+
+         "-*" {
+            # opt needs to return the name of the option
+            regexp -- {-([^:]+):?} $arg d1 opt
+            incr optind
+
+            if {$longOptMode} {
+               # options are defined as words optionaly containing ":"
+               if { [ lsearch -regexp $optstring "^$opt:?\$" ] >= 0 } then {
+                  set retvar $opt
+                  set retval 1
+                  if { [ lsearch -regexp $optstring "^$opt:\$" ] >= 0 } then {
+                     if { $optind < [ llength $argslist ] } then {
+                        set optarg [lindex $argslist $optind]
+                        incr optind
+                     } else {
+                        set optarg "Option requires an argument -- $opt"
+                        set retvar $optarg
+                        set retval -1
+                     }
+                  }
+               } else {
+                  set optarg "Illegal option -- $opt"
+                  set retvar $optarg
+                  set retval -1
+               }
+            } else {
+               # traditional single char options
+               if { [ string match "*$opt*" $optstring ] } then {
+                  set retvar $opt
+                  set retval 1
+                  if { [ string match "*$opt:*" $optstring ] } then {
+                     if { $optind < [ llength $argslist ] } then {
+                        set optarg [lindex $argslist $optind]
+                        incr optind
+                     } else {
+                        set optarg "Option requires an argument -- $opt"
+                        set retvar $optarg
+                        set retval -1
+                     }
+                  }
+               } else {
+                  set optarg "Illegal option -- $opt"
+                  set retvar $optarg
+                  set retval -1
+               }
+            }
+         }
+      }
+   }
+   return $retval
 }
 
 ##############################################################################
-# 
+#
 # MAIN FLOW:
 #
 
@@ -268,44 +269,44 @@ set topologyFile ""
 set randomSeed [expr int(rand() * 100000)]
 
 while { [ set err [ getopt $argv "hvV:l:p:w:f:t:s:" opt arg ]] } {
-	if { $err < 0 } then {
-		Usage
-		exit 2
-	} else {
-		switch -exact $opt {
-			h {Help; exit 0}
-			v {puts "";puts $version; puts ""; exit 0}
-			V {
+   if { $err < 0 } then {
+      Usage
+      exit 2
+   } else {
+      switch -exact $opt {
+         h {Help; exit 0}
+         v {puts "";puts $version; puts ""; exit 0}
+         V {
             set moduleVerbosityList "top $arg"
          }
-			p {set serverPortNum $arg}
-			l {set logFileName $arg}
-			w {set numWorkerThreads $arg}
-			f {set simulationFlowFile $arg}
-			t {set topologyFile $arg}
+         p {set serverPortNum $arg}
+         l {set logFileName $arg}
+         w {set numWorkerThreads $arg}
+         f {set simulationFlowFile $arg}
+         t {set topologyFile $arg}
          s {set randomSeed $arg}
          default {
             puts "-E- Unsupported option:$opt"
             puts $ToolUsage
             exit 1
          }
-		}
-	}
+      }
+   }
 }
 
 # make sure we got a topology:
 if {$topologyFile == ""} {
    puts "-E- Missing mandatory flag -t. Topology file was not defined."
-   Usage  
+   Usage
    exit
 }
 
 # handle extra args
 set left_args [ lrange $argv $optind end ]
 if {[llength $left_args]} {
-    puts "-E- illegal parameter(s) used : $left_args"
-    Usage
-    exit 1
+   puts "-E- illegal parameter(s) used : $left_args"
+   Usage
+   exit 1
 }
 
 # We can start ...
@@ -323,7 +324,7 @@ foreach {mod verb} $moduleVerbosityList {
       if {$mod == "top"} {
          MsgMgr setVerbLevel $verb
       } else {
-          MsgMgr setVerbLevel $verb $mod
+         MsgMgr setVerbLevel $verb $mod
       }
    }
 }
@@ -334,6 +335,8 @@ if {[catch {IBMgtSimulator init $topologyFile $serverPortNum $numWorkerThreads} 
    exit
 }
 
+set fabric [IBMgtSimulator getFabric]
+puts "-I- Init fabric: $fabric"
 # start the control server:
 startControlServer
 
