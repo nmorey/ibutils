@@ -116,7 +116,7 @@
   */
   IBFabric *new_IBFabric(void) {
 	 IBFabric *p_fabric = new IBFabric();
-    int i;
+    unsigned int i;
 	 if (p_fabric) {
       /* look for an open index in the vector of fabrics */
       for (i = 0; i < ibdm_fabrics.size(); i++)
@@ -827,7 +827,6 @@
     Tcl_Obj *p_tclObj;
     void *ptr;
     char buf[128];
-    char *p_last;
     strcpy(buf, sub_lists[idx]);
 
     if (strncmp("node:", buf, 5)) {
