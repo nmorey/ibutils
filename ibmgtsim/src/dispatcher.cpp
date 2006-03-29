@@ -241,7 +241,7 @@ IBMSDispatcher::routeMadToDestByLid(
   uint8_t   prevPortNum = 0;
   int hops = 0;
   
-  MSGREG(inf0, 'I', "Routing MAD tid:$ to lid:$ from:$ port:$", "dispatcher");
+  MSGREG(inf0, 'I', "Routing MAD mgmt_class:$ method:$ tid:$ to lid:$ from:$ port:$", "dispatcher");
   MSGREG(inf1, 'I', "Got to dead-end routing to lid:$ at node:$", 
          "dispatcher");
   MSGREG(inf2, 'I', "Arrived at lid $ = node $ after $ hops", "dispatcher");
@@ -251,8 +251,12 @@ IBMSDispatcher::routeMadToDestByLid(
          "dispatcher");
   MSGREG(inf5, 'V', "Got node:$ through port:$", "dispatcher");
   
-  MSGSND(inf0, cl_ntoh64(item.madMsg.header.trans_id), 
-         lid, item.pFromNode->getIBNode()->name, item.fromPort);
+  MSGSND(inf0, 
+	 item.madMsg.header.mgmt_class,  
+	 item.madMsg.header.method,
+         lid, 
+	 item.pFromNode->getIBNode()->name,
+	 item.fromPort);
 
   int isVl15 = (item.madMsg.header.mgmt_class == IB_MCLASS_SUBN_LID);
   
