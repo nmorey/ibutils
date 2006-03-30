@@ -3512,7 +3512,7 @@ static int _wrap_ibdmCongReport(ClientData clientData, Tcl_Interp *interp, int o
 }    tcl_result = Tcl_GetObjResult(interp);
     Tcl_SetIntObj(tcl_result,(long) _result);
 {
-  Tcl_SetStringObj(tcl_result, _arg1->str().c_str(), 
+  Tcl_SetStringObj(tcl_result, (char*)_arg1->str().c_str(), 
                    _arg1->str().size() + 1);
 }
     return TCL_OK;
@@ -3614,7 +3614,7 @@ static int _wrap_ibdmCongDump(ClientData clientData, Tcl_Interp *interp, int obj
 }    tcl_result = Tcl_GetObjResult(interp);
     Tcl_SetIntObj(tcl_result,(long) _result);
 {
-  Tcl_SetStringObj(tcl_result, _arg1->str().c_str(), 
+  Tcl_SetStringObj(tcl_result, (char*)_arg1->str().c_str(), 
                    _arg1->str().size() + 1);
 }
     return TCL_OK;

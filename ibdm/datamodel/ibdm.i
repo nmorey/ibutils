@@ -739,7 +739,7 @@
 
 
 %typemap(tcl8,argout) ostringstream & {
-  Tcl_SetStringObj($target, $source->str().c_str(), 
+  Tcl_SetStringObj($target, (char*)$source->str().c_str(), 
                    $source->str().size() + 1);
 }
 
