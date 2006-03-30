@@ -55,7 +55,7 @@ bin_PROGRAMS = ibmssh ibmsquit #ibmgtsim test_msgmgr test_client test_server ibm
 if IBDM_REF_IS_USED
 # we assume we are building a parallel tree
 IBDM_PREFIX=$prefix
-IBDM_LIB=-L$(srcdir)/../../ibdm/datamodel -libdmcom 
+IBDM_LIB=-L../../ibdm/datamodel -libdmcom 
 IBDM_INC=-I$(srcdir)/../../ibdm/datamodel
 IBDM_IFC=$(srcdir)/../../ibdm/datamodel/ibdm.i
 else
