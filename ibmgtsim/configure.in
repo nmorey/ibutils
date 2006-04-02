@@ -42,6 +42,15 @@ CXXFLAGS="$save_cxxflags"
 dnl We will use libtool for making ...
 AC_PROG_LIBTOOL
 
+dnl For making dist we need not check any lib dependency
+AC_ARG_ENABLE(libcheck,
+[  --enable-libcheck    Enable Dependency Checking],
+[case "${enableval}" in
+  yes) libcheck=true ;;
+  no)  libcheck=false ;;
+  *) AC_MSG_ERROR(bad value ${enableval} for --enable-libcheck) ;;
+esac],[libcheck=true])
+
 dnl Get the TCL defs: TCL_LIBS TCL_CPPFLAGS
 MLX_LANG_TCL
 

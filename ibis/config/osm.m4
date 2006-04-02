@@ -75,101 +75,111 @@ else
    osm_lib_dir="lib"	
 fi
 
-dnl if the user did not provide --with-osm look for it in reasonable places
-if test "x$with_osm" = xnone; then 
-   if test -d /usr/local/ibgd/apps/osm; then
-      with_osm=/usr/local/ibgd/apps/osm
-   elif test -d /usr/mellanox/osm; then
-      with_osm=/usr/mellanox
-   elif test -f /usr/local/$osm_lib_dir/libopensm.a; then
-      with_osm=/usr/local
-   else
-      AC_MSG_ERROR([OSM: --with-osm must be provided - fail to find standard OpenSM installation])
+if test "x$libcheck" = "xtrue"; then
+   dnl if the user did not provide --with-osm look for it in reasonable places
+   if test "x$with_osm" = xnone; then 
+      if test -d /usr/local/ibgd/apps/osm; then
+         with_osm=/usr/local/ibgd/apps/osm
+      elif test -d /usr/mellanox/osm; then
+         with_osm=/usr/mellanox
+      elif test -f /usr/local/$osm_lib_dir/libopensm.a; then
+         with_osm=/usr/local
+      else
+         AC_MSG_ERROR([OSM: --with-osm must be provided - fail to find standard OpenSM installation])
+      fi
    fi
-fi
-AC_MSG_NOTICE(OSM: used from $with_osm)
-
-if test "x$with_osm_libs" = "xnone"; then
-   with_osm_libs=$with_osm/$osm_lib_dir
-fi
-
-dnl check what build we have gen1 or gen2
-if test -d $with_osm/include/infiniband; then
-   OSM_BUILD=openib
-else
-   OSM_BUILD=gen1
-fi
-AC_MSG_NOTICE(OSM: build type $OSM_BUILD)
-
-OSM_LDFLAGS="-Wl,-rpath -Wl,$with_osm_libs -L$with_osm_libs"
-dnl based on the with_osm dir and the libs available 
-dnl we can try and decide what vendor was used:
-if test $OSM_BUILD = openib; then
-   dnl it is an OpenIB based build but can be any vendor too.
-   osm_include_dir="$with_osm/include/infiniband"
-   osm_extra_includes="-I$with_osm/include"
-
-   if test -L $with_osm_libs/libosmvendor_gen1.so; then
-      OSM_VENDOR=ts
-      osm_vendor_sel="-DOSM_VENDOR_INTF_TS"
-      OSM_LDFLAGS="$OSM_LDFLAGS -lopensm -losmvendor -losmcomp"
-   elif test -L $with_osm_libs/libosmvendor_vapi.so; then
-      OSM_VENDOR=mtl
-      osm_vendor_sel="-DOSM_VENDOR_INTF_MTL"
-      OSM_LDFLAGS="$OSM_LDFLAGS -lopensm -losmvendor -losmcomp -lvapi -lib_mgt"
-   elif test -L $with_osm_libs/libosmvendor_sim.so; then
-      OSM_VENDOR=sim
-      osm_vendor_sel="-DOSM_VENDOR_INTF_SIM"
-      OSM_LDFLAGS="$OSM_LDFLAGS -lopensm -losmvendor -libmscli -losmcomp"
-   elif test -L $with_osm_libs/libopensm.so; then
-      OSM_VENDOR=openib
-      osm_vendor_sel="-DOSM_VENDOR_INTF_OPENIB "
-      OSM_LDFLAGS="$OSM_LDFLAGS -lopensm -losmvendor -losmcomp -libumad -libcommon"
-   else
-      AC_MSG_ERROR([OSM: Fail to recognize vendor type])
+   AC_MSG_NOTICE(OSM: used from $with_osm)
+   
+   if test "x$with_osm_libs" = "xnone"; then
+      with_osm_libs=$with_osm/$osm_lib_dir
    fi
-   osm_vendor_sel="$osm_vendor_sel -DOSM_BUILD_OPENIB"
-else
-   # we are in gen1 build
-   osm_include_dir="$with_osm/include"
-
-   if test -L $with_osm_libs/libosmsvc_ts.so; then
-      OSM_VENDOR=ts
-      OSM_LDFLAGS="$OSM_LDFLAGS -losmsvc_ts -lcomplib"
-      osm_vendor_sel="-DOSM_VENDOR_INTF_TS"
-   elif test -L $with_osm_libs/libosmsvc_mtl.so; then
-      OSM_VENDOR=mtl
-      OSM_LDFLAGS="$OSM_LDFLAGS -losmsvc_mtl -lcomplib -lvapi -lib_mgt" 
-      osm_vendor_sel="-DOSM_VENDOR_INTF_MTL"
-   elif test -L $with_osm_libs/libosmsvc_sim.so; then
-      OSM_VENDOR=sim
-      OSM_LDFLAGS="$OSM_LDFLAGS -losmsvc_sim -lcomplib"
-      osm_vendor_sel="-DOSM_VENDOR_INTF_SIM"
+   
+   dnl check what build we have gen1 or gen2
+   if test -d $with_osm/include/infiniband; then
+      OSM_BUILD=openib
    else
-      AC_MSG_ERROR([OSM: Fail to recognize vendor type])
+      OSM_BUILD=gen1
    fi
-fi
-AC_MSG_NOTICE(OSM: vendor type $OSM_VENDOR)
-
-AM_CONDITIONAL(OSM_VENDOR_TS, test $OSM_VENDOR = ts)
-AM_CONDITIONAL(OSM_VENDOR_MTL, test $OSM_VENDOR = mtl)
-AM_CONDITIONAL(OSM_VENDOR_SIM, test $OSM_VENDOR = sim)
-AM_CONDITIONAL(OSM_BUILD_OPENIB, test $OSM_BUILD = openib)
-
-dnl validate the defined path - so the build id header is there
-AC_CHECK_FILE($osm_include_dir/opensm/osm_build_id.h,,
-   AC_MSG_ERROR([OSM: could not find $with_osm/include/opensm/osm_build_id.h]))
-
-dnl now figure out somehow if the build was for debug or not
-if test `grep debug $osm_include_dir/opensm/osm_build_id.h | wc -l` = 1; then
-   dnl why did they need so many ???
-   osm_debug_flags='-DDEBUG -D_DEBUG -D_DEBUG_ -DDBG'
-   AC_MSG_NOTICE(OSM: compiled in DEBUG mode)
+   AC_MSG_NOTICE(OSM: build type $OSM_BUILD)
+   
+   OSM_LDFLAGS="-Wl,-rpath -Wl,$with_osm_libs -L$with_osm_libs"
+   dnl based on the with_osm dir and the libs available 
+   dnl we can try and decide what vendor was used:
+   if test $OSM_BUILD = openib; then
+      dnl it is an OpenIB based build but can be any vendor too.
+      osm_include_dir="$with_osm/include/infiniband"
+      osm_extra_includes="-I$with_osm/include"
+   
+      if test -L $with_osm_libs/libosmvendor_gen1.so; then
+         OSM_VENDOR=ts
+         osm_vendor_sel="-DOSM_VENDOR_INTF_TS"
+         OSM_LDFLAGS="$OSM_LDFLAGS -lopensm -losmvendor -losmcomp"
+      elif test -L $with_osm_libs/libosmvendor_vapi.so; then
+         OSM_VENDOR=mtl
+         osm_vendor_sel="-DOSM_VENDOR_INTF_MTL"
+         OSM_LDFLAGS="$OSM_LDFLAGS -lopensm -losmvendor -losmcomp -lvapi -lib_mgt"
+      elif test -L $with_osm_libs/libosmvendor_sim.so; then
+         OSM_VENDOR=sim
+         osm_vendor_sel="-DOSM_VENDOR_INTF_SIM"
+         OSM_LDFLAGS="$OSM_LDFLAGS -lopensm -losmvendor -libmscli -losmcomp"
+      elif test -L $with_osm_libs/libopensm.so; then
+         OSM_VENDOR=openib
+         osm_vendor_sel="-DOSM_VENDOR_INTF_OPENIB "
+         OSM_LDFLAGS="$OSM_LDFLAGS -lopensm -losmvendor -losmcomp -libumad -libcommon"
+      else
+         AC_MSG_ERROR([OSM: Fail to recognize vendor type])
+      fi
+      osm_vendor_sel="$osm_vendor_sel -DOSM_BUILD_OPENIB"
+   else
+      # we are in gen1 build
+      osm_include_dir="$with_osm/include"
+   
+      if test -L $with_osm_libs/libosmsvc_ts.so; then
+         OSM_VENDOR=ts
+         OSM_LDFLAGS="$OSM_LDFLAGS -losmsvc_ts -lcomplib"
+         osm_vendor_sel="-DOSM_VENDOR_INTF_TS"
+      elif test -L $with_osm_libs/libosmsvc_mtl.so; then
+         OSM_VENDOR=mtl
+         OSM_LDFLAGS="$OSM_LDFLAGS -losmsvc_mtl -lcomplib -lvapi -lib_mgt" 
+         osm_vendor_sel="-DOSM_VENDOR_INTF_MTL"
+      elif test -L $with_osm_libs/libosmsvc_sim.so; then
+         OSM_VENDOR=sim
+         OSM_LDFLAGS="$OSM_LDFLAGS -losmsvc_sim -lcomplib"
+         osm_vendor_sel="-DOSM_VENDOR_INTF_SIM"
+      else
+         AC_MSG_ERROR([OSM: Fail to recognize vendor type])
+      fi
+   fi
+   AC_MSG_NOTICE(OSM: vendor type $OSM_VENDOR)
+   
+   
+   dnl validate the defined path - so the build id header is there
+   AC_CHECK_FILE($osm_include_dir/opensm/osm_build_id.h,,
+      AC_MSG_ERROR([OSM: could not find $with_osm/include/opensm/osm_build_id.h]))
+   
+   dnl now figure out somehow if the build was for debug or not
+   if test `grep debug $osm_include_dir/opensm/osm_build_id.h | wc -l` = 1; then
+      dnl why did they need so many ???
+      osm_debug_flags='-DDEBUG -D_DEBUG -D_DEBUG_ -DDBG'
+      AC_MSG_NOTICE(OSM: compiled in DEBUG mode)
+   else
+      osm_debug_flags=
+   fi
+   
+   OSM_CFLAGS="-I$osm_include_dir $osm_extra_includes $osm_debug_flags $osm_vendor_sel -D_XOPEN_SOURCE=600 -D_BSD_SOURCE=1"
 else
-   osm_debug_flags=
+   dnl dummy values
+   with_osm=disabled
+   OSM_CLFAGS=disabled
+   OSM_LDFLAGS=disabled
+   OSM_VEDNOR=disabled
+   OSM_BUILD=disabled
 fi
-
-OSM_CFLAGS="-I$osm_include_dir $osm_extra_includes $osm_debug_flags $osm_vendor_sel -D_XOPEN_SOURCE=600 -D_BSD_SOURCE=1"
+   
+AM_CONDITIONAL(OSM_VENDOR_TS, test "x$OSM_VENDOR" = xts)
+AM_CONDITIONAL(OSM_VENDOR_MTL, test "x$OSM_VENDOR" = xmtl)
+AM_CONDITIONAL(OSM_VENDOR_SIM, test "x$OSM_VENDOR" = xsim)
+AM_CONDITIONAL(OSM_BUILD_OPENIB, test "x$OSM_BUILD" = xopenib)
 
 AC_SUBST(with_osm)
 AC_SUBST(OSM_CFLAGS)
