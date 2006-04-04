@@ -203,7 +203,7 @@ __ibcr_prep_cr_mad(
   ((ib_mad_t *)p_madw->p_mad)->attr_mod = cl_hton32(attr_mod);
   ((ib_mad_t *)p_madw->p_mad)->trans_id = ibis_get_tid();
 
-  ((ib_cr_space_t *)p_madw->p_mad)->vendor_key = 0;
+  ((ib_cr_space_t *)p_madw->p_mad)->vendor_key = cl_hton64(IbisObj.p_opt->v_key);
   ((ib_cr_space_t *)p_madw->p_mad)->data[0] = cl_hton32(data);
 
   OSM_LOG_EXIT(&(IbisObj.log));
