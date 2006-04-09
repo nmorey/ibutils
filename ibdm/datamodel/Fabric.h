@@ -116,6 +116,7 @@ typedef set< uint16_t, less< uint16_t > > set_uint16;
 #define FABU_LOG_ERROR 0x1
 #define FABU_LOG_INFO 0x2
 #define FABU_LOG_VERBOSE 0x4
+#define IBNODE_UNASSIGNED_RANK 0xFF
 
 // 
 // GLOBALS
@@ -246,6 +247,7 @@ class IBNode {
   uint16_t        devId;     // The device ID of the node
   uint16_t        revId;     // The device revision Id.
   uint16_t        vendId;    // The device Vendor ID.
+  uint8_t         rank;      // The tree level the node is at 0 is root.
   class IBSystem *p_system;  // What system we belong to
   class IBFabric *p_fabric;  // What fabric we belong to.
   unsigned int	   numPorts;  // Number of physical ports 

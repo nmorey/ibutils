@@ -193,6 +193,7 @@ IBNode::IBNode(string n,
   type = t;
   numPorts = np;
   guid = 0;
+  rank = IBNODE_UNASSIGNED_RANK;
   attributes = string("");
   appData1.ptr = NULL;
   appData2.ptr = NULL;
