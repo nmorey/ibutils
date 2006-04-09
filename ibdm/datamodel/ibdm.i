@@ -310,17 +310,27 @@
     map_pnode_int nodesRank;
     if (SubnRankFabricNodesByRootNodes(p_fabric, rootNodes, nodesRank))
     {
-      printf("-E- fail to rank the fabric by the given rot nodes.\n");
+      printf("-E- fail to rank the fabric by the given root nodes.\n");
       return(1);
     }
     return( SubnReportNonUpDownCa2CaPaths(p_fabric, nodesRank));
   }
 
+  int ibdmFatTreeRoute(IBFabric *p_fabric, list_pnode rootNodes) {
+    map_pnode_int nodesRank;
+    if (SubnRankFabricNodesByRootNodes(p_fabric, rootNodes, nodesRank))
+    {
+      printf("-E- fail to rank the fabric by the given root nodes.\n");
+      return(1);
+    }
+    return( SubnMgtFatTreeRoute(p_fabric));
+  }
+  
   int ibdmCheckFabricMCGrpsForCreditLoopPotential(IBFabric *p_fabric, list_pnode rootNodes) {
     map_pnode_int nodesRank;
     if (SubnRankFabricNodesByRootNodes(p_fabric, rootNodes, nodesRank))
     {
-      printf("-E- fail to rank the fabric by the given rot nodes.\n");
+      printf("-E- fail to rank the fabric by the given root nodes.\n");
       return(1);
     }
     return( SubnMgtCheckFabricMCGrpsForCreditLoopPotential(p_fabric, nodesRank));
@@ -1190,6 +1200,7 @@ They all return 0 on succes.
   Init min hop tables: SubnMgtCalcMinHopTables  
   Perform Enhanced LMC aware routing: SubnMgtOsmEnhancedRoute
   Perform standard routing: SubnMgtOsmRoute
+  Perform Fat Tree specialized routing: SubnMgtFatTreeRoute
   Verify all CA to CA routes: SubnMgtVerifyAllCaToCaRoutes
 
 %}
@@ -1222,6 +1233,10 @@ They all return 0 on succes.
 // Also it will favor runing through a new system or node 
 // on top of the port profile.
 // Rely on running the SubnMgtCalcMinHopTables beforehand
+
+int ibdmFatTreeRoute(IBFabric *p_fabric, list_pnode rootNodes);
+// Perform Fat Tree specific routing by assigning a single LID to 
+// each root node port a single LID to route through.
 
 %name(ibdmVerifyCAtoCARoutes) 
  int SubnMgtVerifyAllCaToCaRoutes(IBFabric *p_fabric);
