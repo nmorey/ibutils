@@ -72,6 +72,11 @@ SubnMgtOsmRoute(IBFabric *p_fabric);
 int
 SubnMgtOsmEnhancedRoute(IBFabric *p_fabric);
 
+// Perform Fat Tree specific routing by assigning a single LID to 
+// each root node port a single LID to route through.
+int
+SubnMgtFatTreeRoute(IBFabric *p_fabric);
+
 // Verify All CA to CA connectivity
 int
 SubnMgtVerifyAllCaToCaRoutes(IBFabric *p_fabric);

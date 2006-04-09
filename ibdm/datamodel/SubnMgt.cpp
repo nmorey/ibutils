@@ -756,6 +756,7 @@ SubnRankFabricNodesByRootNodes(
        nI++) {
     IBNode *p_node = (*nI);
     nodesRank[p_node] = 0;
+	p_node->rank = 0;
   }
 
   // ok so now we BFS 
@@ -780,6 +781,7 @@ SubnRankFabricNodesByRootNodes(
             nextNodes.push_back(p_remNode);
             // mark it:
             nodesRank[p_remNode] = rank;
+			p_remNode->rank = rank;
           }
         }
       }
@@ -2238,3 +2240,239 @@ SubnMgtCheckFabricMCGrpsForCreditLoopPotential(
   cout << "---------------------------------------------------------------------------\n" << endl;
   return anyErrs;
 }
+
+//////////////////////////////////////////////////////////////////////////////
+//
+// Fill in the FDB tables assuming the fabric is a fat tree.
+// Also assumes the fabric is already ranked from roots downwards.
+// We also assume MinHop tables are defined.
+// 
+// LIMITATION: Currently only LMC=0 is supported
+//
+// The main idea behind this algorithm is that if we have enough
+// root ports we can assign each port one destination LID. 
+// Then we propagate that selection by allowing routing to that LID
+// only through that top root and downwards - unless closes at lower levels
+// 
+// ALGORITHM:
+// * Initialize a WORKMAP of all HCA LIDs - also count them
+// * Calc total switch ports versus number of HCA lids. 
+// * If we do not have enough switch ports abort.
+// * Loop on all rank=0 switches.
+//   * For each port select one of the LIDs that it MinHop to and are still in WORKMAP
+//   * Traverse forward to that LID assigning LFT
+// 
+// Traverse Forward to LID:
+// * Given switch and target LID
+// * Find the out-port to be used for going to that LID (use # paths to select from many?)
+// * Set FDB to that LID (actually done by the Backward traversal)
+// * Recurse to the direction of the LID (need Min hop for that)
+// * Perform Backward traversal through all ports connected to lower level switches in-port = out-port
+//
+// Traverse Backward to LID:
+// * Given current switch and LID, in-port
+// * Set FDB to target LID to the "in-port"
+// * Recurse through all ports connected to lower level switches not including the in-port
+
+int 
+SubnMgtFatTreeBwd(IBNode *p_node, uint16_t dLid, unsigned int outPortNum)
+{
+   IBPort* p_port;
+
+   if (FabricUtilsVerboseLevel & FABU_LOG_VERBOSE)
+	  cout << "-V- SubnMgtFatTreeBwd from:" << p_node->name << " dlid:" << dLid 
+	       << " out-port:" << outPortNum << endl;
+
+   // * Set FDB to target LID to the "in-port"
+   p_node->setLFTPortForLid(dLid, outPortNum);
+   
+   // * Recurse through all ports connected to lower level switches not including the in-port
+   for (unsigned int pn = 1; pn <= p_node->numPorts; pn++)
+   {
+	  if (pn == outPortNum) continue;
+	  
+	  p_port = p_node->getPort(pn);
+	  if (!p_port || !p_port->p_remotePort) continue;
+
+	  IBNode *p_remNode = p_port->p_remotePort->p_node;
+	  
+	  if (p_remNode->type != IB_SW_NODE) continue;
+
+	  // avoid going up or sideways in the tree
+	  if (p_node->rank >= p_remNode->rank) continue;
+
+	  // avoid loops by inspecting the FDB value of the remote port
+	  if (p_remNode->getLFTPortForLid(dLid) != IB_LFT_UNASSIGNED) continue;
+	  
+	  SubnMgtFatTreeBwd(p_remNode, dLid, p_port->p_remotePort->num);
+   }
+   return(0);
+}
+
+int 
+SubnMgtFatTreeFwd(IBNode *p_node, uint16_t dLid)
+{
+   // get the minimal hop count from this port:
+   int minHop = p_node->getHops(NULL,dLid);
+   int outPortNum = 0;
+   IBPort *p_port;
+
+   if (FabricUtilsVerboseLevel & FABU_LOG_VERBOSE)
+	  cout << "-V- SubnMgtFatTreeFwd from:" << p_node->name << " dlid:" << dLid << endl;
+
+   // Find the out-port to be used for going to that LID (use # paths to select from many?)
+   for (unsigned int pn = 1; pn <= p_node->numPorts; pn++) 
+   {
+	 p_port = p_node->getPort(pn);
+
+	 if (! p_port) continue;
+	 if (! p_port->p_remotePort) continue;
+
+	 // the hops should match the min 
+	 if (p_node->getHops(p_port, dLid) == minHop) 
+	 {
+		outPortNum = pn;
+		break;
+	 }
+   }
+
+   if (!outPortNum)
+   {
+	  cout << "-E- fail to find output port for switch:" << p_node->name 
+		   << " to LID:" << dLid << endl;
+	  exit(1);
+   }
+
+   // Set FDB to that LID (actually done by the Backward traversal)
+
+   // Recurse to the direction of the LID
+   if (p_port->p_remotePort->p_node->type == IB_SW_NODE)
+	  SubnMgtFatTreeFwd(p_port->p_remotePort->p_node, dLid);
+
+   // * Perform Backward traversal through all ports connected to lower level switches in-port = out-port
+   SubnMgtFatTreeBwd(p_node, dLid, outPortNum);
+
+   return(0);
+}
+
+int
+SubnMgtFatTreeRoute(IBFabric *p_fabric) {
+  IBNode *p_node;
+  IBPort *p_port;
+
+  cout << "-I- Using Fat Tree Routing" << endl;
+
+  // HACK we currently do not support LMC > 0
+  if (p_fabric->lmc > 0)
+  {
+	 cout << "-E- Fat Tree Router does not support LMC > 0 yet" << endl;
+	 return(1);
+  }
+
+  list<IBNode*> rootNodes;
+  set<int, less<int> > unRoutedLids;
+
+  int numHcaPorts = 0;
+  int numRootPorts = 0;
+
+  // get all root nodes
+  for( map_str_pnode::iterator nI = p_fabric->NodeByName.begin();
+       nI != p_fabric->NodeByName.end();
+       nI++) 
+  {
+    p_node = (*nI).second;
+
+    // if not a switch just count
+    if (p_node->type != IB_SW_NODE) 
+	{
+	   // count all ports that are connected
+	   for (unsigned int pn = 1; pn <= p_node->numPorts; pn++) 
+	   {
+		  p_port = p_node->getPort(pn);
+		  if (p_port && p_port->p_remotePort) 
+		  { 
+			 numHcaPorts++;
+			 unRoutedLids.insert(p_port->base_lid);
+		  }
+	   } 
+	}
+	else
+	{
+	   // we only crae now about root switch ports
+	   if (p_node->rank == 0) 
+	   {
+		  rootNodes.push_back(p_node);
+		  // count all ports that are connected
+		  for (unsigned int pn = 1; pn <= p_node->numPorts; pn++) 
+		  {
+			 p_port = p_node->getPort(pn);
+			 if (p_port && p_port->p_remotePort) numRootPorts++;
+		  } 
+	   }
+	}
+  }
+
+  // do we have enough root ports?
+  if (numRootPorts < numHcaPorts)
+  {
+	 cout << "-E- Can Route Fat-Tree - not enough root ports:" 
+		  << numRootPorts << " < HCA ports:" << numHcaPorts << endl;
+	 return(1);
+  }
+
+  // Loop on all rank=0 switches.
+  for (list<IBNode *>::iterator lI = rootNodes.begin();
+		lI != rootNodes.end();
+		lI++)
+  {
+	 p_node = *lI;
+
+	 // Foreach port select one of the LIDs that it MinHop to and are still in WORKMAP
+	 for (unsigned int pn = 1; pn <= p_node->numPorts; pn++) 
+	 {
+		p_port = p_node->getPort(pn);
+		if (! p_port || !p_port->p_remotePort) continue;
+
+		// since most fat trees are fully connected we can simply try from the 
+		// head of the unRoutedLids...
+		int found = 0;
+		for ( set<int, less<int> >::iterator mI = unRoutedLids.begin();
+			  !found && (mI != unRoutedLids.end());
+			  mI++)
+		{
+		   // is this dLid in our port min hop?
+		   uint16_t dLid = *mI;
+		   // is it in this port min hop?
+		   if (p_node->getHops(NULL, dLid) == p_node->getHops(p_port, dLid))
+		   {
+			  found = 1;
+			  // remove from set
+			  unRoutedLids.erase(mI);
+
+			  if (FabricUtilsVerboseLevel & FABU_LOG_VERBOSE)
+				 cout << "-V- Routing to LID:" << dLid << " through root port:" 
+					  << p_port->getName() << endl;
+			  // Traverse forward to that LID assigning LFT
+			  SubnMgtFatTreeFwd(p_node, dLid);
+
+			  // escape the for loop
+			  break;
+		   }
+		}
+	 }
+  }
+
+  // double check no more HCA LIDs to route...
+  if (unRoutedLids.size())
+  {
+	 cout << "-E- " << unRoutedLids.size() << " lids still not routed:" << endl;
+	 for( set<int, less<int> >::iterator sI = unRoutedLids.begin();
+		  sI != unRoutedLids.end();
+		  sI++)
+		cout << "   " << *sI << endl;
+	 return(1);
+  }
+  return(0);
+}
+
+
