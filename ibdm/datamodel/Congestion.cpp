@@ -153,7 +153,21 @@ CongZero(IBFabric *p_fabric)
         i <= (*pI).second.size(); i++)
       congData.numPathsHist.push_back(0);
 
-    congData.numPathsHist[(*pI).second.size()]++;
+	int numPaths = (*pI).second.size();
+    congData.numPathsHist[numPaths]++;
+
+	if (FabricUtilsVerboseLevel & FABU_LOG_VERBOSE)
+	{
+	   if (numPaths > 1)
+	   {
+		  cout << "-V- port:" << (*pI).first->getName() << " coliding:";
+		  for (list_src_dst::iterator lI = (*pI).second.begin();
+				lI != (*pI).second.end();
+				lI++)
+			 cout << (*lI).first << "," << (*lI).second << " ";
+		  cout << endl;
+	   }
+	}
     (*pI).second.clear();
   }
   return(0);
