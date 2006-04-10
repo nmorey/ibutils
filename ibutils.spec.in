@@ -1,0 +1,190 @@
+#
+# Copyright (c) 2006 Mellanox Technologies. All rights reserved.
+#
+# This Software is licensed under one of the following licenses:
+#
+# 1) under the terms of the "Common Public License 1.0" a copy of which is
+#    available from the Open Source Initiative, see
+#    http://www.opensource.org/licenses/cpl.php.
+#
+# 2) under the terms of the "The BSD License" a copy of which is
+#    available from the Open Source Initiative, see
+#    http://www.opensource.org/licenses/bsd-license.php.
+#
+# 3) under the terms of the "GNU General Public License (GPL) Version 2" a
+#    copy of which is available from the Open Source Initiative, see
+#    http://www.opensource.org/licenses/gpl-license.php.
+#
+# Licensee has the right to choose one of the above licenses.
+#
+# Redistributions of source code must retain the above copyright
+# notice and one of the license notices.
+#
+# Redistributions in binary form must reproduce both the above copyright
+# notice, one of the license notices in the documentation
+# and/or other materials provided with the distribution.
+#
+#
+#  $Id$
+#
+
+# Disable debugging
+%define debug_package %{nil}
+%define __check_files %{nil}
+
+# Disable brp-lib64-linux
+%ifarch x86_64 ia64
+%define __arch_install_post %{nil}
+%endif
+
+%{!?_prefix: %define _prefix /usr/local}
+
+%{!?configure_options: %define configure_options %{nil}}
+
+Summary: OpenIB Mellanox InfiniBand Diagnostic Tools
+Name: %{?_name:%{_name}}%{!?_name:ibutils}
+Version: @VERSION@
+Release: rc1
+License: GPL/BSD
+Url: http://openib.org/downloads/%{name}-%{version}.tar.gz
+Group: System Environment/Libraries
+Source: %{name}-%{version}.tar.gz
+BuildRoot: %{?build_root:%{build_root}}%{!?build_root:/var/tmp/IBED}
+Requires: opensm
+Vendor: Mellanox Technologies Ltd.
+%description 
+ibutils provides IB diagnostic programs and scripts needed to diagnose
+an IB subnet.
+
+
+%prep
+%setup -n -q -n %{name}-%{version}
+
+
+###
+### install
+###
+%install
+%configure %{configure_options}
+# W/A for libtool issue: change libdir in all *.la files to point to ${RPM_BUILD_ROOT}/${libdir}
+# This W/A should be removed in post install section
+LA_FILES=$(find ${RPM_BUILD_ROOT}/%{_prefix} -type f -name '*.la')
+for la_file in ${LA_FILES}
+do
+    case ${la_file##*/} in
+        libibumad.la|libosmcomp.la|libopensm.la|libosmvendor.la)
+        perl -ni -e "s@(libdir=).*@\$1'${RPM_BUILD_ROOT}%{_libdir}'@; print" ${la_file}
+        perl -ni -e "s@ %{_libdir}@\ ${RPM_BUILD_ROOT}%{_libdir}@g; print" ${la_file}
+        ;;
+    esac
+done
+
+%{__make} %{?mflags}
+%{__make} install DESTDIR=$RPM_BUILD_ROOT %{?mflags_install}
+	
+
+%clean
+#Remove installed driver after rpm build finished
+# Leave $RPM_BUILD_ROOT in order to build dependent packages
+rm -rf $RPM_BUILD_DIR/%{name}-%{version}
+
+###
+### pre section
+###
+%pre
+###
+### post section
+###
+%post
+if [ $1 = 1 ]; then # 1 : This package is being installed for the first time
+# Create links to bin files from /usr/bin
+if [ -d %{_prefix} ]; then
+        case %{_prefix//\//} in
+            usr|bin|usrlocal|usrsbin|opt|root)
+            ;;
+            *)
+                # IBDIAG
+                ln -snf %{_prefix}/bin/ibis /usr/bin
+                ln -snf %{_prefix}/bin/ibdmsh /usr/bin
+                ln -snf %{_prefix}/bin/ibtopodiff /usr/bin
+                ln -snf %{_prefix}/bin/ibnlparse /usr/bin
+                ln -snf %{_prefix}/bin/ibdmtr /usr/bin
+                ln -snf %{_prefix}/bin/ibdmchk /usr/bin
+                ln -snf %{_prefix}/bin/ibdiagnet /usr/bin
+                ln -snf %{_prefix}/bin/ibdiagpath /usr/bin
+                ln -snf %{_prefix}/bin/mkSimNodeDir /usr/bin
+                ln -snf %{_prefix}/bin/ibmssh /usr/bin
+                ln -snf %{_prefix}/bin/ibmsquit /usr/bin
+                ln -snf %{_prefix}/bin/RunSimTest /usr/bin
+                ln -snf %{_prefix}/bin/IBMgtSim /usr/bin
+             ;;
+        esac
+fi
+    /sbin/ldconfig
+fi
+###
+### preun section
+###
+%preun
+if [ $1 = 0 ]; then  # 1 : Erase, not upgrade
+    # Remove diags binaries
+    /bin/rm -f /usr/bin/ibis
+    /bin/rm -f /usr/bin/ibdmsh
+    /bin/rm -f /usr/bin/ibtopodiff
+    /bin/rm -f /usr/bin/ibnlparse
+    /bin/rm -f /usr/bin/ibdmtr
+    /bin/rm -f /usr/bin/ibdmchk
+    /bin/rm -f /usr/bin/ibdiagnet
+    /bin/rm -f /usr/bin/ibdiagpath
+    /bin/rm -f /usr/bin/mkSimNodeDir
+    /bin/rm -f /usr/bin/ibmssh
+    /bin/rm -f /usr/bin/ibmsquit
+    /bin/rm -f /usr/bin/RunSimTest
+    /bin/rm -f /usr/bin/IBMgtSim
+fi
+ 
+###
+### post uninstall section
+###
+%postun
+#if [ $1 = 0 ]; then  # 1 : Erase, not upgrade
+#    echo
+#fi
+
+###
+### Files
+###
+%files
+%defattr(-,root,root)
+%{_prefix}/bin/ibis
+%{_prefix}/bin/ibdmsh
+%{_prefix}/bin/ibtopodiff
+%{_prefix}/bin/ibnlparse
+%{_prefix}/bin/ibdmtr
+%{_prefix}/bin/ibdmchk
+%{_prefix}/bin/ibdiagnet
+%{_prefix}/bin/ibdiagpath
+%{_prefix}/bin/mkSimNodeDir
+%{_prefix}/bin/ibmssh
+%{_prefix}/bin/ibmsquit
+%{_prefix}/bin/RunSimTest
+%{_prefix}/bin/IBMgtSim
+%{_libdir}/libibdmcom.so*
+# %{_libdir}/ibibdmcom.a
+%{_libdir}/libibdm.so*
+%{_libdir}/libibdm.a
+%{_libdir}/libibmscli.so*
+%{_libdir}/libibmscli.a
+%{_libdir}/ibis1.0
+%{_libdir}/ibdm1.0
+%{_libdir}/ibdiagnet1.0
+%{_libdir}/ibdiagpath1.0
+%{_prefix}/include/ibdm
+%{_prefix}/include/ibmgtsim
+%{_prefix}/man/man1/ibdiagnet.1
+%{_prefix}/man/man1/ibdiagpath.1
+# END Files
+
+%changelog
+* Sun Apr  2 2006 Vladimir Sokolovsky <vlad@mellanox.co.il>
+- Initial packaging for openib gen2 stack

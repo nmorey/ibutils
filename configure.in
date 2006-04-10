@@ -57,6 +57,7 @@ ac_configure_args=["$ac_configure_args --with-ibdm=$abs_srcdir/ibdm"]
 AC_CONFIG_SUBDIRS(ibmgtsim)
 fi
 
+AC_CONFIG_FILES([ibutils.spec])
 dnl Create the following Makefiles
 AC_OUTPUT(Makefile)
 

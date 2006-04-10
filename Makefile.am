@@ -46,6 +46,11 @@ MAINTAINERCLEANFILES = Makefile.in aclocal.m4 configure config-h.in
 
 ACLOCAL			= aclocal -I $(ac_aux_dir)
 
+EXTRA_DIST = ibutils.spec.in
+
+dist-hook: ibutils.spec
+	cp ibutils.spec $(distdir)
+
 #dist-hook:
 #	cd $(distdir) 
 #	cp -rf $(top_srcdir)/Clusters Clusters
