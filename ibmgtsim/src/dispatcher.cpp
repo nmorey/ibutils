@@ -254,7 +254,8 @@ IBMSDispatcher::routeMadToDestByLid(
   MSGSND(inf0, 
 	 item.madMsg.header.mgmt_class,  
 	 item.madMsg.header.method,
-         lid, 
+	 item.madMsg.header.trans_id,
+    cl_ntoh16(lid), 
 	 item.pFromNode->getIBNode()->name,
 	 item.fromPort);
 
