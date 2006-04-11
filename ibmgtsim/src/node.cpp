@@ -505,9 +505,10 @@ int IBMSNode::setLinkStatus(
   uint8_t newState)
 {
   uint8_t                 oldState;
-  ib_smp_t                noticeMad;
-  ib_mad_notice_attr_t*   pTrapMadData;
   ibms_mad_msg_t          trapMadMsg;
+  ib_smp_t*               pTrapSmp = (ib_smp_t*)&(trapMadMsg.header);
+  ib_mad_notice_attr_t*   pTrapMadData =
+     (ib_mad_notice_attr_t*)&(pTrapSmp->data[0]);
   ib_pm_counters_t*       pPortCounters;
   uint32_t                counterSelect;
   static uint64_t tid = 19927;
@@ -569,14 +570,13 @@ int IBMSNode::setLinkStatus(
     //  3. if node is a switch update the portStateChange
     ib_switch_info_set_state_change(&switchInfo);
     //  4. if node is a switch send a trap
-    ib_mad_init_new( (ib_mad_t*)&noticeMad,
+    ib_mad_init_new( (ib_mad_t*)&(trapMadMsg.header),
                      IB_MCLASS_SUBN_LID,
                      1,
                      IB_MAD_METHOD_TRAP,
                      0x12345678,
                      IB_MAD_ATTR_NOTICE,
                      0);
-    pTrapMadData = (ib_mad_notice_attr_t *)(&(noticeMad.data[0]));
 
     // TODO add support to other traps then 128 (only supported for now)
     {
@@ -586,12 +586,13 @@ int IBMSNode::setLinkStatus(
       ib_notice_set_prod_type( pTrapMadData, cl_ntoh32(prodType));
     }
        
+    pTrapMadData->generic_type = 0x81;
     pTrapMadData->g_or_v.generic.trap_num = CL_NTOH16(128);
     pTrapMadData->issuer_lid = cl_ntoh16(nodePortsInfo[0].base_lid);
     pTrapMadData->toggle_count = 0;
-    pTrapMadData->data_details.ntc_128.sw_lid = cl_ntoh16(nodePortsInfo[0].base_lid);
+    pTrapMadData->data_details.ntc_128.sw_lid =
+       cl_ntoh16(nodePortsInfo[0].base_lid);
 
-    memcpy( (void*)&(trapMadMsg.header), (void*)&noticeMad, sizeof(ib_mad_t));
     trapMadMsg.addr.sl = 15;
     trapMadMsg.addr.pkey_index = 0;
     trapMadMsg.addr.slid = cl_ntoh16(nodePortsInfo[0].base_lid);
