@@ -181,8 +181,8 @@ fi
 %{_libdir}/ibdiagpath1.0
 %{_prefix}/include/ibdm
 %{_prefix}/include/ibmgtsim
-%{_prefix}/man/man1/ibdiagnet.1
-%{_prefix}/man/man1/ibdiagpath.1
+%{_prefix}/man/man1/ibdiagnet.1*
+%{_prefix}/man/man1/ibdiagpath.1*
 # END Files
 
 %changelog
