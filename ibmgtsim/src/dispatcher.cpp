@@ -109,7 +109,7 @@ int IBMSDispatcher::dispatchMad(
 
   /* randomize the time we want the mad wait the event wheel */
   uint64_t waitTime_usec =
-    llrintl((2.0 * rand()) / RAND_MAX * stdDevDelay_usec) + (avgDelay_usec - stdDevDelay_usec);
+    llrint((2.0 * rand()) / RAND_MAX * stdDevDelay_usec) + (avgDelay_usec - stdDevDelay_usec);
   
   madItem item;
   item.pFromNode = pFromNode;
