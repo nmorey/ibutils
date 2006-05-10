@@ -154,22 +154,25 @@ ParseRootNodeGuidsFile( IBFabric *p_fabric, string fileName)
   uint64_t guid;
   list <IBNode *> roots;
 
-  guidsFile >> guid;
+  string line;
+
+  guidsFile >> line;
   while (guidsFile.good())
   {
+    guid = strtoull(line.c_str(), NULL, 0);
+
     IBNode *pNode = p_fabric->getNodeByGuid(guid);
     if (!pNode) 
     {
       char g[20];
-      sprintf(g,"%016" PRIx64, guid);
+      sprintf(g,"0x%016" PRIx64, guid);
       cout << "-E- Fail to find node guid:" << g << endl;
     }
     else
     {
       roots.push_back(pNode);
     }
-    guidsFile >> guid;
-
+    guidsFile >> line;
   }
   
   guidsFile.close();
