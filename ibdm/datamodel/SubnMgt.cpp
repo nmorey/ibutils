@@ -1828,7 +1828,7 @@ struct bfsEntry {
 };
  
 // Check a multicast group :
-// 1. all switches holding it are connected 
+// 1. All switches holding it and connect to HCAs are connected 
 // 2. No loops (i.e. a single BFS with no returns).
 int
 SubnMgtCheckMCGrp(
@@ -1840,6 +1840,7 @@ SubnMgtCheckMCGrp(
   int anyErr = 0;
   char mlidStr[8];
   sprintf(mlidStr, "0x%04X", mlid);
+  IBNode *p_firstHcaConnectedSwitch = NULL;
 
   // find all switches that are part of this mcgrp.
   for( map_str_pnode::iterator nI = p_fabric->NodeByName.begin();
@@ -1854,7 +1855,6 @@ SubnMgtCheckMCGrp(
     
     if (portNums.empty()) continue;
 
-    // we collect all switches of this group
     groupSwitches.push_back(p_node);
 
     // find all HCAs connected to the group by following the links that 
@@ -1865,15 +1865,22 @@ SubnMgtCheckMCGrp(
     {
       IBPort *p_port = p_node->getPort(*lI);
       
+      // we do not count switches and disconnected ports
       if (p_port && p_port->p_remotePort && 
-          p_port->p_remotePort->p_node->type != IB_SW_NODE)
+          (p_port->p_remotePort->p_node->type != IB_SW_NODE))
+      {
         groupHCAs.push_back(p_port->p_remotePort->p_node);
+        if (p_firstHcaConnectedSwitch == NULL) 
+          p_firstHcaConnectedSwitch = p_node;
+      }
     }
   }     
+
   cout << "-I- Multicast Group:" << mlidStr << " has:" << groupSwitches.size()
        << " switches and:" << groupHCAs.size() << " HCAs" << endl;
 
   if (! groupSwitches.size()) return(0);
+  if (! groupHCAs.size()) return(0);
 
   // Check the connectivity of the multicast group:
   // Start with an arbitrary switch and check all are connected with 
@@ -1883,7 +1890,10 @@ SubnMgtCheckMCGrp(
   list< bfsEntry > nodesQueue;
   bfsEntry thisStep, nextStep;
   
-  thisStep.pNode = groupSwitches.front();
+  // since we do not complain about disconnected switches if they are not
+  // originally connected to HCAs we track the first HCA connected switch and
+  // start with it
+  thisStep.pNode = p_firstHcaConnectedSwitch;
   thisStep.inPort = 0; // start as we got in from port 0 we can go out any port
   nodesQueue.push_back(thisStep);
   
@@ -1942,14 +1952,47 @@ SubnMgtCheckMCGrp(
        lI != groupSwitches.end();
        lI++)
   {
+    IBNode *p_node = *lI;
     map< IBNode *, uint8_t, less < IBNode *> >::iterator vI =
-      visitedNodeFromPort.find(*lI);
+      visitedNodeFromPort.find(p_node);
     
     if (vI == visitedNodeFromPort.end()) 
     {
-      cout << "-E- Missing switch:" << (*lI)->name << " in group:"
+      // we care only if there are HCAs connected:
+      list_pnode connHcas;
+      list_int portNums = p_node->getMFTPortsForMLid(mlid);
+      if (portNums.empty()) continue;
+
+      // find all HCAs connected to the group by following the links that 
+      // are marked in the MFT that connect to the group.
+      for( list_int::iterator lI = portNums.begin();
+           lI != portNums.end();
+           lI++)
+      {
+        IBPort *p_port = p_node->getPort(*lI);
+        
+        // we do not count switches and disconnected ports
+        if (p_port && p_port->p_remotePort && 
+            (p_port->p_remotePort->p_node->type != IB_SW_NODE))
+          connHcas.push_back(p_port->p_remotePort->p_node);
+      }
+
+      // so do we care?
+      if (connHcas.size())
+      {
+        cout << "-E- Disconnected switch:" << p_node->name << " in group:"
            << mlidStr << endl;
+        for (list_pnode::iterator hlI = connHcas.begin();
+             hlI != connHcas.end();
+             hlI++)
+          cout << "-E- Disconencted HCA:" << (*hlI)->name << endl;
       anyErr++;
+    }
+      else
+      {
+        cout << "-W- Switch:" << p_node->name << " has MFT entry of group:"
+             << mlidStr << " but is disconnceted from it" << endl;
+      }
     }
   }
   
@@ -1964,7 +2007,7 @@ SubnMgtCheckMCGrp(
     if (lI == groupSwitches.end())
     {
       cout << "-E- Extra switch:" << (*vI).first->name << " in group:"
-           << mlidStr << endl;
+           << mlidStr << " MC packets flow into it but never leave." << endl;
       anyErr++;
     }
   }
@@ -2241,6 +2284,7 @@ SubnMgtCheckFabricMCGrpsForCreditLoopPotential(
   return anyErrs;
 }
 
+// 
 //////////////////////////////////////////////////////////////////////////////
 //
 // Fill in the FDB tables assuming the fabric is a fat tree.
