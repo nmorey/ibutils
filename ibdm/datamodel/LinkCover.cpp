@@ -1005,7 +1005,7 @@ LinkCoverageAnalysis(IBFabric *p_fabric, list_pnode rootNodes)
       IBPort *p_port = p_node->getPort(pn);
       if (p_port && p_port->p_remotePort)
         if (! outPortCovered[pn - 1])
-          cout << "-E- Fail to cover port:" << p_port->getName() << endl;
+          cout << "-W- Fail to cover port:" << p_port->getName() << endl;
     }
   }
   
