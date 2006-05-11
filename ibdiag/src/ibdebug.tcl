@@ -1509,7 +1509,7 @@ proc Hex2Bin { hex_list } {
 	0 0000  1 0001  2 0010  3 0011
 	4 0100  5 0101  6 0110  7 0111
 	8 1000  9 1001  a 1010  b 1011
-	c 1100  d 1100  e 1110  f 1111
+	c 1100  d 1101  e 1110  f 1111
     }
     foreach hex $hex_list {
 	regsub {^0x} [string tolower $hex] {} hex
@@ -2475,7 +2475,7 @@ proc name2Lid {localPortPtr destPortPtr exitPort} {
                 return $DirectPath
             }
         }
-
+        if {($localNodetype != 1) } {continue}
         if {(($localNodetype == 1) && ($localNodePtr == $destNodePtr))|| ($index == 1) } {
         # in the current switch check if it's any of the switch ports
             for {set i 1} {$i <= [IBNode_numPorts_get $localNodePtr]} {incr i} {
@@ -2505,64 +2505,6 @@ proc name2Lid {localPortPtr destPortPtr exitPort} {
     }
 }
 
-
-proc name2Lid1 {remotePtr localPortPtr destPortPtr allreadyVisited} {
-    set localNodePtr    [IBPort_p_node_get  $localPortPtr]
-    set localNodetype   [IBNode_type_get    $localNodePtr]
-    set destNodePtr     [IBPort_p_node_get  $destPortPtr]
-
-    set newPorts ""
-
-    if {$localNodetype == 1} {
-        # in the current switch check if it's any of the switch ports
-        for {set i 1} {$i <= [IBNode_numPorts_get $localNodePtr]} {incr i} {
-            set tmpPort [IBNode_getPort $localNodePtr $i]    
-            if {$tmpPort == $destNodePtr} {
-                return 0
-            }
-        }
-
-        # build a list of new ports
-        for {set i 1} {$i <= [IBNode_numPorts_get $localNodePtr]} {incr i} {
-            set tmpPort [IBNode_getPort $localNodePtr $i] 
-            if {$tmpPort == ""} { continue }
-            if { [catch {set tmpRemotePtr [IBPort_p_remotePort_get $tmpPort]} e] } {
-                continue
-            }
-            if {($tmpRemotePtr != "")} {
-                set tmpRemoteNode [IBPort_p_node_get $tmpRemotePtr]
-                if {[lsearch $allreadyVisited $tmpRemoteNode]== -1} {
-                    set tmpRemoteType [IBNode_type_get   $tmpRemoteNode]
-
-                    if {$tmpRemotePtr == $destPortPtr} {
-                        if {$tmpRemoteType == 1} {
-                            return "$i 0"
-                        } else {
-                            return $i 
-                        }
-                    }
-                
-                    if {$tmpRemoteType == 1} {
-                        if {$tmpRemoteNode == $destNodePtr} {
-                            set newPorts [linsert $newPorts 0 "$tmpRemotePtr $i"]
-                        } else {
-                            lappend newPorts "$tmpRemotePtr $i"
-                        }
-                    }
-                }
-            }
-        }
-        foreach newPortPair "$newPorts" {
-            set newPortPtr      [lindex $newPortPair 0]
-            set newPortIdx      [lindex $newPortPair 1]
-            set newRemotePort   [IBPort_p_remotePort_get $newPortPtr]
-            return "$newPortIdx [name2Lid $newRemotePort $newPortPtr $destPortPtr [concat $allreadyVisited $localNodePtr]]"
-        }
-    } else {
-        set tmpPort [IBPort_p_remotePort_get $localPortPtr]
-        return "[IBPort_num_get $localPortPtr] [name2Lid  $localPortPtr $tmpPort $destPortPtr $allreadyVisited]"
-    }
-}
 ##############################
 
 ##############################

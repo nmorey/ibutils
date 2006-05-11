@@ -451,7 +451,6 @@ proc parseArgv {} {
         inform "-E-loading:cannot.use.current.tcl.package" -version [package provide Tcl]
     }
 
-    #ibdmFindRootNodesByMinHop
     if {[catch { package require ibdm } e]} {
         inform "-E-loading:cannot.load.package.ibdm"
     }
