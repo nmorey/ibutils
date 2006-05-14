@@ -278,7 +278,7 @@ class IBMSNode {
     remNode - to the Sim Node of the other side 
     remIBPort - to the remote side IB Fabric Port object on the other side.
   */
-  int IBMSNode::getRemoteNodeByOutPort(
+  int getRemoteNodeByOutPort(
     uint8_t outPortNum,
     IBMSNode **ppRemNode,
     IBPort **ppRemIBPort, int isVl15 = 0);
