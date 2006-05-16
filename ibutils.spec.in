@@ -97,51 +97,17 @@ rm -rf $RPM_BUILD_DIR/%{name}-%{version}
 ###
 %post
 if [ $1 = 1 ]; then # 1 : This package is being installed for the first time
-# Create links to bin files from /usr/bin
-if [ -d %{_prefix} ]; then
-        case %{_prefix//\//} in
-            usr|bin|usrlocal|usrsbin|opt|root)
-            ;;
-            *)
-                # IBDIAG
-                ln -snf %{_prefix}/bin/ibis /usr/bin
-                ln -snf %{_prefix}/bin/ibdmsh /usr/bin
-                ln -snf %{_prefix}/bin/ibtopodiff /usr/bin
-                ln -snf %{_prefix}/bin/ibnlparse /usr/bin
-                ln -snf %{_prefix}/bin/ibdmtr /usr/bin
-                ln -snf %{_prefix}/bin/ibdmchk /usr/bin
-                ln -snf %{_prefix}/bin/ibdiagnet /usr/bin
-                ln -snf %{_prefix}/bin/ibdiagpath /usr/bin
-                ln -snf %{_prefix}/bin/mkSimNodeDir /usr/bin
-                ln -snf %{_prefix}/bin/ibmssh /usr/bin
-                ln -snf %{_prefix}/bin/ibmsquit /usr/bin
-                ln -snf %{_prefix}/bin/RunSimTest /usr/bin
-                ln -snf %{_prefix}/bin/IBMgtSim /usr/bin
-             ;;
-        esac
-fi
+    perl -ni -e "print unless (m@%{_libdir}\b@)" /etc/ld.so.conf
+    echo "%{_libdir}" >> /etc/ld.so.conf
+
     /sbin/ldconfig
 fi
 ###
 ### preun section
 ###
 %preun
-if [ $1 = 0 ]; then  # 1 : Erase, not upgrade
-    # Remove diags binaries
-    /bin/rm -f /usr/bin/ibis
-    /bin/rm -f /usr/bin/ibdmsh
-    /bin/rm -f /usr/bin/ibtopodiff
-    /bin/rm -f /usr/bin/ibnlparse
-    /bin/rm -f /usr/bin/ibdmtr
-    /bin/rm -f /usr/bin/ibdmchk
-    /bin/rm -f /usr/bin/ibdiagnet
-    /bin/rm -f /usr/bin/ibdiagpath
-    /bin/rm -f /usr/bin/mkSimNodeDir
-    /bin/rm -f /usr/bin/ibmssh
-    /bin/rm -f /usr/bin/ibmsquit
-    /bin/rm -f /usr/bin/RunSimTest
-    /bin/rm -f /usr/bin/IBMgtSim
-fi
+# if [ $1 = 0 ]; then  # 1 : Erase, not upgrade
+# fi
  
 ###
 ### post uninstall section
