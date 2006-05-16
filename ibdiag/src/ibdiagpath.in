@@ -31,8 +31,8 @@ if test -d /lib/tls || test -d /lib64/tls ; then
    export LD_PRELOAD="$glibc_file:$ptl_file:$libm_file:$librt_file"
 fi
 
-export TCLLIBPATH=@prefix@/lib; \
-export LD_LIBRARY_PATH=@prefix@/lib:$LD_LIBRARY_PATH; \
+export TCLLIBPATH=@libdir; \
+export LD_LIBRARY_PATH=@libdir:LD_LIBRARY_PATH; \
 exec ibis "$@" <<EOF
 
 set argv0 ibdiagpath

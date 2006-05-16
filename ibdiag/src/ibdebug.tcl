@@ -117,7 +117,7 @@
 #  OUTPUT	NULL
 proc InitalizeIBdiag {} {
     global G argv argv0 InfoArgv INFO_LST MASK SECOND_PATH
-    set G(version.num) 1.3.0
+    set G(version.num) 1.3.0rc1
     set G(tool) [file rootname [file tail $argv0]]
     source [file join [file dirname [info script]] ibdebug_if.tcl]
     set G(start.clock.seconds) [clock seconds]
