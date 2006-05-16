@@ -36,6 +36,10 @@ bin_SCRIPTS = ibdiagnet ibdiagpath
 EXTRA_DIST = ibdebug_if.tcl ibdebug.tcl ibdiagnet.in ibdiagnet.pkg ibdiagnet.tcl \
 	ibdiagpath.pkg ibdiagpath.tcl
 
+ibdiagnet: ibdiagnet.in
+	sed -e 's=%ibdiag_libdir%='$(DESTDIR)$(libdir)'=' \
+	    -e 's=%with_ibdm_lib%='$(with_ibdm_lib)'=' $(srcdir)/ibdiagnet.in > ibdiagnet
+
 NET_LIB_DIR=$(DESTDIR)/$(libdir)/ibdiagnet$(VERSION)
 PATH_LIB_DIR=$(DESTDIR)/$(libdir)/ibdiagpath$(VERSION)
 install-exec-am: install-binSCRIPTS

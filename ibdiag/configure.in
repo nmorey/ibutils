@@ -17,11 +17,10 @@ AC_PROG_MAKE_SET
 dnl TODO: add MLX_PROG_IBIS
 
 dnl Checks for libraries.
-dnl TODO: check for ibdm tcl package
+CHECK_IBDM_TCLLIB
 
 dnl Create the following Makefiles
 AC_CONFIG_FILES([Makefile src/Makefile doc/Makefile 
-   src/ibdiagnet:src/ibdiagnet.in 
    src/ibdiagpath:src/ibdiagpath.in ibdiag.spec])
 AC_OUTPUT()
 
