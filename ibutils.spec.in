@@ -82,6 +82,20 @@ done
 %{__make} %{?mflags}
 %{__make} install DESTDIR=$RPM_BUILD_ROOT %{?mflags_install}
 	
+install -d $RPM_BUILD_ROOT/etc/profile.d
+cat > $RPM_BUILD_ROOT/etc/profile.d/ibutils.sh << EOF
+if ! echo \${PATH} | grep -q %{_prefix}/bin ; then
+        PATH=\${PATH}:%{_prefix}/bin
+fi
+EOF
+cat > $RPM_BUILD_ROOT/etc/profile.d/ibutils.csh << EOF
+if ( "\${path}" !~ *%{_prefix}/bin* ) then
+        set path = ( \$path %{_prefix}/bin )
+endif
+EOF
+
+install -d $RPM_BUILD_ROOT/etc/ld.so.conf.d
+echo "%{_libdir}" >> $RPM_BUILD_ROOT/etc/ld.so.conf.d/ibutils.conf
 
 %clean
 #Remove installed driver after rpm build finished
@@ -97,9 +111,6 @@ rm -rf $RPM_BUILD_DIR/%{name}-%{version}
 ###
 %post
 if [ $1 = 1 ]; then # 1 : This package is being installed for the first time
-    perl -ni -e "print unless (m@%{_libdir}\b@)" /etc/ld.so.conf
-    echo "%{_libdir}" >> /etc/ld.so.conf
-
     /sbin/ldconfig
 fi
 ###
@@ -149,8 +160,13 @@ fi
 %{_prefix}/include/ibmgtsim
 %{_mandir}/man1/ibdiagnet.1*
 %{_mandir}/man1/ibdiagpath.1*
+/etc/profile.d/ibutils.sh
+/etc/profile.d/ibutils.csh
+/etc/ld.so.conf.d/ibutils.conf
 # END Files
 
 %changelog
+* Tue May 16 2006 Vladimir Sokolovsky <vlad@mellanox.co.il>
+- Added ibutils sh, csh and conf to update environment
 * Sun Apr  2 2006 Vladimir Sokolovsky <vlad@mellanox.co.il>
 - Initial packaging for openib gen2 stack
