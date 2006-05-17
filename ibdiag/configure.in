@@ -16,7 +16,7 @@ AC_PROG_LN_S
 AC_PROG_MAKE_SET
 
 dnl Checks for libraries.
-CHECK_IBIS_TCLLIB
+CHECK_IBIS_EXEC_DIR
 CHECK_IBDM_TCLLIB
 
 dnl Create the following Makefiles
