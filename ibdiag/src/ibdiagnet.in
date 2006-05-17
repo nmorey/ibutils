@@ -32,7 +32,7 @@ if test -d /lib/tls || test -d /lib64/tls ; then
 fi
 
 export TCLLIBPATH="%with_ibdm_lib% %ibdiag_libdir%"; \
-export PATH=@with_ibis@:$PATH; \
+export PATH=%with_ibis%:$PATH; \
 exec ibis "$@" <<EOF
 
 set argv0 ibdiagnet

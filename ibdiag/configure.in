@@ -14,9 +14,9 @@ dnl Checks for programs.
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
-dnl TODO: add MLX_PROG_IBIS
 
 dnl Checks for libraries.
+CHECK_IBIS_TCLLIB
 CHECK_IBDM_TCLLIB
 
 dnl Create the following Makefiles

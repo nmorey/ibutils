@@ -23,6 +23,11 @@ if test "x$with_ibdm_lib" = xnone; then
         with_ibdm_lib=$d
         AC_MSG_NOTICE(IBDM: found in:$with_ibdm_lib)
      fi
+   for d in $dirs; do
+     if test -d $d64/ibdm1.0; then
+        with_ibis_lib=$d64
+        AC_MSG_NOTICE(IBDM: found in:$with_ibis_lib)
+     fi
    done
 fi
 
