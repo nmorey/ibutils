@@ -32,6 +32,6 @@ if test "x$libcheck" != "xfalse"; then
    fi
 fi
 
-AC_MSG_NOTICE(IBIS: using executable from:$with_ibis)
+AC_MSG_NOTICE(IBIS: using ibis executable from:$with_ibis)
 AC_SUBST(with_ibis)
 ])
