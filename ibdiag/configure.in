@@ -15,6 +15,15 @@ AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
 
+dnl For making dist we need not check any lib dependency
+AC_ARG_ENABLE(libcheck,
+[  --enable-libcheck    Enable Dependency Checking],
+[case "${enableval}" in
+  yes) libcheck=true ;;
+  no)  libcheck=false ;;
+  *) AC_MSG_ERROR(bad value ${enableval} for --enable-libcheck) ;;
+esac],[libcheck=true])
+
 dnl Checks for libraries.
 CHECK_IBIS_EXEC_DIR
 CHECK_IBDM_TCLLIB
