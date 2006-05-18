@@ -34,7 +34,7 @@
 
 bin_SCRIPTS = ibdiagnet ibdiagpath
 EXTRA_DIST = ibdebug_if.tcl ibdebug.tcl ibdiagnet.in ibdiagnet.pkg ibdiagnet.tcl \
-	ibdiagpath.pkg ibdiagpath.tcl
+	ibdiagpath.in ibdiagpath.pkg ibdiagpath.tcl
 
 ibdiagnet: ibdiagnet.in
 	sed -e 's=%ibdiag_libdir%='$(DESTDIR)$(libdir)'=' \
@@ -42,7 +42,7 @@ ibdiagnet: ibdiagnet.in
 	    -e 's=%with_ibis%='$(with_ibis)'=' $(srcdir)/ibdiagnet.in > ibdiagnet
 
 ibdiagpath: ibdiagpath.in
-        sed -e 's=%ibdiag_libdir%='$(DESTDIR)$(libdir)'=' \
+	sed -e 's=%ibdiag_libdir%='$(DESTDIR)$(libdir)'=' \
             -e 's=%with_ibdm_lib%='$(with_ibdm_lib)'=' $(srcdir)/ibdiagpath.in \
             -e 's=%with_ibis%='$(with_ibis)'=' $(srcdir)/ibdiagpath.in > ibdiagpath
 

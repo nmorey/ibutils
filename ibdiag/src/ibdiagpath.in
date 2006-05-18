@@ -1,6 +1,6 @@
 #!/bin/sh -f
 
-# we need to use the corrrect libraries based on the machine
+# I need to use the corrrect libraries based on the machine
 # use 64 bit libs if needed
 if test -d /lib/tls || test -d /lib64/tls ; then
 
