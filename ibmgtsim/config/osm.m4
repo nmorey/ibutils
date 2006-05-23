@@ -57,7 +57,7 @@ AC_ARG_WITH(osm,
 [  --with-osm=<dir> define where to find OSM],
 AC_MSG_NOTICE(Using OSM from:$with_osm),
 with_osm="none")
-if test "$(uname -m)" = "x86_64"; then
+if test "$(uname -m)" = "x86_64" -o "$(uname -m)" = "ppc64"; then
    osm_lib_dir="lib64"
 else
    osm_lib_dir="lib"	
@@ -69,7 +69,7 @@ AC_ARG_WITH(osm-libs,
 AC_MSG_NOTICE(Using OSM libs from:$with_osm_libs),
 with_osm_libs="none")
 
-if test "$(uname -m)" = "x86_64"; then
+if test "$(uname -m)" = "x86_64" -o "$(uname -m)" = "ppc64"; then
    osm_lib_dir="lib64"
 else
    osm_lib_dir="lib"	
