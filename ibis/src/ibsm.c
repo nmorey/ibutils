@@ -44,6 +44,7 @@
  * $Revision: 1.8 $
  */
 
+#include <string.h>
 #include <complib/cl_memory.h>
 #include <complib/cl_qmap.h>
 #include <complib/cl_passivelock.h>
@@ -71,7 +72,7 @@ ibsm_construct()
     goto Exit;
   }
 
-  cl_memclr (p_ibsm, sizeof(ibsm_t));
+  memset (p_ibsm, 0, sizeof(ibsm_t));
   Exit :
     OSM_LOG_EXIT(&(IbisObj.log));
   return(p_ibsm);
@@ -253,7 +254,7 @@ ibsm_send_mad_by_lid (
     &(IbisObj.mad_pool), p_ibsm->lid_route_bind, MAD_BLOCK_SIZE, &mad_addr);
   p_madw->resp_expected = TRUE;
 
-  cl_memclr((char*)p_madw->p_mad, MAD_BLOCK_SIZE);
+  memset((char*)p_madw->p_mad, 0, MAD_BLOCK_SIZE);
   ((ib_mad_t *)p_madw->p_mad)->method = meth;
   ((ib_mad_t *)p_madw->p_mad)->class_ver = 1;
   ((ib_mad_t *)p_madw->p_mad)->mgmt_class = IB_MCLASS_SUBN_LID;
@@ -263,7 +264,7 @@ ibsm_send_mad_by_lid (
   ((ib_mad_t *)p_madw->p_mad)->trans_id = ibis_get_tid();
 
   /* copy over the user attribute data */
-  cl_memcpy(&((ib_smp_t*)p_madw->p_mad)->data, p_data, data_size);
+  memcpy(&((ib_smp_t*)p_madw->p_mad)->data, p_data, data_size);
 
   /* send and wait */
   status = ibis_gsi_send_sync_mad_batch(
@@ -279,7 +280,7 @@ ibsm_send_mad_by_lid (
 
   if (status == IB_SUCCESS)
   {
-    cl_memcpy(p_data, &response_mad.data, data_size);
+    memcpy(p_data, &response_mad.data, data_size);
   
     if (cl_ntoh16(response_mad.status) & 0x7fff)
     {
@@ -326,7 +327,7 @@ ibsm_send_mad_by_dr(
   p_madw->resp_expected = TRUE;
 
   p_smp = (ib_smp_t*)p_madw->p_mad;
-  cl_memclr((char*)p_madw->p_mad, MAD_BLOCK_SIZE);
+  memset((char*)p_madw->p_mad, 0, MAD_BLOCK_SIZE);
 
   ib_smp_init_new(
     p_smp,
@@ -341,7 +342,7 @@ ibsm_send_mad_by_dr(
     0xffff);
 
   /* copy over the user attribute data */
-  cl_memcpy(&((ib_smp_t*)p_madw->p_mad)->data, p_data, data_size);
+  memcpy(&((ib_smp_t*)p_madw->p_mad)->data, p_data, data_size);
 
   /* send and wait */
   status = ibis_gsi_send_sync_mad_batch(
@@ -357,7 +358,7 @@ ibsm_send_mad_by_dr(
 
   if (status == IB_SUCCESS)
   {
-    cl_memcpy(p_data, &response_mad.data, data_size);
+    memcpy(p_data, &response_mad.data, data_size);
   
     if (cl_ntoh16(response_mad.status) & 0x7fff)
     {

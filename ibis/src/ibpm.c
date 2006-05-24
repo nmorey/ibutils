@@ -44,6 +44,7 @@
  * $Revision: 1.5 $
  */
 
+#include <string.h>
 #include <complib/cl_memory.h>
 #include <complib/cl_qmap.h>
 #include <complib/cl_passivelock.h>
@@ -71,7 +72,7 @@ ibpm_construct()
     goto Exit;
   }
 
-  cl_memclr (p_ibpm, sizeof(ibpm_t));
+  memset (p_ibpm, 0, sizeof(ibpm_t));
   Exit :
     OSM_LOG_EXIT(&(IbisObj.log));
   return(p_ibpm);

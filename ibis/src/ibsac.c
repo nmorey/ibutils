@@ -32,6 +32,7 @@
  * $Id: Makefile.am,v 1.14 2005/05/24 11:59:20 eitan Exp $
  */
 
+#include <string.h>
 #include "ibis.h"
 #include <opensm/osm_helper.h>
 #ifdef OSM_BUILD_OPENIB
@@ -306,8 +307,8 @@ ibsac_query( IN ibis_t *   const p_ibis,
    *
    * The query structures are locals.
    */
-  cl_memclr( &req, sizeof( req ) );
-  cl_memclr( &user, sizeof( user ) );
+  memset( &req, 0, sizeof( req ) );
+  memset( &user, 0, sizeof( user ) );
 
   p_context->p_ibis = p_ibis;
   user.method = method;

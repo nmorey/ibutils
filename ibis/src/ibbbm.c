@@ -44,6 +44,7 @@
  * $Revision: 1.2 $
  */
 
+#include <string.h>
 #include <complib/cl_memory.h>
 #include <complib/cl_qmap.h>
 #include <complib/cl_passivelock.h>
@@ -89,7 +90,7 @@ ibbbm_construct()
     goto Exit;
   }
 
-  cl_memclr (p_ibbbm, sizeof(ibbbm_t));
+  memset (p_ibbbm, 0, sizeof(ibbbm_t));
   p_ibbbm->state = IBBBM_STATE_INIT;
   p_ibbbm->bm_sequence = 0;
   cl_event_construct(&p_ibbbm->wait_for_resp);

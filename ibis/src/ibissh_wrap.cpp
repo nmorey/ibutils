@@ -30897,7 +30897,7 @@ static int _wrap_sacVlArbRec_vl_arb_tbl_set(ClientData clientData, Tcl_Interp *i
   char **sub_lists;
 #endif
   int num_sub_lists;
-  cl_memclr( &n, sizeof(ib_vl_arb_table_t) );
+  memset( &n, 0, sizeof(ib_vl_arb_table_t) );
   
   /* we will use the TCL split list to split into elements */
   if (Tcl_SplitList(interp, 
@@ -57415,7 +57415,7 @@ SWIGEXPORT(int,Ibis_Init)(Tcl_Interp *interp) {
       Tcl_StaticPackage(interp, "ibis", Ibis_Init, NULL);
       
       /* Default Options  */
-      cl_memclr(&IbisOpts,sizeof(ibis_opt_t));
+      memset(&IbisOpts, 0,sizeof(ibis_opt_t));
       IbisOpts.transaction_timeout = 4*OSM_DEFAULT_TRANS_TIMEOUT_MILLISEC;
       IbisOpts.single_thread = TRUE;
       IbisOpts.force_log_flush = TRUE;
@@ -57470,26 +57470,26 @@ SWIGEXPORT(int,Ibis_Init)(Tcl_Interp *interp) {
   		}
 
       /* Initialize global records */
-      cl_memclr(&ibsm_node_info_obj, sizeof(ib_node_info_t));
-      cl_memclr(&ibsm_port_info_obj, sizeof(ib_port_info_t));
-      cl_memclr(&ibsm_switch_info_obj, sizeof(ib_switch_info_t));
-      cl_memclr(&ibsm_lft_block_obj, sizeof(ibsm_lft_block_t));
-      cl_memclr(&ibsm_mft_block_obj, sizeof(ibsm_mft_block_t));
-      cl_memclr(&ibsm_guid_info_obj, sizeof(ib_guid_info_t));
-      cl_memclr(&ibsm_pkey_table_obj, sizeof(ib_pkey_table_t));
-      cl_memclr(&ibsm_sm_info_obj, sizeof(ib_sm_info_t));
+      memset(&ibsm_node_info_obj, 0, sizeof(ib_node_info_t));
+      memset(&ibsm_port_info_obj, 0, sizeof(ib_port_info_t));
+      memset(&ibsm_switch_info_obj, 0, sizeof(ib_switch_info_t));
+      memset(&ibsm_lft_block_obj, 0, sizeof(ibsm_lft_block_t));
+      memset(&ibsm_mft_block_obj, 0, sizeof(ibsm_mft_block_t));
+      memset(&ibsm_guid_info_obj, 0, sizeof(ib_guid_info_t));
+      memset(&ibsm_pkey_table_obj, 0, sizeof(ib_pkey_table_t));
+      memset(&ibsm_sm_info_obj, 0, sizeof(ib_sm_info_t));
 
       /* ------------------ IBSAC ---------------------- */
       
       /* Initialize global records */
-      cl_memclr(&ibsac_node_rec,sizeof(ibsac_node_rec));
-      cl_memclr(&ibsac_portinfo_rec,sizeof(ibsac_portinfo_rec));
-      cl_memclr(&ibsac_sminfo_rec, sizeof(ib_sminfo_record_t));
-      cl_memclr(&ibsac_swinfo_rec, sizeof(ib_switch_info_record_t));
-      cl_memclr(&ibsac_link_rec, sizeof(ib_link_record_t));
-      cl_memclr(&ibsac_path_rec, sizeof(ib_path_rec_t));
-      cl_memclr(&ibsac_lft_rec, sizeof(ib_lft_record_t));
-      cl_memclr(&ibsac_mcm_rec, sizeof(ib_member_rec_t));
+      memset(&ibsac_node_rec, 0,sizeof(ibsac_node_rec));
+      memset(&ibsac_portinfo_rec, 0,sizeof(ibsac_portinfo_rec));
+      memset(&ibsac_sminfo_rec, 0, sizeof(ib_sminfo_record_t));
+      memset(&ibsac_swinfo_rec, 0, sizeof(ib_switch_info_record_t));
+      memset(&ibsac_link_rec, 0, sizeof(ib_link_record_t));
+      memset(&ibsac_path_rec, 0, sizeof(ib_path_rec_t));
+      memset(&ibsac_lft_rec, 0, sizeof(ib_lft_record_t));
+      memset(&ibsac_mcm_rec, 0, sizeof(ib_member_rec_t));
       
       /* 
        * A1 Supported features:

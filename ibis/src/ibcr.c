@@ -44,6 +44,7 @@
  * $Revision: 1.3 $
  */
 
+#include <string.h>
 #include <complib/cl_memory.h>
 #include <complib/cl_qmap.h>
 #include <complib/cl_passivelock.h>
@@ -71,7 +72,7 @@ ibcr_construct()
     goto Exit;
   }
 
-  cl_memclr(p_ibcr, sizeof(ibcr_t));
+  memset(p_ibcr, 0, sizeof(ibcr_t));
   p_ibcr->state = IBCR_STATE_INIT;
 
   Exit :

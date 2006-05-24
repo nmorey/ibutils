@@ -63,7 +63,7 @@ ibis_t IbisObj;
  **********************************************************************/
 void
 ibis_construct(void) {
-  cl_memclr( &IbisObj, sizeof( ibis_t ) );
+  memset( &IbisObj, 0, sizeof( ibis_t ) );
   IbisObj.initialized = FALSE;
   IbisObj.trans_id = 0x1;
   osm_log_construct( &(IbisObj.log) );

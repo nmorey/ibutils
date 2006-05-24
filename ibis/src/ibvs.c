@@ -44,6 +44,7 @@
  * $Revision: 1.5 $
  */
 
+#include <string.h>
 #include <complib/cl_memory.h>
 #include <complib/cl_qmap.h>
 #include <complib/cl_passivelock.h>
@@ -71,7 +72,7 @@ ibvs_construct()
     goto Exit;
   }
 
-  cl_memclr (p_ibvs, sizeof(ibvs_t));
+  memset (p_ibvs, 0, sizeof(ibvs_t));
   p_ibvs->state = IBVS_STATE_INIT;
 
   Exit :

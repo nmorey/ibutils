@@ -43,6 +43,7 @@
  * $Revision: 1.15 $
  */
 
+#include <string.h>
 #include <complib/cl_passivelock.h>
 #include <complib/cl_memory.h>
 #include <complib/cl_debug.h>
@@ -513,7 +514,7 @@ __gsi_delete_mad_batch_context(
     cl_event_destroy(&p_batch_ctx->wait_for_resp);
     cl_spinlock_destroy(&p_batch_ctx->lock);
   
-    cl_memclr(p_batch_ctx, sizeof(ibis_gsi_mad_batch_context_t));
+    memset(p_batch_ctx, 0, sizeof(ibis_gsi_mad_batch_context_t));
   
     /* finally */
     cl_free(p_batch_ctx);
@@ -541,7 +542,7 @@ ibis_gsi_mad_ctrl_construct(
   IN ibis_gsi_mad_ctrl_t* const p_ctrl )
 {
   CL_ASSERT( p_ctrl );
-  cl_memclr( p_ctrl, sizeof(*p_ctrl) );
+  memset( p_ctrl, 0, sizeof(*p_ctrl) );
   cl_vector_construct( &p_ctrl->class_vector );
   cl_map_construct( & g_ibis_active_batch_contexts_map );
 }
@@ -880,7 +881,7 @@ ibis_gsi_sync_mad_batch_callback(
     {
       /* store the result */
       if (p_result && p_madw->p_mad)
-        cl_memcpy(p_result, p_madw->p_mad, p_batch_ctx->res_size);
+        memcpy(p_result, p_madw->p_mad, p_batch_ctx->res_size);
     }
   
     /* decrement the number of outstanding mads */
@@ -951,7 +952,7 @@ ibis_gsi_send_sync_mad_batch(
   cl_spinlock_acquire(&p_batch_ctx->lock);
 
   /* cleanup the results array */
-  if (res_arr) cl_memclr(res_arr, res_size*num);
+  if (res_arr) memset(res_arr, 0, res_size*num);
 
   /* send the mads */
   for (i = 0; i < num; i++)

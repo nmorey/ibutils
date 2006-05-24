@@ -86,8 +86,8 @@ void strToUInt64(char *swig_type, uint64_t *res_p) {
   swig_type = swig_type + 4; // assuming all objects types start with "_ib_"
   i = strlen(swig_type);
   if ( i > 8 ) i = 8;
-  cl_memclr(res_p, 8);
-  cl_memcpy(res_p, swig_type, i);
+  memset(res_p, 0, 8);
+  memcpy(res_p, swig_type, i);
 }
 
 /* introduce a new valid object by registering it into the maps */
@@ -284,7 +284,7 @@ void SWIG_SetPointerObj(Tcl_Obj *objPtr, void *_ptr, char *type) {
     return; 
   }
 
-  cl_memclr(_result,20);
+  memset(_result, 0,20);
   _r = &_result[0];
   _p = (unsigned long) _ptr;
   if (_p > 0)
