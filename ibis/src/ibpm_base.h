@@ -29,7 +29,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
- * $Id: Makefile.am,v 1.14 2005/05/24 11:59:20 eitan Exp $
+ * $Id$
  */
 
 #ifndef _IBPM_BASE_H_

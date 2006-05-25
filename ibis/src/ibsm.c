@@ -29,7 +29,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
- * $Id: Makefile.am,v 1.14 2005/05/24 11:59:20 eitan Exp $
+ * $Id$
  */
 
 /*
@@ -343,6 +343,9 @@ ibsm_send_mad_by_dr(
 
   /* copy over the user attribute data */
   memcpy(&((ib_smp_t*)p_madw->p_mad)->data, p_data, data_size);
+
+  /* verbose ... */
+  osm_dump_dr_smp(&(IbisObj.log), p_smp, OSM_LOG_FRAMES);
 
   /* send and wait */
   status = ibis_gsi_send_sync_mad_batch(
