@@ -29,7 +29,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
- * $Id: simmsg.cpp,v 1.10 2005/05/25 12:42:07 sezer Exp $
+ * $Id$
  */
 
 #include <inttypes.h>

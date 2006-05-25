@@ -29,7 +29,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
- * $Id: TraceRoute.cpp,v 1.5 2005/05/29 15:33:05 eitan Exp $
+ * $Id$
  */
 
 #ifndef IBDM_CONGESTION_H

@@ -29,7 +29,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
- * $Id: sma.h,v 1.15 2005/07/07 21:15:29 eitan Exp $
+ * $Id$
  */
 
 /****h* IBMS/Subnet Manager Agent

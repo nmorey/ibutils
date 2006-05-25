@@ -29,7 +29,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
- * $Id: client.cpp,v 1.12 2005/07/07 21:15:28 eitan Exp $
+ * $Id$
  */
 
 #include <stdlib.h>     /* for atoi() and exit() */

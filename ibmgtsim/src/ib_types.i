@@ -29,7 +29,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
- * $Id: ib_types.i,v 1.7 2005/05/25 12:42:07 sezer Exp $
+ * $Id$
  */
 
 /* Holds ib_types.h MAD structs in and out TypeMaps */

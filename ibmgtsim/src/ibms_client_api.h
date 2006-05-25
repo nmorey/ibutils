@@ -29,7 +29,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
- * $Id: ibms_client_api.h,v 1.4 2005/07/07 21:15:28 eitan Exp $
+ * $Id$
  */
 
 /****h* IBMgtSim/ClientInterface

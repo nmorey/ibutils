@@ -29,7 +29,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
- * $Id: mads.i,v 1.1 2005/03/22 15:30:49 eitan Exp $
+ * $Id$
  */
 
 /*

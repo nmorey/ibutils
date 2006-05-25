@@ -29,7 +29,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
- * $Id: Fabric.h,v 1.11 2005/07/03 18:52:05 eitan Exp $
+ * $Id$
  */
 
 /*

@@ -29,7 +29,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
- * $Id: test_ibnl_parser.cpp,v 1.4 2005/02/23 21:08:43 eitan Exp $
+ * $Id$
  */
 
 #include "Fabric.h"

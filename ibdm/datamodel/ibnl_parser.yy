@@ -29,7 +29,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
- * $Id: ibnl_parser.yy,v 1.5 2005/06/29 11:39:27 eitan Exp $
+ * $Id$
  */
 
 

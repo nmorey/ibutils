@@ -29,7 +29,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
- * $Id: swig_alternate_mangling.cpp,v 1.3 2005/07/07 21:15:29 eitan Exp $
+ * $Id$
  */
 
 

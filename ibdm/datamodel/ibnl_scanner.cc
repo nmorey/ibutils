@@ -436,7 +436,7 @@ char *yytext;
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
- * $Id: ibnl_scanner.ll,v 1.4 2005/02/23 21:08:37 eitan Exp $
+ * $Id$
  */
 #line 36 "ibnl_scanner.ll"
 

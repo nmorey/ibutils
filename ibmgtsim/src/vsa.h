@@ -29,7 +29,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
- * $Id: vsa.h,v 1.4 2005/07/07 21:15:29 eitan Exp $
+ * $Id$
  */
 
 /****h* IBMS/Vendor specific Agent

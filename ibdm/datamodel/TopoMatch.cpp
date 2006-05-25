@@ -29,7 +29,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
- * $Id: TopoMatch.cpp,v 1.21 2005/07/03 15:28:50 eitan Exp $
+ * $Id$
  */
 
 /*

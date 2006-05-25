@@ -29,7 +29,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
- * $Id: ibdm.i,v 1.13 2005/07/04 07:16:21 eitan Exp $
+ * $Id$
  */
 
 

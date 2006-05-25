@@ -29,7 +29,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
- * $Id: osm_check.cpp,v 1.9 2005/06/01 20:19:07 eitan Exp $
+ * $Id$
  */
 
 #include "Fabric.h" 

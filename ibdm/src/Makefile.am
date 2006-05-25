@@ -29,7 +29,7 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
-# $Id: Makefile.am,v 1.13 2005/03/23 16:15:39 eitan Exp $
+# $Id$
 #--
 
 ## Makefile.am -- Process this file with automake to produce Makefile.in

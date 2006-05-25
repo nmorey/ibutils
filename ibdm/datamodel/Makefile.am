@@ -29,7 +29,7 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
-# $Id: Makefile.am,v 1.13 2005/04/12 13:28:34 eitan Exp $
+# $Id$
 #--
 
 # we would like to export these headers during install

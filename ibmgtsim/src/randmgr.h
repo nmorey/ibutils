@@ -29,7 +29,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
- * $Id: randmgr.h,v 1.1 2005/04/11 08:38:45 eitan Exp $
+ * $Id$
  */
 
 /****h* IBMS/RandomManager

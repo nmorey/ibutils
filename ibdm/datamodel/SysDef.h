@@ -29,7 +29,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
- * $Id: SysDef.h,v 1.5 2005/07/03 18:52:05 eitan Exp $
+ * $Id$
  */
 
 /*

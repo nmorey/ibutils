@@ -29,7 +29,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
- * $Id: randmgr.cpp,v 1.1 2005/04/12 08:31:12 eitan Exp $
+ * $Id$
  */
 
 #include "randmgr.h"

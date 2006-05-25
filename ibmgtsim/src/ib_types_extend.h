@@ -29,7 +29,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
- * $Id: ib_types_extend.h,v 1.4 2005/02/23 20:43:49 eitan Exp $
+ * $Id$
  */
 
 #ifndef IB_TYPES_EXTEND

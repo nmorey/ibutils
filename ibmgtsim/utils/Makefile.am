@@ -29,7 +29,7 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
-# $Id: Makefile.am,v 1.4 2005/04/12 08:15:33 eitan Exp $
+# $Id$
 #--
 
 # We only want to distriute these files

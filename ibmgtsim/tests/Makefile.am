@@ -29,7 +29,7 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
-# $Id: Makefile.am,v 1.3 2005/04/12 14:01:44 eitan Exp $
+# $Id$
 #--
 
 # All the provided in package systems:

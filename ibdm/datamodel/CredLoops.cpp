@@ -29,7 +29,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
- * $Id: CredLoops.cpp,v 1.5 2005/02/23 21:08:36 eitan Exp $
+ * $Id$
  */
 
 #include "Fabric.h"

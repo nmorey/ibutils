@@ -29,7 +29,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
- * $Id: SubnMgt.cpp,v 1.11 2005/06/07 10:55:21 eitan Exp $
+ * $Id$
  */
 
 /*
