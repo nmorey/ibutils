@@ -50,7 +50,6 @@ Url: http://openib.org/downloads/%{name}-%{version}.tar.gz
 Group: System Environment/Libraries
 Source: %{name}-%{version}.tar.gz
 BuildRoot: %{?build_root:%{build_root}}%{!?build_root:/var/tmp/IBED}
-Requires: opensm
 Vendor: Mellanox Technologies Ltd.
 %description 
 ibutils provides IB network and path diagnostics.
