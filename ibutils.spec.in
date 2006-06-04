@@ -53,8 +53,7 @@ BuildRoot: %{?build_root:%{build_root}}%{!?build_root:/var/tmp/IBED}
 Requires: opensm
 Vendor: Mellanox Technologies Ltd.
 %description 
-ibutils provides IB diagnostic programs and scripts needed to diagnose
-an IB subnet.
+ibutils provides IB network and path diagnostics.
 
 
 %prep
