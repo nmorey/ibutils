@@ -91,6 +91,7 @@ typedef vector<uint32_t > vec_word;
 typedef vector<vec_byte > vec_vec_byte;
 
 typedef vector<class IBPort * > vec_pport;
+typedef vector<class IBNode * > vec_pnode;
 typedef map< string, class IBSysPort *, strless > map_str_psysport;
 typedef map< string, class IBNode *, strless > map_str_pnode;
 typedef map< string, class IBSystem *, strless > map_str_psys;
@@ -206,6 +207,7 @@ class IBPort {
   unsigned int	   base_lid;       // The base lid assigned to the port.
   IBLinkWidth     width;          // The link width of the port
   IBLinkSpeed     speed;          // The link speed of the port
+  unsigned int    counter1;       // a generic value to be used by various algorithms
   
   // constructor
   IBPort(IBNode *p_nodePtr, int number);
@@ -483,7 +485,7 @@ class IBFabric {
   int parseFdbFile(string fn);
 
   // Parse an OpenSM MCFDBs file and set the MFT table accordingly
-  int IBFabric::parseMCFdbFile(string fn);
+  int parseMCFdbFile(string fn);
 
   // set a lid port
   inline void setLidPort (unsigned int lid, IBPort *p_port) {
