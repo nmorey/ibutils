@@ -90,7 +90,7 @@ proc Help {} {
       verbosity. See IBMgtSim for full list of modules.
       Examples:
        -V 0xffff = Full verbosity on all modules
-       -V '0x3 server 0x6f2 sma 0xffff' = Only fatal and error
+       -V '\"0x3 server 0x6f2 sma 0xffff\"' = Only fatal and error
            for all modules full verbosity for the SMA module and default 
            verbosity for the Server module.
 
