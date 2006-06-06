@@ -36,6 +36,7 @@
 #include "stdio.h"
 #include <errno.h>
 #include <stdlib.h>
+#include <string.h>
 #include <getopt.h>
 #include <iba/ib_types.h>
 #include <complib/cl_types.h>
@@ -1758,7 +1759,7 @@ typedef struct _ib_slvl_table_record
   char **sub_lists;
 #endif
   int num_sub_lists;
-  cl_memclr( &n, sizeof(ib_vl_arb_table_t) );
+  memset( &n, 0, sizeof(ib_vl_arb_table_t) );
   
   /* we will use the TCL split list to split into elements */
   if (Tcl_SplitList(interp, 

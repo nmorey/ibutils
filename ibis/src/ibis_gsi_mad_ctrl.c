@@ -43,9 +43,9 @@
  * $Revision: 1.15 $
  */
 
+#include <stdlib.h>
 #include <string.h>
 #include <complib/cl_passivelock.h>
-#include <complib/cl_memory.h>
 #include <complib/cl_debug.h>
 #include <complib/cl_map.h>
 #include <iba/ib_types.h>
@@ -463,7 +463,7 @@ __gsi_new_mad_batch_context(void)
 
   /* allocate a new batch */
   p_batch_ctx = (ibis_gsi_mad_batch_context_t *)
-    cl_malloc(sizeof(ibis_gsi_mad_batch_context_t));
+    malloc(sizeof(ibis_gsi_mad_batch_context_t));
 
   /* construct and initialize the spinlock and mutex on the batch */
   cl_event_construct(&p_batch_ctx->wait_for_resp);
@@ -517,7 +517,7 @@ __gsi_delete_mad_batch_context(
     memset(p_batch_ctx, 0, sizeof(ibis_gsi_mad_batch_context_t));
   
     /* finally */
-    cl_free(p_batch_ctx);
+    free(p_batch_ctx);
   }
 }
 

@@ -151,7 +151,6 @@
 
 %typemap (tcl8, argout) char **p_out_str {
   Tcl_SetStringObj($target,*$source,strlen(*$source));
-  /* can not be cl_free as we used realloc and there is no cl_realloc */
   if (*$source) free(*$source);
 }
 

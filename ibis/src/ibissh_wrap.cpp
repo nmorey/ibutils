@@ -313,7 +313,9 @@ SWIGEXPORT(int,Ibis_Init)(Tcl_Interp *);
 
 BEGIN_C_DECLS
 
-#include "stdio.h"
+#include <unistd.h>
+#include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
 #include <getopt.h>
 #include <opensm/osm_log.h>
@@ -385,7 +387,6 @@ ibisp_is_debug(void)
   }
 
 
-#include <complib/cl_memory.h>
 #include <complib/cl_qmap.h>
 #include <complib/cl_passivelock.h>
 #include <complib/cl_debug.h>
@@ -551,7 +552,6 @@ ibcr_multi_write_global(
 
 #define uint16_cr_arr_t uint16_t
 
-#include <complib/cl_memory.h>
 #include <complib/cl_qmap.h>
 #include <complib/cl_passivelock.h>
 #include <complib/cl_debug.h>
@@ -694,7 +694,7 @@ ibpm_get_multi_counters_global(
 {
   int status;
   ib_pm_port_counter_t *p_multi_counters_set;
-  p_multi_counters_set = (ib_pm_port_counter_t *)cl_malloc(sizeof(ib_pm_port_counter_t)*num);
+  p_multi_counters_set = (ib_pm_port_counter_t *)malloc(sizeof(ib_pm_port_counter_t)*num);
   *pp_new_counters_str = NULL;
   
   status = (int) ibpm_get_multi_counters(
@@ -704,7 +704,7 @@ ibpm_get_multi_counters_global(
   } else {
     *pp_new_counters_str = ibpm_get_port_counters_str(num, p_multi_counters_set);
   }
-  cl_free(p_multi_counters_set);
+  free(p_multi_counters_set);
   return(status);
 }
 
@@ -718,7 +718,7 @@ ibpm_get_multi_counters_extended_global(
   int status;
   ib_pm_port_counter_extended_t *p_multi_counters_set;
   p_multi_counters_set = 
-    (ib_pm_port_counter_extended_t *)cl_malloc(sizeof(ib_pm_port_counter_t)*num);
+    (ib_pm_port_counter_extended_t *)malloc(sizeof(ib_pm_port_counter_t)*num);
   *pp_new_counters_str = NULL;
   
   status = (int) ibpm_get_multi_counters_extended(
@@ -728,7 +728,7 @@ ibpm_get_multi_counters_extended_global(
   } else {
     *pp_new_counters_str = ibpm_get_port_counters_extended_str(num, p_multi_counters_set);
   }
-  cl_free(p_multi_counters_set);
+  free(p_multi_counters_set);
   return(status);
 }
 
@@ -765,7 +765,6 @@ ibpm_clr_all_multi_counters_global(
 
 #define  uint8_pm_arr_t  uint8_t
 
-#include <complib/cl_memory.h>
 #include <complib/cl_qmap.h>
 #include <complib/cl_passivelock.h>
 #include <complib/cl_debug.h>
@@ -1216,7 +1215,6 @@ ibvs_mirror_write_global(
 
 #define uint32_vs_data_arr_t uint32_t
 
-#include <complib/cl_memory.h>
 #include <complib/cl_qmap.h>
 #include <complib/cl_passivelock.h>
 #include <complib/cl_debug.h>
@@ -1353,6 +1351,7 @@ ibbbm_read_fw_ver_vpd_global(
 #include "stdio.h"
 #include <errno.h>
 #include <stdlib.h>
+#include <string.h>
 #include <getopt.h>
 #include <iba/ib_types.h>
 #include <complib/cl_types.h>
@@ -3178,7 +3177,6 @@ static int _wrap_crRead(ClientData clientData, Tcl_Interp *interp, int objc, Tcl
     Tcl_SetIntObj(tcl_result,(long) _result);
 {
   Tcl_SetStringObj(tcl_result,*_arg2,strlen(*_arg2));
-  /* can not be cl_free as we used realloc and there is no cl_realloc */
   if (*_arg2) free(*_arg2);
 }
     return TCL_OK;
@@ -3323,7 +3321,6 @@ static int _wrap_crReadMulti(ClientData clientData, Tcl_Interp *interp, int objc
     Tcl_SetIntObj(tcl_result,(long) _result);
 {
   Tcl_SetStringObj(tcl_result,*_arg3,strlen(*_arg3));
-  /* can not be cl_free as we used realloc and there is no cl_realloc */
   if (*_arg3) free(*_arg3);
 }
     return TCL_OK;
@@ -3508,7 +3505,6 @@ static int _wrap_pmGetPortCounters(ClientData clientData, Tcl_Interp *interp, in
     Tcl_SetIntObj(tcl_result,(long) _result);
 {
   Tcl_SetStringObj(tcl_result,*_arg2,strlen(*_arg2));
-  /* can not be cl_free as we used realloc and there is no cl_realloc */
   if (*_arg2) free(*_arg2);
 }
     return TCL_OK;
@@ -3614,7 +3610,6 @@ static int _wrap_pmGetPortCountersMulti(ClientData clientData, Tcl_Interp *inter
     Tcl_SetIntObj(tcl_result,(long) _result);
 {
   Tcl_SetStringObj(tcl_result,*_arg3,strlen(*_arg3));
-  /* can not be cl_free as we used realloc and there is no cl_realloc */
   if (*_arg3) free(*_arg3);
 }
     return TCL_OK;
@@ -3720,7 +3715,6 @@ static int _wrap_pmGetExtPortCountersMulti(ClientData clientData, Tcl_Interp *in
     Tcl_SetIntObj(tcl_result,(long) _result);
 {
   Tcl_SetStringObj(tcl_result,*_arg3,strlen(*_arg3));
-  /* can not be cl_free as we used realloc and there is no cl_realloc */
   if (*_arg3) free(*_arg3);
 }
     return TCL_OK;
@@ -3982,7 +3976,6 @@ static int _wrap_vsCpuRead(ClientData clientData, Tcl_Interp *interp, int objc, 
     Tcl_SetIntObj(tcl_result,(long) _result);
 {
   Tcl_SetStringObj(tcl_result,*_arg4,strlen(*_arg4));
-  /* can not be cl_free as we used realloc and there is no cl_realloc */
   if (*_arg4) free(*_arg4);
 }
     return TCL_OK;
@@ -4149,7 +4142,6 @@ static int _wrap_vsI2cRead(ClientData clientData, Tcl_Interp *interp, int objc, 
     Tcl_SetIntObj(tcl_result,(long) _result);
 {
   Tcl_SetStringObj(tcl_result,*_arg5,strlen(*_arg5));
-  /* can not be cl_free as we used realloc and there is no cl_realloc */
   if (*_arg5) free(*_arg5);
 }
     return TCL_OK;
@@ -4346,7 +4338,6 @@ static int _wrap_vsI2cReadMulti(ClientData clientData, Tcl_Interp *interp, int o
     Tcl_SetIntObj(tcl_result,(long) _result);
 {
   Tcl_SetStringObj(tcl_result,*_arg6,strlen(*_arg6));
-  /* can not be cl_free as we used realloc and there is no cl_realloc */
   if (*_arg6) free(*_arg6);
 }
     return TCL_OK;
@@ -4473,7 +4464,6 @@ static int _wrap_vsI2cWriteMulti(ClientData clientData, Tcl_Interp *interp, int 
     Tcl_SetIntObj(tcl_result,(long) _result);
 {
   Tcl_SetStringObj(tcl_result,*_arg7,strlen(*_arg7));
-  /* can not be cl_free as we used realloc and there is no cl_realloc */
   if (*_arg7) free(*_arg7);
 }
     return TCL_OK;
@@ -4529,7 +4519,6 @@ static int _wrap_vsGpioRead(ClientData clientData, Tcl_Interp *interp, int objc,
     Tcl_SetIntObj(tcl_result,(long) _result);
 {
   Tcl_SetStringObj(tcl_result,*_arg1,strlen(*_arg1));
-  /* can not be cl_free as we used realloc and there is no cl_realloc */
   if (*_arg1) free(*_arg1);
 }
     return TCL_OK;
@@ -4778,7 +4767,6 @@ static int _wrap_vsFlashStartMulti(ClientData clientData, Tcl_Interp *interp, in
     Tcl_SetIntObj(tcl_result,(long) _result);
 {
   Tcl_SetStringObj(tcl_result,*_arg6,strlen(*_arg6));
-  /* can not be cl_free as we used realloc and there is no cl_realloc */
   if (*_arg6) free(*_arg6);
 }
     return TCL_OK;
@@ -4864,7 +4852,6 @@ static int _wrap_vsFlashStopMulti(ClientData clientData, Tcl_Interp *interp, int
     Tcl_SetIntObj(tcl_result,(long) _result);
 {
   Tcl_SetStringObj(tcl_result,*_arg3,strlen(*_arg3));
-  /* can not be cl_free as we used realloc and there is no cl_realloc */
   if (*_arg3) free(*_arg3);
 }
     return TCL_OK;
@@ -4950,7 +4937,6 @@ static int _wrap_vsFlashSetBankMulti(ClientData clientData, Tcl_Interp *interp, 
     Tcl_SetIntObj(tcl_result,(long) _result);
 {
   Tcl_SetStringObj(tcl_result,*_arg3,strlen(*_arg3));
-  /* can not be cl_free as we used realloc and there is no cl_realloc */
   if (*_arg3) free(*_arg3);
 }
     return TCL_OK;
@@ -5036,7 +5022,6 @@ static int _wrap_vsFlashEraseSectorMulti(ClientData clientData, Tcl_Interp *inte
     Tcl_SetIntObj(tcl_result,(long) _result);
 {
   Tcl_SetStringObj(tcl_result,*_arg3,strlen(*_arg3));
-  /* can not be cl_free as we used realloc and there is no cl_realloc */
   if (*_arg3) free(*_arg3);
 }
     return TCL_OK;
@@ -5128,7 +5113,6 @@ static int _wrap_vsFlashReadSectorMulti(ClientData clientData, Tcl_Interp *inter
     Tcl_SetIntObj(tcl_result,(long) _result);
 {
   Tcl_SetStringObj(tcl_result,*_arg4,strlen(*_arg4));
-  /* can not be cl_free as we used realloc and there is no cl_realloc */
   if (*_arg4) free(*_arg4);
 }
     return TCL_OK;
@@ -5289,7 +5273,6 @@ static int _wrap_vsMirrorRead(ClientData clientData, Tcl_Interp *interp, int obj
     Tcl_SetIntObj(tcl_result,(long) _result);
 {
   Tcl_SetStringObj(tcl_result,*_arg1,strlen(*_arg1));
-  /* can not be cl_free as we used realloc and there is no cl_realloc */
   if (*_arg1) free(*_arg1);
 }
     return TCL_OK;

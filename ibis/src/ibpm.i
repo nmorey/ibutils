@@ -33,7 +33,6 @@
  */
 
 %{
-#include <complib/cl_memory.h>
 #include <complib/cl_qmap.h>
 #include <complib/cl_passivelock.h>
 #include <complib/cl_debug.h>
@@ -178,7 +177,7 @@ ibpm_get_multi_counters_global(
 {
   int status;
   ib_pm_port_counter_t *p_multi_counters_set;
-  p_multi_counters_set = (ib_pm_port_counter_t *)cl_malloc(sizeof(ib_pm_port_counter_t)*num);
+  p_multi_counters_set = (ib_pm_port_counter_t *)malloc(sizeof(ib_pm_port_counter_t)*num);
   *pp_new_counters_str = NULL;
   
   status = (int) ibpm_get_multi_counters(
@@ -188,7 +187,7 @@ ibpm_get_multi_counters_global(
   } else {
     *pp_new_counters_str = ibpm_get_port_counters_str(num, p_multi_counters_set);
   }
-  cl_free(p_multi_counters_set);
+  free(p_multi_counters_set);
   return(status);
 }
 
@@ -202,7 +201,7 @@ ibpm_get_multi_counters_extended_global(
   int status;
   ib_pm_port_counter_extended_t *p_multi_counters_set;
   p_multi_counters_set = 
-    (ib_pm_port_counter_extended_t *)cl_malloc(sizeof(ib_pm_port_counter_t)*num);
+    (ib_pm_port_counter_extended_t *)malloc(sizeof(ib_pm_port_counter_t)*num);
   *pp_new_counters_str = NULL;
   
   status = (int) ibpm_get_multi_counters_extended(
@@ -212,7 +211,7 @@ ibpm_get_multi_counters_extended_global(
   } else {
     *pp_new_counters_str = ibpm_get_port_counters_extended_str(num, p_multi_counters_set);
   }
-  cl_free(p_multi_counters_set);
+  free(p_multi_counters_set);
   return(status);
 }
 
@@ -323,7 +322,6 @@ They all return 0 on succes.
 
 %typemap (tcl8, argout) char **p_out_str {
   Tcl_SetStringObj($target,*$source,strlen(*$source));
-  /* can not be cl_free as we used realloc and there is no cl_realloc */
   if (*$source) free(*$source);
 }
 

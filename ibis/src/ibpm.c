@@ -45,7 +45,6 @@
  */
 
 #include <string.h>
-#include <complib/cl_memory.h>
 #include <complib/cl_qmap.h>
 #include <complib/cl_passivelock.h>
 #include <complib/cl_debug.h>
@@ -66,7 +65,7 @@ ibpm_construct()
 
   OSM_LOG_ENTER( &(IbisObj.log), ibpm_construct );
 
-  p_ibpm = cl_malloc(sizeof(ibpm_t));
+  p_ibpm = malloc(sizeof(ibpm_t));
   if (p_ibpm == NULL)
   {
     goto Exit;

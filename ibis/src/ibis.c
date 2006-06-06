@@ -36,7 +36,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <complib/cl_debug.h>
-#include <complib/cl_memory.h>
 #include "ibis.h"
 #include "ibis_api.h"
 #include <opensm/osm_log.h>
@@ -105,7 +104,6 @@ ibis_init(
 
   IbisObj.port_guid = 0;
   ibis_construct();
-  cl_mem_display();
   status = osm_log_init( &(IbisObj.log),
                          p_opt->force_log_flush,0x01, p_opt->log_file 
 #ifdef OSM_BUILD_OPENIB
@@ -133,10 +131,6 @@ ibis_init(
     goto Exit;
   }
 
-  cl_mem_display();
-
-  p_tmp = cl_malloc(1000);
-
   IbisObj.p_vendor = osm_vendor_new( &(IbisObj.log),
                                      p_opt->transaction_timeout );
 
@@ -149,8 +143,6 @@ ibis_init(
              "Unable to allocate vendor object" );
     goto Exit;
   }
-
-  cl_mem_display();
 
   if (IbisObj.p_opt->single_thread)
   {

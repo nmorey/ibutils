@@ -47,7 +47,6 @@
 #ifndef _IBPM_H_
 #define _IBPM_H_
 
-#include <complib/cl_memory.h>
 #include <complib/cl_qmap.h>
 #include <complib/cl_passivelock.h>
 #include <complib/cl_debug.h>
