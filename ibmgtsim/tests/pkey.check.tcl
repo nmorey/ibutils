@@ -196,7 +196,7 @@ proc runner {simDir osmPath osmPortGuid} {
    puts "SIM: [gets $simCtrlSock]"
    
    # start the SM 
-   set osmCmd "$osmPath -V -f $osmLog -g $osmPortGuid"
+   set osmCmd "$osmPath -D 0x43 -t 1000 -f $osmLog -g $osmPortGuid"
    puts "-I- Starting: $osmCmd"
    set osmPid [eval "exec $osmCmd > $osmStdOutLog &"]
    
@@ -243,7 +243,7 @@ proc checker {simDir osmPath osmPortGuid} {
 
       puts "-I- Invoking osmtest from node:$nodeName port:$portNum"
 
-      set osmTestCmd1 "$osmTestPath -V -g $portGuid -l $osmTestLog -f c -i $osmTestInventory"
+      set osmTestCmd1 "$osmTestPath -t 1000 -V -g $portGuid -l $osmTestLog -f c -i $osmTestInventory"
       puts "-I- Invoking: $osmTestCmd1 ..."
       
       # HACK: we currently ignore osmtest craches on exit flow:
