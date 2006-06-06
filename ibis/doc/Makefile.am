@@ -29,23 +29,13 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
-# $Id$
+# $Id: Makefile.am 7501 2006-05-25 18:50:23Z eitan $
 #--
 
-#AUTOMAKE_OPTIONS 	= gnits
+man_MANS = ibis.1
 
-# 
-SUBDIRS 		= src tests doc
+EXTRA_DIST = ibis.pod ibis.1
 
-# this will control the update of the files in order
-MAINTAINERCLEANFILES = Makefile.in aclocal.m4 configure config-h.in 
-
-ACLOCAL			= aclocal -I $(ac_aux_dir)
-
-# Support cleanup of swig wrappers
-swigclean:
-	for dir in src; do make -C $$dir swigclean; done
-
-#dist-hook:
-#	cd $(distdir) 
-#	cp -rf $(top_srcdir)/Clusters Clusters
+%.1: @MAINTAINER_MODE_TRUE@ %.pod
+	$(srcdir)/ibis_pod2man $< $@
+	cp -f $@ $(srcdir)/$@
