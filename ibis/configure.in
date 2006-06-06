@@ -76,5 +76,5 @@ dnl the include directory holding opensm/osm_build_id.h
 OPENIB_APP_OSM
 
 dnl Create the following Makefiles
-AC_OUTPUT(Makefile src/Makefile tests/Makefile)
+AC_OUTPUT(Makefile src/Makefile tests/Makefile doc/Makefile)
 
