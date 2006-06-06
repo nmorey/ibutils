@@ -29,23 +29,16 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
-# $Id$
+# $Id: Makefile.am 7501 2006-05-25 18:50:23Z eitan $
 #--
 
-#AUTOMAKE_OPTIONS 	= gnits
+man_MANS = IBMgtSim.1 RunSimTest.1 ibmsquit.1 mkSimNodeDir.1 ibmssh.1
 
-# note that order matters: make the lib first then use it
-SUBDIRS 		= src utils tests doc
+EXTRA_DIST = \
+	IBMgtSim.1 RunSimTest.1 ibmsquit.1 mkSimNodeDir.1 ibmssh.1 \
+	IBMgtSim.pod RunSimTest.pod ibmsquit.pod mkSimNodeDir.pod ibmssh.pod \
+	ibmgtsim_pod2man
 
-# this will control the update of the files in order
-MAINTAINERCLEANFILES = Makefile.in aclocal.m4 configure config-h.in 
-
-ACLOCAL			= aclocal -I $(ac_aux_dir)
-
-# Support cleanup of swig wrappers
-swigclean:
-	for dir in src; do make -C $$dir swigclean; done
-
-#dist-hook:
-#	cd $(distdir) 
-#	cp -rf $(top_srcdir)/Clusters Clusters
+%.1: @MAINTAINER_MODE_TRUE@ %.pod
+	$(srcdir)/ibmgtsim_pod2man $< $@
+	cp -f $@ $(srcdir)/$@
