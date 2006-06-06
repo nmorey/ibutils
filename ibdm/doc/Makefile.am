@@ -29,23 +29,25 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
-# $Id$
+# $Id: Makefile.am 7501 2006-05-25 18:50:23Z eitan $
 #--
 
-#AUTOMAKE_OPTIONS 	= gnits
+man_MANS = ibdmtr.1 \
+	ibdmchk.1 \
+	ibdmsh.1 \
+	ibdm-topo-file.1 \
+	ibdm-ibnl-file.1 \
+	ibtopodiff.1
 
-# note that order matters: make the lib first then use it
-SUBDIRS 		= replace datamodel src Clusters ibnl doc
+EXTRA_DIST = \
+	ibdmtr.pod         ibdmtr.1 \
+	ibdmchk.pod        ibdmchk.1 \
+	ibdmsh.pod         ibdmsh.1 \
+	ibdm-topo-file.pod ibdm-topo-file.1 \
+	ibdm-ibnl-file.pod ibdm-ibnl-file.1 \
+	ibtopodiff.pod     ibtopodiff.1 \
+	ibdm_pod2man
 
-# this will control the update of the files in order
-MAINTAINERCLEANFILES = Makefile.in aclocal.m4 configure config-h.in 
-
-ACLOCAL			= aclocal -I $(ac_aux_dir)
-
-# Support cleanup of swig wrappers
-swigclean:
-	for dir in datamodel; do make -C $$dir swigclean; done
-
-#dist-hook:
-#	cd $(distdir) 
-#	cp -rf $(top_srcdir)/Clusters Clusters
+%.1: @MAINTAINER_MODE_TRUE@ %.pod
+	$(srcdir)/ibdm_pod2man $< $@
+	cp -f $@ $(srcdir)/$@

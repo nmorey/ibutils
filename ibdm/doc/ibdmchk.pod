@@ -1,0 +1,105 @@
+=head1 NAME
+
+B<IBDM - Network Checker and Attributes Analyzer>
+
+=head1 SYNOPSYS
+
+ibdmchk has two operation modes: design and verification.
+
+DESIGN:
+
+ibdmchk [-v][-h][-u][-a <roots file>] -t <topology file> -n <SM Node> 
+  -p <SM Port> [-e] [-l <lmc>]
+
+
+VERIFICATION:
+
+ibdmchk [-v][-h][-r <roots file>] [-s <subnet file>] [-f <fdb file>]
+  [-l <lmc>]
+
+=head1 DESIGN MODE DESCRIPTION
+
+The Design mode is intended to be used before the cluster is built. It provides basic checks of the specified network as described by a topology file. After simulating the SM LID assignment and routing algorithms it provides reports of the (H)CA to (H)CA paths depth histogram and credit deadlock potential in the resulting routing scheme.
+
+=head1 ARGUMENTS:
+
+=item -t|--topo <topo file>
+
+The B<topology file> specifying the network. See man B<ibdm-topology-file>
+
+=item -n|--node <SM Node>
+
+The name of the Subnet Manager node (syntax: <Topo-File-System>/U1)
+
+=item -p|--port <SM Port> 
+
+The port number by which the SM nodes is attached to the fabric.
+
+=head1 OPTIONS
+
+=item -v|--verbose
+
+Verbsoe mode
+
+=item -h|--help 
+
+Provides this help message
+
+=item -l|--lmc <lmc> 
+
+LMC value > 0 means assigning 2^lmc lids to each port.
+
+=item -e|--enh 
+
+Use enhanced routing algorithm when LMC > 0 and report the resulting paths correlation (using same system/node) histogram
+
+=item -u|--updn 
+
+Use up/down routing algorithm instead of OpenSM min-hop.
+
+=item -r|--roots <roots file>
+A file with all the roots node names (one on each line).
+
+=head1 VERIFICATION MODE DESCRIPTION
+
+After the cluster is built and OpenSM is run (using flag -D 0x43) it reports the subnet and FDB tables into the files /tmp/subnet.lst and /tmp/osm.fdbs.
+Based on these files the utility checks all CA to CA connectivity. Further analysis for credit deadlock potential is performed and reported. 
+In case of an LMC > 0 it reports histograms for how many systems and nodes are common between the different paths for the same port pairs.
+
+=head1 ARGUMENTS
+
+=item -l|--lmc <lmc>
+
+The LMC value used while running OpenSM. Mandatory if not the default 0.
+
+=head1 OPTIONS
+
+=item -v|--verbose
+
+Verbsoe mode
+
+=item -h|--help 
+
+Provides this help message
+
+=item -s|--subnet <file>
+
+OpenSM subnet.lst file (default is /tmp/subnet.lst)
+
+=item -f|--fdb <file>
+
+OpenSM dump of Ucast LFDB. Use -D 0x41 to generate it (default is /tmp/osm.fdbs).
+
+=item -m|--mcfdb <file>
+
+OpenSM dump of Multicast LFDB. Use -D 0x41 to generate it (default is /tmp/osm.mcfdbs).
+
+=item -r|--roots <roots file> 
+
+A file holding all root nodes guids (one per line).
+
+=head1 AUTHOR
+
+Eitan Zahavi, Mellanox Technologies LTD, eitan@mellanox.co.il
+
+
