@@ -47,10 +47,9 @@ source [file join [file dirname [info script]] ibdebug.tcl]
 InitalizeIBdiag
 InitalizeINFO_LST
 startIBDebug
-
 set G(detect.bad.links) 1
-### Discover the cluster
 
+### Discover the cluster
 if {[catch {DiscoverFabric 0} e]} { 
     ### Discover the hidden cluster
     if {[catch {DiscoverHiddenFabric} e]} { 
@@ -61,7 +60,7 @@ if {[catch {DiscoverFabric 0} e]} {
     }
 }
 
-### Write the .lst
+### Write the .lst and .mask files
 writeMasksFile
 writeLstFile
 
@@ -72,8 +71,7 @@ DumpBadLinksLogic
 CheckSM
 RereadLongPaths
 
-### Write the .fdbs, .mcfdbs, .masks and .sm files
-writeMasksFile
+### Write the .fdbs, .mcfdbs, and .sm files
 writeFdbsFile 
 writeMcfdbsFile
 writeSMFile

@@ -40,7 +40,7 @@ array set InfoArgv {
     -f,desc	"number of retries of sending a specific packet"
 
     -i,name	"dev.idx"	
-    -i,default	1 
+    -i,default	"" 
     -i,param	"dev-index" 
     -i,desc	"Specifies the index of the device of the port used to connect to the IB fabric (in case of multiple devices on the local system)"
     -i,regexp	"integer.pos.==1"
@@ -413,6 +413,7 @@ proc parseArgv {} {
     ## If we are using direct-route addressing, the output port of the direct
     # route must not disagree with the local port number (if specified).
     # If the latter was not specified, it is set to be the former.
+    # Need to check for -i flag also, however those two still need to match
     if {[info exists G(argv,direct.route)]} {
 	set drOutPort [lindex [split $G(argv,direct.route) ","] 0]
 	if { $drOutPort == "" } {
@@ -627,7 +628,7 @@ proc inform { msgCode args } {
     set total 0
     set localDevice 0
     array set deviceNames { SW "Switch" CA "HCA" Rt "Router" }
-    foreach entry [array names msgF DirectPath*] {
+    foreach entry [lsort [array names msgF DirectPath*]] {
         set i $total
         incr total
         if {[catch {set NODE($i,Type) [GetParamValue Type $msgF($entry)]}]} {
@@ -691,7 +692,7 @@ proc inform { msgCode args } {
         set NODE($i,Name_EntryPort,Spaces)  [AddSpaces $NODE($i,Name_EntryPort) $maxName_EntryPort]
     }
     if {[info exists msgF(flag)]} { 
-	set name  ""
+        set name  ""
 	catch { set name $InfoArgv($msgF(flag),name) }
 	set envVarName "IBDIAG_[string toupper [join [split $name .] _]]"
 	if {[WordInList "$msgF(flag)" $argv]} { 
@@ -701,7 +702,10 @@ proc inform { msgCode args } {
 	} elseif { ( $msgCode == "-E-localPort:port.not.found" ) && \
 		       [info exists G(argv,direct.route)] } {
 	    set msgCode "-E-localPort:illegal.dr.path.out.port"
-	} else { 
+	} elseif { ( $msgCode == "-E-localPort:port.not.found.in.device" ) && \
+		        [info exists G(argv,direct.route)] } {
+	    set msgCode "-E-localPort:illegal.dr.path.out.port"
+        } else {
 	    set llegalValMsg ""
 	}
     }
@@ -900,32 +904,79 @@ proc inform { msgCode args } {
             append msgText "could not open the following file: "
             append msgText "\"$args\": permission denied."
         }
-
+        "-W-loading:old.osm.version" {
+            append msgText "Your OSM version is not up-to-date"
+        }
+        "-W-loading:old.ibis.version" {
+            append msgText "Your IBIS version is not up-to-date"
+        }
 
         "-E-localPort:all.ports.down" {
             if { $G(tool) == "ibdiagpath" } { 
-                append msgText "None of the ports of local device are in ACTIVE state."
+                append msgText "None of the ports of the local device is in ACTIVE state."
             } else { 
-                append msgText "All ports of local device are in DOWN state."
+                append msgText "All the ports of the local device are in DOWN state."
+            }
+        }
+        "-E-localPort:all.ports.down.mulitple.devices" {
+            if { $G(tool) == "ibdiagpath" } { 
+                append msgText "None of the ports of the local devices is in ACTIVE state."
+            } else { 
+                append msgText "All the ports of the local devices are in DOWN state."
+            }
+        }
+        "-E-localPort:all.ports.of.device.down" {
+            if { $G(tool) == "ibdiagpath" } { 
+                append msgText "None of the ports of device $msgF(device) is in ACTIVE state."
+            } else { 
+                append msgText "All the ports of device $msgF(device) are in DOWN state."
             }
         }
         "-E-localPort:dev.not.found" {
             append msgText "I${llegalValMsg}: "
-            append msgText "local machine does not have device of index $value."
+            append msgText "local machine does not have device $value."
         }
         "-E-localPort:port.not.found" {
             append msgText "I${llegalValMsg}: "
-            append msgText "local device does not have port number $value."
+            append msgText "local device does not have port $value."
         }
-        "-E-localPort:illegal.dr.path.out.port" { 
-            append msgText "Illegal value for -d flag: "
-            append msgText "local device does not have port number $value."
-            append msgText "No such direct route."
+        "-E-localPort:port.not.found.in.device" {
+            append msgText "I${llegalValMsg}: "
+            append msgText "device $msgF(device) does not have port $msgF(port)."
+        }
+        "-E-localPort:local.port.down" {
+            append msgText "Port $msgF(port) of local device is down."
+        }
+        "-E-localPort:local.port.of.device.down" {
+            append msgText "Port $msgF(port) of device $msgF(device) is down."
+        }
+        "-E-localPort:local.port.not.active" { 
+            append msgText "Local link (port $msgF(port) of local device) is " 
+            append msgText "in $msgF(state) state.\n"
+            append msgText "(PortCounters may be queried only over ACTIVE links)."
+        }
+        "-E-localPort:local.port.of.device.not.active" { 
+            append msgText "Local link (port $msgF(port) of device $msgF(device)) is " 
+            append msgText "in $msgF(state) state.\n"
+            append msgText "(PortCounters may be queried only over ACTIVE links)."
         }
         "-W-localPort:few.ports.up" {
             append msgText "A few ports of local device are up.\n"
             append msgText "Since port-num was not specified (-p flag), "
-            append msgText "port \#$G(argv,port.num) will be used as the local port."
+            append msgText "port $G(argv,port.num) of device $G(argv,dev.idx) "
+            append msgText "will be used as the local port."
+        }
+        "-W-localPort:few.devices.up" {
+            append msgText "A few devices on the local machine have an active port $G(argv,port.num).\n"
+            append msgText "Since device-index was not specified (-i flag), "
+            append msgText "port $G(argv,port.num) of device $G(argv,dev.idx) "
+            append msgText "will be used as the local port."
+        }
+
+        "-E-localPort:illegal.dr.path.out.port" { 
+            append msgText "Illegal value for -d flag: "
+            append msgText "local device does not have port number $value.%n"
+            append msgText "No such direct route."
         }
         "-I-localPort:one.port.up" {
             append msgText "Using port $G(argv,port.num) as the local port."
@@ -940,9 +991,6 @@ proc inform { msgCode args } {
         }
         "-I-localPort:using.dev.index" {
             append msgText "Using device $G(argv,dev.idx) as the local device."
-        }
-        "-E-localPort:local.port.down" {
-            append msgText "Port $msgF(port) of local device is down."
         }
         "-E-localPort:local.port.crashed" {
             append msgText "Discovery at local link failed: $msgF(command) - failed "
@@ -991,9 +1039,10 @@ proc inform { msgCode args } {
                append msgText "Device with " 
             }
             if { $msgF(value) != 0 } { append msgText "identical "}
-            append msgText "$msgF(ID) = $msgF(value) found in the fabric:\n"
+            append msgText "$msgF(ID) = $msgF(value) found in the fabric:"
             
             for {set i 0} {$i < $total} {incr i} {
+                append msgText "%n"
                 append msgText "a $NODE($i,FullType,Spaces) $NODE($i,Name_Port,Spaces)"
                 if {$msgF(ID) != "PortGUID"} {
                     append msgText " GUID=$NODE($i,PortGUID)"
@@ -1006,7 +1055,6 @@ proc inform { msgCode args } {
                         append msgText " (masked to a GUID=$NODE($i,PortGUID))"
                     }
                 }
-                append msgText "\n"
             }
             set noExiting 1
         }
@@ -1071,11 +1119,6 @@ proc inform { msgCode args } {
             append msgText "Illegal route was issued.%n"
  	    append msgText "Can not exit through Port \#$msgF(port)"
             append msgText "of the following device:%n$NODE(0,FullName)"
-        }
-        "-E-localPort:local.port.not.active" { 
-            append msgText "Local link (port \#$msgF(port) of local device) is " 
- 	    append msgText "in $msgF(state) state.\n"
-  	    append msgText "(PortCounters may be queried only over ACTIVE links)."
         }
         "-E-ibdiagpath:reached.lid.0" {
 	    #set noExiting 1
@@ -1263,6 +1306,16 @@ proc inform { msgCode args } {
         "-I-ibdiagnet:no.bad.link.logic.header" {
             append msgText "Link Logical State Info\n"
             append msgText "-I- No bad Links (with logical state = INIT) were found"
+        }
+        "-I-ibdiagnet:pm.counter.report.header" {
+            append msgText "PM Counters Info"
+        }
+        "-I-ibdiagnet:no.pm.counter.report" {
+            append msgText "No illegal PM counters values were found"
+        }
+        "-W-ibdiagnet:bad.pm.counter.report" {
+            append msgText "$msgF(deviceName)%n"
+            append msgText "$msgF(listOfErrors)"
         }
         "-W-ibdiagnet:report.links.init.state" {
             append msgText "link with LOG=INI found at direct path \"$PATH(1)\"\n"
