@@ -962,8 +962,6 @@ LinkCoverageAnalysis(IBFabric *p_fabric, list_pnode rootNodes)
           if (FabricUtilsVerboseLevel & FABU_LOG_VERBOSE)
             cout << "-W- Fail to cover path on:" << p_node->name
                  << "/P" << pn << endl;
-          // break the ports loop 
-          break;
         }
         else
         {
