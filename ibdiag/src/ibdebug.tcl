@@ -1589,7 +1589,7 @@ proc RereadLongPaths {} {
         }
     }
     if {$firstPMcounter == 0} {
-        inform "-I-ibdiagnet:no.pm.counter.report.header"
+        inform "-I-ibdiagnet:no.pm.counter.report"
     }
 
     return 
