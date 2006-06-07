@@ -1076,7 +1076,7 @@ proc inform { msgCode args } {
             set roots [lindex $args 0]
             append msgText "Found [llength $roots] Roots:\n"
             foreach r $roots {
-                append msgText "$r\n"
+                append msgText "[IBNode_name_get $r]\n"
             }
         }
 
@@ -1304,7 +1304,7 @@ proc inform { msgCode args } {
             append msgText "Links With Logical State = INIT"
         }
         "-I-ibdiagnet:no.bad.link.logic.header" {
-            append msgText "Link Logical State Info\n"
+            append msgText "Links With Logical State = INIT\n"            
             append msgText "-I- No bad Links (with logical state = INIT) were found"
         }
         "-I-ibdiagnet:pm.counter.report.header" {
