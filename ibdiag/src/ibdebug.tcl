@@ -119,7 +119,7 @@
 #  OUTPUT	NULL
 proc InitalizeIBdiag {} {
     global G argv argv0 InfoArgv INFO_LST MASK SECOND_PATH
-    set G(version.num) 1.3.0rc3
+    set G(version.num) 1.3.0rc4
     set G(tool) [file rootname [file tail $argv0]]
     source [file join [file dirname [info script]] ibdebug_if.tcl]
     set G(start.clock.seconds) [clock seconds]
@@ -787,7 +787,7 @@ proc DiscoverFabric { PathLimit {startIndex 0}} {
     set index $startIndex 
     set possibleDuplicatePortGuid 0
     set badPathFound 0
-    
+    append LINK_STATE ""
     while { $index < [llength $G(list,DirectPath)] } {
         if {$badPathFound} {
             lappend SECOND_PATH $DirectPath
@@ -1299,15 +1299,18 @@ proc DumpBadLidsGuids { args } {
 #               the links which are in INI state
 proc DumpBadLinksLogic {} {
     global LINK_STATE
-    if {![info exists LINK_STATE]} {
-        inform "-I-ibdiagnet:no.bad.link.logic.header"
-    } else {
-        inform "-I-ibdiagnet:bad.link.logic.header"
+    inform "-I-ibdiagnet:bad.link.logic.header"
+    set firstINITlink 0
+    if {[info exists LINK_STATE]} {
         foreach link $LINK_STATE {                                                        
             if {[PathIsBad $link] > 1} {continue}
             set paramlist "-DirectPath0 \{[lrange $link 0 end-1]\} -DirectPath1 \{$link\}"
-            eval inform "-W-ibdiagnet:report.links.init.state" $paramlist                 
+            eval inform "-W-ibdiagnet:report.links.init.state" $paramlist
+            set firstINITlink 1
         }
+    }
+    if {!$firstINITlink} {
+        inform "-I-ibdiagnet:no.bad.link.logic"
     }
 }
 
@@ -1530,8 +1533,8 @@ proc RereadLongPaths {} {
             for { set count $InitCnt } { $count <= $G(argv,count) } { incr count } {
                 if {[PathIsBad $DirectPath]} { break }
                 #puts -nonewline "\r[expr ($countDr*100) / [llength [lrange $G(list,DirectPath) 1 end]]]%"
-                if {[catch { SmMaGetByDr NodeDesc dump "$DirectPath"}]} { break }
-	    }
+                if {[catch { SmMadGetByDr NodeDesc dump "$DirectPath"}]} { break }
+            }
 	}
     }
     return
@@ -1545,50 +1548,61 @@ proc RereadLongPaths {} {
 proc PMCounterQuery {} { 
     # send $G(argv,count) MADs that don't wait for replies 
     # and then read all performance counters
-
     ## Retrying discovery multiple times (according to the -c flag)
     global G LINK_STATE
     inform "-V-discover:long.paths"
     inform "-I-ibdiagnet:pm.counter.report.header"
     set firstPMcounter 0
+    # Inform that the local link is in init state
+    if {[llength [lindex $LINK_STATE 0]] == 1 } {
+        inform "-W-ibdiagnet:local.link.in.ini.state"
+        RereadLongPaths
+        return 0
+    }
     foreach directPath [lrange $G(list,DirectPath) 1 end] {
 	# start from the second path in $G(list,DirectPath), because the first is ""
-	# For the retries we use only the longest paths
-
         # Ignore those links which has state INIT
         set drIsInit 0
         if {[PathIsBad $directPath]} { continue }
         for {set i 0} {$i < [llength $directPath]} {incr i} {
-            if {[lsearch LINK_STATE [lrange $directPath 0 $i]] != -1} {
+            if {[lsearch $LINK_STATE [lrange $directPath 0 $i]] != -1} {
                 set drIsInit 1
                 continue
             }
         }
         if {$drIsInit} {continue}
         
+        set tmpLidPort "DZ"
         set entryPort [GetEntryPort $directPath]
+        unset tmpLidPort
         # preparing database for reading PMs
-        if {![catch {set tmpLID [GetParamValue LID $directPath $entryPort -byDr]}]} { 
+        if {![catch {set tmpLID [GetParamValue LID $directPath $entryPort]}]} { 
             if { $tmpLID != 0 } { 
                 set tmpLidPort "$tmpLID:$entryPort"
                 set LidPort($tmpLidPort) $directPath
             }
         }
         # Initial reading of Performance Counters
-        if {[catch { set oldValues($tmpLidPort) [join [PmListGet $tmpLidPort]] } e] } {
-            inform "-E-ibdiagpath:pmGet.failed" [split $tmpLidPort :]
+        if {[info exists tmpLidPort]} {
+            if {[catch { set oldValues($tmpLidPort) [join [PmListGet $tmpLidPort]] } e] } {
+                inform "-E-ibdiagpath:pmGet.failed" [split $tmpLidPort :]
+            }
         }
+        set tmpLidPort "DZ"
         set entryPort [lindex $directPath end]
         set directPath "\"[join [lreplace $directPath end end]]\""
-        if {![catch {set tmpLID [GetParamValue LID $directPath $entryPort -byDr]}]} { 
+        unset tmpLidPort
+        if {![catch {set tmpLID [GetParamValue LID $directPath $entryPort]}]} { 
             if { $tmpLID != 0 } { 
                 set tmpLidPort "$tmpLID:$entryPort"
                 set LidPort($tmpLidPort) $directPath
             }
         }
         # Initial reading of Performance Counters
-        if {[catch { set oldValues($tmpLidPort) [join [PmListGet $tmpLidPort]] } e] } {
-            inform "-E-ibdiagpath:pmGet.failed" [split $tmpLidPort :]
+        if {[info exists tmpLidPort]} {
+            if {[catch { set oldValues($tmpLidPort) [join [PmListGet $tmpLidPort]] } e] } {
+                inform "-E-ibdiagpath:pmGet.failed" [split $tmpLidPort :]
+            }
         }
     }
     RereadLongPaths

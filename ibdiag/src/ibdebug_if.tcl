@@ -1303,9 +1303,8 @@ proc inform { msgCode args } {
         "-I-ibdiagnet:bad.link.logic.header" {
             append msgText "Links With Logical State = INIT"
         }
-        "-I-ibdiagnet:no.bad.link.logic.header" {
-            append msgText "Links With Logical State = INIT\n"            
-            append msgText "-I- No bad Links (with logical state = INIT) were found"
+        "-I-ibdiagnet:no.bad.link.logic" {
+            append msgText "No bad Links (with logical state = INIT) were found"
         }
         "-I-ibdiagnet:pm.counter.report.header" {
             append msgText "PM Counters Info"
@@ -1316,6 +1315,9 @@ proc inform { msgCode args } {
         "-W-ibdiagnet:bad.pm.counter.report" {
             append msgText "$msgF(deviceName)%n"
             append msgText "$msgF(listOfErrors)"
+        }
+        "-W-ibdiagnet:local.link.in.init.state" {
+            append msgText "The local link is in INIT state, no PM counter reading could take place"
         }
         "-W-ibdiagnet:report.links.init.state" {
             append msgText "link with LOG=INI found at direct path \"$PATH(1)\"\n"
