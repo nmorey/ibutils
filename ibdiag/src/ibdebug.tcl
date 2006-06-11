@@ -1555,7 +1555,7 @@ proc PMCounterQuery {} {
     set firstPMcounter 0
     # Inform that the local link is in init state
     if {[llength [lindex $LINK_STATE 0]] == 1 } {
-        inform "-W-ibdiagnet:local.link.in.ini.state"
+        inform "-W-ibdiagnet:local.link.in.init.state"
         RereadLongPaths
         return 0
     }
