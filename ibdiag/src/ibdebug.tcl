@@ -1548,10 +1548,6 @@ proc PMCounterQuery {} {
 
     ## Retrying discovery multiple times (according to the -c flag)
     global G LINK_STATE
-    # The initial value of count is set to 4, since every link is traversed at least 3 times:
-    # 1 NodeInfo, 1 PortInfo (once for every port), 1 NodeDesc
-    set InitCnt 2
-    if { $InitCnt > $G(argv,count) } { return }
     inform "-V-discover:long.paths"
     inform "-I-ibdiagnet:pm.counter.report.header"
     set firstPMcounter 0
