@@ -238,6 +238,7 @@ proc ParseOptionsList { list } {
 #  OUTPUT	the result of the command "ibis_get_local_ports_info"
 proc Init_ibis {} {
     catch { ibis_set_transaction_timeout 100 }
+    #ibis_set_verbosity 0xffff
     if {[info exists env(IBMGTSIM_DIR)]} {
 	ibis_opts configure -log_file [file join $env(IBMGTSIM_DIR) ibis.log]
     } else {
@@ -1513,6 +1514,39 @@ proc RereadLongPaths {} {
     # and then read all performance counters
 
     ## Retrying discovery multiple times (according to the -c flag)
+    global G 
+    # The initial value of count is set to 4, since every link is traversed at least 3 times:
+    # 1 NodeInfo, 1 PortInfo (once for every port), 1 NodeDesc
+    set InitCnt 2
+    if { $InitCnt > $G(argv,count) } { return }
+    inform "-V-discover:long.paths"
+    set oldSeconds [clock seconds]
+    set countDr -1
+    foreach DirectPath [lrange $G(list,DirectPath) 1 end] {
+        incr countDr
+        # start from the second path in $G(list,DirectPath), because the first is ""
+	# For the retries we use only the longest paths
+        if { [lsearch -regexp $G(list,DirectPath) "^$DirectPath \[0-9\]"] == -1 } { 
+            for { set count $InitCnt } { $count <= $G(argv,count) } { incr count } {
+                if {[PathIsBad $DirectPath]} { break }
+                #puts -nonewline "\r[expr ($countDr*100) / [llength [lrange $G(list,DirectPath) 1 end]]]%"
+                if {[catch { SmMaGetByDr NodeDesc dump "$DirectPath"}]} { break }
+	    }
+	}
+    }
+    return
+}
+##############################
+
+##############################
+#  SYNOPSIS     PMCounterQuery
+#  FUNCTION	Query all knowen ports, then Send $G(argv,count) MADs that don't wait for replies 
+#               and then read all performance counters again
+proc PMCounterQuery {} { 
+    # send $G(argv,count) MADs that don't wait for replies 
+    # and then read all performance counters
+
+    ## Retrying discovery multiple times (according to the -c flag)
     global G LINK_STATE
     # The initial value of count is set to 4, since every link is traversed at least 3 times:
     # 1 NodeInfo, 1 PortInfo (once for every port), 1 NodeDesc
@@ -1527,6 +1561,7 @@ proc RereadLongPaths {} {
 
         # Ignore those links which has state INIT
         set drIsInit 0
+        if {[PathIsBad $directPath]} { continue }
         for {set i 0} {$i < [llength $directPath]} {incr i} {
             if {[lsearch LINK_STATE [lrange $directPath 0 $i]] != -1} {
                 set drIsInit 1
@@ -1534,43 +1569,57 @@ proc RereadLongPaths {} {
             }
         }
         if {$drIsInit} {continue}
-
-        set LidPort ""
+        
         set entryPort [GetEntryPort $directPath]
-
         # preparing database for reading PMs
-        if {![catch {set LID0 [GetParamValue LID $directPath $entryPort -byDr]}]} { 
-            if { $LID0 != 0 } { set LidPort "$LID0:$entryPort" }
+        if {![catch {set tmpLID [GetParamValue LID $directPath $entryPort -byDr]}]} { 
+            if { $tmpLID != 0 } { 
+                set tmpLidPort "$tmpLID:$entryPort"
+                set LidPort($tmpLidPort) $directPath
+            }
         }
         # Initial reading of Performance Counters
-        if {[catch { set oldValues($LidPort) [join [PmListGet $LidPort]] } e] } {
-            inform "-E-ibdiagpath:pmGet.failed" [split $LidPort :]
+        if {[catch { set oldValues($tmpLidPort) [join [PmListGet $tmpLidPort]] } e] } {
+            inform "-E-ibdiagpath:pmGet.failed" [split $tmpLidPort :]
         }
-        # Sending MADs over the path(s)
-        for { set count 0 } { $count < $G(argv,count) } { incr count } {
-            catch { SmMadGetByDr NodeDesc dump "$directPath"}
+        set entryPort [lindex $directPath end]
+        set directPath "\"[join [lreplace $directPath end end]]\""
+        if {![catch {set tmpLID [GetParamValue LID $directPath $entryPort -byDr]}]} { 
+            if { $tmpLID != 0 } { 
+                set tmpLidPort "$tmpLID:$entryPort"
+                set LidPort($tmpLidPort) $directPath
+            }
         }
+        # Initial reading of Performance Counters
+        if {[catch { set oldValues($tmpLidPort) [join [PmListGet $tmpLidPort]] } e] } {
+            inform "-E-ibdiagpath:pmGet.failed" [split $tmpLidPort :]
+        }
+    }
+    RereadLongPaths
+    foreach tmpLidPort [array names LidPort] {
+        if {![info exists oldValues($tmpLidPort)]} {continue}
+
+        set entryPort [lindex [split $tmpLidPort :] 1]
+        set directPath $LidPort($tmpLidPort)
+        set name [DrPath2Name $directPath -fullName -port $entryPort]
+
         # Final reading of Performance Counters
-        if [catch { set newValues($LidPort) [join [PmListGet $LidPort]] }] {
-            inform "-E-ibdiagpath:pmGet.failed" [split $LidPort :]
+        if [catch { set newValues($tmpLidPort) [join [PmListGet $tmpLidPort]] }] {
+            inform "-E-ibdiagpath:pmGet.failed" [split $tmpLidPort :]
         }
         set pmList ""
-        if {![info exists newValues($LidPort)]} {continue}
-        if {![info exists oldValues($LidPort)]} {continue}
-        for { set i 0 } { $i < [llength $newValues($LidPort)] } { incr i 2 } {
-            set oldValue [lindex $oldValues($LidPort) [expr $i + 1]]
-            set newValue [lindex $newValues($LidPort) [expr $i + 1]]
+        if {![info exists newValues($tmpLidPort)]} {continue}
+        for { set i 0 } { $i < [llength $newValues($tmpLidPort)] } { incr i 2 } {
+            set oldValue [lindex $oldValues($tmpLidPort) [expr $i + 1]]
+            set newValue [lindex $newValues($tmpLidPort) [expr $i + 1]]
             lappend pmList [expr $newValue - $oldValue]
         }
     
-        set name [DrPath2Name $directPath -fullName -port $entryPort]
         inform "-V-ibdiagpath:pm.value" "$name $pmList"
     
         set badValues ""
     
-        if {![info exists newValues($LidPort)]} {continue}
-        if {![info exists oldValues($LidPort)]} {continue}
-        foreach entry [ComparePMCounters $oldValues($LidPort) $newValues($LidPort)] {
+        foreach entry [ComparePMCounters $oldValues($tmpLidPort) $newValues($tmpLidPort)] {
             scan $entry {%s %s %s} parameter err value
             switch -exact -- $err {
                 "valueChange" {
@@ -1592,14 +1641,7 @@ proc RereadLongPaths {} {
         inform "-I-ibdiagnet:no.pm.counter.report"
     }
 
-    return 
-    if { [lsearch -regexp $G(list,DirectPath) "^$DirectPath \[0-9\]"] == -1 } { 
-        for { set count $InitCnt } { $count <= $G(argv,count) } { incr count } {
-            if {[PathIsBad $DirectPath]} { break }
-	    if {[catch { SmMadGetByDr NodeDesc dump "$DirectPath"}]} { break }
-	}
-    }
-    return
+    return 1
 }
 
 #####################################################################
@@ -2014,7 +2056,6 @@ proc DetectBadLinks { status cgetCmd cmd args } {
     # Reseting the Performance Counters
     foreach LidPortPath $LidPortList {
         set LidPort [join [lrange [split $LidPortPath :] 0 1] :]
-        puts $LidPort
         regexp {^(.*):(.*)$} $LidPort D Lid Port
         #DZ catch {pmClrAllCounters $Lid $Port}
     }
@@ -2781,11 +2822,6 @@ proc reportFabQualities { } {
 # returns the value of a parameter of a port in .lst file format
 
 ##############################
-
-
-
-
-
 proc GetDeviceFullType {_name} {
     array set deviceNames { SW "Switch" CA "HCA" Rt "Router" }
     if {[lsearch [array names deviceNames] $_name] == -1} {

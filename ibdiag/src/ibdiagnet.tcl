@@ -69,7 +69,7 @@ set G(matchTopologyResult) [matchTopology $G(outfiles,.lst)]
 DumpBadLidsGuids
 DumpBadLinksLogic
 CheckSM
-RereadLongPaths
+PMCounterQuery
 
 ### Write the .fdbs, .mcfdbs, and .sm files
 writeFdbsFile 
