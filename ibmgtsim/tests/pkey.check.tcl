@@ -252,7 +252,7 @@ proc runner {simDir osmPath osmPortGuid} {
 
    # start the SM
    set valgrind "/usr/bin/valgrind --tool=memcheck"
-   set osmCmd "$osmPath -P$partitionPolicyFile -v -t 2000 -f $osmLog -g $osmPortGuid"
+   set osmCmd "$osmPath -P$partitionPolicyFile -D 0x3 -d2 -t 2000 -f $osmLog -g $osmPortGuid"
    puts "-I- Starting: $osmCmd"
    set osmPid [eval "exec $osmCmd > $osmStdOutLog &"]
    
@@ -329,7 +329,7 @@ proc checker {simDir osmPath osmPortGuid} {
    }
    
    # wait 3 seconds
-   after 3000  
+   after 1000 
 
    #Verify that the default port is in the PKey table of all ports
    puts "-I- Calling simulator to verify all HCA ports have either 0x7fff or 0xffff"
