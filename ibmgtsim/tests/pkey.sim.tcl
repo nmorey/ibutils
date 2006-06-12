@@ -43,7 +43,7 @@ proc getPartialMemberPkeysWithGivenPkey {numPkeys pkeys} {
 
    # select where to insert the given pkeys
    for {set i 0} {$i < [llength $pkeys]} {incr i} {
-      set pkeyIdx [expr int([rmRand] * [llength $numPkeys])]
+      set pkeyIdx [expr int([rmRand] * $numPkeys)]
       set res [linsert $res $pkeyIdx [lindex $pkeys $i]]
    }
 
@@ -51,8 +51,8 @@ proc getPartialMemberPkeysWithGivenPkey {numPkeys pkeys} {
    for {set i 0} {$i < [llength $pkeys]} {incr i} {
       set pk [lindex $pkeys $i]
       set idx [lsearch $res $pk]
-      if {$idx < 0 || $idx > $numPkeys} {
-         puts "-E- fail to find $pk in $res"
+      if {($idx < 0) || ($idx > $numPkeys)} {
+         puts "-E- fail to find $pk in $res idx=$idx i=$i num=$numPkeys"
          exit 1
       }
    }
@@ -116,6 +116,7 @@ proc getAllActiveHCAPorts {fabric} {
 # we track the assignments in the array: PORT_PKEY_GROUP
 proc setAllHcaPortsPKeyTable {fabric} {
    global PORT_PKEY_GROUP
+   global GROUP_PKEY
 
    set pkey1 [getFullMemberPkey]
    set pkey2 [getFullMemberPkey]
@@ -125,6 +126,10 @@ proc setAllHcaPortsPKeyTable {fabric} {
    set G2 [list 0x7fff $pkey2 $pkey3]
    set G3 [list 0x7fff $pkey1 $pkey2 $pkey3]
    
+   set GROUP_PKEY(1) $pkey1
+   set GROUP_PKEY(2) $pkey2
+   set GROUP_PKEY(3) $pkey3
+
    puts "-I- Group1 Pkeys:$G1"
    puts "-I- Group2 Pkeys:$G2"
    puts "-I- Group3 Pkeys:$G3"
@@ -152,7 +157,30 @@ proc setAllHcaPortsPKeyTable {fabric} {
          }
       }
 
-      set pkeys [getPartialMemberPkeysWithGivenPkey 48 $group]
+      # we need to decide how we setup the pkeys on that port:
+      set nPkeys [expr 3 + int([rmRand]*48)]
+
+      # we also need to decide if we actually setup the partition ourselves
+      # or leave it for the SM
+      set r [rmRand]
+      if {$r < 0.333} {
+         puts "-I- Set incorrect group for $node port:$portNum"
+         if {$group == $G1} {
+            set group $G2
+         } elseif {$group == $G2} {
+            set group $G3
+         } elseif {$group == $G3} {
+            set group $G1
+         }
+      } elseif {$r < 0.66} {
+         puts "-I- Set common group for $node port:$portNum"
+         set group $G3
+      } else {
+         # use the correct group
+         puts "-I- Set correct group for $node port:$portNum"
+      }
+
+      set pkeys [getPartialMemberPkeysWithGivenPkey $nPkeys $group]
       set blocks [getPkeyBlocks $pkeys]
       
       set blockNum 0
@@ -263,17 +291,21 @@ proc validateOsmTestInventory {queryNode fileName} {
 # Dump out the HCA ports and their groups:
 proc dumpHcaPKeyGroupFile {simDir} {
    global PORT_PKEY_GROUP
+   global GROUP_PKEY
+
    set fn [file join $simDir "port_pkey_groups.txt"]
    set f [open $fn w]
 
    foreach port [array names PORT_PKEY_GROUP] {
       set node [IBPort_p_node_get $port]
-      set sys [IBNode_p_system_get $node]
-      set num [IBPort_num_get $port]
+      set sys  [IBNode_p_system_get $node]
+      set num  [IBPort_num_get $port]
       set name [IBSystem_name_get $sys]
       set guid [IBPort_guid_get $port]
+      set grp  $PORT_PKEY_GROUP($port)
+      set pkey $GROUP_PKEY($grp)
 
-      puts $f "$name $num $PORT_PKEY_GROUP($port) $guid"
+      puts $f "$name $num $grp $guid $pkey"
    }
    close $f
    return "Dumpped Group info into:$fn"

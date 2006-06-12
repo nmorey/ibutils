@@ -11,6 +11,51 @@ proc parseNodePortGroup {simDir} {
    return $res
 }
 
+# given the node port group defined by the sim flow 
+# setup the partitions policy file for the SM 
+proc setupPartitionPolicyFile {fileName} {
+   global nodePortGroupList
+
+   set f [open $fileName w]
+
+   # no need for default partition
+   # puts $f "Default=0x7fff ,ipoib : ALL, SELF=full ;"
+
+   # loop on the tree groups collecting their member guids and printing them out
+   foreach p {1 2 3} {
+      set guids {}
+      foreach png $nodePortGroupList {
+         # png = { name num grp guid pkey }
+         set grp [lindex $png 2]
+         if {$grp == $p} {
+            lappend guids [lindex $png 3]
+            set GROUP_PKEYS($grp) [lindex $png 4]
+         } elseif {$grp == 3} {
+            # group 3 ports are members of both other groups
+            lappend guids [lindex $png 3]            
+         }
+      }
+
+      puts $f "G$p=$GROUP_PKEYS($p) :"
+      set lastGuid [lindex $guids end]
+      foreach g $guids {
+         if {$p != 3} {
+            puts -nonewline $f "   $g=full"
+         } else {
+            puts -nonewline $f "   $g"
+         }
+         if {$lastGuid == $g} {
+            puts $f ";"
+         } else {
+            puts $f ","
+         }
+      }
+      puts $f " "
+   }
+
+   close $f
+}
+
 # validate osmtest.dat versus the list of node port group 
 # group 1 must only have info regarding nodes of group1 
 # group 2 is similar
@@ -171,6 +216,8 @@ proc validateInventoryVsGroup {simDir group nodePortGroupList} {
          }
       }
    }
+
+   puts "-I- obtained: [llength [array names PATHS]] paths for group:$group"
    return $errCnt
 }
 
@@ -183,6 +230,7 @@ proc validateInventoryVsGroup {simDir group nodePortGroupList} {
 proc runner {simDir osmPath osmPortGuid} { 
    global simCtrlSock
    global env
+   global nodePortGroupList
 
    set osmStdOutLog [file join $simDir osm.stdout.log]
    set osmLog [file join $simDir osm.log]
@@ -195,8 +243,16 @@ proc runner {simDir osmPath osmPortGuid} {
    puts $simCtrlSock "dumpHcaPKeyGroupFile $simDir"
    puts "SIM: [gets $simCtrlSock]"
    
-   # start the SM 
-   set osmCmd "$osmPath -D 0x43 -t 1000 -f $osmLog -g $osmPortGuid"
+   # parse the node/port/pkey_group file from the sim dir:
+   set nodePortGroupList [parseNodePortGroup $simDir]
+
+   # Prepare the nodes partitions data
+   set partitionPolicyFile  [file join $simDir partitions.policy]
+   setupPartitionPolicyFile $partitionPolicyFile
+
+   # start the SM
+   set valgrind "/usr/bin/valgrind --tool=memcheck"
+   set osmCmd "$osmPath -P$partitionPolicyFile -v -t 2000 -f $osmLog -g $osmPortGuid"
    puts "-I- Starting: $osmCmd"
    set osmPid [eval "exec $osmCmd > $osmStdOutLog &"]
    
@@ -213,6 +269,7 @@ proc runner {simDir osmPath osmPortGuid} {
 proc checker {simDir osmPath osmPortGuid} {
    global env
    global simCtrlSock
+   global nodePortGroupList
 
    set osmTestPath      [file join [file dirname $osmPath] osmtest]
    set osmTestLog       [file join $simDir osmtest.log]
@@ -224,9 +281,6 @@ proc checker {simDir osmPath osmPortGuid} {
    if {[osmWaitForUpOrDead $osmLog]} {
       return 1
    }
-
-   # parse the node/port/pkey_group file from the sim dir:
-   set nodePortGroupList [parseNodePortGroup $simDir]
 
    # randomly sellect several nodes and create inventory by running osmtest
    # on them - then check only valid entries were reported 
@@ -243,7 +297,7 @@ proc checker {simDir osmPath osmPortGuid} {
 
       puts "-I- Invoking osmtest from node:$nodeName port:$portNum"
 
-      set osmTestCmd1 "$osmTestPath -t 1000 -V -g $portGuid -l $osmTestLog -f c -i $osmTestInventory"
+      set osmTestCmd1 "$osmTestPath -t 2000 -g $portGuid -l $osmTestLog -f c -i $osmTestInventory"
       puts "-I- Invoking: $osmTestCmd1 ..."
       
       # HACK: we currently ignore osmtest craches on exit flow:
