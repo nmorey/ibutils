@@ -233,15 +233,16 @@ class IBMSNode {
   ib_pkey_table_t *getPKeyTblBlock(uint8_t portNum, uint16_t blockNum) {
     if (portNum >= nodePortPKeyTable.size())
     {
-      printf("-E- Given port number out of range:%u > %u\n",
-             portNum, (unsigned int)(nodePortPKeyTable.size() - 1));
+      printf("-E- Node:%s given port number out of range:%u > %u\n",
+             pNode->name.c_str(), portNum, (unsigned int)(nodePortPKeyTable.size() - 1));
       return NULL;
     }
     if (blockNum >= nodePortPKeyTable[portNum].size())
     {
-      printf("-E- Given block number out of range:%u > %u\n",
-             blockNum, (unsigned int)(nodePortPKeyTable[portNum].size() - 1));
-      return NULL;
+       printf("-E- Node:%s port:%u given pkey block number out of range:%u > %u\n",
+              pNode->name.c_str(), portNum,
+              blockNum, (unsigned int)(nodePortPKeyTable[portNum].size() - 1));
+       return NULL;
     }
     return &((nodePortPKeyTable[portNum])[blockNum]);
   }
