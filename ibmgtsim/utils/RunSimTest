@@ -164,7 +164,7 @@ proc osmLogAnalyzerEvent {logFile logFileName} {
    # actually read and analyze
    while {[gets $logFile sLine] >= 0} {
       set event ""
-      if {[regexp {SUBNET UP} $sLine]} {
+      if {[regexp -- {-[>] SUBNET UP} $sLine]} {
          set event SubnetUp
          set data {}
       } elseif {[regexp { ERR } $sLine]} {
@@ -209,19 +209,22 @@ proc waitForOsmEvent {eventsVarName lastEventLogLenVarName logFile} {
 }
 
 # wait for the SM with the given log to be either dead or in subnet up
-proc osmWaitForUpOrDead {osmLog} {
+proc osmWaitForUpOrDead {osmLog {ignorePrev 0}} {
    global osmUpOrDeadEvents osmUpOrDeadLogLen
    global osmLogCallbacks
    
    # wait for OpenSM to complete setting up the fabric
-   set osmUpOrDeadLogLen 0
+   if {![info exists osmUpOrDeadLogLen] || $ignorePrev} {
+		set osmUpOrDeadLogLen 0
+		set osmUpOrDeadEvents {}
+	}
+
    set osmLogCallbacks($osmLog) \
       "{waitForOsmEvent osmUpOrDeadEvents osmUpOrDeadLogLen $osmLog}"
    
    puts "-I- Waiting for OpenSM subnet up ..."
    set done 0
    while {$done == 0} {
-      vwait osmUpOrDeadEvents
       foreach event $osmUpOrDeadEvents {
          if {[lindex $event 0] == "exit"} {
             set exitCode 1
@@ -231,6 +234,9 @@ proc osmWaitForUpOrDead {osmLog} {
             set exitCode 0
          }
       }
+		set osmUpOrDeadEvents {}
+		if {$done != 0} {return $exitCode}
+      vwait osmUpOrDeadEvents
    }
    return $exitCode
 }
