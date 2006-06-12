@@ -163,17 +163,39 @@ void IBMSSma::initNodeInfo()
   MSGSND(inf1);
 }
 
-void IBMSSma::initPKeyTable(uint8_t port_num)
+void IBMSSma::initPKeyTables()
 {
-  uint8_t                     i=0;
-  ib_pkey_table_t             pKeyEntry;
 
-  pKeyEntry.pkey_entry[0] = IB_DEFAULT_PKEY;
-  for (i=1; i < IB_NUM_PKEY_ELEMENTS_IN_BLOCK ; i++)
-  {
-    pKeyEntry.pkey_entry[i] = 0;
-  }
-  (pSimNode->nodePortPKeyTable[port_num]).push_back( pKeyEntry );
+   /* initialize pkeys */
+   ib_pkey_table_t zeroPKeys;
+   ib_pkey_table_t firstBlockPkeys;
+   memset(&zeroPKeys, 0, sizeof(ib_pkey_table_t));
+   memset(&firstBlockPkeys, 0, sizeof(ib_pkey_table_t));
+   firstBlockPkeys.pkey_entry[0] = 0xffff;
+
+   unsigned int numBlocks;
+   vector< ib_pkey_table_t > emptyPkeyVector;
+
+   for (unsigned int pn = 0; pn <= pSimNode->nodeInfo.num_ports; pn++)
+   {
+      pSimNode->nodePortPKeyTable.push_back(emptyPkeyVector);
+      if ( (pSimNode->nodeInfo.node_type != IB_NODE_TYPE_SWITCH) || (pn == 0) )
+         numBlocks = (cl_ntoh16(pSimNode->nodeInfo.partition_cap) + 31) / 32;
+      else
+        numBlocks = (cl_ntoh16(pSimNode->switchInfo.enforce_cap) + 31) / 32;
+
+      for (unsigned int block = 0; block < numBlocks; block++)
+      {
+         if (block)
+         {
+            pSimNode->nodePortPKeyTable[pn].push_back(zeroPKeys);
+         }
+         else
+         {
+            pSimNode->nodePortPKeyTable[pn].push_back(firstBlockPkeys);
+         }
+      }
+   }
 }
 
 void IBMSSma::initMftTable()
@@ -300,16 +322,6 @@ void IBMSSma::initPortInfo()
 
     tmpPortInfo.subnet_timeout = 0;
     tmpPortInfo.resp_time_value = 0x6;
-
-    {
-      int pKeyBlockCount = 0;
-
-      while (pKeyBlockCount < cl_hton16(pSimNode->nodeInfo.partition_cap))
-      {
-        initPKeyTable(i);
-        pKeyBlockCount++;
-      }
-    }
        
   }
   else
@@ -326,9 +338,6 @@ void IBMSSma::initPortInfo()
   {
     MSGREG(inf1, 'V', "Initializing port number $ !", "initPortInfo");
     MSGSND(inf1, i);
-
-    //Init single entry per port (switch external or hca port (starting from 1)
-    initPKeyTable(i);
 
     memset((void*)&tmpPortInfo, 0, sizeof(ib_port_info_t));
     pNodePortData = pNodeData->getPort(i);
@@ -411,6 +420,8 @@ IBMSSma::IBMSSma(IBMSNode *pSNode, list_uint16 mgtClasses) :
   //Init VL Arbitration ports vector size and table
   pSimNode->vlArbPortEntry.resize(pSimNode->nodeInfo.num_ports + 1);
   initVlArbitTable();
+
+  initPKeyTables();
    
   MSG_EXIT_FUNC;
 };

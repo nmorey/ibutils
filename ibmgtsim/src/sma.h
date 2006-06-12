@@ -89,7 +89,7 @@ class IBMSSma : IBMSMadProcessor {
   void initSwitchInfo();
   void initNodeInfo();
   void initPortInfo();
-  void initPKeyTable(uint8_t port_num);
+  void initPKeyTables();
   void initMftTable();
   void initCaSl2VlTable();
   void initSwitchSl2VlTable();
