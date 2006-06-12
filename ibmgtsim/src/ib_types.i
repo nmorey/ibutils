@@ -130,10 +130,17 @@
 %typemap(tcl8,out) ib_pkey_table_t* {
   char buff[36];
   int i;
-  for (i = 0; i < 32; i++) 
+  if ($source != NULL) 
   {
-    sprintf(buff, "0x%04x ", cl_ntoh16($source->pkey_entry[i]));
-    Tcl_AppendToObj($target,buff,strlen(buff));
+    for (i = 0; i < 32; i++) 
+    {
+      sprintf(buff, "0x%04x ", cl_ntoh16($source->pkey_entry[i]));
+      Tcl_AppendToObj($target,buff,strlen(buff));
+    }
+  }
+  else
+  {
+    Tcl_SetStringObj($target, "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0", 64);
   }
 }
 
