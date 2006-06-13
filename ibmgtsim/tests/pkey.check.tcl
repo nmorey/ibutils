@@ -80,24 +80,31 @@ proc validateInventoryVsGroup {simDir group nodePortGroupList} {
    set cnt1 [llength $GUIDS(1)]
    set cnt2 [llength $GUIDS(2)]
    set cnt3 [llength $GUIDS(3)]
-   puts "-I- Group membership is: 1=$cnt1 2=$cnt2 3=$cnt3"
    switch $group {
       1 {
          foreach g $GUIDS(1) {set REQUIRED($g) 0}
          foreach g $GUIDS(3) {set REQUIRED($g) 0}
          foreach g $GUIDS(2) {set DISALLOWED($g) 2}
+			set expected [expr ($cnt1 + $cnt3)*($cnt1 + $cnt3)]
       }
       2 {
          foreach g $GUIDS(2) {set REQUIRED($g) 0}
          foreach g $GUIDS(3) {set REQUIRED($g) 0}
          foreach g $GUIDS(1) {set DISALLOWED($g) 1}
+			set expected [expr ($cnt2 + $cnt3)*($cnt2 + $cnt3)]
       }
       3 {
          foreach g $GUIDS(1) {set REQUIRED($g) 0}
          foreach g $GUIDS(2) {set REQUIRED($g) 0}
          foreach g $GUIDS(3) {set REQUIRED($g) 0}
+			set expected [expr \
+								  $cnt3*($cnt1 + $cnt2 + $cnt3) + \
+								  $cnt1*($cnt1 + $cnt3) + \
+								  $cnt2*($cnt2 + $cnt3) ]
       }
    }
+
+   puts "-I- Expecting:$expected paths (membership is: 1=$cnt1 2=$cnt2 3=$cnt3 )"
 
    # parse the inventory:
    set fn [file join $simDir osmtest.dat]
@@ -217,7 +224,7 @@ proc validateInventoryVsGroup {simDir group nodePortGroupList} {
       }
    }
 
-   puts "-I- obtained: [llength [array names PATHS]] paths for group:$group"
+   puts "-I- Obtained: [llength [array names PATHS]] paths for group:$group"
    return $errCnt
 }
 

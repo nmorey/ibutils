@@ -9,8 +9,8 @@
 proc runner {simDir osmPath osmPortGuid} { 
    set osmStdOutLog [file join $simDir osm.stdout.log]
    set osmLog [file join $simDir osm.log]
-   puts "-I- Starting: $osmPath -u -V -g $osmPortGuid ..."
-   set osmPid [exec $osmPath -u -V -f $osmLog -g $osmPortGuid > $osmStdOutLog &]
+   puts "-I- Starting: $osmPath -u -d2 -V -g $osmPortGuid ..."
+   set osmPid [exec $osmPath -u -d2 -V -f $osmLog -g $osmPortGuid > $osmStdOutLog &]
    
    # start a tracker on the log file and process:
    startOsmLogAnalyzer $osmLog
@@ -68,9 +68,10 @@ proc checker {simDir osmPath osmPortGuid} {
 
    puts "-I- Invoking $cmd "
    if {[catch {set res [eval "exec $cmd > $ibdiagnetLog"]} e]} {
-      puts "-E- ibdiagnet failed"
-      return 1
+      puts "-E- ibdiagnet failed with status:$e"
+      return 0
    }
+
    # make sure directory is not remoevd
-   return 1
+   return 0
 }

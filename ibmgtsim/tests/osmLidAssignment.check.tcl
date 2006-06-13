@@ -55,7 +55,7 @@ proc runner {simDir osmPath osmPortGuid} {
    
    file copy $simDir/guid2lid $simDir/guid2lid.orig
 
-   set osmCmd "$osmPath -l $lmc -V -f $osmLog -g $osmPortGuid"
+   set osmCmd "$osmPath -l $lmc -d2 -V -f $osmLog -g $osmPortGuid"
    puts "-I- Starting: $osmCmd"
    set osmPid [eval "exec $osmCmd > $osmStdOutLog &"]
    

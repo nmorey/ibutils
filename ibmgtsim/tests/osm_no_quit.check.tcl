@@ -10,7 +10,7 @@ proc runner {simDir osmPath osmPortGuid} {
    set osmStdOutLog [file join $simDir osm.stdout.log]
    set osmLog [file join $simDir osm.log]
    puts "-I- Starting: $osmPath -g $osmPortGuid  ..."
-   set osmPid [exec $osmPath -f $osmLog -g $osmPortGuid > $osmStdOutLog &]
+   set osmPid [exec $osmPath -d2 -f $osmLog -g $osmPortGuid > $osmStdOutLog &]
    
    # start a tracker on the log file and process:
    startOsmLogAnalyzer $osmLog

@@ -49,7 +49,7 @@ proc runner {simDir osmPath osmPortGuid} {
    puts "SIM: [gets $simCtrlSock]"
 
    # randomize guid2lid file:
-   set env(OSM_CACHE_DIR) $simDir
+   set env(OSM_CACHE_DIR) $simDir/
    puts $simCtrlSock "writeGuid2LidFile $simDir/guid2lid $lmc"
    puts "SIM: [gets $simCtrlSock]"
   

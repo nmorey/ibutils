@@ -14,7 +14,7 @@ proc runner {simDir osmPath osmPortGuid} {
    exec echo max_msg_fifo_timeout 0 > $simDir/opensm.opts
   
    puts "-I- Starting: $osmPath -g $osmPortGuid  ..."
-   set osmPid [exec $osmPath -s 0 -t 1000 -f $osmLog -g $osmPortGuid > $osmStdOutLog &]
+   set osmPid [exec $osmPath -d2 -s 0 -t 1000 -f $osmLog -g $osmPortGuid > $osmStdOutLog &]
    
    # start a tracker on the log file and process:
    startOsmLogAnalyzer $osmLog
