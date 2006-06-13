@@ -248,7 +248,7 @@ proc SetEnvValues {} {
 ##############################
 proc parseArgv {} {
     global G argv env InfoArgv
-
+    
     ## If help/version/vars are needed ...
     HighPriortyFlag
 
@@ -313,7 +313,7 @@ proc parseArgv {} {
 
     regsub -all {[()|]} $infoFlags " " allLegalFlags
     set allLegalFlags "-[join $allLegalFlags " -"]"
-
+    
     while { [llength $argvList] > 0 } {
         set flag  [lindex $argvList 0]
 	set value [lindex $argvList 1]
@@ -334,7 +334,7 @@ proc parseArgv {} {
 	}
 
 	# Checking values validity and setting G(argv,$name) - the flag's value
-	set regexp 1
+        set regexp 1
         if { [regexp {^0} $arglen] && [regexp {^\-} $value] } {
 	    set value ""
 	} elseif {[info exists InfoArgv($flag,regexp)]} {
@@ -344,8 +344,8 @@ proc parseArgv {} {
 		set int "(0x)?0*(\[a-fA-F0-9\]+)"
 		set valuesList [split $value ","]
 		# Checking if length of integers list is OK
-		foreach condition [split $len &] {
-		    if { ! [expr [llength $valuesList] $condition] } {
+                foreach condition [split $len &] {
+                    if { ! [expr [llength $valuesList] $condition] } {
 			inform "$InfoArgv($flag,error)" -flag $flag -value $value
 		    }
 		}
@@ -382,12 +382,15 @@ proc parseArgv {} {
 		set value [join $formattedValue ,]
 	    } else {
 		set regexp [regexp $InfoArgv($flag,regexp) "$value"]
-	    }
+                if {!$regexp} {
+                    inform "$InfoArgv($flag,error)" -flag $flag -value $value
+                }
+            }
 	}
         set name $InfoArgv($flag,name)
 	set G(argv,$name) ""
-	if { $arglen == "1.." } {
-	    while { [llength $argvList] > 0 } {
+        if { $arglen == "1.." } {
+            while { [llength $argvList] > 0 } {
 		if { [set I [lsearch -regexp $argvList {^\-}]] == -1 } { 
 		    set I [llength $argvList]
 		}
@@ -709,6 +712,7 @@ proc inform { msgCode args } {
 	    set llegalValMsg ""
 	}
     }
+    set validNames ""
     if {[info exists msgF(names)]} {
 	set validNames "[lsort -dictionary $msgF(names)]"
 	if { [llength $validNames] > 0 } {
@@ -812,8 +816,11 @@ proc inform { msgCode args } {
             append msgText "[format $validNames system]"
         }
         "-E-argv:bad.node.name" {
-            append msgText "$msgF(value) - no such node. I${llegalValMsg}.\n"
-            append msgText "[format $validNames node]"
+            append msgText "$msgF(value) - i${llegalValMsg}.%n"
+            append msgText "(lagel value: one or two Nodes names separated by a comma)."
+            if {[format $validNames node] != ""} {
+                append msgText "%n[format $validNames node]"
+            }
         }
         "-E-argv:bad.port.name" {
             append msgText "$msgF(value) - no such port. I${llegalValMsg}.\n"
