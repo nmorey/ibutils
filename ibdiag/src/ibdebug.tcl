@@ -2858,8 +2858,10 @@ proc GetEntryPort { _directPath args} {
     if {[info exists G(GuidByDrPath,$_directPath)]} {
         set tmpGuid $G(GuidByDrPath,[lrange $_directPath 0 end-1])
         set tmpGuid $G(NodeGuid,$tmpGuid)
-        set entryPort $Neighbor($tmpGuid:[lindex $_directPath end])
-        return [lindex [split $entryPort :] end ]
+        if {[info exists Neighbor($tmpGuid:[lindex $_directPath end])]} {
+            set entryPort $Neighbor($tmpGuid:[lindex $_directPath end])
+            return [lindex [split $entryPort :] end ]
+        }
     }
 
     if {[lsearch -exac $args "-byNodeInfo"]!=-1} {
