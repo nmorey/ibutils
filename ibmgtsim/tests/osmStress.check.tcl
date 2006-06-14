@@ -232,10 +232,7 @@ proc checker {simDir osmPath osmPortGuid} {
          puts "-E- ibdiagnet failed"
          puts "-I- Result value $res"
          puts "-I- Error: $e"
-         
-         # HACK KEEP EVERYTHNG ALIVE 
-         while {1} {after 100000}
-         return 1
+			return 1
       }
          
       # make sure all HCAs are now joined:
