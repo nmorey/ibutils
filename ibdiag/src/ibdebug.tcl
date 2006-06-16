@@ -119,7 +119,7 @@
 #  OUTPUT	NULL
 proc InitalizeIBdiag {} {
     global G argv argv0 InfoArgv INFO_LST MASK SECOND_PATH
-    set G(version.num) 1.3.0rc4
+    set G(version.num) 1.3.0rc5
     set G(tool) [file rootname [file tail $argv0]]
     source [file join [file dirname [info script]] ibdebug_if.tcl]
     set G(start.clock.seconds) [clock seconds]
@@ -1590,7 +1590,10 @@ proc PMCounterQuery {} {
         }
         set tmpLidPort "DZ"
         set entryPort [lindex $directPath end]
-        set directPath "\"[join [lreplace $directPath end end]]\""
+        set directPath [join [lreplace $directPath end end]]
+        if {[llength $directPath] == 0} {
+            set directPath ""
+        }
         unset tmpLidPort
         if {![catch {set tmpLID [GetParamValue LID $directPath $entryPort]}]} { 
             if { $tmpLID != 0 } { 
