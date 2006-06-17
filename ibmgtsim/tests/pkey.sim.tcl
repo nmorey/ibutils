@@ -113,9 +113,11 @@ proc getAllActiveHCAPorts {fabric} {
 # then randomly set the active HCA ports PKey tables
 # Note that the H-1/P1 has to have a slightly different PKey table
 # with 0xffff such that all nodes can query the SA:
-# we track the assignments in the array: PORT_PKEY_GROUP
+# we track the assignments in the arrays: 
+# PORT_PKEY_GROUP(port) -> group
+# PORT_GROUP_PKEY_IDX(port) -> index of pkey (if set or -1)
 proc setAllHcaPortsPKeyTable {fabric} {
-   global PORT_PKEY_GROUP
+   global PORT_PKEY_GROUP PORT_GROUP_PKEY_IDX
    global GROUP_PKEY
 
    set pkey1 [getFullMemberPkey]
@@ -143,14 +145,15 @@ proc setAllHcaPortsPKeyTable {fabric} {
       if {[IBNode_name_get $node] == "H-1/U1"} {
          set group [list 0xffff $pkey1 $pkey2]
          set PORT_PKEY_GROUP($port) 3
+			set pkey $pkey3
       } else {
          # randomly select a group for this port:
          set r [expr int([rmRand] * 3) + 1]
          set PORT_PKEY_GROUP($port) $r
          switch $r {
-            1 {set group $G1}
-            2 {set group $G2}
-            3 {set group $G3}
+            1 {set group $G1; set pkey $pkey1}
+            2 {set group $G2; set pkey $pkey2}
+            3 {set group $G3; set pkey $pkey3}
             default {
                puts "-E- How come we got $r ?"
             }
@@ -183,6 +186,9 @@ proc setAllHcaPortsPKeyTable {fabric} {
       set pkeys [getPartialMemberPkeysWithGivenPkey $nPkeys $group]
       set blocks [getPkeyBlocks $pkeys]
       
+		# we track the pkey index of the assigned pkey (or -1)
+		set PORT_GROUP_PKEY_IDX($port) [lsearch $pkeys $pkey]
+		
       set blockNum 0
       foreach block $blocks {
          # now set the PKey tables
@@ -228,6 +234,48 @@ proc removeDefaultPKeyFromTableForHcaPorts {fabric} {
    return "Remove Default PKey from HCA ports"
 }
 
+# Verify correct PKey index is used 
+proc verifyCorrectPKeyIndexForAllHcaPorts {fabric} {
+   global PORT_PKEY_GROUP PORT_GROUP_PKEY_IDX GROUP_PKEY
+   set hcaPorts [getAllActiveHCAPorts $fabric]   
+	set anyErr 0
+
+
+   foreach port $hcaPorts {
+      set portNum [IBPort_num_get $port]
+      set node [IBPort_p_node_get $port]
+      set ni [IBMSNode_getNodeInfo sim$node]
+      set partcap [ib_node_info_t_partition_cap_get $ni]
+		set grp  $PORT_PKEY_GROUP($port)
+		set pkey $GROUP_PKEY($grp)
+		
+		set pkey_idx $PORT_GROUP_PKEY_IDX($port)
+		if {$pkey_idx == -1} {
+			puts "-I- Ignoring non-definitive port [IBPort_getName $port]"
+			continue
+		}
+
+		set blockIdx [expr $pkey_idx / 32]
+		set idx [expr $pkey_idx % 32]
+
+		if {$blockIdx >= $partcap/32} {
+			puts "-E- [IBPort_getName $port] Required block $blockIdx is too high for partition cap $partcap"
+			incr anyErr
+		}
+
+		set block [IBMSNode_getPKeyTblBlock sim$node $portNum $blockIdx]
+		set bPkey [lindex $block $idx]
+		if {$bPkey != $pkey} {
+         puts "-E- [IBPort_getName $port] block:$blockIdx idx:$idx pkey:$bPkey does match required:$pkey "
+			puts "    pkeys:$block"
+         incr anyErr
+      } else {
+         puts "-I- [IBPort_getName $port] found pkey:$pkey at block:$blockIdx idx:$idx "			
+		}
+   }
+   # all HCA active ports
+   return $anyErr
+}
 
 # Verify that 0x7fff or 0xffff is in the PKey table for all HCA ports
 proc verifyDefaultPKeyForAllHcaPorts {fabric} {
@@ -292,6 +340,7 @@ proc validateOsmTestInventory {queryNode fileName} {
 proc dumpHcaPKeyGroupFile {simDir} {
    global PORT_PKEY_GROUP
    global GROUP_PKEY
+	global PORT_GROUP_PKEY_IDX
 
    set fn [file join $simDir "port_pkey_groups.txt"]
    set f [open $fn w]
@@ -304,7 +353,7 @@ proc dumpHcaPKeyGroupFile {simDir} {
       set guid [IBPort_guid_get $port]
       set grp  $PORT_PKEY_GROUP($port)
       set pkey $GROUP_PKEY($grp)
-
+		set idx  $PORT_GROUP_PKEY_IDX($port)
       puts $f "$name $num $grp $guid $pkey"
    }
    close $f

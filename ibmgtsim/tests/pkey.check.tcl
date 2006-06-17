@@ -326,6 +326,17 @@ proc checker {simDir osmPath osmPortGuid} {
    puts $simCtrlSock "removeDefaultPKeyFromTableForHcaPorts \$fabric"
    puts "SIM: [gets $simCtrlSock]"
 
+	# Verify all pkeys are in correct place:
+   puts "-I- Calling simulator to verify all defined indexie are correct"
+   puts $simCtrlSock "verifyCorrectPKeyIndexForAllHcaPorts \$fabric"
+   set res [gets $simCtrlSock]
+   puts "SIM: $res"
+   
+   if {$res != 0} {
+      puts "-E- $res ports have miss-placed pkeys"
+		return 1
+   }
+	
    #Inject a changebit - to force heavy sweep
    puts $simCtrlSock "setOneSwitchChangeBit \$fabric"
    puts "SIM: [gets $simCtrlSock]"
