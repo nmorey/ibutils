@@ -225,16 +225,16 @@ proc checker {simDir osmPath osmPortGuid} {
          }
       }
 
-      set cmd "ibdiagnet -r -t $topologyFile -o $simDir"
+      set cmd "ibdiagnet -v -r -t $topologyFile -o $simDir"
       set ibdiagnetLog [file join $simDir ibdiagnet.stdout.log]
       puts "-I- Invoking $cmd "
-      if {[catch {set res [eval "exec $cmd > $ibdiagnetLog"]} e]} {
+      if {[catch {set res [eval "exec $cmd >& $ibdiagnetLog"]} e]} {
          puts "-E- ibdiagnet failed"
          puts "-I- Result value $res"
          puts "-I- Error: $e"
 			return 1
       }
-         
+		
       # make sure all HCAs are now joined:
       set res [exec grep "Multicast Group:0xC000 has:" $ibdiagnetLog]
       if {![regexp {Multicast Group:0xC000 has:[0-9]+ switches and:([0-9]+) HCAs} $res d1 hcas]} {
