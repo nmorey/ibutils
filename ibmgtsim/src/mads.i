@@ -384,7 +384,7 @@ struct madNotice128
                 IB_MCLASS_SUBN_LID,
                 IB_MAD_METHOD_TRAP,
                 cl_ntoh16(IB_MAD_ATTR_NOTICE),
-		0,
+                0,
                 (uint8_t*)self,
                 sizeof(madNotice128)
                 )
@@ -441,7 +441,7 @@ struct madNotice129
                 IB_MCLASS_SUBN_LID,
                 IB_MAD_METHOD_TRAP,
                 cl_ntoh16(IB_MAD_ATTR_NOTICE),
-		0,
+                0,
                 (uint8_t*)self,
                 sizeof(madNotice129)
                 )
@@ -501,7 +501,7 @@ struct madNotice144
                 IB_MCLASS_SUBN_LID,
                 IB_MAD_METHOD_TRAP,
                 cl_ntoh16(IB_MAD_ATTR_NOTICE),
-		0,
+                0,
                 (uint8_t*)self,
                 sizeof(madNotice144)
                 )
@@ -509,4 +509,75 @@ struct madNotice144
     }
 }
 
+%{
+#include <complib/cl_packon.h>
+typedef struct _ib_generic_inform_info
+{
+	ib_gid_t			gid;
+	ib_net16_t		lid_range_begin;
+	ib_net16_t		lid_range_end;
+	ib_net16_t		reserved1;
+	uint8_t			is_generic;
+	uint8_t			subscribe;
+	ib_net16_t		trap_type;
+	ib_net16_t		trap_num;
+	ib_net32_t		qpn_resp_time_val;
+	uint8_t        reserved2;
+	uint8_t			node_type_msb;
+	ib_net16_t		node_type_lsb;  
+}	PACK_SUFFIX ib_generic_inform_info_t;
+#include <complib/cl_packoff.h>
 
+#define madGenericInform ib_generic_inform_info_t
+%}
+
+struct madGenericInform
+{
+  madGenericInform();
+  ~madGenericInform();
+
+	ib_gid_t			gid;
+	ib_net16_t		lid_range_begin;
+	ib_net16_t		lid_range_end;
+	ib_net16_t		reserved1;
+	uint8_t			is_generic;
+	uint8_t			subscribe;
+	ib_net16_t		trap_type;
+	ib_net16_t		trap_num;
+	ib_net32_t		qpn_resp_time_val;
+	uint8_t        reserved2;
+	uint8_t			node_type_msb;
+	ib_net16_t		node_type_lsb;  
+}
+
+#define IB_INFORM_INFO_COMP_GID 0x1
+#define IB_INFORM_INFO_COMP_LID_BEGIN 0x2
+#define IB_INFORM_INFO_COMP_LID_END 0x4
+#define IB_INFORM_INFO_COMP_IS_GENERIC 0x10
+#define IB_INFORM_INFO_COMP_TRAP_TYPE 0x40
+#define IB_INFORM_INFO_COMP_TRAP_NUM 0x80
+#define IB_INFORM_INFO_COMP_QPN 0x100
+#define IB_INFORM_INFO_COMP_RESP_TIME 0x200
+#define IB_INFORM_INFO_COMP_NODE_TYPE 0x800
+
+%addmethods madGenericInform {
+  int send_set(
+    IBMSNode *pFromNode,
+    uint8_t   fromPort,  
+    uint16_t  destLid,
+    uint64_t  comp_mask)
+    {
+      return( send_sa_mad(
+                pFromNode, 
+                fromPort, 
+                destLid,
+                IB_MCLASS_SUBN_ADM,
+                IB_MAD_METHOD_SET,
+                cl_ntoh16(IB_MAD_ATTR_INFORM_INFO),
+                comp_mask,
+                (uint8_t*)self,
+                sizeof(madGenericInform)
+                )
+              );
+    }  
+}
