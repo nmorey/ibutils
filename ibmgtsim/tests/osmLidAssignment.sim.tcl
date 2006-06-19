@@ -702,26 +702,37 @@ proc checkLidValues {fabric lmc} {
    return $numErrs
 }
 
-# set the change bit on one of the switches:
+# set the change bit on the switch accross from the SM
 proc setOneSwitchChangeBit {fabric} {
-   global DISCONNECTED_NODES
+	global IB_SW_NODE
 
-   set allNodes [IBFabric_NodeByName_get $fabric]
+   # HACK: SM is assumed to always run on H-1/U1
+   set smNode [IBFabric_getNode $fabric "H-1/U1"]
+	if {$smNode == ""} {
+		return "-E- Fail to find SM node H-1/U1"
+	}
+		
+   set smPort [IBNode_getPort $smNode 1]
+	if {$smPort == ""} {
+		return "-E- Fail to find SM Port H-1/U1/P1"
+	}
+	
+   set remPort [IBPort_p_remotePort_get $smPort]
+	if {$remPort  == ""} {
+		return "-E- Fail to find SM Port H-1/U1/P1 remote port"
+	}
 
-   foreach nameNNode $allNodes {
-      set node [lindex $nameNNode 1]
-      if {[IBNode_type_get $node] == 1} {
-         if {![info exists DISCONNECTED_NODES($node)]} {
-            set swi [IBMSNode_getSwitchInfo sim$node]
-            set lifeState [ib_switch_info_t_life_state_get $swi]
-            set lifeState [expr ($lifeState & 0xf8) | 4 ]
-            ib_switch_info_t_life_state_set $swi $lifeState
-            puts "-I- Set change bit on switch:$node"
-            return "-I- Set change bit on switch:$node"
-         }
-      }
-   }
-   return "-E- Fail to set any change bit. Could not find a switch"
+   set node [IBPort_p_node_get $remPort]
+	if {[IBNode_type_get $node] != $IB_SW_NODE} {
+		return "-E- Fail to find SM Port H-1/U1/P1 remote node is not a switch!"		
+	}
+		
+	set swi [IBMSNode_getSwitchInfo sim$node]
+	set lifeState [ib_switch_info_t_life_state_get $swi]
+	set lifeState [expr ($lifeState & 0xf8) | 4 ]
+	ib_switch_info_t_life_state_set $swi $lifeState
+	puts "-I- Set change bit on switch:$node"
+	return "-I- Set change bit on switch:$node"
 }
 
 set fabric [IBMgtSimulator getFabric]
