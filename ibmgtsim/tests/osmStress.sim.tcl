@@ -703,6 +703,84 @@ proc randomLeaveAllHCAPorts {fabric maxDelay_ms} {
    return $numHcasLeft
 }
 
+# register some of the nodes to receive some 
+# reports.
+proc randomRegisterFormInformInfo {fabric} {
+	global IB_INFORM_INFO_COMP_TRAP_NUM IB_INFORM_INFO_COMP_GID 
+	global IB_INFORM_INFO_COMP_LID_END
+	global IB_INFORM_INFO_COMP_LID_BEGIN
+
+	set joinTypes {ByTrap ByGid ByLid ByLidRange All All All All All}
+
+   # get all HCA ports:
+   set hcaPorts [getAllActiveHCAPorts $fabric]
+
+	# HACK assume SM is H-1/U1
+   set smNode [IBFabric_getNode $fabric "H-1/U1"]
+   set smPort [IBNode_getPort $smNode 1]
+   set smPortInfo [IBMSNode_getPortInfo sim$smNode 1]
+   set smLid [ib_port_info_t_base_lid_get $smPortInfo]
+
+	foreach port $hcaPorts {
+		# we skip most of them
+		if {[rmRand] > 0.66} {continue} 
+
+		madGenericInform i
+
+		if {[rmRand] > 0.5} {
+			i configure -subscribe 1
+			set mode subscribing
+		} else {
+			i configure -subscribe 0
+			set mode clearing
+		}
+
+		set portName [IBPort_getName $port]
+		set node [IBPort_p_node_get $port]
+		set portNum [IBPort_num_get $port]
+
+		set joinType [getRandomNumOfSequence $joinTypes]
+
+		switch $joinType {
+			ByTrap {
+				set trapNum [getRandomNumOfSequence {128 144 64 65 66 67}]
+				i configure -trap_num $trapNum
+				set compMask $IB_INFORM_INFO_COMP_TRAP_NUM
+				puts "-I- $mode InformInfo for $portName by trap num:$trapNum"
+			}
+			ByGid {
+				set otherPort [getRandomNumOfSequence $hcaPorts]
+				set gid "0xfe80000000000000:[string range [IBPort_guid_get $otherPort] 2 end]"
+				i configure -gid $gid
+				set compMask $IB_INFORM_INFO_COMP_GID
+				puts "-I- $mode InformInfo for $portName by GID:$gid"
+			} 
+			ByLid {
+				set otherPort [getRandomNumOfSequence $hcaPorts]
+				set fromLid [IBPort_base_lid_get $otherPort]
+				set compMask $IB_INFORM_INFO_COMP_LID_BEGIN
+				puts "-I- $mode InformInfo for $portName by LID:$fromLid"
+			}
+			ByLidRange {
+				set otherPort [getRandomNumOfSequence $hcaPorts]
+				set fromLid [IBPort_base_lid_get $otherPort]
+				set toLid [expr $fromLid + int([rmRand]*10)]
+				set compMask [expr $IB_INFORM_INFO_COMP_LID_BEGIN | $IB_INFORM_INFO_COMP_LID_END]
+				puts "-I- $mode InformInfo for $portName by LID Range:$fromLid - $toLid"
+			} 
+			All {
+				puts "-I- $mode InformInfo for $portName to match all events"
+				set compMask 0
+			}
+		}
+
+		i send_set sim$node $portNum $smLid $compMask
+
+		rename i ""
+	}
+	return 0
+}
+
 # send a path record request
 # port1 - source
 # port2 - destination
@@ -810,6 +888,7 @@ proc InitRandomActionsList {} {
       JOIN
       LEAVE
       PATH-QUERY
+		INFORM
    }
    return $actList
 }
@@ -887,6 +966,7 @@ proc RunRandomStressFlow {fabric iterations} {
            JOIN       { SendMulticastJoinMad $fabric   }
            LEAVE      { SendMulticastLeaveMad $fabric  }
            PATH-QUERY { SendRandomPathRecordRequests $fabric }
+			  INFORM     { randomRegisterFormInformInfo $fabric }
            default    {
               puts "-E- Ignroing unknown action $action"
            }

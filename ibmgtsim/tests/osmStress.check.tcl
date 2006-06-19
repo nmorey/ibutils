@@ -65,35 +65,6 @@ proc runner {simDir osmPath osmPortGuid} {
    return $osmPid
 }
 
-# wait for the SM with the given log to be either dead or in subnet up
-# also support
-proc osmWaitForUpOrDeadWithTimeout {osmLog timeout_ms} {
-   global osmUpOrDeadEvents osmUpOrDeadLogLen
-   global osmLogCallbacks
-  
-   # wait for OpenSM to complete setting up the fabric
-   set osmUpOrDeadLogLen 0
-   set osmLogCallbacks($osmLog) \
-      "{waitForOsmEvent osmUpOrDeadEvents osmUpOrDeadLogLen $osmLog}"
-  
-   after $timeout_ms [list set osmUpOrDeadEvents {exit 0 {}}]
-   puts "-I- Waiting for OpenSM subnet up ..."
-   set done 0
-   while {$done == 0} {
-      vwait osmUpOrDeadEvents
-      foreach event $osmUpOrDeadEvents {
-         if {[lindex $event 0] == "exit"} {
-            set exitCode 1
-            set done 1
-         } elseif {[lindex $event 0] == "SubnetUp"} {
-            set done 1
-            set exitCode 0
-         }
-      }
-   }
-   return $exitCode
-}
-
 ##############################################################################
 #
 # Check for the test results: make sure we got a "SUBNET UP"
@@ -162,6 +133,12 @@ proc checker {simDir osmPath osmPortGuid} {
          return $res
       }
 
+		# sending event forwarding notification requests...
+      puts "-I- Sending event forwarding notification requests"
+      puts $simCtrlSock "randomRegisterFormInformInfo fabric:1"
+      set  returnVal [gets $simCtrlSock]
+      puts "SIM: -I- $returnVal"
+		
       # start Random Flow:
       set iterations 240
       puts "-I- Starting the random stress flow with $iterations..."
