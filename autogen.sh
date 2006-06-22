@@ -20,15 +20,15 @@ am_maj=`echo $am_ver|sed 's/\..*//'`
 am_min=`echo $am_ver|sed 's/.*\.\([^\.]*\)\..*/\1/'`
 am_sub=`echo $am_ver|sed 's/.*\.//'`
 if [[ $am_maj < 1 ]]; then 
-    echo Min automake version is 1.9.3
+    echo Min automake version is 1.9.2
     exit
 fi
 if [[ $am_maj = 1 && $am_min < 9 ]]; then 
-    echo "automake version is too old:$am_maj.$am_min.$am_sub < required 1.9.3"
+    echo "automake version is too old:$am_maj.$am_min.$am_sub < required 1.9.2"
     exit
 fi
-if [[ $am_maj = 1 && $am_min = 9 && $am_sub < 3 ]]; then 
-    echo "automake version is too old:$am_maj.$am_min.$am_sub < required 1.9.3"
+if [[ $am_maj = 1 && $am_min = 9 && $am_sub < 2 ]]; then 
+    echo "automake version is too old:$am_maj.$am_min.$am_sub < required 1.9.2"
     exit
 fi
 
