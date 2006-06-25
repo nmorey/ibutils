@@ -316,6 +316,8 @@ proc checker {simDir osmPath osmPortGuid} {
       }
 
       if {[validateInventoryVsGroup $simDir $group $nodePortGroupList]} {
+			puts $simCtrlSock "dumpPKeyTables \$fabric"
+			puts "SIM: [gets $simCtrlSock]"
          return 1
       }
    }

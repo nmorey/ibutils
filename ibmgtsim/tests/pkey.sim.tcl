@@ -311,6 +311,26 @@ proc verifyDefaultPKeyForAllHcaPorts {fabric} {
    return 0
 }
 
+# dump out the current set of pkey tables:
+proc dumpPKeyTables {fabric} {
+	set f [open "pkeys.txt" w]
+   set hcaPorts [getAllActiveHCAPorts $fabric] 
+   foreach port $hcaPorts {
+      set portNum [IBPort_num_get $port]
+      set node [IBPort_p_node_get $port]
+		set name [IBPort_getName $port]
+      set ni [IBMSNode_getNodeInfo sim$node]
+      set partcap [ib_node_info_t_partition_cap_get $ni]
+		puts $f "PORT: $name  PartCap:$partcap"
+      for {set blockNum 0 } {$blockNum < $partcap/32} {incr blockNum} {
+         set block [IBMSNode_getPKeyTblBlock sim$node $portNum $blockNum]
+         puts $f "BLOCK:$blockNum pkeys:$block"
+		}
+		puts " "
+	}
+	close $f
+	return "Dumped pkeys into:pkeys.txt"
+}
 
 # set the change bit on one of the switches:
 proc setOneSwitchChangeBit {fabric} {
