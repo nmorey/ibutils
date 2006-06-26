@@ -87,6 +87,9 @@ proc ibdiagpathMain {} {
                 if {[catch {set tmpDR [name2Lid $tmpRemote $portPtr $G(argv,port.num)]} e]} {
                     inform "-E-topology:bad.sysName.or.bad.topoFile" -name [IBPort_getName $portPtr]
                 }
+                if {$tmpDR == -1} {
+                    inform "-E-topology:no.route.to.host.in.topo.file" -name [IBPort_getName $portPtr] -topo.file $G(argv,topo.file)
+                }
                 if {[lindex $tmpDR end ] == 0} {
                     if {[catch {set newTarget [GetParamValue LID [lrange $tmpDR 0 end-1] -port 0 -byDr]} e]} {
                         puts  $e
@@ -215,12 +218,12 @@ proc ibdiagpathMain {} {
     }
     # Final reading of Performance Counters
     foreach LidPort $LidPortList {
+        if {![info exists oldValues($LidPort)]} {continue}
         if [catch { set newValues($LidPort) [join [PmListGet $LidPort]] }] {
             inform "-E-ibdiagpath:pmGet.failed" [split $LidPort :]
         }
         set pmList ""
         if {![info exists newValues($LidPort)]} {continue}
-        if {![info exists oldValues($LidPort)]} {continue}
         for { set i 0 } { $i < [llength $newValues($LidPort)] } { incr i 2 } {
             set oldValue [lindex $oldValues($LidPort) [expr $i + 1]]
             set newValue [lindex $newValues($LidPort) [expr $i + 1]]

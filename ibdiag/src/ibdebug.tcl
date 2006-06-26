@@ -386,6 +386,7 @@ proc Port_And_Idx_Settings {_ibisInfo} {
         foreach tmpEntry $allDevPorts {
             set portState $PORT_HCA($tmpEntry)
             if { $portState == "DOWN" } {continue} 
+            set saveState $portState
             if { ( $portState != "ACTIVE" ) && ( $G(tool) == "ibdiagpath" ) } {continue}
             if {$allPortsDown} {
                 set saveState $portState
@@ -2611,7 +2612,6 @@ proc linkNamesGet { DirectPath args } {
     }
     return "names:$linkKind [list $link]"
 }
-
 ##############################
 
 ##############################
@@ -2738,8 +2738,8 @@ proc name2Lid {localPortPtr destPortPtr exitPort} {
             }
         }
     }
+    return -1
 }
-
 ##############################
 
 ##############################

@@ -993,8 +993,8 @@ proc inform { msgCode args } {
             append msgText "its set to $G(argv,sys.name)."
         }
         "-I-localPort:is.dr.path.out.port" { 
-            append msgText "Using port $G(argv,port.num) as the local port "
-            append msgText "(since this is the output port of the direct route)."
+            append msgText "Using port $G(argv,port.num) as the local port%n"
+            append msgText "(since that is the output port based on the provided direct route)."
         }
         "-I-localPort:using.dev.index" {
             append msgText "Using device $G(argv,dev.idx) as the local device."
@@ -1093,9 +1093,13 @@ proc inform { msgCode args } {
             append msgText "Try running ibdiagpath again byDr with the provided route."
         }
         "-E-topology:bad.sysName.or.bad.topoFile" {
-            append msgText "Enable to retrive a route from local host to \"$msgF(name)\".%n"
+            append msgText "Enable to retrive a route from the local host to \"$msgF(name)\".%n"
             append msgText "Either the given topology file is bad "
             append msgText "or the local sys name is incorrect."
+        }
+        "-E-topology:no.route.to.host.in.topo.file" {
+            append msgText "Enable to retrive a route from the local host to \"$msgF(name)\".%n"
+            append msgText "based on the topology given in:$msgF(topo.file)"
         }
         "-E-topology:lid.by.name.failed" {
             append msgText "Couldn't retrive $msgF(name) LID%n"
@@ -1113,14 +1117,13 @@ proc inform { msgCode args } {
 	    append msgText "(which cannot forward direct route mads)."
         }
         "-E-ibdiagpath:direct.path.no.such.port" {
-            append msgText "Illegal direct route was issued.\nThe following device%n"
- 	    append msgText "$NODE(0,FullName)%n"
+            append msgText "Illegal direct route was issued.%n"
+ 	    append msgText "The following device: $NODE(0,FullName)%n"
  	    append msgText "does not have port number $msgF(port)."
         }
         "-E-ibdiagpath:link.down" {
-            append msgText "Illegal route was issued.\n"
-            append msgText "Port \#$msgF(port), of the following device, is DOWN.%n"
- 	    append msgText "$NODE(0,FullName)"
+            append msgText "Illegal route was issued.%n"
+            append msgText "Port \#$msgF(port) of:$NODE(0,FullName), is DOWN."
         }
         "-E-ibdiagpath:route.failed" {
             append msgText "Illegal route was issued.%n"
