@@ -38,11 +38,11 @@ EXTRA_DIST = ibdebug_if.tcl ibdebug.tcl ibdiagnet.in ibdiagnet.pkg ibdiagnet.tcl
 
 ibdiagnet: ibdiagnet.in
 	sed -e 's=%ibdiag_libdir%='$(DESTDIR)$(libdir)'=' \
-	    -e 's=%with_ibdm_lib%='$(with_ibdm_lib)'=' $(srcdir)/ibdiagnet.in \
+	    -e 's=%with_ibdm_lib%='$(with_ibdm_lib)'=' \
 	    -e 's=%with_ibis%='$(with_ibis)'=' $(srcdir)/ibdiagnet.in > ibdiagnet
 ibdiagpath: ibdiagpath.in
 	sed -e 's=%ibdiag_libdir%='$(DESTDIR)$(libdir)'=' \
-            -e 's=%with_ibdm_lib%='$(with_ibdm_lib)'=' $(srcdir)/ibdiagpath.in \
+            -e 's=%with_ibdm_lib%='$(with_ibdm_lib)'=' \
             -e 's=%with_ibis%='$(with_ibis)'=' $(srcdir)/ibdiagpath.in > ibdiagpath
 
 NET_LIB_DIR=$(DESTDIR)/$(libdir)/ibdiagnet$(VERSION)
