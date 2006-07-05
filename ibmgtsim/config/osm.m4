@@ -64,7 +64,7 @@ AC_ARG_WITH(osm-libs,
 AC_MSG_NOTICE(Using OSM libs from:$with_osm_libs),
 with_osm_libs="none")
 
-osm_lib_dir="lib"	
+osm_lib_dir="none"	
 
 if test "x$libcheck" = "xtrue"; then
    dnl if the user did not provide --with-osm look for it in reasonable places
@@ -73,11 +73,16 @@ if test "x$libcheck" = "xtrue"; then
          with_osm=/usr/local/ibgd/apps/osm
       elif test -d /usr/mellanox/osm; then
          with_osm=/usr/mellanox
-      elif test -f /usr/local/lib/libopensm.a; then
+      dnl if it is an ofed or gen2 install, we can use /etc/infiniband/info for searching opensm prefix
+      elif test -f /etc/infiniband/info; then
+         ofed_dir=`/etc/infiniband/info | grep prefix | cut -d = -f 2`
+         if (test -f $ofed_dir/lib/libopensm.so ||
+				test -f $ofed_dir/lib64/libopensm.so); then
+            with_osm=$ofed_dir
+         fi
+      elif (test -f /usr/local/lib64/libopensm.so ||
+				test -f /usr/local/lib/libopensm.so); then
          with_osm=/usr/local
-      elif test "$(uname -m)" = "x86_64" -a test -f /usr/local/lib64/libopensm.a; then
-         with_osm=/usr/local
-         osm_lib_dir=lib64
       else
          AC_MSG_ERROR([OSM: --with-osm must be provided - fail to find standard OpenSM installation])
       fi
@@ -85,8 +90,17 @@ if test "x$libcheck" = "xtrue"; then
    AC_MSG_NOTICE(OSM: used from $with_osm)
    
    if test "x$with_osm_libs" = "xnone"; then
-      with_osm_libs=$with_osm/$osm_lib_dir
+   dnl if the user did not provide --with-osm-libs then look for it based on $with_osm
+      if (test -f $with_osm/lib64/libosmvendor_gen1.so || 
+			 test -f $with_osm/lib64/libosmvendor_vapi.so || 
+       	 test -f $with_osm/lib64/libopensm.so         || 
+			 test -f $with_osm/lib64/libosmvendor_sim.so); then
+         osm_lib_dir=lib64
+      else
+         osm_lib_dir=lib
+      fi
    fi
+   with_osm_libs=$with_osm/$osm_lib_dir        
    
    dnl check what build we have gen1 or gen2
    if test -d $with_osm/include/infiniband; then
