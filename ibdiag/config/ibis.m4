@@ -29,6 +29,10 @@ fi
 if test "x$libcheck" != "xfalse"; then
    if test "x$with_ibis" = xnone; then
       AC_MSG_ERROR([IBIS: --with-ibis must be provided - fail to find standard ibis executable file])
+   else
+      if test ! -e $with_ibis/ibis; then
+          AC_MSG_ERROR([IBIS: can not find ibis executable under $with_ibis])
+      fi
    fi
 fi
 
