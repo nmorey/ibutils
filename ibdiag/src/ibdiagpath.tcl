@@ -92,7 +92,6 @@ proc ibdiagpathMain {} {
                 }
                 if {[lindex $tmpDR end ] == 0} {
                     if {[catch {set newTarget [GetParamValue LID [lrange $tmpDR 0 end-1] -port 0 -byDr]} e]} {
-                        puts  $e
                         inform "-E-topology:bad.path.in.name.tracing" -path $tmpDR -name [IBPort_getName $portPtr]
                     }
                 } else {

@@ -32,7 +32,8 @@
 # DumpBadLidsGuids
 # DumpBadLinksLogic           
 # DiscoverPath                
-# RereadLongPaths             
+# RereadLongPaths
+# PMCounterQuery             
 
 ##############################
 ### GENERAL PURPOSE PROCs
@@ -119,7 +120,7 @@
 #  OUTPUT	NULL
 proc InitalizeIBdiag {} {
     global G argv argv0 InfoArgv INFO_LST MASK SECOND_PATH
-    set G(version.num) 1.3.0rc5
+    set G(version.num) 1.3.0rc6
     set G(tool) [file rootname [file tail $argv0]]
     source [file join [file dirname [info script]] ibdebug_if.tcl]
     set G(start.clock.seconds) [clock seconds]
@@ -1443,7 +1444,7 @@ proc DiscoverPath { Path2Start node } {
             
             # If we reached a HCA
             if { ( $NodeType != "SW" ) && ( $DirectPath != $Path2Start ) } {
-                inform "-E-ibdiagpath:lid.route.deadend" \
+                inform "-E-ibdiagpath:lid.route.deadend.reached.hca" \
                     -DirectPath [lrange $DirectPath 0 end-1] -lid $destinationLid -port [lindex $DirectPath 0]
             } 
             
@@ -1469,7 +1470,7 @@ proc DiscoverPath { Path2Start node } {
                 set exitPort [expr [lindex $FDBsBlock $LidMod64]]
                 if { ($exitPort == "0x00") } {
                     inform "-E-ibdiagpath:lid.route.deadend" \
-                    -DirectPath [lrange $DirectPath 0 end-1] -lid $destinationLid -port [lindex $DirectPath 0]
+                    -DirectPath [lrange $DirectPath 0 end] -lid $destinationLid -port [lindex $DirectPath 0]
                 }
                 
                 if { ($exitPort == "0xff")} {
@@ -1564,7 +1565,7 @@ proc PMCounterQuery {} {
 	# start from the second path in $G(list,DirectPath), because the first is ""
         # Ignore those links which has state INIT
         set drIsInit 0
-        if {[PathIsBad $directPath]} { continue }
+        if {[PathIsBad $directPath] > 1} { continue }
         for {set i 0} {$i < [llength $directPath]} {incr i} {
             if {[lsearch $LINK_STATE [lrange $directPath 0 $i]] != -1} {
                 set drIsInit 1
@@ -1573,9 +1574,10 @@ proc PMCounterQuery {} {
         }
         if {$drIsInit} {continue}
         
-        set tmpLidPort "DZ"
         set entryPort [GetEntryPort $directPath]
-        unset tmpLidPort
+        if {[info exists tmpLidPort]} {
+            unset tmpLidPort
+        }
         # preparing database for reading PMs
         if {![catch {set tmpLID [GetParamValue LID $directPath $entryPort]}]} { 
             if { $tmpLID != 0 } { 
@@ -1638,8 +1640,8 @@ proc PMCounterQuery {} {
             switch -exact -- $err {
                 "valueChange" {
                     regsub -- "->" $value " - " exp
-                    set value [expr - ($exp)]
-                    lappend badValues "$parameter=$value"
+                    set newValue [expr - ($exp)]
+                    lappend badValues "$parameter changed by : $newValue ($value)"
                 }
                 "overflow" {
                     lappend badValues "$parameter=$value\(=overflow\)"
@@ -2160,11 +2162,11 @@ proc ComparePMCounters { oldValues newValues args } {
     array set InfoPm { 
 	port_select			{ -width 8  -thresh 0  }
 	counter_select			{ -width 16 -thresh 0  }
-	symbol_error_counter		{ -width 16 -thresh 30 }
-	link_error_recovery_counter	{ -width 8  -thresh 10 }
-	link_down_counter		{ -width 8  -thresh 5  }
-	port_rcv_errors			{ -width 16 -thresh 10 }
-	port_rcv_remote_physical_errors { -width 16 -thresh 10 }
+	symbol_error_counter		{ -width 16 -thresh 1  }
+	link_error_recovery_counter	{ -width 8  -thresh 1  }
+	link_down_counter		{ -width 8  -thresh 1  }
+	port_rcv_errors			{ -width 16 -thresh 1  }
+	port_rcv_remote_physical_errors { -width 16 -thresh 0  }
 	port_rcv_switch_relay_errors	{ -width 16 -thresh 0  }
 	port_xmit_discard		{ -width 16 -thresh 10 }
 	port_xmit_constraint_errors	{ -width 8  -thresh 10 }
@@ -2186,11 +2188,11 @@ proc ComparePMCounters { oldValues newValues args } {
 
 	set oldValue	[WordAfterFlag $oldValues $parameter]
 	set newValue	[WordAfterFlag $newValues $parameter]
-	set delta	[expr $newValue - $oldValue]
+        set delta	[expr $newValue - $oldValue]
 	set overflow	0x[bar f [expr $cfg(width) / 4]]
 
-	if { ( $delta > $cfg(thresh) ) || ( $oldValue > $newValue ) } {
-	    lappend errList "$parameter valueChange $oldValue->$newValue"
+	if { ( $delta >= $cfg(thresh) ) || ( $oldValue > $newValue ) } {
+            lappend errList "$parameter valueChange $oldValue->$newValue"
 	} elseif { ( $oldValue == $overflow ) || ( $newValue == $overflow ) } {
 	    lappend errList "$parameter overflow $overflow"
 	}
