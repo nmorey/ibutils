@@ -162,102 +162,8 @@ proc ibdiagpathMain {} {
         lappend llen [string length [lindex $portNames 0]] [string length [lindex $portNames 1]]
     }
     set maxLen [lindex [lsort -integer $llen] end]
-    # preparing the list of lid-s and ports for reading the PM counters
-    set directPathsList [list $src2trgtPath]
-    for { set I $startIdx } { $I < [llength $src2trgtPath] } { incr I } {
-        set bug32708fix [expr ( $I == $startIdx ) && [info exists sourceIsHca]]
-        set ShortPath [lrange $src2trgtPath 0 $I]
-        if { $bug32708fix } {
-            lappend ShortPath $sourceIsHca
-            lappend directPathsList "$ShortPath"
-        }
-        if $addressingLocalPort {
-            set port0 $G(argv,port.num)
-            set path0 ""
-        } else {
-            if { [catch { linkAtPathEnd $ShortPath} ] } { continue }
-        }
-        set portNames [lindex [linkNamesGet $ShortPath] end]
-        foreach idx { 0 1 } {
-            if { $addressingLocalPort && ( $idx == 1 ) } { continue }
-            # The link associated to bug32708fix should be displayed reverse order
-            if { $bug32708fix } { set idx [expr 1 - $idx] }
-
-            set name [lindex $portNames $idx]
-            set port [expr $[list port$idx]]
-            set path [expr $[list path$idx]]
-            set LID  [GetParamValue LID $path $port]
-            if { [GetParamValue Type $path -byDr] != "SW" } {
-                set LID $G(DrPath2LID,$path:$port)
-            } else {
-                set LID $G(DrPath2LID,$path:0)
-            }
-            if { $LID == 0 } {
-                inform "-E-ibdiagpath:reached.lid.0" \
-                    -DirectPath "$path" +cannotRdPM
-            }
-
-            append name " lid:$LID port:$port"
-            lappend LidPortList "$LID:$port"
-            set linkLidsNames($LID:$port) $name
-        }
-    }
-    inform "-I-ibdiagpath:read.pm.header"
-    # Initial reading of Performance Counters
-    foreach LidPort $LidPortList {
-        if {[catch { set oldValues($LidPort) [join [PmListGet $LidPort]] } e] } {
-            inform "-E-ibdiagpath:pmGet.failed" [split $LidPort :]
-        }
-    }
-    # Sending MADs over the path(s)
-    for { set count 0 } { $count < $G(argv,count) } { incr count } {
-        foreach path $directPathsList {
-            catch { SmMadGetByDr NodeDesc dump "$path"}
-        }
-    }
-    # Final reading of Performance Counters
-    foreach LidPort $LidPortList {
-        if {![info exists oldValues($LidPort)]} {continue}
-        if [catch { set newValues($LidPort) [join [PmListGet $LidPort]] }] {
-            inform "-E-ibdiagpath:pmGet.failed" [split $LidPort :]
-        }
-        set pmList ""
-        if {![info exists newValues($LidPort)]} {continue}
-        for { set i 0 } { $i < [llength $newValues($LidPort)] } { incr i 2 } {
-            set oldValue [lindex $oldValues($LidPort) [expr $i + 1]]
-            set newValue [lindex $newValues($LidPort) [expr $i + 1]]
-            lappend pmList [expr $newValue - $oldValue]
-        }
-
-        set name $linkLidsNames($LidPort)
-        set rubberLen [expr $maxLen - [string length $name]]
-        inform "-V-ibdiagpath:pm.value" "$name [bar " " $rubberLen] $pmList"
-    }
-    foreach LidPort $LidPortList {
-        set name $linkLidsNames($LidPort)
-        append name "[bar " " [expr $maxLen - [string length $name]]]"
-        set badValues ""
-
-        if {![info exists newValues($LidPort)]} {continue}
-        if {![info exists oldValues($LidPort)]} {continue}
-        foreach entry [ComparePMCounters $oldValues($LidPort) $newValues($LidPort)] {
-            scan $entry {%s %s %s} parameter err value
-            switch -exact -- $err {
-                "valueChange" {
-                    regsub -- "->" $value " - " exp
-                    set value [expr - ($exp)]
-                    lappend badValues "$parameter=$value"
-                }
-                "overflow" {
-                    lappend badValues "$parameter=$value\(=overflow\)"
-                }
-            }
-        }
-        if { $badValues != "" } {
-            putsIn80Chars "-E- $name: [join $badValues ", "]"
-        }
-    }
-
+    # Running PMCounterQuery
+    PMCounterQuery
     return
 }
 ######################################################################
@@ -274,6 +180,7 @@ startIBDebug
 set G(detect.bad.links) 1
 ibdiagpathMain
 set G(detect.bad.links) 0
+CheckAllinksSettings
 ### Finishing
 finishIBDebug
 ######################################################################
