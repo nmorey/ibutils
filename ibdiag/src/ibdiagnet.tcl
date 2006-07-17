@@ -70,6 +70,7 @@ DumpBadLidsGuids
 DumpBadLinksLogic
 CheckSM
 PMCounterQuery
+CheckAllinksSettings 
 
 ### Write the .fdbs, .mcfdbs, and .sm files
 writeFdbsFile 
