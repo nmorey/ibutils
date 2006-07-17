@@ -1154,6 +1154,7 @@ proc DiscoverFabric { PathLimit {startIndex 0}} {
         }
     }
     return
+
 }
 ##############################
 
@@ -1551,15 +1552,19 @@ proc PMCounterQuery {} {
     # send $G(argv,count) MADs that don't wait for replies 
     # and then read all performance counters
     ## Retrying discovery multiple times (according to the -c flag)
-    global G LINK_STATE
+    global G LINK_STATE PC_DUMP
     inform "-V-discover:long.paths"
     inform "-I-ibdiagnet:pm.counter.report.header"
     set firstPMcounter 0
     # Inform that the local link is in init state
-    if {[llength [lindex $LINK_STATE 0]] == 1 } {
-        inform "-W-ibdiagnet:local.link.in.init.state"
-        RereadLongPaths
-        return 0
+    if {[info exists LINK_STATE]} {
+        if {[llength [lindex $LINK_STATE 0]] == 1 } {
+            inform "-W-ibdiagnet:local.link.in.init.state"
+            RereadLongPaths
+            return 0
+        }
+    } else {
+        set LINK_STATE "DZ"
     }
     foreach directPath [lrange $G(list,DirectPath) 1 end] {
 	# start from the second path in $G(list,DirectPath), because the first is ""
@@ -1634,7 +1639,12 @@ proc PMCounterQuery {} {
         inform "-V-ibdiagpath:pm.value" "$name $pmList"
     
         set badValues ""
-    
+        ## -pc option
+        # set a list of all pm counters and reduced each one which is reported as an error 
+        set pmCounterList "symbol_error_counter link_error_recovery_counter\
+            link_down_counter port_rcv_errors port_xmit_discard port_xmit_constraint_errors\
+            port_rcv_constraint_errors local_link_integrity_errors excesive_buffer_errors vl15_dropped" 
+
         foreach entry [ComparePMCounters $oldValues($tmpLidPort) $newValues($tmpLidPort)] {
             scan $entry {%s %s %s} parameter err value
             switch -exact -- $err {
@@ -1652,11 +1662,24 @@ proc PMCounterQuery {} {
             set firstPMcounter 1
             inform "-W-ibdiagnet:bad.pm.counter.report" -deviceName $name -listOfErrors [join $badValues "%n"]
         }
+        
+        if {[info exists G(argv,port.counters)]} {
+            lappend PC_DUMP(nodeNames) $name
+            set PC_DUMP($name,pmCounterList) $pmCounterList
+            set PC_DUMP($name,pmCounterValue) $newValues($tmpLidPort)
+            #inform "-I-ibdiagnet:pm.counter.report.pc.header" -deviceName $name
+            #foreach pmCounter $pmCounterList {
+            #    set pmCounterValue "0x[format %x [WordAfterFlag $newValues($tmpLidPort) $pmCounter]]"
+            #    inform "-I-ibdiagnet:pm.counter.report.pc.option" -pmCounter $pmCounter -pmCounterValue $pmCounterValue
+            #}
+        }
     }
     if {$firstPMcounter == 0} {
         inform "-I-ibdiagnet:no.pm.counter.report"
     }
-
+    if {[info exists G(argv,port.counters)]} {
+        writePCFile
+    }
     return 1
 }
 
@@ -2349,11 +2372,11 @@ proc DumpSMReport { {_fileName stdout} }  {
             }
             foreach element $SMList {
                 set tmpDirectPath [lindex $element 0]
-                set nodeName [DrPath2Name $tmpDirectPath -port [GetEntryPort $tmpDirectPath]]
+                set nodeName [DrPath2Name $tmpDirectPath -port [GetEntryPort $tmpDirectPath] -fullName]
                 if { $tmpDirectPath == "" } {
                     set nodeName "The Local Device : $nodeName"
                 }
-                set msg "    $nodeName  priorty:[lindex $element 1]"
+                set msg "    $nodeName priorty:[lindex $element 1]"
                 if {$_fileName == "stdout"} {
                     inform "-I-ibdiagnet:SM.report.body" $nodeName [lindex $element 1]
                 } else {
@@ -2485,11 +2508,11 @@ proc DrPath2Name { DirectPath args } {
         set EntryPort $port
     }
     if { $fullName && [PathIsBad $DirectPath] < 2} { 
-        set NodeGuid	[GetParamValue NodeGUID $DirectPath]
+        set PortGUID	[GetParamValue PortGUID $DirectPath]
         set NodeDevID	[expr [GetParamValue DevID $DirectPath]]
         set NodePorts	[GetParamValue Ports $DirectPath]
         set NodeLid	[GetParamValue LID $DirectPath $EntryPort]
-	set lidGuidDev	"lid=$NodeLid guid=$NodeGuid dev=$NodeDevID"
+	set lidGuidDev	"lid=$NodeLid guid=$PortGUID dev=$NodeDevID"
     } else {
 	set lidGuidDev	""
     }
@@ -3203,6 +3226,32 @@ proc writeSMFile {} {
     return 1
 
 }
+
+##############################
+#  NAME         writePCFile
+#  SYNOPSIS     writePCFile 
+#  FUNCTION     writes a dump of Port Counter query
+#  INPUTS       NULL
+#  OUTPUT       NULL
+proc writePCFile {} {
+    global G PC_DUMP
+    set FileID [InitOutputFile $G(tool).pc]
+    foreach name $PC_DUMP(nodeNames) {
+        puts $FileID [string repeat "-" 80]
+        puts $FileID $name
+        puts $FileID [string repeat "-" 80]
+        set tmpPmCounterList $PC_DUMP($name,pmCounterList)
+        set listOfPCValues $PC_DUMP($name,pmCounterValue)
+        foreach pmCounter $tmpPmCounterList {
+            set pmCounterValue "0x[format %x [WordAfterFlag $listOfPCValues $pmCounter]]"
+            puts $FileID "$pmCounter = $pmCounterValue"
+        }
+    }
+
+    close $FileID
+    return 1
+}
+
 ##############################
 
 ##############################
@@ -3459,3 +3508,66 @@ proc listG {} {
     puts "-G- G entries: [join [lsort $Glist] "; "]"
     return
 }
+
+proc CheckAllinksSettings {} {
+    global G LINK_SPD LINK_PHY
+    set checkList ""
+    set spd ""
+    set phy ""
+    if {[info exists G(argv,link.width)]} {
+        lappend checkList "PHY"
+        set phy $G(argv,link.width)
+    }
+    if {[info exists G(argv,link.speed)]} {
+        lappend checkList "SPD"
+        set spd $G(argv,link.speed)
+    }
+
+    foreach DirectPath $G(list,DirectPath) {
+        if {$DirectPath == ""} {
+            continue
+        }
+        if {[lsearch $checkList "SPD"] != -1} {
+            set tmpLinkspeed [GetParamValue "SPD" $DirectPath [GetEntryPort $DirectPath]]
+            if {$tmpLinkspeed != $spd} {
+                lappend LINK_SPD($DirectPath) $tmpLinkspeed
+            }
+        }
+        if {[lsearch $checkList "PHY"] != -1} {
+            set tmpLinkWidth [GetParamValue "PHY" $DirectPath [GetEntryPort $DirectPath]]
+            if {$tmpLinkWidth != $phy} {
+                lappend LINK_PHY($DirectPath) $tmpLinkWidth
+            }
+        }
+    }
+
+    if {[lsearch $checkList "PHY"] != -1} {
+        inform "-I-ibdiagnet:bad.link.width.header"
+        if {[llength [array names LINK_PHY]]} {
+            foreach link [lsort [array names LINK_PHY]] {                                                        
+                if {[PathIsBad $link] > 1} {continue}
+                set paramlist "-DirectPath0 \{[lrange $link 0 end-1]\} -DirectPath1 \{$link\}"
+                eval inform "-W-ibdiagnet:report.links.width.state" -phy $LINK_PHY($link) $paramlist
+                set firstINITlink 1
+            }
+        } else {
+            inform "-I-ibdiagnet:no.bad.link.width"
+        }
+    }
+
+    if {[lsearch $checkList "SPD"] != -1} {
+        inform "-I-ibdiagnet:bad.link.speed.header"
+        if {[llength [array names LINK_SPD]]} {
+            foreach link [lsort [array names LINK_SPD]] {                                                        
+                if {[PathIsBad $link] > 1} {continue}
+                set paramlist "-DirectPath0 \{[lrange $link 0 end-1]\} -DirectPath1 \{$link\}"
+                eval inform "-W-ibdiagnet:report.links.speed.state" -spd $LINK_SPD($link) $paramlist
+                set firstINITlink 1
+            }
+        } else {
+            inform "-I-ibdiagnet:no.bad.link.speed"
+        }
+    }
+    return 
+}
+                    
