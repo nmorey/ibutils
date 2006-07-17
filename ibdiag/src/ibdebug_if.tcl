@@ -15,6 +15,19 @@
 # -deafult "" means that the parameter does have a default value, but it will set later (after ibis is ran, in porc startIBDebug).
 ## TODO: sm_key is a 64-bit integer - will it be correctly cheked in parseArgv ?
 array set InfoArgv {
+    -pc,name    "port.counters"
+    -pc,arglen	0
+
+    -lw,name    "link.width"
+    -lw,param   "1x|4x|12x"
+    -lw,error	"-E-argv:not.legal.link.width"
+    -lw,regexp	{^((1x)|(4x)|(12x))$} 
+
+    -ls,name    "link.speed"
+    -ls,param   "2.5|5|10"
+    -ls,error	"-E-argv:not.legal.link.speed"
+    -ls,regexp	{^((2\.5)|(5)|(10))$} 
+
     -a,name	"attribute" 
     -a,param	"attr"
     -a,optional	"-field1 val1 -field2 val2 ..."
@@ -191,8 +204,8 @@ proc toolsFlags { tool } {
     # If a few flags are thus encompassed, then they are mutex
     switch -exact -- $tool { 
 	ibping	   { return "(n|l|d) c w v    t s i p o" }
-	ibdiagpath	   { return "(n|l|d) c   v    t s i p o" }
-	ibdiagnet { return "        c   v r  t s i p o" }
+	ibdiagpath { return "(n|l|d) c   v    t s i p o lw ls pc" }
+	ibdiagnet  { return "        c   v r  t s i p o lw ls pc" }
 	ibcfg	   { return "(n|l|d) (c|q)    t s i p o" }
 	ibmad	   { return "(m) (a) (n|l|d)  t s i p o ; (q) a" }
 	ibsac	   { return "(m) (a) k        t s i p o ; (q) a" }
@@ -332,7 +345,7 @@ proc parseArgv {} {
 	if { [llength $argvList] == 0 && ![regexp {^0} $arglen] } { 
 	    inform "-E-argv:flag.without.value" -flag $flag
 	}
-
+        
 	# Checking values validity and setting G(argv,$name) - the flag's value
         set regexp 1
         if { [regexp {^0} $arglen] && [regexp {^\-} $value] } {
@@ -381,7 +394,7 @@ proc parseArgv {} {
 		}
 		set value [join $formattedValue ,]
 	    } else {
-		set regexp [regexp $InfoArgv($flag,regexp) "$value"]
+                set regexp [regexp $InfoArgv($flag,regexp) "$value"]
                 if {!$regexp} {
                     inform "$InfoArgv($flag,error)" -flag $flag -value $value
                 }
@@ -442,7 +455,7 @@ proc parseArgv {} {
 	} elseif { ! [file writable $dir] } {
 	    inform "-E-argv:dir.not.writable" -flag "-o" -value $dir
 	}
-	foreach extention { "lst" "fdbs" "mcfdbs" "log" "neighbor" "masks" "sm"} {
+	foreach extention { "lst" "fdbs" "mcfdbs" "log" "neighbor" "masks" "sm" "pc"} {
 	    set G(outfiles,.${extention}) [file join $dir $G(tool).${extention}]
 	}
     }
@@ -881,7 +894,14 @@ proc inform { msgCode args } {
             append msgText "Topology file is not specified.\n"
             append msgText "Reports regarding cluster links will use direct routes."
         } 
-
+        "-E-argv:not.legal.link.width" {
+            append msgText "Illegal argument: i${llegalValMsg} : $msgF(value)%n"
+            append msgText "(Legal value: 1x | 4x | 12x)."
+        }
+        "-E-argv:not.legal.link.speed" {
+            append msgText "Illegal argument: i${llegalValMsg} : $msgF(value)%n"
+            append msgText "(Legal value: 2.5 | 5 | 10)."
+        }
 
         "-E-ibis:init" {
             append msgText "ibis_init failed.\n[join $args]"
@@ -1038,6 +1058,9 @@ proc inform { msgCode args } {
             set noExiting 1
         }
         "-E-discover:zero/duplicate.IDs.found" {
+            if {($msgF(ID) == "SystemGUID") && ($msgF(value) == 0)} {
+                set msgText "-W- "
+            }
             set dontTrimLine 1
             if {$localDevice} {set G(LocalDeviceDuplicated) 1}
             if {$total > 1} { 
@@ -1310,6 +1333,32 @@ proc inform { msgCode args } {
             append msgText "   \"madsLost\": $G(config,badpath,maxnErrors) MADs were "
             append msgText "dropped on the link (drop ratio is given).\n"
         }
+        "-I-ibdiagnet:bad.link.width.header" {
+            append msgText "Links With links width != $G(argv,link.width) (as set by -lw option)"
+        }
+        "-I-ibdiagnet:no.bad.link.width" {
+            append msgText "No unmatched Links (with width != $G(argv,link.width)) were found"
+        }
+        "-W-ibdiagnet:report.links.width.state" {
+            append msgText "link with PHY=$msgF(phy) found at direct path \"$PATH(1)\"\n"
+            append msgText "From : a $NODE(0,FullType,Spaces) $NODE(0,Name,Spaces)"
+            append msgText " GUID=$NODE(0,PortGUID) Port=[lindex [split $PATH(1) ,] end]\n"
+            append msgText "To   : a $NODE(1,FullType,Spaces) $NODE(1,Name,Spaces)"
+            append msgText " GUID=$NODE(1,PortGUID) Port=$NODE(1,EntryPort)"
+        }
+        "-I-ibdiagnet:bad.link.speed.header" {
+            append msgText "Links With links speed != $G(argv,link.speed) (as set by -ls option)"
+        }
+        "-I-ibdiagnet:no.bad.link.speed" {
+            append msgText "No unmatched Links (with speed != $G(argv,link.speed)) were found"
+        }
+        "-W-ibdiagnet:report.links.speed.state" {
+            append msgText "link with SPD=$msgF(spd) found at direct path \"$PATH(1)\"\n"
+            append msgText "From : a $NODE(0,FullType,Spaces) $NODE(0,Name,Spaces)"
+            append msgText " GUID=$NODE(0,PortGUID) Port=[lindex [split $PATH(1) ,] end]\n"
+            append msgText "To   : a $NODE(1,FullType,Spaces) $NODE(1,Name,Spaces)"
+            append msgText " GUID=$NODE(1,PortGUID) Port=$NODE(1,EntryPort)"
+        }
         "-I-ibdiagnet:bad.link.logic.header" {
             append msgText "Links With Logical State = INIT"
         }
@@ -1325,6 +1374,12 @@ proc inform { msgCode args } {
         "-W-ibdiagnet:bad.pm.counter.report" {
             append msgText "$msgF(deviceName)%n"
             append msgText "$msgF(listOfErrors)"
+        }
+        "-I-ibdiagnet:pm.counter.report.pc.header" {
+            append msgText "$msgF(deviceName)"
+        }
+        "-I-ibdiagnet:pm.counter.report.pc.option" {
+            set msgText "    $msgF(pmCounter) = $msgF(pmCounterValue)"
         }
         "-W-ibdiagnet:local.link.in.init.state" {
             append msgText "The local link is in INIT state, no PM counter reading could take place"
