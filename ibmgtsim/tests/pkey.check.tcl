@@ -15,7 +15,9 @@ proc parseNodePortGroup {simDir} {
 # setup the partitions policy file for the SM 
 proc setupPartitionPolicyFile {fileName} {
    global nodePortGroupList
-
+	for {set g 1} {$g <= 3} {incr g} {
+		set GROUP_PKEYS($g) ""
+	}
    set f [open $fileName w]
 
    # no need for default partition
