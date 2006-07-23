@@ -158,7 +158,7 @@ if test "x$libcheck" = "xtrue"; then
          dnl sometimes we got empty libs: use TCL_LIB_FILE
          if test X"$TCL_LIBS" = X; then
            dnl extract the lib style name... 
-           TCL_LIBS=`echo ${TCL_LIB_FILE} | sed 's/lib\([[^ \t]]*\)\.\(so\|a\)/-l\1/'`
+           TCL_LIBS=`echo ${TCL_LIB_FILE} | sed 's/lib\([[^ 	]]*\)\.\(so\|a\)/-l\1/'`
          fi
    
          dnl sometimes we got empty libs: use TCL_LIB_SPEC

@@ -81,3 +81,12 @@
 
 /* Define to `unsigned' if <sys/types.h> does not define. */
 #undef size_t
+
+/* look for missing functions ... */
+#ifndef HAVE_INDEX 
+#define index strchr
+#endif
+
+#ifndef HAVE_RINDEX 
+#define rindex strrchr
+#endif

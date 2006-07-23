@@ -65,10 +65,9 @@ AC_TYPE_SIZE_T
 dnl Checks for library functions.
 dnl AC_FUNC_MALLOC
 dnl AC_FUNC_REALLOC
-AC_CHECK_FUNCS([strchr strstr strtol strtoull regcomp regexec])
+AC_CHECK_FUNCS([strchr strstr strtol strtoull index rindex])
 AC_REPLACE_FUNCS(memset)
-dnl The alternate impl is problematic 
-dnl - So I cant use ez_INCLUDED_REGEX([replace/regex.c])
+IS_INCLUDED_REGEX()
 
 dnl Just in case that the current version does not support the 
 dnl usage of LTLIBOBJS
