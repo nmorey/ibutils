@@ -8,6 +8,6 @@ pkgdata_DATA = $(KNOWN_IBNLS)
 EXTRA_DIST = $(KNOWN_IBNLS)
 
 install-data-am:
-	mkdir -p $(DESTDIR)/$(libdir)/ibdm$(VERSION)/ibnl
-	for s in $(KNOWN_IBNLS); do cp $$s $(DESTDIR)/$(libdir)/ibdm$(VERSION)/ibnl/; done
+	mkdir -p $(DESTDIR)$(libdir)/ibdm$(VERSION)/ibnl
+	for s in $(KNOWN_IBNLS); do cp $$s $(DESTDIR)$(libdir)/ibdm$(VERSION)/ibnl/; done
 

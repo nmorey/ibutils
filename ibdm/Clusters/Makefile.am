@@ -6,5 +6,5 @@ pkgdata_DATA = $(wildcard $(srcdir)/*.topo) $(wildcard $(srcdir)/*.lst)
 EXTRA_DIST = $(pkgdata_DATA)
 
 install-data-am:
-	mkdir -p $(DESTDIR)/$(libdir)/ibdm$(VERSION)/ibnl
-	for s in $(pkgdata_DATA); do cp $$s $(DESTDIR)/$(libdir)/ibdm$(VERSION)/ibnl/; done
+	mkdir -p $(DESTDIR)$(libdir)/ibdm$(VERSION)/ibnl
+	for s in $(pkgdata_DATA); do cp $$s $(DESTDIR)$(libdir)/ibdm$(VERSION)/ibnl/; done
