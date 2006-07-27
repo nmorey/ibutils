@@ -5,9 +5,10 @@ B<ibdiagpath - IB diagnostic path>
 =head1 SYNOPSYS
 
 ibdiagpath 
-     {-n <[src-name,]dst-name>|-l <[src-lid,]dst-lid>|-d <p1,p2,p3,...>}
-     [-c <count>] [-v] [-t <topo-file>] [-s <sys-name>] [-i <dev-index>]
-     [-p <port-num>] [-o <out-dir>]
+     {-n <[src-name,]dst-name>|-l <[src-lid,]dst-lid>|-d <p1,p2,...>}
+     [-c <count>] [-v] [-t <topo-file>] [-s <sys-name>] 
+     [-i <dev-index>] [-p <port-num>] [-o <out-dir>]
+     [-lw <1x|4x|12x>] [-ls <2.5|5|10>] [-pm]
 
 =head1 DESCRIPTION
 
@@ -34,6 +35,12 @@ in the ACTIVE state, ibdiagpath reports an error.
 =over
 
 =item F<ibdiagpath.log> - 
+
+A dump of all the application reports generate according to the provided flags
+
+=item F<ibdiagnet.pm> -
+
+A dump of the pm Counters values, of the fabric links
 
 =back
 
@@ -131,7 +138,34 @@ Specifies the directory where the output files will be placed (default = /tmp)
 
 =back
 
-=item B<-h|--help> : 
+=item B<-lw <1x|4x|12x>> :
+
+=over
+
+=item
+Specifies the expected link width
+
+=back
+
+=item B<-ls <2.5|5|10>>  :
+
+=over
+
+=item
+Specifies the expected link speed
+
+=back
+
+=item B<-pm>             :
+
+=over
+
+=item
+Dump all the fabric links, pm Counters into ibdiagnet.pm
+
+=back
+
+=item B<-h|--help>       :
 
 =over
 

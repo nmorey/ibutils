@@ -6,6 +6,7 @@ B<ibdiagnet - IB diagnostic net>
 
 ibdiagnet [-c <count>] [-v] [-r] [-t <topo-file>] [-s <sys-name>]
   [-i <dev-index>] [-p <port-num>] [-o <out-dir>]
+  [-lw <1x|4x|12x>] [-ls <2.5|5|10>] [-pm]
 
 =head1 DESCRIPTION
 
@@ -40,6 +41,10 @@ In case of duplicate port/node Guids, these file include the map between masked 
 
 List of all the SM (state and priorty) in the fabric
   
+=item F<ibdiagnet.pm> -
+
+A dump of the pm Counters values, of the fabric links
+
 =back
 
 In addition to generating the files above, the discovery phase also checks for duplicate node/port GUIDs in the IB fabric. If such an error is detected, it is displayed on the standard output. After the discovery phase is completed, directed route packets are sent multiple times (according to the -c option) to detect possible problematic paths on which packets may be lost. Such paths are explored, and a report of the suspected bad links is displayed on the standard output.
@@ -83,16 +88,16 @@ Furthermore, if a topology file is provided, ibdiagnet uses the names defined in
 
 =over
 
-=item B<-c <count>>     : 
+=item B<-c <count>>      : 
 
 =over
 
 =item
-The minimal number of packets to be sent across each link (default = 10)
+Min number of packets to be sent across each link (default = 10)
 	
 =back
 
-=item B<-v>             : 
+=item B<-v>              : 
 
 =over
 
@@ -101,7 +106,7 @@ Enable verbose mode
 
 =back
 
-=item B<-r>             :
+=item B<-r>              :
 
 =over
 
@@ -110,7 +115,7 @@ Provides a report of the fabric qualities
 
 =back
 
-=item B<-t <topo-file>> : 
+=item B<-t <topo-file>>  : 
 
 =over
 
@@ -119,7 +124,7 @@ Specifies the topology file name
 
 =back
 
-=item B<-s <sys-name>>  :
+=item B<-s <sys-name>>   :
 
 =over
 
@@ -128,7 +133,7 @@ Specifies the local system name. Meaningful only if a topology file is specified
 
 =back
 
-=item B<-i <dev-index>> : 
+=item B<-i <dev-index>>  : 
 
 =over
 
@@ -137,16 +142,16 @@ Specifies the index of the device of the port used to connect to the IB fabric (
 
 =back
 
-=item B<-p <port-num>>  : 
+=item B<-p <port-num>>   : 
 
 =over
 
 =item
-Specifies the local device's port number used to connect to the IB fabric
+Specifies the local device's port num used to connect to the IB fabric
 
 =back
 
-=item B<-o <out-dir>>   :
+=item B<-o <out-dir>>    :
 
 =over
 
@@ -155,7 +160,34 @@ Specifies the directory where the output files will be placed (default = /tmp)
 
 =back
 
-=item B<-h|--help>      : 
+=item B<-lw <1x|4x|12x>> :
+
+=over
+
+=item
+Specifies the expected link width
+
+=back
+
+=item B<-ls <2.5|5|10>>  :
+
+=over
+
+=item
+Specifies the expected link speed
+
+=back
+
+=item B<-pm>             :
+
+=over
+
+=item
+Dump all the fabric links, pm Counters into ibdiagnet.pm
+
+=back
+
+=item B<-h|--help>       : 
 
 =over
 
@@ -164,7 +196,7 @@ Prints the help page information
 
 =back
 
-=item B<-V|--version>   :
+=item B<-V|--version>    :
 
 =over
 
@@ -173,7 +205,7 @@ Prints the version of the tool
 
 =back
 
-=item B<--vars>         :
+=item B<--vars>          :
 
 =over
 
@@ -198,7 +230,7 @@ Failed to parse command line options
 Failed to intract with IB fabric
 
 =item 4 - 
-Could not use local device or local port
+Failed to use local device or local port
 
 =item 5 - 
 Failed to use Topology File

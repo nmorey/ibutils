@@ -17,16 +17,19 @@
 array set InfoArgv {
     -pc,name    "port.counters"
     -pc,arglen	0
+    -pc,desc	"Dumps all pmCounters values into .pc file"
 
     -lw,name    "link.width"
     -lw,param   "1x|4x|12x"
     -lw,error	"-E-argv:not.legal.link.width"
     -lw,regexp	{^((1x)|(4x)|(12x))$} 
+    -lw,desc    "Specifies the expected link width"
 
     -ls,name    "link.speed"
     -ls,param   "2.5|5|10"
     -ls,error	"-E-argv:not.legal.link.speed"
     -ls,regexp	{^((2\.5)|(5)|(10))$} 
+    -ls,desc    "Specifies the expected link speed"
 
     -a,name	"attribute" 
     -a,param	"attr"
@@ -116,6 +119,7 @@ array set InfoArgv {
     -v,desc	"Instructs the tool to run in verbose mode"
     -v,arglen	0
 
+ ## Support verbosity with verbose levels
  #   -v,name	"verbose"	
  #   -v,desc	"Instructs the tool to run in verbose mode"
  #   -v,arglen	0..1
@@ -123,7 +127,7 @@ array set InfoArgv {
  #   -v,error	"-E-argv:not.nonneg.integer"
  #   -v,save     "-v,arglen 0..1"
  #   -v,default  0
- #   -v,maxvalue	"0xffff"
+ #   -v,maxvalue "0xffff"
 
     -w,name	"wait.time"	
     -w,default	0
@@ -150,32 +154,19 @@ array set InfoArgv {
 # (e.g., for ibdiagpath, since it recieves addresses of two ports...)
 
 switch -exact -- $G(tool) { 
-    "ibsac" { 
-	set InfoArgv(-m,desc) "method to be used - either get or gettable"
-	set InfoArgv(-a,desc) "the specific attribute to send"
-    }
-    "ibcfg"		{ 
-	array set InfoArgv {
-	    -c,name "config.mode" 
-	    -c,default ""
-	    -c,param "cmd"
-	    -c,desc	"defines the command to be executed"
-	    -c,regexp ""
-	    -c,arglen "1.."
-	}
-    }
     "ibdiagnet"	{ 
-	set InfoArgv(-c,desc) "The minimal number of packets to be sent across each link"
-    }
-    "ibping"		{ 
-	set InfoArgv(-c,desc) "the total number of packets to be sent"
-	set InfoArgv(-c,default) 100
+	array set InfoArgv { 
+            -c,desc     "The minimal number of packets to be sent across each link"
+            -pc,desc	"Dumps all pmCounters values into ibdiagnet.pc"
+        }
     }
     "ibdiagpath"		{ 
 	array set InfoArgv {
 	    -d,desc "directed route from the local node (which is the source) and the destination node"
-	    
-	    -l,param	"\[src-lid,\]dst-lid"
+
+            -pc,desc	"Dumps all pmCounters values into ibdiagpath.pc"
+
+            -l,param	"\[src-lid,\]dst-lid"
 	    -l,desc	"Source and destination LIDs (source may be omitted -> local port is assumed to be the source)"
 	    -l,regexp	"integer.pos.>=1&<=2"
 	    -l,error	"-E-argv:not.pos.integers"
@@ -192,6 +183,24 @@ switch -exact -- $G(tool) {
 	append InfoArgv(-n,desc) "(as defined in the topology file; source may be omitted "
 	append InfoArgv(-n,desc) "-> local port is assumed to be the source)"
 
+    }
+    "ibsac" { 
+	set InfoArgv(-m,desc) "method to be used - either get or gettable"
+	set InfoArgv(-a,desc) "the specific attribute to send"
+    }
+    "ibcfg"		{ 
+	array set InfoArgv {
+	    -c,name "config.mode" 
+	    -c,default ""
+	    -c,param "cmd"
+	    -c,desc	"defines the command to be executed"
+	    -c,regexp ""
+	    -c,arglen "1.."
+	}
+    }
+    "ibping"		{ 
+	set InfoArgv(-c,desc) "the total number of packets to be sent"
+	set InfoArgv(-c,default) 100
     }
 }
 ######################################################################
@@ -225,7 +234,7 @@ proc HighPriortyFlag {} {
     if { [WordInList "-h" $argv] || [WordInList "--help" $argv] } { 
 	inform "-H-help"
     }
-    ## output the version number
+    ## output the application version
     if { [WordInList "-V" $argv] || [WordInList "--version" $argv] } { 
 	inform "-H-version"
     }
@@ -270,8 +279,8 @@ proc parseArgv {} {
 
     ## defining flags values by means of environment variables
     SetEnvValues
-    ## mandatory flags
-    # The first foreach is for the case when there are two different operatinal 
+
+    # command line check 1: for the case when there are two different operatinal 
     # modes of the tool like the case is for ibmad,ibsac
     set toolsFlags [toolsFlags $G(tool)]
     foreach section [split $toolsFlags ";" ] { 
@@ -283,8 +292,8 @@ proc parseArgv {} {
 	    }
 	    if {[info exists infoFlags]} { 
 		if { $infoFlags != $section } { 
-		    inform "-E-argv:nonmutex.flags" \
-			-flags [list [join [lindex $infoFlags 0] [lindex $section 0]]]
+                    set tmpFlags [list [join [lindex $infoFlags 0] [lindex $section 0]]]
+                    inform "-E-argv:nonmutex.flags" -flags $tmpFlags
 		}
 	    }
 	    set infoFlags $section
@@ -294,6 +303,7 @@ proc parseArgv {} {
 	set infoFlags [lindex [split $toolsFlags ";" ] 0]
     }
 
+    # command line check 2: for duplicated flags, and mandetory option
     foreach item $infoFlags {
 	set mandatory [regsub -all {[()]} $item "" item]
 	set litem "-[join [split $item |] " -"]"
@@ -304,16 +314,14 @@ proc parseArgv {} {
 	set mutexList [lsort $mutexList]
 	for { set i 0 } { $i < [llength $mutexList] } { incr i } {
 	    if { [lindex $mutexList $i] == [lindex $mutexList [expr $i+1]] } {
-		inform "-E-argv:flag.twice.specified" \
-		    -flag [lindex $mutexList $i]
+		inform "-E-argv:flag.twice.specified" -flag [lindex $mutexList $i]
 	    }
 	}
 	if { [llength $mutexList] > 1 } {
 	    inform "-E-argv:nonmutex.flags" -flags $mutexList
 	}
 	if { ( [llength $mutexList] == 0 ) && $mandatory } {
-	    inform "-E-argv:missing.mandatory.flag" \
-		-flag [list $litem]
+	    inform "-E-argv:missing.mandatory.flag" -flag [list $litem]
 	}
     }
 
@@ -330,7 +338,6 @@ proc parseArgv {} {
     while { [llength $argvList] > 0 } {
         set flag  [lindex $argvList 0]
 	set value [lindex $argvList 1]
-
 	if { ! [WordInList $flag $allLegalFlags] } {
             inform "-E-argv:unknown.flag" -flag $flag
 	}
@@ -338,8 +345,7 @@ proc parseArgv {} {
 	if {[WordInList $flag $argvList]} {
 	    inform "-E-argv:flag.twice.specified" -flag $flag
 	}
-
-
+        
 	set arglen 1
 	catch { set arglen $InfoArgv($flag,arglen) }
 	if { [llength $argvList] == 0 && ![regexp {^0} $arglen] } { 
@@ -380,19 +386,21 @@ proc parseArgv {} {
 			    inform "$InfoArgv($flag,error)" -flag $flag -value $value
 			}
 		    }
-		    if { ! [regsub "^$int$" $item {\1\2} item] } {
+                    if {[string length $item] > [string length $G(config,maximal.integer)]} {
+                        inform "-E-argv:too.large.integer" -flag $flag -value $value
+                    }
+                    if { ! [regsub "^$int$" $item {\1\2} item] } {
 			inform "$InfoArgv($flag,error)" -flag $flag -value $value
 		    }
 		    if { $sign == "pos" && $item == 0 } {
                         inform "$InfoArgv($flag,error)" -flag $flag -value $value
 		    }
-		    if { $item > $maxValue } {
-			inform "-E-argv:too.large.value" \
-			    -flag $flag -value $value -maxValue $maxValue
+                    if {$item > $maxValue} {
+                        inform "-E-argv:too.large.value" -flag $flag -value $value -maxValue $maxValue
 		    }
 		    lappend formattedValue [format %d $item]
 		}
-		set value [join $formattedValue ,]
+                set value [join $formattedValue ,]
 	    } else {
                 set regexp [regexp $InfoArgv($flag,regexp) "$value"]
                 if {!$regexp} {
@@ -416,41 +424,40 @@ proc parseArgv {} {
 		    set argvList [lreplace $argvList 0 0]
 		}
 	    }
-	} elseif { $arglen == "0" || \
-		       ( ( $arglen == "0..1" ) && ( ( $regexp==0 ) || ( $value=="" ) ) ) } {
+	} elseif { $arglen == "0" || ( ( $arglen == "0..1" ) && ( ( $regexp==0 ) || ( $value=="" ) ) ) } {
 	    set G(argv,$name) 1
 	} elseif { $regexp } {
-	    set G(argv,$name) "$value"
+            set G(argv,$name) "$value"
 	    set argvList [lreplace $argvList 0 0]
 	} else {
             inform "$InfoArgv($flag,error)" -flag $flag -value $value
 	}
     }
-    ## If we are using direct-route addressing, the output port of the direct
+
+    ## command line check 3: If we are using direct-route addressing, the output port of the direct
     # route must not disagree with the local port number (if specified).
     # If the latter was not specified, it is set to be the former.
     # Need to check for -i flag also, however those two still need to match
     if {[info exists G(argv,direct.route)]} {
-	set drOutPort [lindex [split $G(argv,direct.route) ","] 0]
+        set drOutPort [lindex [split $G(argv,direct.route) ","] 0]
 	if { $drOutPort == "" } {
 	    # do nothing
 	} elseif {[info exists G(argv,port.num)]} {
 	    if { $drOutPort != $G(argv,port.num) } {
-		inform "-E-argv:disagrees.with.dir.route" \
-		    -value $G(argv,port.num) -port $drOutPort
+                inform "-E-argv:disagrees.with.dir.route" -value $G(argv,port.num) -port $drOutPort
 	    }
 	} else {
 	    set G(argv,port.num) $drOutPort
 	    set G(-p.set.by.-d) 1
 	}
     }
-    # extra actions 
+
+    ## command line check 4: directories and files
     if {[info exists G(argv,out.dir)]} { 
 	set dir $G(argv,out.dir)
 	if { ! [file isdirectory $dir] } {
 	    if {[catch {exec mkdir -- $dir} msg]} { 
-		inform "-E-argv:could.not.create.dir" \
-		    -flag "-o" -value $dir -errMsg [list $msg]
+		inform "-E-argv:could.not.create.dir" -flag "-o" -value $dir -errMsg [list $msg]
 	    }
 	} elseif { ! [file writable $dir] } {
 	    inform "-E-argv:dir.not.writable" -flag "-o" -value $dir
@@ -460,33 +467,33 @@ proc parseArgv {} {
 	}
     }
 
-    if {[catch {set G(logFileID) [open $G(outfiles,.log) w]} e]} {
-        inform "-E-loading:cannot.open.file" $G(outfiles,.log)
+    ## command line check 5: tcl and ibdm packages
+    if {[catch {set G(logFileID) [open $G(outfiles,.log) w]} errMsg]} {
+        inform "-E-loading:cannot.open.file" $G(outfiles,.log) -fn $G(outfiles,.log) -errMsg $errMsg
     }
 
     if {[string compare [package provide Tcl] 8.4] < 0} {
         inform "-E-loading:cannot.use.current.tcl.package" -version [package provide Tcl]
     }
 
-    if {[catch { package require ibdm } e]} {
-        inform "-E-loading:cannot.load.package.ibdm"
+    if {[catch { package require ibdm } errMsg]} {
+        inform "-E-loading:cannot.load.package.ibdm" -errMsg $errMsg
     }
 
     if {[info commands ibdmFindRootNodesByMinHop] == ""} {
         inform "-E-loading:cannot.use.current.ibdm.package" -version [package provide ibdm]
     }
-    # If topology is not given and -s/-n  flags are specified
+
+    ## command line check 6: If topology is not given and -s/-n  flags are specified
     if { ! [info exists G(argv,topo.file)]  } {
 	if {[info exists G(argv,sys.name)]} { 
 	    inform "-W-argv:-s.without.-t"
 	}
 	if {[info exists G(argv,by-name.route)]} { 
-	    inform "-E-argv:nodename.without.topology" \
-		-value $G(argv,by-name.route)
+	    inform "-E-argv:nodename.without.topology" -value $G(argv,by-name.route)
 	}
 	inform "-W-argv:no.topology.file"
-
-    # If topology is given, check that $G(argv,by-name.route) are names of existing nodes
+    ## command line check 7: If topology is given, check that $G(argv,by-name.route) are names of existing nodes
     # We do the same for G(argv,sys.name), after ibis_init 
     # - to search for sys.name in the description of the source node
     } else {
@@ -496,6 +503,9 @@ proc parseArgv {} {
 	} elseif { ! [file readable $topoFile] } {
 	    inform "-E-argv:file.not.readable" -flag "-t" -value $topoFile
 	}
+    }
+
+    if {[info exists G(argv,topo.file)]} {
         set G(fabric,.topo) [new_IBFabric]
         IBFabric_parseTopology $G(fabric,.topo) $topoFile
     }
@@ -522,8 +532,7 @@ proc putsIn80Chars { string args } {
         if { $chars != "" } {
 	    if { [set idx [string first $chars $line]] >= 0 } {
 		set indent "[string range $line 0 [expr $idx -1]]$chars"
-		set line \
-		    [string range $line [expr $idx+[string length $chars]] end]
+		set line [string range $line [expr $idx+[string length $chars]] end]
 	    }
 	} else {
 	    regexp {^(-[A-Z]- ?| +)(.*)$} $line . indent line
@@ -712,7 +721,7 @@ proc inform { msgCode args } {
 	catch { set name $InfoArgv($msgF(flag),name) }
 	set envVarName "IBDIAG_[string toupper [join [split $name .] _]]"
 	if {[WordInList "$msgF(flag)" $argv]} { 
-	    set llegalValMsg "llegal value for $msgF(flag) flag"
+	    set llegalValMsg "llegal value for $msgF(flag) option"
 	} elseif {[info exists env($envVarName)]} { 
 	    set llegalValMsg "llegal value for environment variable $envVarName"
 	} elseif { ( $msgCode == "-E-localPort:port.not.found" ) && \
@@ -733,7 +742,6 @@ proc inform { msgCode args } {
 	}
     }
     set numOfRetries [expr $G(argv,failed.retry) + $G(config,badpath,maxnErrors)]
-    #DZ
     set rumSMmsg "To use lid-routing, an SM should be ran on the fabric."
     set bar "${msgType}[bar - 50]"
     set putsFlags ""
@@ -742,113 +750,156 @@ proc inform { msgCode args } {
     ### decoding msgCode 
     switch -exact -- $msgCode { 
         "-E-argv:unknown.flag" { 
-            append msgText "Illegal argument: $msgF(flag) - unknown flag."
+            append msgText "Illegal argument: Unknown option $msgF(flag)."
         } 
         "-E-argv:missing.mandatory.flag" {
-            if { [llength $msgF(flag)] > 1 } { 
-                append msgText "Missing one of the mandatory flags [join $msgF(flag) ,]."
+            if { [llength [join $msgF(flag)]] > 1 } { 
+                append msgText "Illegal argument: Missing one of the mandatory options: [join [join $msgF(flag)] ,]."
             } else { 
-               append msgText "Missing mandatory flag $msgF(flag)."
+                append msgText "Illegal argument: Missing a mandatory option $msgF(flag)."
             }
         }
         "-E-argv:flag.without.value" {
-            append msgText "Illegal arguments: flag $msgF(flag) must have a value."
+            append msgText "Illegal argument: Option $msgF(flag) requires an argument."
         }
         "-E-argv:flag.twice.specified" { 
-            append msgText "Illegal arguments: flag $msgF(flag) is specified twice."
+            append msgText "Illegal argument: Option $msgF(flag) is specified twice."
         }
         "-E-argv:nonmutex.flags" {
-            append msgText "Only one of the options [join $msgF(flags) ,] may be active."
+            append msgText "Illegal argument: Options are mutually exclusive [join [join $msgF(flags)] ,]."
         }
         "-E-argv:nonmutex.modes" { 
             # TODO: do I ever use this ???
             append msgText "Bad arguments; could not figure out the run mode."
         }
         "-E-argv:too.large.integer" {
-            append msgText "$msgF(value) - i${llegalValMsg} "
-            append msgText "(integer value too large to represent)."
+            append msgText "Illegal argument: I${llegalValMsg} : $msgF(value)%n"
+            append msgText "Integer value too large to represent."
         }
         "-E-argv:not.nonneg.integer" {
-            append msgText "$msgF(value) - i${llegalValMsg} "
-            append msgText "(must be a non negative integer number)."
+            append msgText "Illegal argument: I${llegalValMsg} : $msgF(value)%n"
+            append msgText "(Legal value: a non negative integer number)."
         }
         "-E-argv:not.pos.integer" {
-            append msgText "$msgF(value) - i${llegalValMsg} "
-            append msgText "(must be a positive integer number)."
+            append msgText "Illegal argument: I${llegalValMsg} : $msgF(value)%n"
+            append msgText "(Legal value: a positive integer number)."
         }
         "-E-argv:not.pos.integers" {
-            append msgText "$msgF(value) - i${llegalValMsg}.\n"
-            append msgText "(lagel value: a positive integer, or a pair of "
-            append msgText "positive integers separated by a comma)."
+            append msgText "Illegal argument: I${llegalValMsg} : $msgF(value)%n"
+            append msgText "(Legal value: one or two positive integer numbers, separated by a comma)."
         }
         "-E-argv:too.large.value" { 
-            append msgText "$msgF(value) - i${llegalValMsg}.\n"
+            append msgText "Illegal argument: I${llegalValMsg} : $msgF(value)%n"
             switch -exact -- $msgF(flag) { 
-                "-d"    { append msgText "(maximal legal port number is [expr $msgF(maxValue)])." }
-                "-l"    { append msgText "(maximal legal LID is $msgF(maxValue))." }
-                default { append msgText "(it must not exceed $msgF(maxValue))." }
+                "-d"    { append msgText "(Legal value: maximal legal port number is [expr $msgF(maxValue)])." }
+                "-l"    { append msgText "(Legal value: maximal legal LID is $msgF(maxValue))." }
+                default { append msgText "(Legal value: maximal legal value is $msgF(maxValue))." }
             }
         }
         "-E-argv:bad.path" {
-            append msgText "\"$msgF(value)\" - i${llegalValMsg}.\n"
-            append msgText "(it must be a direct path: "
-            append msgText "positive integers separated by commas)."
+            append msgText "Illegal argument: I${llegalValMsg} : \"$msgF(value)\"%n"
+            append msgText "(Legal value: a direct path, positive integers separated by commas)."
         }
         "-E-argv:dir.not.found" {
-            append msgText "$msgF(value) - no such directory. "
+            # TODO: do I ever use this ???
+            append msgText "$msgF(value) - no such directory.%n"
             append msgText "I${llegalValMsg} (must be an existing directory)."
         }
         "-E-argv:could.not.create.dir" { 
-            append msgText "Failed to create directory $msgF(value) (for output files).\n"
-            append msgText "Error message:\n\"$msgF(errMsg)\""
+            append msgText "Illegal argument: I${llegalValMsg} : $msgF(value)%n"
+            append msgText "Failed to create directory: $msgF(value) (for output files).%n"
+            append msgText "Error message:%n\"$msgF(errMsg)\""
         }
         "-E-argv:file.not.found" { 
-            append msgText "$msgF(value) - no such file. "
-            append msgText "I${llegalValMsg} (must be an existing file)."
+            append msgText "Illegal argument: I${llegalValMsg} : $msgF(value)%n"
+            append msgText "No such file."
         }
         "-E-argv:dir.not.writable" { 
-            append msgText "Directory $msgF(value) is write protected."
-            if { $llegalValMsg != "" } { 
-                append msgText " I${llegalValMsg}."
-            } else { 
-                append msgText "\n(Use the -o flag to use a different directory"
+            append msgText "Illegal argument: I${llegalValMsg} : $msgF(value)%n"
+            append msgText "Directory is write protected."
+            if { $llegalValMsg == "" } { 
+                append msgText "\n(Use the -o option to use a different directory"
                 append msgText " for the output files)"
             }
         }
         "-E-argv:file.not.readable" { 
-            append msgText "File $msgF(value) is read protected. I${llegalValMsg}."
+            append msgText "Illegal argument: I${llegalValMsg} : $msgF(value)%n"
+            append msgText "File is read protected."
         }
         "-E-argv:bad.sys.name" {
-            append msgText "$msgF(value) - no such system. I${llegalValMsg}.\n"
-            append msgText "[format $validNames system]"
+            append msgText "Illegal argument: I${llegalValMsg} : $msgF(value)%n"
+            append msgText "No such system in the specified topology file : $G(argv,topo.file)%n"
+            if {$validNames == ""} {
+                append msgText "The topology file : \"$G(argv,topo.file)\" may be currupted."
+            } else {
+                append msgText "[format $validNames system]"
+            }
         }
         "-E-argv:unknown.sys.name" {
-            ## TODO: add description (in help page, too...)
-            append msgText "Local system name was not specified.\n"
-            append msgText "(it must be specified when using a topology file).\n"
-            append msgText "[format $validNames system]"
+            append msgText "Illegal argument: Local system name was not specified.%n"
+            append msgText "It must be specified when using a topology file.%n"
+            if {$validNames == ""} {
+                append msgText "the topology file : \"$G(argv,topo.file)\" may be currupted."
+            } else {
+                append msgText "[format $validNames system]"
+            }
         }
         "-E-argv:bad.node.name" {
-            append msgText "$msgF(value) - i${llegalValMsg}.%n"
-            append msgText "(lagel value: one or two Nodes names separated by a comma)."
+            append msgText "Illegal argument: I${llegalValMsg} : $msgF(value)%n"
+            append msgText "(Lagel value: one or two Nodes names separated by a comma)."
             if {[format $validNames node] != ""} {
                 append msgText "%n[format $validNames node]"
             }
         }
+        "-E-argv:nodename.without.topology" { 
+            append msgText "Illegal argument: If node(s) are specified by name :\"$msgF(value)\""
+            append msgText " then a topology file must be given."
+        }
+        "-E-argv:disagrees.with.dir.route" { 
+            append msgText "Illegal argument: Conflicting route source ports ($msgF(port) != $msgF(value))%n"
+            append msgText "MADs may be sent only through the local port."
+        }
+        "-E-argv:not.legal.link.width" {
+            append msgText "Illegal argument: I${llegalValMsg} : $msgF(value)%n"
+            append msgText "(Legal value: 1x | 4x | 12x)."
+        }
+        "-E-argv:not.legal.link.speed" {
+            append msgText "Illegal argument: I${llegalValMsg} : $msgF(value)%n"
+            append msgText "(Legal value: 2.5 | 5 | 10)."
+        }
+        "-W-argv:-s.without.-t" {
+            append msgText "Local system name is specified, but topology "
+            append msgText "is not given. The former is ignored."
+        }
+        "-W-argv:no.topology.file" {
+            append msgText "Topology file is not specified.%n"
+            append msgText "Reports regarding cluster links will use direct routes."
+        }  
+        "-E-argv:specified.port.not.connected" {
+            append msgText "Topology parsing: Invalid value for $msgF(flag) : $msgF(value)%n"
+            append msgText "The specified port is not connected to The IBFabric.%n"
+            append msgText "(described in : $G(argv,topo.file))"
+        }
+        "-E-argv:hca.no.port.is.connected" { 
+            append msgText "Topology parsing: Invalid value for $msgF(flag) : $msgF(value)%n"
+            append msgText "None of the ports of $msgF(type) : \"$msgF(value)\" "
+            append msgText "is connected to The IBFabric.%n(described in : $G(argv,topo.file))"
+        }
+        "-W-argv:hca.many.ports.connected" { 
+            append msgText "Topology parsing: A few ports of $msgF(type) : \"$msgF(value)\" "
+            append msgText "are connected to the IBFabric (described in : $G(argv,topo.file))%n"
+            append msgText "Port number : $msgF(port) will be used."
+        } 
+
         "-E-argv:bad.port.name" {
             append msgText "$msgF(value) - no such port. I${llegalValMsg}.\n"
             append msgText "[format $validNames port]"
-        }
-        "-E-argv:nodename.without.topology" { 
-            append msgText "If node(s) are specified by name - \"$msgF(value)\""
-            append msgText " - a topology file must be given."
         }
         "-E-argv:no.such.command" {
             append msgText "\"$msgF(command)\" - no such command."
         }
         "-E-argv:command.not.valid.for.device" { 
             append msgText "Command \"$msgF(command)\" is not valid for device $msgF(device)."
-
         }
         "-E-argv:no.such.field" { 
 	    append msgText "\"$msgF(errorCode)\" - illegal field for command \"$msgF(command)\"."
@@ -869,113 +920,85 @@ proc inform { msgCode args } {
             append msgText "The field(s) -[join $msgF(field) ,-] "
             append msgText "must be specified for the command $msgF(command)."
         } 
-        "-E-argv:specified.port.not.connected" {
-            append msgText "Port $msgF(value) (specified by $msgF(flag) flag) is specified in the "
-            append msgText "topology file is not connected to the fabric."
-        }
-        "-E-argv:hca.no.port.is.connected" { 
-            append msgText "No port of node $msgF(value) (specified by $msgF(flag) flag) was "
-            append msgText "found to be connected to the fabric."
-        }
-        "-W-argv:hca.many.ports.connected" { 
-            append msgText "A few ports of $msgF(value) (specified by $msgF(flag) flag) are "
-            append msgText "connected to the fabric; one of them - port $msgF(port) - is used."
-        }
-        "-E-argv:disagrees.with.dir.route" { 
-            append msgText "The output port of the direct route (= $msgF(port)) is not "
-            append msgText "the local port (= $msgF(value)).\n"
-            append msgText "(MADs may be sent only through the local port)."
-        }
-        "-W-argv:-s.without.-t" {
-            append msgText "Local system name is specified, but topology "
-            append msgText "is not given. The former is ignored."
-        }
-        "-W-argv:no.topology.file" {
-            append msgText "Topology file is not specified.\n"
-            append msgText "Reports regarding cluster links will use direct routes."
-        } 
-        "-E-argv:not.legal.link.width" {
-            append msgText "Illegal argument: i${llegalValMsg} : $msgF(value)%n"
-            append msgText "(Legal value: 1x | 4x | 12x)."
-        }
-        "-E-argv:not.legal.link.speed" {
-            append msgText "Illegal argument: i${llegalValMsg} : $msgF(value)%n"
-            append msgText "(Legal value: 2.5 | 5 | 10)."
-        }
 
-        "-E-ibis:init" {
-            append msgText "ibis_init failed.\n[join $args]"
+
+        "-E-ibis:ibis_init.failed" {
+            append msgText "IBIS: Error from ibis_init: \"$msgF(errMsg)\""
         }
-        "-E-ibis:info" { 
-            append msgText "ibis_get_local_ports_info failed.\n[join $args]"
+        "-E-ibis:ibis_get_local_ports_info.failed" { 
+            append msgText "IBIS: Error from ibis_get_local_ports_info: \"$msgF(errMsg)\""
         }
         "-E-ibis:no.hca" { 
-            append msgText "No HCA was found on local machine."
-        #    append msgText "If there is a HCA on the local machine, "
-         #   append msgText "check that the IB driver is up."
+            append msgText "IBIS: No HCA was found on local machine."
+        #    append msgText "Check if the driver is up."
         }
-
+        "-V-ibis:ibis_get_local_ports_info" { 
+            append msgText "IBIS: ibis_get_local_ports_info:%n$msgF(value)"
+        }
 
         "-E-loading:cannot.use.current.tcl.package" {
-            append msgText "You are using an old version of Tcl: Tcl$msgF(version).%n"
-            append msgText "Please download and install Tcl8.4 or newer."
+            append msgText "The current Tcl version is: Tcl$msgF(version). "
+            append msgText "$G(tool) requires Tcl8.4 or newer."
         }
         "-E-loading:cannot.load.package.ibdm" {
-            append msgText "Could not load the following package : ibdm.%n"
+            append msgText "Package Loading: Could not load the following package : ibdm.%n"
+            append msgText "Error message: \"$msgF(errMsg)\""
         }
         "-E-loading:cannot.use.current.ibdm.package" {
-            append msgText "You are using an old version of IBDM: IBDM$msgF(version).%n"
-            append msgText "Please download and install IBDM1.1 or newer."
+            append msgText "Package Loading: The current IBDM version is: IBDM$msgF(version).%n"
+            append msgText "$G(tool) requires IBDM1.1 or newer."
         }
         "-E-loading:cannot.open.file" {
-            append msgText "could not open the following file: "
-            append msgText "\"$args\": permission denied."
+            append msgText "The following file is write protected: $msgF(fn)%n"
+            append msgText "Error message: \"$msgF(errMsg)\""
         }
         "-W-loading:old.osm.version" {
-            append msgText "Your OSM version is not up-to-date"
+            append msgText "OSM: The current OSM version is not up-to-date"
         }
         "-W-loading:old.ibis.version" {
-            append msgText "Your IBIS version is not up-to-date"
+            append msgText "IBIS: The current IBIS version is not up-to-date"
         }
 
         "-E-localPort:all.ports.down" {
             if { $G(tool) == "ibdiagpath" } { 
-                append msgText "None of the ports of the local device is in ACTIVE state."
+                append msgText "None of the local device ports is in ACTIVE state."
             } else { 
-                append msgText "All the ports of the local device are in DOWN state."
+                append msgText "All the local device ports are in DOWN state."
             }
         }
         "-E-localPort:all.ports.down.mulitple.devices" {
             if { $G(tool) == "ibdiagpath" } { 
-                append msgText "None of the ports of the local devices is in ACTIVE state."
+                append msgText "None of the local devices ports is in ACTIVE state."
             } else { 
-                append msgText "All the ports of the local devices are in DOWN state."
+                append msgText "All the local devices ports are in DOWN state."
             }
         }
         "-E-localPort:all.ports.of.device.down" {
             if { $G(tool) == "ibdiagpath" } { 
-                append msgText "None of the ports of device $msgF(device) is in ACTIVE state."
+                append msgText "None of device: $msgF(device) ports is in ACTIVE state."
             } else { 
-                append msgText "All the ports of device $msgF(device) are in DOWN state."
+                append msgText "All of device: $msgF(device) ports are in DOWN state."
             }
         }
         "-E-localPort:dev.not.found" {
-            append msgText "I${llegalValMsg}: "
-            append msgText "local machine does not have device $value."
+            append msgText "Local host does not have device number $msgF(value).%n"
+            if {$msgF(maxDevices) == 1} {
+                append msgText "Only device number: $msgF(maxDevices) is available"
+            } else {
+                append msgText "Only devices: 1-$msgF(maxDevices) are available"
+            }
         }
         "-E-localPort:port.not.found" {
-            append msgText "I${llegalValMsg}: "
-            append msgText "local device does not have port $value."
+            append msgText "Local device does not have port number: $value."
         }
         "-E-localPort:port.not.found.in.device" {
-            append msgText "I${llegalValMsg}: "
-            append msgText "device $msgF(device) does not have port $msgF(port)."
+            append msgText "Device number: $msgF(device) does not have port number: $msgF(port)."
         }
         "-E-localPort:local.port.down" {
-            append msgText "Port $msgF(port) of local device is down."
+            append msgText "Local device port number: $msgF(port) is in DOWN state."
         }
         "-E-localPort:local.port.of.device.down" {
-            append msgText "Port $msgF(port) of device $msgF(device) is down."
+            append msgText "Device $msgF(device) port number: $msgF(port) is in DOWN state."
         }
         "-E-localPort:local.port.not.active" { 
             append msgText "Local link (port $msgF(port) of local device) is " 
@@ -989,28 +1012,28 @@ proc inform { msgCode args } {
         }
         "-W-localPort:few.ports.up" {
             append msgText "A few ports of local device are up.\n"
-            append msgText "Since port-num was not specified (-p flag), "
+            append msgText "Since port-num was not specified (-p option), "
             append msgText "port $G(argv,port.num) of device $G(argv,dev.idx) "
             append msgText "will be used as the local port."
         }
         "-W-localPort:few.devices.up" {
             append msgText "A few devices on the local machine have an active port $G(argv,port.num).\n"
-            append msgText "Since device-index was not specified (-i flag), "
+            append msgText "Since device-index was not specified (-i option), "
             append msgText "port $G(argv,port.num) of device $G(argv,dev.idx) "
             append msgText "will be used as the local port."
         }
 
         "-E-localPort:illegal.dr.path.out.port" { 
-            append msgText "Illegal value for -d flag: "
-            append msgText "local device does not have port number $value.%n"
+            append msgText "Illegal value for -d option: "
+            append msgText "Local device does not have port number $value.%n"
             append msgText "No such direct route."
         }
         "-I-localPort:one.port.up" {
             append msgText "Using port $G(argv,port.num) as the local port."
         }
-        "-W-localPort:node.inteligently.guessed" {
-            append msgText "Since local system name was not specified (-s flag), "
-            append msgText "its set to $G(argv,sys.name)."
+        "-W-localPort:node.intelligently.guessed" {
+            append msgText "Local system name was not specified (-s option).%n"
+            append msgText "\"$G(argv,sys.name)\" will be used as the local system name."
         }
         "-I-localPort:is.dr.path.out.port" { 
             append msgText "Using port $G(argv,port.num) as the local port%n"
@@ -1028,7 +1051,7 @@ proc inform { msgCode args } {
             append msgText "times during $msgF(attempts) attempts."
         }
         "-E-localPort:port.guid.zero" {
-            append msgText "Enable to use PortGUID = $G(RootPort,Guid) as the local port."
+            append msgText "Unable to use PortGUID = $G(RootPort,Guid) as the local port."
         }
         "-E-localPort:enable.ibis.set.port" {
             append msgText "Failed running : \"ibis_set_port $G(RootPort,Guid)\""
@@ -1116,12 +1139,12 @@ proc inform { msgCode args } {
             append msgText "Try running ibdiagpath again byDr with the provided route."
         }
         "-E-topology:bad.sysName.or.bad.topoFile" {
-            append msgText "Enable to retrive a route from the local host to \"$msgF(name)\".%n"
+            append msgText "Unable to retrive a route from the local host to \"$msgF(name)\".%n"
             append msgText "Either the given topology file is bad "
             append msgText "or the local sys name is incorrect."
         }
         "-E-topology:no.route.to.host.in.topo.file" {
-            append msgText "Enable to retrive a route from the local host to \"$msgF(name)\".%n"
+            append msgText "Unable to retrive a route from the local host to \"$msgF(name)\".%n"
             append msgText "based on the topology given in:$msgF(topo.file)"
         }
         "-E-topology:lid.by.name.failed" {
@@ -1621,12 +1644,14 @@ proc showHelpPage { args } {
   -o option (see below): 
     ibdiagnet.lst    - List of all the nodes, ports and links in the fabric
     ibdiagnet.fdbs   - A dump of the unicast forwarding tables of the fabric
-                        switches
+                       switches
     ibdiagnet.mcfdbs - A dump of the multicast forwarding tables of the fabric
-                        switches
+                       switches
     ibdiagnet.masks  - In case of duplicate port/node Guids, these file include
-                        the map between masked Guid and real Guids 
-    ibdiagnet.sm    - List of all the SM (state and priorty) in the fabric
+                       the map between masked Guid and real Guids 
+    ibdiagnet.sm     - A dump of all the SM (state and priorty) in the fabric
+    ibdiagnet.pc     - In case -pc option was provided, this file contain a dump
+                       of all the nodes pm counters
   In addition to generating the files above, the discovery phase also checks for
   duplicate node/port GUIDs in the IB fabric. If such an error is detected, it 
   is displayed on the standard output.
@@ -1653,7 +1678,7 @@ ERROR CODES
   1 - Failed to fully discover the fabric
   2 - Failed to parse command line options
   3 - Failed to interact with IB fabric
-  4 - Could not use local device or local port
+  4 - Failed to use local device or local port
   5 - Failed to use Topology File
   6 - Failed to load required Package"
 

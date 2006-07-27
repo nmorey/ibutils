@@ -244,14 +244,16 @@ proc Init_ibis {} {
 	ibis_opts configure -log_file [file join $env(IBMGTSIM_DIR) ibis.log]
     } else {
 	if {[catch {set ID [open /tmp/ibis.log w]}]} {
-	    ibis_opts configure -log_file /tmp/ibis.log.[pid]
+            ibis_opts configure -log_file /tmp/ibis.log.[pid]
 	}
 	catch { close $ID }
     }
-    if {[catch { ibis_init } ErrMsg]} { inform "-E-ibis:init" "$ErrMsg" }
+    if {[catch { ibis_init } ErrMsg]} { inform "-E-ibis:ibis_init.failed" -errMsg "$ErrMsg" }
 
     if {[catch { ibis_get_local_ports_info } ibisInfo ]} {
-        if { $ibisInfo != "" } { inform "-E-ibis:info" "$ibisInfo"}
+        if { $ibisInfo != "" } { inform "-E-ibis:ibis_get_local_ports_info.failed" -errMsg "$ibisInfo"}
+    } else {
+        inform "-V-ibis:ibis_get_local_ports_info" -value "$ibisInfo"
     }
     if { $ibisInfo == "" } {inform "-E-ibis:no.hca"}
     return $ibisInfo
@@ -321,15 +323,13 @@ proc Port_And_Idx_Settings {_ibisInfo} {
         }
     }
 
-    #source /mswg/work/dannyz/General/general_procs.tcl
-    #PrintMatrix PORT_HCA -delimiter :
     set portNumSet [info exists G(argv,port.num)]
     set devNumSet  [info exists G(argv,dev.idx)]
 
     if {$portNumSet && $devNumSet} {
         # Check if device exists
         if {$G(argv,dev.idx) > $devIndxNum} {
-            inform "-E-localPort:dev.not.found" -flag "-i" -value "$G(argv,dev.idx)"
+            inform "-E-localPort:dev.not.found" -value "$G(argv,dev.idx)" -maxDevices $devIndxNum
         }
         # Check if port exists in the device
         if {![info exists PORT_HCA($G(argv,dev.idx),$G(argv,port.num):PortGuid)]} {
@@ -348,7 +348,7 @@ proc Port_And_Idx_Settings {_ibisInfo} {
 
     if {!($portNumSet) && $devNumSet} {
         if {$G(argv,dev.idx) > $devIndxNum} {
-            inform "-E-localPort:dev.not.found" -flag "-i" -value "$G(argv,dev.idx)"
+            inform "-E-localPort:dev.not.found" -value "$G(argv,dev.idx)" -maxDevices $devIndxNum
         }
         set allDevPorts [lsort [array names PORT_HCA $G(argv,dev.idx),*:PortState]]
         set allPortsDown 1
@@ -379,7 +379,7 @@ proc Port_And_Idx_Settings {_ibisInfo} {
         set debug 1
         set allDevPorts [lsort [array names PORT_HCA *,$G(argv,port.num):PortState]]
         if {[llength $allDevPorts] == 0} {
-            inform "-E-localPort:port.not.found" -flag "-p" -value $G(argv,port.num)
+            inform "-E-localPort:port.not.found" -value $G(argv,port.num)
         }
         set allPortsDown 1
         set saveState "DOWN"
@@ -429,10 +429,15 @@ proc Port_And_Idx_Settings {_ibisInfo} {
             set allPortsDown 0
         }
         if {$allPortsDown} {
-            if {$G(tool) == "ibdiagpath"} {
-                inform "-E-localPort:all.ports.down.mulitple.devices" -state $saveState    
+            if {$devIndxNum > 1} {
+                set informMsg "-E-localPort:all.ports.down.mulitple.devices"
             } else {
-                inform "-E-localPort:all.ports.down.mulitple.devices"
+                set informMsg "-E-localPort:all.ports.down"
+            }
+            if {$G(tool) == "ibdiagpath"} {
+                inform $informMsg    
+            } else {
+                inform $informMsg
             }
         }
         if {$upPorts > 1} {
@@ -484,7 +489,7 @@ proc Topology_And_SysName_Settings {} {
 	if {[info exists topoNodesArray($item)]} {
 	    set G(argv,sys.name) $item
 	    if { ! $sysNameSet } { 
-		inform "-W-localPort:node.inteligently.guessed" 
+		inform "-W-localPort:node.intelligently.guessed" 
 	    }
 	    return
 	} elseif {[info exists topoSysArray($item)]} {
@@ -493,7 +498,7 @@ proc Topology_And_SysName_Settings {} {
 	    set G(argv,sys.name) \
 		[lindex [lindex $nodesNames [expr $G(argv,dev.idx) -1]] 0]
 	    if { ! $sysNameSet } { 
-		inform "-W-localPort:node.inteligently.guessed" 
+		inform "-W-localPort:node.intelligently.guessed" 
 	    }
 	    return
 	}
@@ -1586,6 +1591,7 @@ proc PMCounterQuery {} {
         # preparing database for reading PMs
         if {![catch {set tmpLID [GetParamValue LID $directPath $entryPort]}]} { 
             if { $tmpLID != 0 } { 
+                #DZ catch {pmClrAllCounters $tmpLID $entryPort}
                 set tmpLidPort "$tmpLID:$entryPort"
                 set LidPort($tmpLidPort) $directPath
             }
@@ -1605,6 +1611,7 @@ proc PMCounterQuery {} {
         unset tmpLidPort
         if {![catch {set tmpLID [GetParamValue LID $directPath $entryPort]}]} { 
             if { $tmpLID != 0 } { 
+                #DZ catch {pmClrAllCounters $tmpLID $entryPort}
                 set tmpLidPort "$tmpLID:$entryPort"
                 set LidPort($tmpLidPort) $directPath
             }
@@ -1669,7 +1676,7 @@ proc PMCounterQuery {} {
             set PC_DUMP($name,pmCounterValue) $newValues($tmpLidPort)
             #inform "-I-ibdiagnet:pm.counter.report.pc.header" -deviceName $name
             #foreach pmCounter $pmCounterList {
-            #    set pmCounterValue "0x[format %x [WordAfterFlag $newValues($tmpLidPort) $pmCounter]]"
+            #    set pmCounterValue "0x[format %lx [WordAfterFlag $newValues($tmpLidPort) $pmCounter]]"
             #    inform "-I-ibdiagnet:pm.counter.report.pc.option" -pmCounter $pmCounter -pmCounterValue $pmCounterValue
             #}
         }
@@ -2096,7 +2103,7 @@ proc DetectBadLinks { status cgetCmd cmd args } {
     foreach LidPortPath $LidPortList {
         set LidPort [join [lrange [split $LidPortPath :] 0 1] :]
         regexp {^(.*):(.*)$} $LidPort D Lid Port
-        #DZ catch {pmClrAllCounters $Lid $Port}
+        catch {pmClrAllCounters $Lid $Port}
     }
 
     # Initial reading of Performance Counters
@@ -2496,6 +2503,12 @@ proc DrPath2Name { DirectPath args } {
     global G 
     set fullName [WordInList "-fullName" $args]
     set nameOnly [WordInList "-nameOnly" $args]
+    if {[WordInList "-byDr" $args]} {
+        set byDr "-byDr"
+    } else {
+        set byDr ""
+    }
+
     if {[catch {set EntryPort [GetEntryPort $DirectPath]}]} {
         set EntryPort 0
     } else {
@@ -2517,9 +2530,9 @@ proc DrPath2Name { DirectPath args } {
 	set lidGuidDev	""
     }
     if { ($G(matchTopologyResult)==0) } {
-        if {![catch {set deviceType [GetParamValue Type $DirectPath]}]} {
+        if {![catch {set deviceType [GetParamValue Type $DirectPath $byDr]}]} {
             if {$deviceType == "CA"} {
-                if {![catch {set nodeDesc [lindex [GetParamValue NodeDesc $DirectPath] 0]}]} {
+                if {![catch {set nodeDesc [lindex [GetParamValue NodeDesc $DirectPath $byDr] 0]}]} {
                     if {($nodeDesc == "") && ($addPort)} { return "PN=$port" }
                     set res "$nodeDesc"
                     if {($addPort)} { append res "/P$port" }
@@ -2643,10 +2656,8 @@ proc linkNamesGet { DirectPath args } {
 # extract the name(s) of the port(s) from the -n flag
 proc getArgvPortNames {} {
     global G argv
-
     if { ! [info exists G(argv,by-name.route)] } { return }
     set flag "-n"
-
     array set topoNodesArray [join [IBFabric_NodeByName_get $G(fabric,.topo)]]
     array set topoSysArray   [join [IBFabric_SystemByName_get $G(fabric,.topo)]]
     foreach nodeName [array names topoNodesArray] {
@@ -2659,50 +2670,48 @@ proc getArgvPortNames {} {
     }
 
     foreach name [split $G(argv,by-name.route) ,] {
-	catch { unset portPointer portPointers }
-
-	if { ! [catch { set portPointer $topoPortsArray($name) }] } {
-	} elseif { ! [catch { set nodePointer $topoNodesArray($name) }] } {
-	    if { [IBNode_type_get $nodePointer] == 1 } { ; # 1=SW 2=CA 3=Rt
-		set portPointer [lindex [IBNode_Ports_get $nodePointer] 0]
-	    }
-	} elseif { ! [catch { set sysPointer $topoSysArray($name) }] } { 
-	    if { [llength [set sys2node \
-			       [IBSystem_NodeByName_get $sysPointer]]] == 1 } {
-		set nodePointer [lindex [join $sys2node] end]
-	    }
-	} else {
-	    inform "-E-argv:bad.node.name" \
-		-flag $flag -value "$name" \
-		-names [lsort -dictionary [array names topoNodesArray]]
-	}
-	if {[info exists portPointer]} {
-	    if { [IBPort_p_remotePort_get $portPointer] == "" } {
+        catch { unset portPointer portPointers }
+        if {[catch { set portPointer $topoPortsArray($name) }]} {
+            if { ! [catch { set nodePointer $topoNodesArray($name) }] } {
+                if { [IBNode_type_get $nodePointer] == 1 } { ; # 1=SW 2=CA 3=Rt
+                    set portPointer [lindex [IBNode_Ports_get $nodePointer] 0]
+	        }
+            } elseif { ! [catch { set sysPointer $topoSysArray($name) }] } { 
+                if { [llength [set sys2node [IBSystem_NodeByName_get $sysPointer]]] == 1 } {
+		    set nodePointer [lindex [join $sys2node] end]
+	        }
+	    } else {
+                inform "-E-argv:bad.node.name" -flag $flag -value "$name" \
+                    -names [lsort -dictionary [array names topoNodesArray]]
+            }
+        }
+        if {[info exists portPointer]} {
+            if { [IBPort_p_remotePort_get $portPointer] == "" } {
 		inform "-E-argv:specified.port.not.connected" \
 		    -flag $flag -value "$name"
 	    }
 	} else { 
-	    if {[info exists nodePointer]} {
-		set W0 [list "node [IBNode_name_get $nodePointer]"]
+            if {[info exists nodePointer]} {
+		set W0 "node [IBNode_name_get $nodePointer]"
 		foreach pointer [IBNode_Ports_get $nodePointer] { 
 		    if { [IBPort_p_remotePort_get $pointer] != "" } { 
 			lappend portPointers $pointer
 		    }
 		}
 	    } else { 
-		set W0 [list "system [IBSystem_name_get $sysPointer]"]
-		foreach sysPpointer [IBSystem_PortByName_get $sysPointer] { 
+                set W0 "system [IBSystem_name_get $sysPointer]"
+                foreach sysPortNPtr [IBSystem_PortByName_get $sysPointer] { 
+                    set sysPointer [lindex $sysPortNPtr 1]
 		    set pointer [IBSysPort_p_nodePort_get $sysPointer]
-		    if { [IBPort_p_remotePort_get $pointer] != "" } { 
+                    if { [IBPort_p_remotePort_get $pointer] != "" } { 
 			lappend portPointers $pointer
 		    }
 		}
 	    }
-
-	    if { ! [info exists portPointers] } { 
-		inform "-E-argv:hca.no.port.is.connected" -flag $flag -value $W0
+            if { ! [info exists portPointers] } { 
+		inform "-E-argv:hca.no.port.is.connected" -flag $flag -type [lindex $W0 0] -value $name
 	    } elseif { [llength $portPointers] > 1 } { 
-		inform "-W-argv:hca.many.ports.connected" -flag $flag -value $W0 \
+		inform "-W-argv:hca.many.ports.connected" -flag $flag -type [lindex $W0 0] -value $name \
 		    -port [IBPort_num_get [lindex $portPointers 0]]
 	    } 
             set portPointer [lindex $portPointers 0]
@@ -2768,7 +2777,7 @@ proc name2Lid {localPortPtr destPortPtr exitPort} {
 ##############################
 
 ##############################
-proc reportFabQualities { } { 
+proc reportFabQualities {} { 
     global G SM
     if {[info exists G(lst.failed)]} {return }
     if { ! [info exists G(argv,report)] } { return }
@@ -2839,14 +2848,13 @@ proc reportFabQualities { } {
 		}
 		rename OBJECT ""
 	    }
-	    ### TODO: format the HCAs in G(mclid2DrPath,*) nicely
-            set mlidHex 0x[format %x $mlid]
+            set mlidHex 0x[format %lx $mlid]
             if {[info exists G(mclid2DrPath,$mlidHex)]} {
                 set mlidHcas $G(mclid2DrPath,$mlidHex)
             } else {
                 set mlidHcas NONE
             }
-            putsIn80Chars "$mgid | 0x[format %x $mlid] | [compressNames $mlidHcas]"
+            putsIn80Chars "$mgid|0x[format %lx $mlid]|<[compressNames $mlidHcas]>"
         }
     }
     return
@@ -3014,7 +3022,7 @@ proc FormatInfo {_value _parameter _directRoute} {
     set value $_value
     ParseOptionsList $INFO_LST($_parameter)
     ## Formatting $value
-    catch { set value [format %x $value] }
+    catch { set value [format %lx $value] }
     regsub {^0x} $value {} value
 
     # bits -> bytes
@@ -3243,7 +3251,7 @@ proc writePCFile {} {
         set tmpPmCounterList $PC_DUMP($name,pmCounterList)
         set listOfPCValues $PC_DUMP($name,pmCounterValue)
         foreach pmCounter $tmpPmCounterList {
-            set pmCounterValue "0x[format %x [WordAfterFlag $listOfPCValues $pmCounter]]"
+            set pmCounterValue "0x[format %lx [WordAfterFlag $listOfPCValues $pmCounter]]"
             puts $FileID "$pmCounter = $pmCounterValue"
         }
     }
@@ -3366,45 +3374,39 @@ proc writeMcfdbsFile { } {
         set PortGuid [lindex [split $entry ,] end]
         set NodeGuid $G(NodeGuid,$PortGuid) 
 
-        if [catch { set McFDBCap \
-            [SmMadGetByDr SwitchInfo -mcast_cap "$DirectPath"] }] { 
-                continue
-            }
+        if {[catch { set McFDBCap [SmMadGetByDr SwitchInfo -mcast_cap "$DirectPath"] }]} { 
+            continue
+        }
         set NumPorts [GetParamValue Ports $DirectPath]
         puts $FileID "\nSwitch $NodeGuid\nLID    : Out Port(s) "
         for {set LidGrp 0xc000} {$LidGrp < 0xc000 + $McFDBCap} {incr LidGrp 0x20} {
             set McFDBs ""
-            set LidGroup "0x[format %x $LidGrp]"
+            set LidGroup "0x[format %lx $LidGrp]"
             # read the entire McFDBs data for Lids $LidGroup .. $LidGroup + 0x1f
             for {set PortGroup 0} {$PortGroup <= $NumPorts} {incr PortGroup 16} {
-                if [catch {
-                    set newBlock \
-                    [SmMadGetByDr MftBlock dump "$DirectPath" $LidGroup $PortGroup]
-                }] { break }
-                append McFDBs " " [Hex2Bin $newBlock]
+                if {[catch { set newBlock [SmMadGetByDr MftBlock dump "$DirectPath" $LidGroup $PortGroup] }]} { break }
+                if {[lindex $newBlock 0] == "-mft"} {
+                    append McFDBs " " [Hex2Bin [lrange $newBlock 1 end]]
+                } else {
+                    append McFDBs " " [Hex2Bin $newBlock]
+                }
             }
             # figure out - and print to file - the mc ports for each Lid 
             # in the lid group
             for { set lidIdx 0 } { $lidIdx < 0x20 } { incr lidIdx } {
                 set mask ""
-                for { set PortGroup 0; set idx 0 } \
-                    { $PortGroup <= $NumPorts } \
-                    { incr PortGroup 16; incr idx 32 } {
+                for { set PortGroup 0; set idx 0 } { $PortGroup <= $NumPorts } { incr PortGroup 16; incr idx 32 } {
                     set mask "[lindex $McFDBs [expr $lidIdx + $idx]]$mask"
                 }
                 if { ! [regexp "1" $mask] } { continue }
                 set mcLid [format %04x [expr $lidIdx + $LidGroup]]
                 set outputLine "0x[string toupper $mcLid] :"
-                for { set Port 0; set maskIdx [expr [string length $mask]-1] } \
-                    { $Port <= $NumPorts } \
-                    { incr Port 1 ; incr maskIdx -1 } {
+                for { set Port 0; set maskIdx [expr [string length $mask]-1] } { $Port <= $NumPorts } { incr Port 1 ; incr maskIdx -1 } {
                     if { [string index $mask $maskIdx] == 1 } { 
                         append outputLine " 0x[string toupper [format %03x $Port]] "
                         set LongPath [join "$DirectPath $Port"]
-
-                        catch { 
-                            if { [GetParamValue Type $LongPath] != "SW" } { 
-                                set directPathName [DrPath2Name $LongPath]
+                        catch { if { [GetParamValue Type $LongPath -byDr] != "SW" } { 
+                                set directPathName [DrPath2Name $LongPath -byDr]
                                 if {$directPathName !=""} {
                                     lappend G(mclid2DrPath,0x$mcLid) $directPathName
                                 } else {
@@ -3570,4 +3572,4 @@ proc CheckAllinksSettings {} {
     }
     return 
 }
-                    
+                                              
