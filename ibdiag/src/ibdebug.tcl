@@ -1930,9 +1930,9 @@ proc compressNames {words} {
 
     set res ""
     foreach group $groups {
-       append res [lindex $group 1] " "
+       lappend res [lindex $group 1] 
     }
-    return $res
+    return [join $res]
 }
 ##############################
 
@@ -2103,7 +2103,7 @@ proc DetectBadLinks { status cgetCmd cmd args } {
     foreach LidPortPath $LidPortList {
         set LidPort [join [lrange [split $LidPortPath :] 0 1] :]
         regexp {^(.*):(.*)$} $LidPort D Lid Port
-        catch {pmClrAllCounters $Lid $Port}
+        #DZ catch {pmClrAllCounters $Lid $Port}
     }
 
     # Initial reading of Performance Counters
@@ -2854,7 +2854,7 @@ proc reportFabQualities {} {
             } else {
                 set mlidHcas NONE
             }
-            putsIn80Chars "$mgid|0x[format %lx $mlid]|<[compressNames $mlidHcas]>"
+            putsIn80Chars "$mgid|0x[format %lx $mlid]|[compressNames $mlidHcas]"
         }
     }
     return

@@ -69,7 +69,6 @@ proc ibdiagpathMain {} {
             set addressingLocalPort 1
         }
     }
-
     # CHECK some Where that the names are legal
     if [info exists G(argv,by-name.route)] {
         array set mergedNodesArray [join [IBFabric_NodeByName_get $G(fabric,.topo)]]
@@ -162,8 +161,10 @@ proc ibdiagpathMain {} {
         lappend llen [string length [lindex $portNames 0]] [string length [lindex $portNames 1]]
     }
     set maxLen [lindex [lsort -integer $llen] end]
-    # Running PMCounterQuery
-    PMCounterQuery
+    # preparing the list of lid-s and ports for reading the PM counters
+    ###DZ
+         PMCounterQuery
+    ###DZ
     return
 }
 ######################################################################
