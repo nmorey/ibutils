@@ -32,12 +32,6 @@ if test "x$with_ibdm_lib" = xnone; then
    done
 fi
 
-if test "x$libcheck" != "xfalse"; then
-   if test "x$with_ibdm_lib" = xnone; then
-      AC_MSG_ERROR([IBDM: --with-ibdm-lib must be provided - fail to find standard IBDM TCL lib installation])
-   fi
-fi
-
 AC_MSG_NOTICE(IBDM: using TCL lib from:$with_ibdm_lib)
 AC_SUBST(with_ibdm_lib)
 ])

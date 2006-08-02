@@ -2854,7 +2854,7 @@ proc reportFabQualities {} {
             } else {
                 set mlidHcas NONE
             }
-            putsIn80Chars "$mgid|0x[format %lx $mlid]|[compressNames $mlidHcas]"
+            putsIn80Chars "$mgid | 0x[format %lx $mlid] | [compressNames $mlidHcas]"
         }
     }
     return
