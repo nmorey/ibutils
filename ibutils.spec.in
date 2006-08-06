@@ -40,6 +40,7 @@
 %{!?_prefix: %define _prefix /usr/local}
 
 %{!?configure_options: %define configure_options %{nil}}
+%define build_ibmgtsim %(if ( echo %{configure_options} | grep "with-ibmgtsim" > /dev/null ); then echo -n '1'; else echo -n '0'; fi)
 
 Summary: OpenIB Mellanox InfiniBand Diagnostic Tools
 Name: %{?_name:%{_name}}%{!?_name:ibutils}
@@ -50,13 +51,14 @@ Url: http://openib.org/downloads/%{name}-%{version}.tar.gz
 Group: System Environment/Libraries
 Source: %{name}-%{version}.tar.gz
 BuildRoot: %{?build_root:%{build_root}}%{!?build_root:/var/tmp/IBED}
+# Requires: opensm
 Vendor: Mellanox Technologies Ltd.
 %description 
 ibutils provides IB network and path diagnostics.
 
 
 %prep
-%setup -n -q -n %{name}-%{version}
+%setup -n %{name}-%{version}
 
 
 ###
@@ -139,31 +141,48 @@ fi
 %{_prefix}/bin/ibdmchk
 %{_prefix}/bin/ibdiagnet
 %{_prefix}/bin/ibdiagpath
-%{_prefix}/bin/mkSimNodeDir
-%{_prefix}/bin/ibmssh
-%{_prefix}/bin/ibmsquit
-%{_prefix}/bin/RunSimTest
-%{_prefix}/bin/IBMgtSim
 %{_libdir}/libibdmcom.so*
 # %{_libdir}/ibibdmcom.a
 %{_libdir}/libibdm.so*
 %{_libdir}/libibdm.a
-%{_libdir}/libibmscli.so*
-%{_libdir}/libibmscli.a
 %{_libdir}/ibis1.0
 %{_libdir}/ibdm1.0
 %{_libdir}/ibdiagnet1.0
 %{_libdir}/ibdiagpath1.0
 %{_prefix}/include/ibdm
-%{_prefix}/include/ibmgtsim
 %{_mandir}/man1/ibdiagnet.1*
 %{_mandir}/man1/ibdiagpath.1*
+%{_mandir}/man1/ibis.1*
+%{_mandir}/man1/ibtopodiff.1*
+%{_mandir}/man1/ibdmtr.1*
+%{_mandir}/man1/ibdmsh.1*
+%{_mandir}/man1/ibdmchk.1*
+%{_mandir}/man1/ibdm-topo-file.1*
+%{_mandir}/man1/ibdm-ibnl-file.1*
 /etc/profile.d/ibutils.sh
 /etc/profile.d/ibutils.csh
 /etc/ld.so.conf.d/ibutils.conf
+%if %{build_ibmgtsim}
+%{_prefix}/bin/mkSimNodeDir
+%{_prefix}/bin/ibmssh
+%{_prefix}/bin/ibmsquit
+%{_prefix}/bin/RunSimTest
+%{_prefix}/bin/IBMgtSim
+%{_libdir}/libibmscli.so*
+%{_libdir}/libibmscli.a
+%{_prefix}/include/ibmgtsim
+%{_prefix}/share/ibmgtsim
+%{_mandir}/man1/ibmssh.1*
+%{_mandir}/man1/ibmsquit.1*
+%{_mandir}/man1/mkSimNodeDir.1*
+%{_mandir}/man1/RunSimTest.1*
+%{_mandir}/man1/IBMgtSim.1*
+%endif
 # END Files
 
 %changelog
+* Sun Jul 30 2006 Vladimir Sokolovsky <vlad@mellanox.co.il>
+- Added man pages and share/ibmgtsim
 * Tue May 16 2006 Vladimir Sokolovsky <vlad@mellanox.co.il>
 - Added ibutils sh, csh and conf to update environment
 * Sun Apr  2 2006 Vladimir Sokolovsky <vlad@mellanox.co.il>
