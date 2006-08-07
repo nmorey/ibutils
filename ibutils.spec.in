@@ -40,7 +40,7 @@
 %{!?_prefix: %define _prefix /usr/local}
 
 %{!?configure_options: %define configure_options %{nil}}
-%define build_ibmgtsim %(if ( echo %{configure_options} | grep "with-ibmgtsim" > /dev/null ); then echo -n '1'; else echo -n '0'; fi)
+%define build_ibmgtsim %(if ( echo %{configure_options} | grep "enable-ibmgtsim" > /dev/null ); then echo -n '1'; else echo -n '0'; fi)
 
 Summary: OpenIB Mellanox InfiniBand Diagnostic Tools
 Name: %{?_name:%{_name}}%{!?_name:ibutils}
