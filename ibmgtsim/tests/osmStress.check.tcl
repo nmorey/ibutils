@@ -183,7 +183,7 @@ proc checker {simDir osmPath osmPortGuid} {
       }
 
       # wait 30 seconds ?
-      after 1000
+      after 30000
 
       # use ibdiagnet instead of relying on opensm reports...
       if {0} {
