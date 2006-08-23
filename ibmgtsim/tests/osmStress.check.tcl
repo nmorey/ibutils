@@ -182,9 +182,9 @@ proc checker {simDir osmPath osmPortGuid} {
          return 1
       }
 
-      # wait 30 seconds ?
-      after 30000
-
+      # wait ~200msec per joining port - to enable the SM to complete connecting them
+		after [expr $numHcasJoined * 200]
+		
       # use ibdiagnet instead of relying on opensm reports...
       if {0} {
          set ibdmchkLog [file join $simDir ibdmchk.log]
