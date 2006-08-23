@@ -219,6 +219,13 @@ proc setNodePortsState {node state} {
          set remPort [IBPort_p_remotePort_get $port]
          if {$remPort != ""} {
 
+				# Make sure the remote port is not the SM port
+				# HACK: rely on SM to be running on H-1/U1 ..
+				if {($pn == 1) && ([IBNode_name_get [IBPort_p_node_get $remPort]] == "H-1/U1")} {
+					puts "-I- Disconnecting node:$name guid:$guid SKIPPING port:$pn connected to the SM"
+					continue
+				}
+
             # handle the local port
             if {$state == 1} {
                # disconnected
