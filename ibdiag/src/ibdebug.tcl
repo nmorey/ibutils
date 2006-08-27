@@ -1557,7 +1557,7 @@ proc PMCounterQuery {} {
     # send $G(argv,count) MADs that don't wait for replies 
     # and then read all performance counters
     ## Retrying discovery multiple times (according to the -c flag)
-    global G LINK_STATE PC_DUMP
+    global G LINK_STATE PM_DUMP
     inform "-V-discover:long.paths"
     inform "-I-ibdiagnet:pm.counter.report.header"
     set firstPMcounter 0
@@ -1591,7 +1591,9 @@ proc PMCounterQuery {} {
         # preparing database for reading PMs
         if {![catch {set tmpLID [GetParamValue LID $directPath $entryPort]}]} { 
             if { $tmpLID != 0 } { 
-                #DZ catch {pmClrAllCounters $tmpLID $entryPort}
+                if {[info exists G(argv,reset.port.counters)]} {
+                    catch {pmClrAllCounters $tmpLID $entryPort}
+                }
                 set tmpLidPort "$tmpLID:$entryPort"
                 set LidPort($tmpLidPort) $directPath
             }
@@ -1611,7 +1613,9 @@ proc PMCounterQuery {} {
         unset tmpLidPort
         if {![catch {set tmpLID [GetParamValue LID $directPath $entryPort]}]} { 
             if { $tmpLID != 0 } { 
-                #DZ catch {pmClrAllCounters $tmpLID $entryPort}
+                if {[info exists G(argv,reset.port.counters)]} {
+                    catch {pmClrAllCounters $tmpLID $entryPort}
+                }
                 set tmpLidPort "$tmpLID:$entryPort"
                 set LidPort($tmpLidPort) $directPath
             }
@@ -1644,9 +1648,9 @@ proc PMCounterQuery {} {
         }
     
         inform "-V-ibdiagpath:pm.value" "$name $pmList"
-    
+
         set badValues ""
-        ## -pc option
+        ## -pm option
         # set a list of all pm counters and reduced each one which is reported as an error 
         set pmCounterList "symbol_error_counter link_error_recovery_counter\
             link_down_counter port_rcv_errors port_xmit_discard port_xmit_constraint_errors\
@@ -1671,21 +1675,16 @@ proc PMCounterQuery {} {
         }
         
         if {[info exists G(argv,port.counters)]} {
-            lappend PC_DUMP(nodeNames) $name
-            set PC_DUMP($name,pmCounterList) $pmCounterList
-            set PC_DUMP($name,pmCounterValue) $newValues($tmpLidPort)
-            #inform "-I-ibdiagnet:pm.counter.report.pc.header" -deviceName $name
-            #foreach pmCounter $pmCounterList {
-            #    set pmCounterValue "0x[format %lx [WordAfterFlag $newValues($tmpLidPort) $pmCounter]]"
-            #    inform "-I-ibdiagnet:pm.counter.report.pc.option" -pmCounter $pmCounter -pmCounterValue $pmCounterValue
-            #}
+            lappend PM_DUMP(nodeNames) $name
+            set PM_DUMP($name,pmCounterList) $pmCounterList
+            set PM_DUMP($name,pmCounterValue) $newValues($tmpLidPort)
         }
     }
     if {$firstPMcounter == 0} {
         inform "-I-ibdiagnet:no.pm.counter.report"
     }
     if {[info exists G(argv,port.counters)]} {
-        writePCFile
+        writePMFile
     }
     return 1
 }
@@ -2103,7 +2102,6 @@ proc DetectBadLinks { status cgetCmd cmd args } {
     foreach LidPortPath $LidPortList {
         set LidPort [join [lrange [split $LidPortPath :] 0 1] :]
         regexp {^(.*):(.*)$} $LidPort D Lid Port
-        #DZ catch {pmClrAllCounters $Lid $Port}
     }
 
     # Initial reading of Performance Counters
@@ -2834,19 +2832,23 @@ proc reportFabQualities {} {
 
     # Multicast mlid-guid-hcas report
     set mcPtrList [sacMCMQuery getTable 0]
-
+ 
     if { [llength $mcPtrList] > 0 } {
-	inform "-I-ibdiagnet:mgid.mlid.hca.header"
-	putsIn80Chars "mgid [bar " " 32] | mlid   | HCAs\n[bar - 80]"
+        inform "-I-ibdiagnet:mgid.mlid.hca.header"
+        putsIn80Chars "mgid [bar " " 32] | mlid   | HCAs\n[bar - 80]"
 	foreach mcPtr $mcPtrList {
-	    if {[catch {sacMCMRec OBJECT -this $mcPtr} msg]} {
+            if {[catch {sacMCMRec OBJECT -this $mcPtr} msg]} {
                 puts $msg
 	    } else {
-		catch {OBJECT cget} attributes
-		foreach attr [lindex $attributes 0] {
-		    set [string range $attr 1 end] [OBJECT cget $attr]
+                catch {OBJECT cget} attributes
+                foreach attr [lindex $attributes 0] {
+                    if {($attr == "-this") || ($attr == "-mgid") || ($attr == "-port_gid")} {
+                        #set [string range $attr 1 end] 0x00
+                        #continue
+                    }
+                    set [string range $attr 1 end] [OBJECT cget $attr]
 		}
-		rename OBJECT ""
+                rename OBJECT ""
 	    }
             set mlidHex 0x[format %lx $mlid]
             if {[info exists G(mclid2DrPath,$mlidHex)]} {
@@ -3236,22 +3238,22 @@ proc writeSMFile {} {
 }
 
 ##############################
-#  NAME         writePCFile
-#  SYNOPSIS     writePCFile 
+#  NAME         writePMFile
+#  SYNOPSIS     writePMFile 
 #  FUNCTION     writes a dump of Port Counter query
 #  INPUTS       NULL
 #  OUTPUT       NULL
-proc writePCFile {} {
-    global G PC_DUMP
-    set FileID [InitOutputFile $G(tool).pc]
-    foreach name $PC_DUMP(nodeNames) {
+proc writePMFile {} {
+    global G PM_DUMP
+    set FileID [InitOutputFile $G(tool).pm]
+    foreach name $PM_DUMP(nodeNames) {
         puts $FileID [string repeat "-" 80]
         puts $FileID $name
         puts $FileID [string repeat "-" 80]
-        set tmpPmCounterList $PC_DUMP($name,pmCounterList)
-        set listOfPCValues $PC_DUMP($name,pmCounterValue)
+        set tmpPmCounterList $PM_DUMP($name,pmCounterList)
+        set listOfPMValues $PM_DUMP($name,pmCounterValue)
         foreach pmCounter $tmpPmCounterList {
-            set pmCounterValue "0x[format %lx [WordAfterFlag $listOfPCValues $pmCounter]]"
+            set pmCounterValue "0x[format %lx [WordAfterFlag $listOfPMValues $pmCounter]]"
             puts $FileID "$pmCounter = $pmCounterValue"
         }
     }

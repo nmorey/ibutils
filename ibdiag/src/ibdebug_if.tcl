@@ -15,9 +15,13 @@
 # -deafult "" means that the parameter does have a default value, but it will set later (after ibis is ran, in porc startIBDebug).
 ## TODO: sm_key is a 64-bit integer - will it be correctly cheked in parseArgv ?
 array set InfoArgv {
-    -pc,name    "port.counters"
-    -pc,arglen	0
-    -pc,desc	"Dumps all pmCounters values into .pc file"
+    -pc,name    "reset.port.counters"
+    -pc,arglen  0
+    -pc,desc    "reset all the fabric links pmCounters"
+    
+    -pm,name    "port.counters"
+    -pm,arglen	0
+    -pm,desc	"Dumps all pmCounters values into .pm file"
 
     -lw,name    "link.width"
     -lw,param   "1x|4x|12x"
@@ -149,22 +153,35 @@ array set InfoArgv {
     --vars,desc	"Prints the tool's environment variables and their values"
 }
 
+# Define here new directory path, when installing for windows
+# set InfoArgv(-o,default) "IBDIAG_LOGS_DIR"
+
+### some changes from the default definitions 
+global tcl_platform
+if {[info exists tcl_platform(platform)] } {
+    switch -exact -- $tcl_platform(platform) {
+        "windows" {
+            set IBDIAG_OUT_DIR "ibdiag_out_dir"
+            set InfoArgv(-o,default) $IBDIAG_OUT_DIR
+        }
+    }
+}
 
 ### some changes from the default definitions 
 # (e.g., for ibdiagpath, since it recieves addresses of two ports...)
-
 switch -exact -- $G(tool) { 
     "ibdiagnet"	{ 
 	array set InfoArgv { 
             -c,desc     "The minimal number of packets to be sent across each link"
-            -pc,desc	"Dumps all pmCounters values into ibdiagnet.pc"
+
+            -pm,desc	"Dumps all pmCounters values into ibdiagnet.pm"
         }
     }
     "ibdiagpath"		{ 
 	array set InfoArgv {
 	    -d,desc "directed route from the local node (which is the source) and the destination node"
 
-            -pc,desc	"Dumps all pmCounters values into ibdiagpath.pc"
+            -pm,desc	"Dumps all pmCounters values into ibdiagpath.pm"
 
             -l,param	"\[src-lid,\]dst-lid"
 	    -l,desc	"Source and destination LIDs (source may be omitted -> local port is assumed to be the source)"
@@ -213,13 +230,13 @@ proc toolsFlags { tool } {
     # If a few flags are thus encompassed, then they are mutex
     switch -exact -- $tool { 
 	ibping	   { return "(n|l|d) c w v    t s i p o" }
-	ibdiagpath { return "(n|l|d) c   v    t s i p o lw ls pc" }
-	ibdiagnet  { return "        c   v r  t s i p o lw ls pc" }
+	ibdiagpath { return "(n|l|d) c   v    t s i p o lw ls pm pc" }
+	ibdiagnet  { return "        c   v r  t s i p o lw ls pm pc" }
 	ibcfg	   { return "(n|l|d) (c|q)    t s i p o" }
 	ibmad	   { return "(m) (a) (n|l|d)  t s i p o ; (q) a" }
 	ibsac	   { return "(m) (a) k        t s i p o ; (q) a" }
 
-	envVars	   { return "t s i p" }
+	envVars	   { return "t s i p o" }
 	general	   { return "h V -vars" }
     }
 }
@@ -247,10 +264,10 @@ proc HighPriortyFlag {} {
 proc SetDefaultValues {} {
     global G argv env InfoArgv
     foreach entry [array names InfoArgv "*,default"] { 
-	set flag [lindex [split $entry ,] 0]
-	if {[catch { set name $InfoArgv($flag,name)}]} { continue }
-	if { $InfoArgv($entry) != "" } { 
-	    set G(argv,$name) $InfoArgv($entry)
+        set flag [lindex [split $entry ,] 0]
+        if {[catch { set name $InfoArgv($flag,name)}]} { continue }
+        if { $InfoArgv($entry) != "" } { 
+             set G(argv,$name) $InfoArgv($entry)
 	}
     }
 }
@@ -258,7 +275,7 @@ proc SetDefaultValues {} {
 proc SetEnvValues {} {
     global G argv env InfoArgv
     foreach flag [toolsFlags envVars]  {
-	set name $InfoArgv(-$flag,name)
+        set name $InfoArgv(-$flag,name)
 	set envVarName "IBDIAG_[string toupper [join [split $name .] _]]"
 	if { ! [info exists env($envVarName)] } { continue }
 	if { $env($envVarName) == "" } { continue }
@@ -456,13 +473,13 @@ proc parseArgv {} {
     if {[info exists G(argv,out.dir)]} { 
 	set dir $G(argv,out.dir)
 	if { ! [file isdirectory $dir] } {
-	    if {[catch {exec mkdir -- $dir} msg]} { 
+	    if {[catch {file mkdir $dir} msg]} { 
 		inform "-E-argv:could.not.create.dir" -flag "-o" -value $dir -errMsg [list $msg]
 	    }
 	} elseif { ! [file writable $dir] } {
 	    inform "-E-argv:dir.not.writable" -flag "-o" -value $dir
 	}
-	foreach extention { "lst" "fdbs" "mcfdbs" "log" "neighbor" "masks" "sm" "pc"} {
+	foreach extention { "lst" "fdbs" "mcfdbs" "log" "neighbor" "masks" "sm" "pm"} {
 	    set G(outfiles,.${extention}) [file join $dir $G(tool).${extention}]
 	}
     }
@@ -720,7 +737,7 @@ proc inform { msgCode args } {
         set name  ""
 	catch { set name $InfoArgv($msgF(flag),name) }
 	set envVarName "IBDIAG_[string toupper [join [split $name .] _]]"
-	if {[WordInList "$msgF(flag)" $argv]} { 
+        if {[WordInList "$msgF(flag)" $argv]} { 
 	    set llegalValMsg "llegal value for $msgF(flag) option"
 	} elseif {[info exists env($envVarName)]} { 
 	    set llegalValMsg "llegal value for environment variable $envVarName"
@@ -1398,10 +1415,10 @@ proc inform { msgCode args } {
             append msgText "$msgF(deviceName)%n"
             append msgText "$msgF(listOfErrors)"
         }
-        "-I-ibdiagnet:pm.counter.report.pc.header" {
+        "-I-ibdiagnet:pm.counter.report.pm.header" {
             append msgText "$msgF(deviceName)"
         }
-        "-I-ibdiagnet:pm.counter.report.pc.option" {
+        "-I-ibdiagnet:pm.counter.report.pm.option" {
             set msgText "    $msgF(pmCounter) = $msgF(pmCounterValue)"
         }
         "-W-ibdiagnet:local.link.in.init.state" {
@@ -1650,7 +1667,7 @@ proc showHelpPage { args } {
     ibdiagnet.masks  - In case of duplicate port/node Guids, these file include
                        the map between masked Guid and real Guids 
     ibdiagnet.sm     - A dump of all the SM (state and priorty) in the fabric
-    ibdiagnet.pc     - In case -pc option was provided, this file contain a dump
+    ibdiagnet.pm     - In case -pm option was provided, this file contain a dump
                        of all the nodes pm counters
   In addition to generating the files above, the discovery phase also checks for
   duplicate node/port GUIDs in the IB fabric. If such an error is detected, it 

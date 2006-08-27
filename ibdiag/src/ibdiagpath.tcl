@@ -162,9 +162,7 @@ proc ibdiagpathMain {} {
     }
     set maxLen [lindex [lsort -integer $llen] end]
     # preparing the list of lid-s and ports for reading the PM counters
-    ###DZ
-         PMCounterQuery
-    ###DZ
+    PMCounterQuery
     return
 }
 ######################################################################
