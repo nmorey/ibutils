@@ -154,14 +154,14 @@ array set InfoArgv {
 }
 
 # Define here new directory path, when installing for windows
-# set InfoArgv(-o,default) "IBDIAG_LOGS_DIR"
+# set InfoArgv(-o,default) "IBDIAG_OUT_DIR"
 
 ### some changes from the default definitions 
 global tcl_platform
 if {[info exists tcl_platform(platform)] } {
     switch -exact -- $tcl_platform(platform) {
         "windows" {
-            set IBDIAG_OUT_DIR "ibdiag_out_dir"
+            set IBDIAG_OUT_DIR "win_ibdiag_out_dir"
             set InfoArgv(-o,default) $IBDIAG_OUT_DIR
         }
     }
@@ -472,8 +472,17 @@ proc parseArgv {} {
     ## command line check 4: directories and files
     if {[info exists G(argv,out.dir)]} { 
 	set dir $G(argv,out.dir)
-	if { ! [file isdirectory $dir] } {
-	    if {[catch {file mkdir $dir} msg]} { 
+        ## Special deal for windows
+        global tcl_platform
+        if {[info exists tcl_platform(platform)] } {
+            switch -exact -- $tcl_platform(platform) {
+                "windows" {
+                    regsub -all \"  $dir "" dir
+                }
+            }
+        }
+        if { ! [file isdirectory $dir] } {
+            if {[catch {file mkdir $dir} msg] } { 
 		inform "-E-argv:could.not.create.dir" -flag "-o" -value $dir -errMsg [list $msg]
 	    }
 	} elseif { ! [file writable $dir] } {
