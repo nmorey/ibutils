@@ -2483,7 +2483,10 @@ proc reportTopologyMatching { args } {
 	    inform "-W-topology:matching.bad"
 	}
     }
-    putsIn80Chars \n[join $G(MatchigResult) \n]
+    if {[string is space [lindex $G(MatchingResult) end]]} {
+        set G(MatchingResult) [lrange $G(MatchingResult) 0 end-1]
+    }
+    putsIn80Chars [join $G(MatchingResult) \n]
 }
 ##############################
 
