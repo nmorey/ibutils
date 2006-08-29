@@ -2420,25 +2420,25 @@ proc matchTopology { lstFile args } {
             return 0
         }
     }
-    set MatchigResult \
+    set MatchingResult \
         [ibdmMatchFabrics $G(fabric,.topo) $G(fabric,.lst) \
              $G(argv,sys.name) $G(argv,port.num) $G(RootPort,Guid) ]
 
-        switch -- [lrange $MatchigResult 0 4] {
+        switch -- [lrange $MatchingResult 0 4] {
             "Fail to find anchor port" -
             "Even starting ports do not" {
-                inform "-W-topology:Critical.mismatch" -massage [join $MatchigResult]
+                inform "-W-topology:Critical.mismatch" -massage [join $MatchingResult]
                 return 0
             }
         }
 
-    set G(MatchigResult) ""
+    set G(MatchingResult) ""
     set old_line ""
     set G(missing.links) ""
-    foreach line [split $MatchigResult \n] {
+    foreach line [split $MatchingResult \n] {
 
 	if { [regexp {[^ ]} $line] || [regexp {[^ ]} $old_line] } { 
-	    lappend G(MatchigResult) "  $line" 
+	    lappend G(MatchingResult) "  $line" 
 	}
 	# $G(missing.links) is the list of links found to be missing by topology
 	# matching;
@@ -2474,12 +2474,12 @@ proc reportTopologyMatching { args } {
     set noheader [WordInList "-noheader" $args] 
     if { ! $noheader } { inform "-I-topology:matching.header" }
 
-    set MatchigResultLen [llength $G(MatchigResult)]
-    if { $MatchigResultLen == 0 } {
+    set MatchingResultLen [llength $G(MatchingResult)]
+    if { $MatchingResultLen == 0 } {
 	inform "-I-topology:matching.perfect"
     } else { 
 	if { ! $noheader } { inform "-I-topology:matching.note" }
-	if { $MatchigResultLen > $G(config,warn.long.matchig.results) } { 
+	if { $MatchingResultLen > $G(config,warn.long.matchig.results) } { 
 	    inform "-W-topology:matching.bad"
 	}
     }
