@@ -1571,7 +1571,7 @@ proc PMCounterQuery {} {
     } else {
         set LINK_STATE "DZ"
     }
-    foreach directPath [lrange $G(list,DirectPath) 1 end] {
+    foreach directPath [lrange $G(list,DirectPath) 0 end] {
 	# start from the second path in $G(list,DirectPath), because the first is ""
         # Ignore those links which has state INIT
         set drIsInit 0
@@ -3248,6 +3248,7 @@ proc writeSMFile {} {
 #  OUTPUT       NULL
 proc writePMFile {} {
     global G PM_DUMP
+    if {![info exists PM_DUMP]} {return 0}
     set FileID [InitOutputFile $G(tool).pm]
     foreach name $PM_DUMP(nodeNames) {
         puts $FileID [string repeat "-" 80]
