@@ -15,6 +15,16 @@
 # -deafult "" means that the parameter does have a default value, but it will set later (after ibis is ran, in porc startIBDebug).
 ## TODO: sm_key is a 64-bit integer - will it be correctly cheked in parseArgv ?
 array set InfoArgv {
+    -P,name     "query.performence.monitors"
+    -P,arglen   1
+    -P,desc     "If any of the provided pm is greater then its provided value, print it to screen"
+    -P,param	"performence monitor counter=<>" 
+    -P,regexp	{^((symbol_error_counter)|(link_error_recovery_counter)|(link_down_counter)\
+                |(port_rcv_errors)|(port_xmit_discard)|(port_xmit_constraint_errors)\
+                |(port_rcv_constraint_errors)|(local_link_integrity_errors)|(excesive_buffer_errors)\
+                (vl15_dropped))=[0-9]+$} 
+    -P,error	"-E-argv:not.legal.PM"
+
     -pc,name    "reset.port.counters"
     -pc,arglen  0
     -pc,desc    "reset all the fabric links pmCounters"
@@ -231,7 +241,7 @@ proc toolsFlags { tool } {
     switch -exact -- $tool { 
 	ibping	   { return "(n|l|d) c w v    t s i p o" }
 	ibdiagpath { return "(n|l|d) c   v    t s i p o lw ls pm pc" }
-	ibdiagnet  { return "        c   v r  t s i p o lw ls pm pc" }
+	ibdiagnet  { return "        c   v r  t s i p o lw ls pm pc P" }
 	ibcfg	   { return "(n|l|d) (c|q)    t s i p o" }
 	ibmad	   { return "(m) (a) (n|l|d)  t s i p o ; (q) a" }
 	ibsac	   { return "(m) (a) k        t s i p o ; (q) a" }
@@ -892,6 +902,14 @@ proc inform { msgCode args } {
         "-E-argv:not.legal.link.speed" {
             append msgText "Illegal argument: I${llegalValMsg} : $msgF(value)%n"
             append msgText "(Legal value: 2.5 | 5 | 10)."
+        }
+        "-E-argv:not.legal.PM" {
+            set pmCounterList "symbol_error_counter link_error_recovery_counter\
+                link_down_counter port_rcv_errors port_xmit_discard port_xmit_constraint_errors\
+                port_rcv_constraint_errors local_link_integrity_errors excesive_buffer_errors vl15_dropped"
+            set pmCounterList [join $pmCounterList \n]
+            append msgText "Illegal argument: I${llegalValMsg} : $msgF(value)%n"
+            append msgText "Legal values are: %n$pmCounterList."
         }
         "-W-argv:-s.without.-t" {
             append msgText "Local system name is specified, but topology "

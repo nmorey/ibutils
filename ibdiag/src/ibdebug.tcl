@@ -120,7 +120,7 @@
 #  OUTPUT	NULL
 proc InitalizeIBdiag {} {
     global G argv argv0 InfoArgv INFO_LST MASK SECOND_PATH
-    set G(version.num) 1.3.0rc9
+    set G(version.num) 1.3.0rc10
     set G(tool) [file rootname [file tail $argv0]]
     source [file join [file dirname [info script]] ibdebug_if.tcl]
     set G(start.clock.seconds) [clock seconds]
@@ -1667,13 +1667,16 @@ proc PMCounterQuery {} {
                 "overflow" {
                     lappend badValues "$parameter=$value\(=overflow\)"
                 }
+                "exceeded"  {
+                    lappend badValues "$parameter=$value"
+                }
             }
         }
         if { $badValues != "" } {
             set firstPMcounter 1
             inform "-W-ibdiagnet:bad.pm.counter.report" -deviceName $name -listOfErrors [join $badValues "%n"]
         }
-        
+
         if {[info exists G(argv,port.counters)]} {
             lappend PM_DUMP(nodeNames) $name
             set PM_DUMP($name,pmCounterList) $pmCounterList
@@ -2223,7 +2226,14 @@ proc ComparePMCounters { oldValues newValues args } {
             lappend errList "$parameter valueChange $oldValue->$newValue"
 	} elseif { ( $oldValue == $overflow ) || ( $newValue == $overflow ) } {
 	    lappend errList "$parameter overflow $overflow"
-	}
+	} elseif {[info exists G(argv,query.performence.monitors)]} {
+            set pmNameValue [split $G(argv,query.performence.monitors) =]
+            set pmName [lindex $pmNameValue 0]
+            set pmValue [lindex $pmNameValue 1]
+            if {($newValue > $pmValue) && ($parameter == $pmName)} {
+                lappend errList "$parameter exceeded 0x[format %lx $newValue]"
+            }
+        }
     }
     return $errList
 }
