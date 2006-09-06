@@ -2220,6 +2220,10 @@ proc ComparePMCounters { oldValues newValues args } {
     }
 
     set errList ""
+    set pmRequestList ""
+    if {[info exists G(argv,query.performence.monitors)]} {
+        set pmRequestList [split $G(argv,query.performence.monitors) {, =}]
+    }
     foreach parameter [array names InfoPm] {
 	ParseOptionsList $InfoPm($parameter)
 	if { ! [info exists cfg(thresh)] } { continue }
@@ -2235,9 +2239,14 @@ proc ComparePMCounters { oldValues newValues args } {
 	} elseif { ( $oldValue == $overflow ) || ( $newValue == $overflow ) } {
 	    lappend errList "$parameter overflow $overflow"
 	} elseif {[info exists G(argv,query.performence.monitors)]} {
-            foreach item [split $G(argv,query.performence.monitors) ,] {
-                scan [split $item =] {%s %s} pmName pmTrash
-                if {($newValue >= $pmTrash) && (($pmName == "all") || ($parameter == $pmName))} {
+            if {[lsearch $pmRequestList $parameter] != -1} {
+                set pmTrash [WordAfterFlag $pmRequestList $parameter]
+                if {$newValue >= $pmTrash} {
+                    lappend errList "$parameter exceeded 0x[format %lx $newValue]"
+                } 
+            } elseif {[lsearch $pmRequestList "all"] != -1} {
+                set pmTrash [WordAfterFlag $pmRequestList "all"]
+                if {$newValue >= $pmTrash} {
                     lappend errList "$parameter exceeded 0x[format %lx $newValue]"
                 }
             }

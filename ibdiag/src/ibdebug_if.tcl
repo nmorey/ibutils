@@ -433,11 +433,20 @@ proc parseArgv {} {
 			inform "$InfoArgv($flag,error)" -flag $flag -value $value
 		    }
 		}
+                #chack if giving the same pm twice
+                set tmpValuesList [split $value {, =}]
+                for {set i 0} {$i < [llength $tmpValuesList]} {incr i 2} {
+                    if {[lsearch -start [expr $i + 1] $tmpValuesList [lindex $tmpValuesList $i]] != -1 } { 
+                        inform "$InfoArgv($flag,error)" -flag $flag -value $value -duplicatePM [lindex $tmpValuesList $i] 
+                    }
+                }
                 set pmCounterList "all symbol_error_counter link_error_recovery_counter\
                     link_down_counter port_rcv_errors port_xmit_discard port_xmit_constraint_errors\
                     port_rcv_constraint_errors local_link_integrity_errors excesive_buffer_errors vl15_dropped"
 
                 foreach item $valuesList {
+                    unset -nocomplain pmName
+                    unset -nocomplain pmTrash
                     scan [split $item =] {%s %s} pmName pmTrash
                     if {![info exists pmName] || ![info exists pmTrash]} {
                         inform "$InfoArgv($flag,error)" -flag $flag -value $value
@@ -928,9 +937,15 @@ proc inform { msgCode args } {
                 link_down_counter port_rcv_errors port_xmit_discard port_xmit_constraint_errors\
                 port_rcv_constraint_errors local_link_integrity_errors excesive_buffer_errors vl15_dropped"
             set pmCounterList \t[join $pmCounterList \n\t]
+
             append msgText "Illegal argument: I${llegalValMsg} : $msgF(value)%n"
-            append msgText "(Legal value: one or more \"<PM counter>=<Trash Limit>\" separated by commas).%n"
-            append msgText "Legal PM Counter names are: %n$pmCounterList."
+            if {[info exists msgF(duplicatePM)]} {
+                append msgText "PM: \"$msgF(duplicatePM)\" is specified twice.%n"
+                append msgText "(Legal value: one or more \"<PM counter>=<Trash Limit>\" separated by commas)."
+            } else {
+                append msgText "(Legal value: one or more \"<PM counter>=<Trash Limit>\" separated by commas).%n"
+                append msgText "Legal PM Counter names are: %n$pmCounterList."
+            }
         }
         "-W-argv:-s.without.-t" {
             append msgText "Local system name is specified, but topology "
