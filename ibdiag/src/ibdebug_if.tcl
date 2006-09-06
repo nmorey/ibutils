@@ -16,13 +16,9 @@
 ## TODO: sm_key is a 64-bit integer - will it be correctly cheked in parseArgv ?
 array set InfoArgv {
     -P,name     "query.performence.monitors"
-    -P,arglen   1
     -P,desc     "If any of the provided pm is greater then its provided value, print it to screen"
-    -P,param	"performence monitor counter=<>" 
-    -P,regexp	{^((symbol_error_counter)|(link_error_recovery_counter)|(link_down_counter)\
-                |(port_rcv_errors)|(port_xmit_discard)|(port_xmit_constraint_errors)\
-                |(port_rcv_constraint_errors)|(local_link_integrity_errors)|(excesive_buffer_errors)\
-                (vl15_dropped))=[0-9]+$} 
+    -P,param	"<PM counter>=<Trash Limit>" 
+    -P,regexp   "pm.name.>=1"
     -P,error	"-E-argv:not.legal.PM"
 
     -pc,name    "reset.port.counters"
@@ -240,7 +236,7 @@ proc toolsFlags { tool } {
     # If a few flags are thus encompassed, then they are mutex
     switch -exact -- $tool { 
 	ibping	   { return "(n|l|d) c w v    t s i p o" }
-	ibdiagpath { return "(n|l|d) c   v    t s i p o lw ls pm pc" }
+	ibdiagpath { return "(n|l|d) c   v    t s i p o lw ls pm pc P" }
 	ibdiagnet  { return "        c   v r  t s i p o lw ls pm pc P" }
 	ibcfg	   { return "(n|l|d) (c|q)    t s i p o" }
 	ibmad	   { return "(m) (a) (n|l|d)  t s i p o ; (q) a" }
@@ -385,7 +381,7 @@ proc parseArgv {} {
 	    set value ""
 	} elseif {[info exists InfoArgv($flag,regexp)]} {
 	    scan [split $InfoArgv($flag,regexp) .] {%s %s %s} type sign len
-	    if { $type == "integer" } {
+            if { $type == "integer" } {
 		# Turn values like 010 into 10 (instead of the tcl value - 8)
 		set int "(0x)?0*(\[a-fA-F0-9\]+)"
 		set valuesList [split $value ","]
@@ -428,7 +424,31 @@ proc parseArgv {} {
 		    lappend formattedValue [format %d $item]
 		}
                 set value [join $formattedValue ,]
-	    } else {
+	    } elseif {$type == "pm"} {
+                set int "(0x)?0*(\[a-fA-F0-9\]+)"
+		set valuesList [split $value ","]
+		# Checking if length of integers list is OK
+                foreach condition [split $len &] {
+                    if { ! [expr [llength $valuesList] $condition] } {
+			inform "$InfoArgv($flag,error)" -flag $flag -value $value
+		    }
+		}
+                set pmCounterList "all symbol_error_counter link_error_recovery_counter\
+                    link_down_counter port_rcv_errors port_xmit_discard port_xmit_constraint_errors\
+                    port_rcv_constraint_errors local_link_integrity_errors excesive_buffer_errors vl15_dropped"
+
+                foreach item $valuesList {
+                    scan [split $item =] {%s %s} pmName pmTrash
+                    if {![info exists pmName] || ![info exists pmTrash]} {
+                        inform "$InfoArgv($flag,error)" -flag $flag -value $value
+                    }
+                    set regexp1 [regexp ^([join $pmCounterList |])$ "$pmName"]
+                    set regexp2 [regexp {^(([0-9]+)|(0x[0-9a-fA-F]+))$} "$pmTrash"]
+                    if {!(($regexp1) && ($regexp2))} {
+                        inform "$InfoArgv($flag,error)" -flag $flag -value $value
+                    }
+                }
+            } else {
                 set regexp [regexp $InfoArgv($flag,regexp) "$value"]
                 if {!$regexp} {
                     inform "$InfoArgv($flag,error)" -flag $flag -value $value
@@ -907,9 +927,10 @@ proc inform { msgCode args } {
             set pmCounterList "symbol_error_counter link_error_recovery_counter\
                 link_down_counter port_rcv_errors port_xmit_discard port_xmit_constraint_errors\
                 port_rcv_constraint_errors local_link_integrity_errors excesive_buffer_errors vl15_dropped"
-            set pmCounterList [join $pmCounterList \n]
+            set pmCounterList \t[join $pmCounterList \n\t]
             append msgText "Illegal argument: I${llegalValMsg} : $msgF(value)%n"
-            append msgText "Legal values are: %n$pmCounterList."
+            append msgText "(Legal value: one or more \"<PM counter>=<Trash Limit>\" separated by commas).%n"
+            append msgText "Legal PM Counter names are: %n$pmCounterList."
         }
         "-W-argv:-s.without.-t" {
             append msgText "Local system name is specified, but topology "

@@ -1660,14 +1660,22 @@ proc PMCounterQuery {} {
             scan $entry {%s %s %s} parameter err value
             switch -exact -- $err {
                 "valueChange" {
-                    regsub -- "->" $value " - " exp
-                    set newValue [expr - ($exp)]
-                    lappend badValues "$parameter changed by : $newValue ($value)"
+                    regsub -- "->" $value "-" exp
+                    unset oldValue
+                    unset newValue
+                    scan [split $exp -] {%s %s} oldValue newValue
+                    if {![info exists newValue]} {
+                        set newValue $oldValue
+                        set oldValue 0
+                    }
+                    set diffValue [expr $newValue - $oldValue]
+                    lappend badValues "$parameter=0x[format %x $newValue] \(Increase by $diffValue during $G(tool) scan.\)"
                 }
                 "overflow" {
-                    lappend badValues "$parameter=$value\(=overflow\)"
+                    lappend badValues "$parameter=$value \(=overflow\)"
                 }
                 "exceeded"  {
+                    set value 0x[format %x $value]
                     lappend badValues "$parameter=$value"
                 }
             }
@@ -2227,11 +2235,11 @@ proc ComparePMCounters { oldValues newValues args } {
 	} elseif { ( $oldValue == $overflow ) || ( $newValue == $overflow ) } {
 	    lappend errList "$parameter overflow $overflow"
 	} elseif {[info exists G(argv,query.performence.monitors)]} {
-            set pmNameValue [split $G(argv,query.performence.monitors) =]
-            set pmName [lindex $pmNameValue 0]
-            set pmValue [lindex $pmNameValue 1]
-            if {($newValue > $pmValue) && ($parameter == $pmName)} {
-                lappend errList "$parameter exceeded 0x[format %lx $newValue]"
+            foreach item [split $G(argv,query.performence.monitors) ,] {
+                scan [split $item =] {%s %s} pmName pmTrash
+                if {($newValue >= $pmTrash) && (($pmName == "all") || ($parameter == $pmName))} {
+                    lappend errList "$parameter exceeded 0x[format %lx $newValue]"
+                }
             }
         }
     }
