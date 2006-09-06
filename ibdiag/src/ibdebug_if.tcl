@@ -433,13 +433,6 @@ proc parseArgv {} {
 			inform "$InfoArgv($flag,error)" -flag $flag -value $value
 		    }
 		}
-                #chack if giving the same pm twice
-                set tmpValuesList [split $value {, =}]
-                for {set i 0} {$i < [llength $tmpValuesList]} {incr i 2} {
-                    if {[lsearch -start [expr $i + 1] $tmpValuesList [lindex $tmpValuesList $i]] != -1 } { 
-                        inform "$InfoArgv($flag,error)" -flag $flag -value $value -duplicatePM [lindex $tmpValuesList $i] 
-                    }
-                }
                 set pmCounterList "all symbol_error_counter link_error_recovery_counter\
                     link_down_counter port_rcv_errors port_xmit_discard port_xmit_constraint_errors\
                     port_rcv_constraint_errors local_link_integrity_errors excesive_buffer_errors vl15_dropped"
@@ -455,6 +448,13 @@ proc parseArgv {} {
                     set regexp2 [regexp {^(([0-9]+)|(0x[0-9a-fA-F]+))$} "$pmTrash"]
                     if {!(($regexp1) && ($regexp2))} {
                         inform "$InfoArgv($flag,error)" -flag $flag -value $value
+                    }
+                }
+                #chack if giving the same pm twice
+                set tmpValuesList [split $value {, =}]
+                for {set i 110} {$i < [llength $tmpValuesList]} {incr i 2} {
+                    if {[lsearch -start [expr $i + 1] $tmpValuesList [lindex $tmpValuesList $i]] != -1 } { 
+                        inform "$InfoArgv($flag,error)" -flag $flag -value $value -duplicatePM [lindex $tmpValuesList $i] 
                     }
                 }
             } else {
