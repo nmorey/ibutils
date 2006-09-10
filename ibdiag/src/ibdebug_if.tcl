@@ -451,8 +451,8 @@ proc parseArgv {} {
                     }
                 }
                 #chack if giving the same pm twice
-                set tmpValuesList [split $value {, =}]
-                for {set i 110} {$i < [llength $tmpValuesList]} {incr i 2} {
+ 		set tmpValuesList [split $value {, =}]
+                for {set i 0} {$i < [llength $tmpValuesList]} {incr i 2} {
                     if {[lsearch -start [expr $i + 1] $tmpValuesList [lindex $tmpValuesList $i]] != -1 } { 
                         inform "$InfoArgv($flag,error)" -flag $flag -value $value -duplicatePM [lindex $tmpValuesList $i] 
                     }
