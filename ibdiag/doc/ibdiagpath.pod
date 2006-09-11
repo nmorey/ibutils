@@ -5,10 +5,10 @@ B<ibdiagpath - IB diagnostic path>
 =head1 SYNOPSYS
 
 ibdiagpath 
-     {-n <[src-name,]dst-name>|-l <[src-lid,]dst-lid>|-d <p1,p2,...>}
-     [-c <count>] [-v] [-t <topo-file>] [-s <sys-name>] 
-     [-i <dev-index>] [-p <port-num>] [-o <out-dir>]
-     [-lw <1x|4x|12x>] [-ls <2.5|5|10>] [-pm]
+     {-n <[src-name,]dst-name>|-l <[src-lid,]dst-lid>|-d <p1,p2,p3,...>}
+     [-c <count>] [-v] [-t <topo-file>] [-s <sys-name>] [-i <dev-index>]
+     [-p <port-num>] [-o <out-dir>] [-lw <1x|4x|12x>] [-ls <2.5|5|10>] [-pm]
+     [-pc] [-P <<PM counter>=<Trash Limit>>]
 
 =head1 DESCRIPTION
 
@@ -162,6 +162,24 @@ Specifies the expected link speed
 
 =item
 Dump all the fabric links, pm Counters into ibdiagnet.pm
+
+=back
+
+=item B<-pc>             :
+
+=over
+
+=item
+Reset all the fabric links pmCounters
+
+=back
+
+=item B<-P> <PM=<Trash>> :
+
+=over
+
+=item
+If any of the provided pm is greater then its provided value, print it to screen
 
 =back
 

@@ -457,6 +457,17 @@ proc parseArgv {} {
                         inform "$InfoArgv($flag,error)" -flag $flag -value $value -duplicatePM [lindex $tmpValuesList $i] 
                     }
                 }
+                #chack if the trash limit is ligit
+ 		set tmpValuesList [split $value {, =}]
+                for {set i 1} {$i < [llength $tmpValuesList]} {incr i 2} {
+                    if {![string is integer [lindex $tmpValuesList $i]]} {
+                        inform "-E-argv:too.large.integer" -flag $flag -value $value
+                    }
+                    if {[lindex $tmpValuesList $i] < 0} {
+                        inform "-E-argv:not.nonneg.integer" -flag $flag -value $value
+                    }
+                }
+
             } else {
                 set regexp [regexp $InfoArgv($flag,regexp) "$value"]
                 if {!$regexp} {
