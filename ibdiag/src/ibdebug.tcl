@@ -3438,6 +3438,9 @@ proc writeMcfdbsFile { } {
                     if { [string index $mask $maskIdx] == 1 } { 
                         append outputLine " 0x[string toupper [format %03x $Port]] "
                         set LongPath [join "$DirectPath $Port"]
+                        if {[catch {SmMadGetByDrNoDetectBadLinks NodeInfo dump $LongPath} e]} {
+                            continue
+                        }
                         catch { if { [GetParamValue Type $LongPath -byDr] != "SW" } { 
                                 set directPathName [DrPath2Name $LongPath -byDr]
                                 if {$directPathName !=""} {
