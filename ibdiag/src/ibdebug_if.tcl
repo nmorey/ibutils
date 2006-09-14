@@ -21,11 +21,11 @@ array set InfoArgv {
     -P,regexp   "pm.name.>=1"
     -P,error	"-E-argv:not.legal.PM"
 
-    -pc,name    "reset.port.counters"
+    -pc,name    "reset.performence.monitors"
     -pc,arglen  0
     -pc,desc    "reset all the fabric links pmCounters"
     
-    -pm,name    "port.counters"
+    -pm,name    "performence.monitors"
     -pm,arglen	0
     -pm,desc	"Dumps all pmCounters values into .pm file"
 
@@ -433,9 +433,7 @@ proc parseArgv {} {
 			inform "$InfoArgv($flag,error)" -flag $flag -value $value
 		    }
 		}
-                set pmCounterList "all symbol_error_counter link_error_recovery_counter\
-                    link_down_counter port_rcv_errors port_xmit_discard port_xmit_constraint_errors\
-                    port_rcv_constraint_errors local_link_integrity_errors excesive_buffer_errors vl15_dropped"
+                set pmCounterList $G(list,pm.counter)
 
                 foreach item $valuesList {
                     unset -nocomplain pmName
@@ -458,7 +456,7 @@ proc parseArgv {} {
                     }
                 }
                 #chack if the trash limit is ligit
- 		set tmpValuesList [split $value {, =}]
+                set tmpValuesList [split $value {, =}]
                 for {set i 1} {$i < [llength $tmpValuesList]} {incr i 2} {
                     if {![string is integer [lindex $tmpValuesList $i]]} {
                         inform "-E-argv:too.large.integer" -flag $flag -value $value
@@ -467,7 +465,6 @@ proc parseArgv {} {
                         inform "-E-argv:not.nonneg.integer" -flag $flag -value $value
                     }
                 }
-
             } else {
                 set regexp [regexp $InfoArgv($flag,regexp) "$value"]
                 if {!$regexp} {
@@ -944,10 +941,7 @@ proc inform { msgCode args } {
             append msgText "(Legal value: 2.5 | 5 | 10)."
         }
         "-E-argv:not.legal.PM" {
-            set pmCounterList "symbol_error_counter link_error_recovery_counter\
-                link_down_counter port_rcv_errors port_xmit_discard port_xmit_constraint_errors\
-                port_rcv_constraint_errors local_link_integrity_errors excesive_buffer_errors vl15_dropped"
-            set pmCounterList \t[join $pmCounterList \n\t]
+            set pmCounterList "\t[join $G(list,pm.counter) \n\t]"
 
             append msgText "Illegal argument: I${llegalValMsg} : $msgF(value)%n"
             if {[info exists msgF(duplicatePM)]} {
@@ -1487,7 +1481,17 @@ proc inform { msgCode args } {
         }
         "-W-ibdiagnet:bad.pm.counter.report" {
             append msgText "$msgF(deviceName)%n"
-            append msgText "$msgF(listOfErrors)"
+            append msgText "Performence Monitor counter"
+            append msgText "[string repeat " " [expr [LengthMaxWord $G(list,pm.counter)] - 27]] : "
+            append msgText "Value"
+
+            foreach err $msgF(listOfErrors) {
+                append msgText %n
+                regexp {([^ =]*)=(.*)} $err . pmCounter pmTrash
+                append msgText $pmCounter   
+                append msgText "[string repeat " " [expr [LengthMaxWord $G(list,pm.counter)] - [string length $pmCounter]]] : "   
+                append msgText $pmTrash
+            }
         }
         "-I-ibdiagnet:pm.counter.report.pm.header" {
             append msgText "$msgF(deviceName)"
@@ -1742,7 +1746,7 @@ proc showHelpPage { args } {
                        the map between masked Guid and real Guids 
     ibdiagnet.sm     - A dump of all the SM (state and priorty) in the fabric
     ibdiagnet.pm     - In case -pm option was provided, this file contain a dump
-                       of all the nodes pm counters
+                       of all the nodes PM counters
   In addition to generating the files above, the discovery phase also checks for
   duplicate node/port GUIDs in the IB fabric. If such an error is detected, it 
   is displayed on the standard output.

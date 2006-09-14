@@ -147,6 +147,9 @@ proc InitalizeIBdiag {} {
     set G(HiddenFabric) 0
     set MASK(CurrentMaskGuid) 1
     set SECOND_PATH ""
+    set G(list,pm.counter) "all symbol_error_counter link_error_recovery_counter\
+            link_down_counter port_rcv_errors port_xmit_discard port_xmit_constraint_errors\
+            port_rcv_constraint_errors local_link_integrity_errors excesive_buffer_errors vl15_dropped"
 }
 
 ##############################
@@ -1591,7 +1594,7 @@ proc PMCounterQuery {} {
         # preparing database for reading PMs
         if {![catch {set tmpLID [GetParamValue LID $directPath $entryPort]}]} { 
             if { $tmpLID != 0 } { 
-                if {[info exists G(argv,reset.port.counters)]} {
+                if {[info exists G(argv,reset.performence.monitors)]} {
                     catch {pmClrAllCounters $tmpLID $entryPort}
                 }
                 set tmpLidPort "$tmpLID:$entryPort"
@@ -1613,7 +1616,7 @@ proc PMCounterQuery {} {
         unset tmpLidPort
         if {![catch {set tmpLID [GetParamValue LID $directPath $entryPort]}]} { 
             if { $tmpLID != 0 } { 
-                if {[info exists G(argv,reset.port.counters)]} {
+                if {[info exists G(argv,reset.performence.monitors)]} {
                     catch {pmClrAllCounters $tmpLID $entryPort}
                 }
                 set tmpLidPort "$tmpLID:$entryPort"
@@ -1672,7 +1675,7 @@ proc PMCounterQuery {} {
                     lappend badValues "$parameter=0x[format %x $newValue] \(Increase by $diffValue during $G(tool) scan.\)"
                 }
                 "overflow" {
-                    lappend badValues "$parameter=$value \(=overflow\)"
+                    lappend badValues "$parameter=$value \(overflow\)"
                 }
                 "exceeded"  {
                     set value 0x[format %x $value]
@@ -1682,10 +1685,10 @@ proc PMCounterQuery {} {
         }
         if { $badValues != "" } {
             set firstPMcounter 1
-            inform "-W-ibdiagnet:bad.pm.counter.report" -deviceName $name -listOfErrors [join $badValues "%n"]
+            inform "-W-ibdiagnet:bad.pm.counter.report" -deviceName $name -listOfErrors $badValues
         }
 
-        if {[info exists G(argv,port.counters)]} {
+        if {[info exists G(argv,performence.monitors)]} {
             lappend PM_DUMP(nodeNames) $name
             set PM_DUMP($name,pmCounterList) $pmCounterList
             set PM_DUMP($name,pmCounterValue) $newValues($tmpLidPort)
@@ -1694,7 +1697,7 @@ proc PMCounterQuery {} {
     if {$firstPMcounter == 0} {
         inform "-I-ibdiagnet:no.pm.counter.report"
     }
-    if {[info exists G(argv,port.counters)]} {
+    if {[info exists G(argv,performence.monitors)]} {
         writePMFile
     }
     return 1
