@@ -909,6 +909,9 @@ proc DiscoverFabric { PathLimit {startIndex 0}} {
                         } else {
                             # It's NG is o.k. - reentering HCA
                         }
+                    } else {
+                        # Now in HCA, prev NG found on SWITCH
+                        lappend duplicatedGuidsFound "node"
                     }
                 } else {
                     # now in switch if type1 || type2 are HCA they are duplicated
