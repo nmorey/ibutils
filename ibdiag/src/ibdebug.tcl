@@ -865,14 +865,15 @@ proc DiscoverFabric { PathLimit {startIndex 0}} {
             # or a knowen duplicated portGUID
             # TODO, also valid for NodeGUID
 
-            # Dr for the current PG 
+
+            # Dr for the first encounter with the current PG 
             set preDrPath $G(DrPathOfGuid,$PortGuid)
             # NG of current PG
             set preNodeGuid $G(NodeGuid,$PortGuid)
             # PG of current NG (use only one because HCa has max of 2 ports)
             # and for switch its the same
             set tmpPortGuid [lindex [array get G PortGuid,$NodeGuid:*] 1]
-            # Dr for the current NG PG
+            # Dr for the first encounter with the NG of the current PG
             set preDrPath2 $G(DrPathOfGuid,$tmpPortGuid)
             
             if {[catch {set type_1 [GetParamValue Type $preDrPath]}]} {
@@ -904,7 +905,9 @@ proc DiscoverFabric { PathLimit {startIndex 0}} {
                     # We are in HCA, PG is uniqe per entry, it must be duplicated PG
                     lappend duplicatedGuidsFound "port"
                     if {$type_3 != "SW"} {
-                        if {[info exists Neighbor($preNodeGuid:$EntryPort)]} {
+                        # We allready visited in the current NG
+                        # if it allready have an entry then NG is duplicated
+                        if {[info exists Neighbor($NodeGuid:$EntryPort)]} {
                             lappend duplicatedGuidsFound "node"
                         } else {
                             # It's NG is o.k. - reentering HCA
@@ -914,125 +917,128 @@ proc DiscoverFabric { PathLimit {startIndex 0}} {
                         lappend duplicatedGuidsFound "node"
                     }
                 } else {
-                    # now in switch if type1 || type2 are HCA they are duplicated
-                    set duplicatedGuidsFound "node port"
+                    if {![CheckDuplicateGuids $NodeGuid $DirectPath 1]} {
+                        lappend duplicatedGuidsFound "port"
+                    } else {
+                        # We reached a SWITCH, if type1 && type2 are CA then
+                        set duplicatedGuidsFound "node port"
+                    }
                 }
             }
         }
 
-        if {([lsearch $duplicatedGuidsFound port]!= -1) && ([lsearch $duplicatedGuidsFound node]!= -1)} {
-            set nodeAllreadyMasked 0
-            if {[info exists MASK(NodeMask,$NodeGuid)]} {
-                foreach nodeMask $MASK(NodeMask,$NodeGuid) {
-                    set prePortGuid [lindex [array get G PortGuid,$nodeMask:*] 1]
-                    set preDrPath $G(DrPathOfGuid,$prePortGuid)
-                    if {[catch {set type_1 [GetParamValue Type $preDrPath]}]} {
-                        continue;
+        if {([lsearch $duplicatedGuidsFound port]!= -1) || ([lsearch $duplicatedGuidsFound node]!= -1)} {                
+            set nodeAllreadyMasked 1
+            set portAllreadyMasked 1
+            if {([lsearch $duplicatedGuidsFound port]!= -1) && ([lsearch $duplicatedGuidsFound node]!= -1)} {
+                set nodeAllreadyMasked 0
+                set portAllreadyMasked 0
+                if {[info exists MASK(NodeMask,$NodeGuid)]} {
+                    foreach nodeMask $MASK(NodeMask,$NodeGuid) {
+                        set prePortGuid [lindex [array get G PortGuid,$nodeMask:*] 1]
+                        set preDrPath $G(DrPathOfGuid,$prePortGuid)
+                        if {[catch {set type_1 [GetParamValue Type $preDrPath]}]} {
+                            continue;
+                        }
+                        if {[catch {set type_2 [GetParamValue Type $DirectPath]}]} {
+                            continue;
+                        }
+                        if {$type_1 != $type_2} {
+                            continue;
+                        }
+                        if {$type_2 == "SW"} {
+                            if {[CheckDuplicateGuids $nodeMask $DirectPath 1]} {
+                                continue;
+                            }
+                            set nodeAllreadyMasked 1
+                            set portAllreadyMasked 1
+                            set NodeGuid $nodeMask
+                            set PortGuid $prePortGuid
+                            set duplicatedGuidsFound ""
+                        } else {
+                            if {[info exists G(PortGuid,$nodeMask:$EntryPort)]} {
+                                continue;
+                            } 
+                            if {[GetParamValue Ports $DirectPath -byDr] != [GetParamValue Ports $preDrPath -byDr]} {
+                                continue;
+                            }
+                            if {[GetParamValue LID $DirectPath -port $EntryPort] != [GetParamValue LID $DirectPath -port $EntryPort]} {
+                                continue;
+                            }
+                            set nodeAllreadyMasked 1
+                            set portAllreadyMasked 0
+                            set NodeGuid $nodeMask
+                            #set PortGuid $prePortGuid
+                            set duplicatedGuidsFound "port"
+                        }
                     }
-                    if {[catch {set type_2 [GetParamValue Type $DirectPath]}]} {
-                        continue;
+                }
+            }
+            if {[lsearch $duplicatedGuidsFound port]!= -1} {
+                # Check if you encounter a knowen duplicate Guid or it's a new one
+                # No - set a new mask GUID, 
+                # Yes - set the current portGUID to the masked one, and break; from here
+                set portAllreadyMasked 0
+                if {[info exists MASK(PortMask,$PortGuid)]} {
+                    foreach portMask $MASK(PortMask,$PortGuid) {
+                        set preDrPath $G(DrPathOfGuid,$portMask)
+                        set nodeGuid $G(NodeGuid,$portMask)
+                        if {($nodeGuid != $NodeGuid) && (![BoolIsMaked $nodeGuid])} {
+                            continue;
+                        }
+                        if {[CheckDuplicateGuids $nodeGuid $DirectPath 1]} {
+                            continue;
+                        }
+                        set portAllreadyMasked 1
+                        set PortGuid $portMask
+                        set NodeGuid $nodeGuid
+                        #set duplicatedGuidsFound ""
+                        break;
                     }
-                    
-                    if {$type_1 != $type_2} {
-                        continue;;
-                    }
-                    if {$type_2 == "SW"} {
+                }
+            }
+            if {[lsearch $duplicatedGuidsFound node]!= -1} {
+                # Check if you encounter a knowen duplicate Guid or it's a new one
+                # No - set a new mask GUID, 
+                # Yes - set the current nodeGUID to the masked one, and break; from here
+                set nodeAllreadyMasked 0
+                if {[info exists MASK(NodeMask,$NodeGuid)]} {
+                    foreach nodeMask $MASK(NodeMask,$NodeGuid) {
+                        set tmpPortGuid [lindex [array get G PortGuid,$nodeMask:*] 1]
+                        if {($tmpPortGuid != $PortGuid) && (![BoolIsMaked $tmpPortGuid])} {
+                            continue;
+                        }
                         if {[CheckDuplicateGuids $nodeMask $DirectPath 1]} {
                             continue;
                         }
                         set nodeAllreadyMasked 1
-                        set NodeGuid $nodeMask
+                        set NodeGuid $NodeMask
                         set PortGuid $tmpPortGuid
-                        set duplicatedGuidsFound ""
-                    } else {
-                        if {[info exists G(PortGuid,$nodeMask:$EntryPort)]} {
-                            continue;
-                        } 
-
-                        if {[GetParamValue Ports $DirectPath -byDr] != [GetParamValue Ports $preDrPath -byDr]} {
-                            continue;
-                        }
-
-                        if {[GetParamValue LID $DirectPath -port $EntryPort] != [GetParamValue LID $DirectPath -port $EntryPort]} {
-                            continue;
-                        }
-                        set nodeAllreadyMasked 1
-                        set NodeGuid $nodeMask
-                        #set PortGuid $prePortGuid
-                        set duplicatedGuidsFound "port"
+                        #set duplicatedGuidsFound ""
+                        break;
                     }
-                }
-            }
-        }
-        
-        if {[lsearch $duplicatedGuidsFound port]!= -1} {
-            # Check if you encounter a knowen duplicate Guid or it's a new one
-            # No - set a new mask GUID, 
-            # Yes - set the current portGUID to the masked one, and break; from here
-            set portAllreadyMasked 0
-
-            if {[info exists MASK(PortMask,$PortGuid)]} {
-                foreach portMask $MASK(PortMask,$PortGuid) {
-                    set preDrPath $G(DrPathOfGuid,$portMask)
-                    set nodeGuid $G(NodeGuid,$portMask)
-                    if {($nodeGuid != $NodeGuid) && (![BoolIsMaked $nodeGuid])} {
-                        continue;
-                    }
-                    if {[CheckDuplicateGuids $nodeGuid $DirectPath 1]} {
-                        continue;
-                    }
-                    set portAllreadyMasked 1
-                    set PortGuid $portMask
-                    set NodeGuid $nodeGuid
-                    set duplicatedGuidsFound ""
-                    break;
                 }
             }
             if {!$portAllreadyMasked} {
                 set preDrPath $G(DrPathOfGuid,$PortGuid)
-
                 if {![info exists DUPandZERO($PortGuid,PortGUID)]} {
                     lappend DUPandZERO($PortGuid,PortGUID) $preDrPath
                 }
                 lappend DUPandZERO($PortGuid,PortGUID) $DirectPath
-
                 set currentMaskGuid [GetCurrentMaskGuid]
                 set MASK(PortGuid,$currentMaskGuid) $PortGuid
                 lappend MASK(PortMask,$PortGuid) $currentMaskGuid
                 set PortGuid $currentMaskGuid
                 AdvncedMaskGuid
             }
-        }
-        if {[lsearch $duplicatedGuidsFound node]!= -1} {
-            # Check if you encounter a knowen duplicate Guid or it's a new one
-            # No - set a new mask GUID, 
-            # Yes - set the current nodeGUID to the masked one, and break; from here
-            set nodeAllreadyMasked 0
-            if {[info exists MASK(NodeMask,$NodeGuid)]} {
-                foreach nodeMask $MASK(NodeMask,$NodeGuid) {
-                    set tmpPortGuid [lindex [array get G PortGuid,$nodeMask:*] 1]
-                    if {($tmpPortGuid != $PortGuid) && (![BoolIsMaked $tmpPortGuid])} {
-                        continue;
-                    }
-                    if {[CheckDuplicateGuids $nodeMask $DirectPath 1]} {
-                        continue;
-                    }
-                    set nodeAllreadyMasked 1
-                    set NodeGuid $NodeMask
-                    set PortGuid $tmpPortGuid
-                    set duplicatedGuidsFound ""
-                    break;
-                }
-            }
             if {!$nodeAllreadyMasked} {
                 set tmpPortGuid [lindex [array get G PortGuid,$NodeGuid:*] 1]
                 set preDrPath $G(DrPathOfGuid,$tmpPortGuid)
-
+                      
                 if {![info exists DUPandZERO($NodeGuid,NodeGUID)]} {
                     lappend DUPandZERO($NodeGuid,NodeGUID) $preDrPath
                 }
                 lappend DUPandZERO($NodeGuid,NodeGUID) $DirectPath
-
                 set currentMaskGuid [GetCurrentMaskGuid]
                 set MASK(NodeGuid,$currentMaskGuid) $NodeGuid
                 lappend MASK(NodeMask,$NodeGuid) $currentMaskGuid
