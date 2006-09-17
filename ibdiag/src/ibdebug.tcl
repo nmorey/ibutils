@@ -358,8 +358,8 @@ proc Port_And_Idx_Settings {_ibisInfo} {
         set upPorts 0
         foreach tmpEntry $allDevPorts {
             set portState $PORT_HCA($tmpEntry)
-            if { $portState == "DOWN" } {continue} 
-            if { ( $portState != "ACTIVE" ) && ( $G(tool) == "ibdiagpath" ) } {continue}
+            if { $portState == "DOWN" } {continue;} 
+            if { ( $portState != "ACTIVE" ) && ( $G(tool) == "ibdiagpath" ) } {continue;}
             incr upPorts
             if {$allPortsDown} {
                 set saveEntry $tmpEntry
@@ -389,9 +389,9 @@ proc Port_And_Idx_Settings {_ibisInfo} {
         set upDevices 0
         foreach tmpEntry $allDevPorts {
             set portState $PORT_HCA($tmpEntry)
-            if { $portState == "DOWN" } {continue} 
+            if { $portState == "DOWN" } {continue;} 
             set saveState $portState
-            if { ( $portState != "ACTIVE" ) && ( $G(tool) == "ibdiagpath" ) } {continue}
+            if { ( $portState != "ACTIVE" ) && ( $G(tool) == "ibdiagpath" ) } {continue;}
             if {$allPortsDown} {
                 set saveState $portState
                 set G(argv,dev.idx) [lindex [split $tmpEntry ": ,"] 0]
@@ -421,9 +421,9 @@ proc Port_And_Idx_Settings {_ibisInfo} {
         set upPorts 0
         foreach tmpEntry $allDevPorts {
             set portState $PORT_HCA($tmpEntry)
-            if { $portState == "DOWN" } {continue} 
+            if { $portState == "DOWN" } {continue;} 
             set saveState $portState
-            if { ( $portState != "ACTIVE" ) && ( $G(tool) == "ibdiagpath" ) } {continue}
+            if { ( $portState != "ACTIVE" ) && ( $G(tool) == "ibdiagpath" ) } {continue;}
             if {$allPortsDown} {
                 set G(argv,dev.idx)  [lindex [split $tmpEntry ": ,"] 0]
                 set G(argv,port.num) [lindex [split $tmpEntry ": ,"] 1]
@@ -630,7 +630,7 @@ proc SmMadGetByDr { mad cget args } {
     for { set retry 0 } { $retry < $G(argv,failed.retry) } { incr retry } { 
 	if { [set status [eval $getCmd]] == 0 } { 
             incr retry
-            break 
+            break; 
         }
     }
     inform "-V-mad:received" -status $status -attempts $retry
@@ -663,7 +663,7 @@ proc SmMadGetByDrNoDetectBadLinks { mad cget args } {
     for { set retry 0 } { $retry < $G(argv,failed.retry) } { incr retry } { 
 	if { [set status [eval $getCmd]] == 0 } { 
             incr retry
-            break 
+            break; 
         }
     }
     if { $status != 0 } {
@@ -701,7 +701,7 @@ proc SmMadGetByLid { mad cget args } {
     inform "-V-mad:sent" -command "$getCmd"
     set status -1
     for { set retry 0 } { $retry < $G(argv,failed.retry) } { incr retry } { 
-	if { [set status [eval $getCmd]] == 0 } { incr retry ; break }
+	if { [set status [eval $getCmd]] == 0 } { incr retry ; break; }
     }
     inform "-V-mad:received" -status $status -attempts $retry
     # handling the results
@@ -737,7 +737,7 @@ proc PmListGet { LidPort } {
     set pm_list -1
     for { set retry 0 } { $retry < $G(argv,failed.retry) } { incr retry } { 
 	if { [regexp "ERROR" [set pm_list [join [eval $cmd]]]]==0 } { 
-	    break 
+	    break; 
 	}
     }
     inform "-V-mad:received" -attempts $retry
@@ -807,7 +807,7 @@ proc DiscoverFabric { PathLimit {startIndex 0}} {
             if {[info exists G(GuidByDrPath,$DirectPath)]} {
                 unset G(GuidByDrPath,$DirectPath)
             }
-            continue
+            continue;
         }
 
         set DirectPath [lindex $G(list,DirectPath) $index]
@@ -815,14 +815,14 @@ proc DiscoverFabric { PathLimit {startIndex 0}} {
 
         inform "-V-discover:discovery.status" -index $index -path "$DirectPath"
         inform "-I-discover:discovery.status"
-        # Reading NodeInfo across $DirectPath (continue if failed)
+        # Reading NodeInfo across $DirectPath (continue; if failed)
         if {[catch {set NodeInfo [SmMadGetByDr NodeInfo dump "$DirectPath"]}]} {
             set badPathFound 1
-            continue
+            continue;
         }
         if {[PathIsBad $DirectPath] > $PathLimit} { 
             set badPathFound 1
-            continue
+            continue;
         }
 
         set NodeGuid [WordAfterFlag $NodeInfo "-node_guid"]
@@ -842,11 +842,11 @@ proc DiscoverFabric { PathLimit {startIndex 0}} {
 
             if {[catch {set type_1 [GetParamValue Type $preDrPath]}]} {
                 set badPathFound 1
-                continue
+                continue;
             }
             if {[catch {set type_2 [GetParamValue Type $DirectPath]}]} {
                 set badPathFound 1
-                continue
+                continue;
             }                                                                   
             if {$type_1 != $type_2} { set duplicatedGuidsFound node }
 
@@ -877,16 +877,16 @@ proc DiscoverFabric { PathLimit {startIndex 0}} {
             
             if {[catch {set type_1 [GetParamValue Type $preDrPath]}]} {
                 set badPathFound 1
-                continue
+                continue;
             }
             if {[catch {set type_2 [GetParamValue Type $DirectPath]}]} {
                 set badPathFound 1
-                continue
+                continue;
             }
 
             if {[catch {set type_3 [GetParamValue Type $preDrPath2]}]} {
                 set badPathFound 1
-                continue
+                continue;
             }
 
             # Check if both were togther before
@@ -918,38 +918,57 @@ proc DiscoverFabric { PathLimit {startIndex 0}} {
                     set duplicatedGuidsFound "node port"
                 }
             }
+        }
 
-            set DZ 0
-            if {$DZ && [info exists MASK(PortMask,$PortGuid)] && ($duplicatedGuidsFound != "")} {
-                foreach portMask $MASK(PortMask,$PortGuid) {
-                    set preDrPath $G(DrPathOfGuid,$portMask)
-                    set nodeGuid $G(NodeGuid,$portMask)
-
+        if {([lsearch $duplicatedGuidsFound port]!= -1) && ([lsearch $duplicatedGuidsFound node]!= -1)} {
+            set nodeAllreadyMasked 0
+            if {[info exists MASK(NodeMask,$NodeGuid)]} {
+                foreach nodeMask $MASK(NodeMask,$NodeGuid) {
+                    set prePortGuid [lindex [array get G PortGuid,$nodeMask:*] 1]
+                    set preDrPath $G(DrPathOfGuid,$prePortGuid)
                     if {[catch {set type_1 [GetParamValue Type $preDrPath]}]} {
-                        continue
-                    }           
-
-                    if {$type_1 != $type_2} { continue }
-                    if {$type_1 != "SW"} {
-                        if {[info exists Neighbor($NodeGuid:$EntryPort)]} {
-                            continue
-                        }
-                    } elseif {[CheckDuplicateGuids $nodeGuid $DirectPath 1]} {
-                        continue
+                        continue;
                     }
-                    set duplicatedGuidsFound ""
-                    set PortGuid $portMask
-                    # TODO CHECK IT OUT
-                    set NodeGuid $nodeGuid
-                    break;
+                    if {[catch {set type_2 [GetParamValue Type $DirectPath]}]} {
+                        continue;
+                    }
+                    
+                    if {$type_1 != $type_2} {
+                        continue;;
+                    }
+                    if {$type_2 == "SW"} {
+                        if {[CheckDuplicateGuids $nodeMask $DirectPath 1]} {
+                            continue;
+                        }
+                        set nodeAllreadyMasked 1
+                        set NodeGuid $nodeMask
+                        set PortGuid $tmpPortGuid
+                        set duplicatedGuidsFound ""
+                    } else {
+                        if {[info exists G(PortGuid,$nodeMask:$EntryPort)]} {
+                            continue;
+                        } 
+
+                        if {[GetParamValue Ports $DirectPath -byDr] != [GetParamValue Ports $preDrPath -byDr]} {
+                            continue;
+                        }
+
+                        if {[GetParamValue LID $DirectPath -port $EntryPort] != [GetParamValue LID $DirectPath -port $EntryPort]} {
+                            continue;
+                        }
+                        set nodeAllreadyMasked 1
+                        set NodeGuid $nodeMask
+                        #set PortGuid $prePortGuid
+                        set duplicatedGuidsFound "port"
+                    }
                 }
             }
         }
-
+        
         if {[lsearch $duplicatedGuidsFound port]!= -1} {
             # Check if you encounter a knowen duplicate Guid or it's a new one
             # No - set a new mask GUID, 
-            # Yes - set the current portGUID to the masked one, and break from here
+            # Yes - set the current portGUID to the masked one, and break; from here
             set portAllreadyMasked 0
 
             if {[info exists MASK(PortMask,$PortGuid)]} {
@@ -957,10 +976,10 @@ proc DiscoverFabric { PathLimit {startIndex 0}} {
                     set preDrPath $G(DrPathOfGuid,$portMask)
                     set nodeGuid $G(NodeGuid,$portMask)
                     if {($nodeGuid != $NodeGuid) && (![BoolIsMaked $nodeGuid])} {
-                        continue
+                        continue;
                     }
                     if {[CheckDuplicateGuids $nodeGuid $DirectPath 1]} {
-                        continue
+                        continue;
                     }
                     set portAllreadyMasked 1
                     set PortGuid $portMask
@@ -987,16 +1006,16 @@ proc DiscoverFabric { PathLimit {startIndex 0}} {
         if {[lsearch $duplicatedGuidsFound node]!= -1} {
             # Check if you encounter a knowen duplicate Guid or it's a new one
             # No - set a new mask GUID, 
-            # Yes - set the current nodeGUID to the masked one, and break from here
+            # Yes - set the current nodeGUID to the masked one, and break; from here
             set nodeAllreadyMasked 0
             if {[info exists MASK(NodeMask,$NodeGuid)]} {
                 foreach nodeMask $MASK(NodeMask,$NodeGuid) {
                     set tmpPortGuid [lindex [array get G PortGuid,$nodeMask:*] 1]
                     if {($tmpPortGuid != $PortGuid) && (![BoolIsMaked $tmpPortGuid])} {
-                        continue
+                        continue;
                     }
                     if {[CheckDuplicateGuids $nodeMask $DirectPath 1]} {
-                        continue
+                        continue;
                     }
                     set nodeAllreadyMasked 1
                     set NodeGuid $NodeMask
@@ -1027,18 +1046,18 @@ proc DiscoverFabric { PathLimit {startIndex 0}} {
         # happens in switch systems and when a switch connects to himself
         if {![SetNeighbor $DirectPath $NodeGuid $EntryPort]} {
             set badPathFound 1
-            continue
+            continue;
         }
         
         if {[catch {set NodeType [GetParamValue Type $DirectPath]}]} {
             set badPathFound 1
-            continue
+            continue;
         }
         
         set boolNodeGuidknowen [expr ([lsearch $G(list,NodeGuids) $NodeGuid]!= -1)]
         # The next condition means - if we reached to allready visited Switch
         if {($boolNodeGuidknowen) && ($NodeType == "SW")} {
-            continue
+            continue;
         }
         # The next line makes sure we only count the unknowen Nodes
         if {!(($boolNodeGuidknowen) && ($NodeType == "CA"))} {
@@ -1069,7 +1088,7 @@ proc DiscoverFabric { PathLimit {startIndex 0}} {
         } else {
             if {[catch {set Ports [GetParamValue Ports $DirectPath]}]} {
                 set badPathFound 1
-                continue
+                continue;
             }
             set PortsList ""
             for { set port 0 } { $port <= $Ports } { incr port } {
@@ -1082,12 +1101,12 @@ proc DiscoverFabric { PathLimit {startIndex 0}} {
             if {[catch {set value [GetParamValue $ID $DirectPath -port 0]}]} {
                 set badPathFound 1
                 set endLoop 1
-                break
+                break;
             } else {
                 lappend DUPandZERO($value,$ID) "$DirectPath"
             }
         }
-        if {$endLoop} {continue}
+        if {$endLoop} {continue;}
 
         # Check SM and update portInfo
         set endLoop 0
@@ -1095,7 +1114,7 @@ proc DiscoverFabric { PathLimit {startIndex 0}} {
             if {[catch {set tmpPortInfo [SmMadGetByDr PortInfo dump "$DirectPath" $port]}]} {
                 set endLoop 1
                 set badPathFound 1
-                continue
+                continue;
             }
             if { $NodeType == "CA" } {
                 set tmpCapabilityMask [WordAfterFlag $tmpPortInfo -capability_mask]    
@@ -1103,7 +1122,7 @@ proc DiscoverFabric { PathLimit {startIndex 0}} {
                     if {[catch {set tmpLID [GetParamValue LID $DirectPath -port $port]}]} {
                         set badPathFound 1
                         set endLoop 1
-                        continue
+                        continue;
                     } 
                     if {![catch {set tmpSMInfo [SmMadGetByLid SMInfo dump $tmpLID ]}]} {
                         set tmpPriState [format 0x%x [WordAfterFlag $tmpSMInfo -pri_state]]
@@ -1116,7 +1135,7 @@ proc DiscoverFabric { PathLimit {startIndex 0}} {
             # The loop for non-switch devices ends here.
             # This is also an optimization for switches ..
             if { ( ($index != 1) && ($port == $EntryPort) ) || ($port == 0) } {
-                continue
+                continue;
             }
 
             # Check again that the local port is not down / ignore all other
@@ -1124,14 +1143,14 @@ proc DiscoverFabric { PathLimit {startIndex 0}} {
             if {[catch {set tmpLog [GetParamValue LOG $DirectPath -port $port]}]} {
                 set badPathFound 1
                 set endLoop 1
-                break
+                break;
             }
             switch -- $tmpLog {
                 "DWN" {
                     if { $index == 1 } { 
                         inform "-E-localPort:local.port.down" -port $port
                     }
-                    continue
+                    continue;
                 }
                 "INI" {
                     lappend LINK_STATE [join "$DirectPath $port"]
@@ -1142,7 +1161,7 @@ proc DiscoverFabric { PathLimit {startIndex 0}} {
             # DOWN, $port is not 0 and not the entry port 
             lappend G(list,DirectPath) [join "$DirectPath $port"]
         }
-        if {$endLoop} {continue}
+        if {$endLoop} {continue;}
     }
     if {$badPathFound} {
         lappend SECOND_PATH $DirectPath
@@ -1241,7 +1260,7 @@ proc CheckDuplicateGuids { _NodeGuid _DirectPath {_checks 1}} {
     ## If Checking a HCA, one cannot enter and exit the HCA,
     ### So instead we will run the smNodeInfoMad on the partiel Dr.
     foreach name [array names Neighbor $_NodeGuid:*] {
-        if {$i >= $_checks} { break }
+        if {$i >= $_checks} { break; }
         incr i
         if {[regexp {0x[0-9a-fA-F]+:([0-9]+)} $name all PN]} {
             lappend portList $PN
@@ -1256,11 +1275,13 @@ proc CheckDuplicateGuids { _NodeGuid _DirectPath {_checks 1}} {
             # as Bad link also.
             if {[catch {set NodeInfo [SmMadGetByDrNoDetectBadLinks NodeInfo dump "$_DirectPath $PN"]}]} {
                 incr noResponseToMad
-                continue
+                continue;
             }
             set NodeGuid [WordAfterFlag $NodeInfo "-node_guid"]
             set EntryPort [GetEntryPort "$_DirectPath $PN" -byNodeInfo $NodeInfo]
-            if {$Neighbor($name) != "$NodeGuid:$EntryPort"} {
+            scan [split $Neighbor($name) :] {%s %s} nodeGuid entryPort
+            set nodeGuid [RetriveRealPort $nodeGuid]
+            if {"$nodeGuid:$entryPort" != "$NodeGuid:$EntryPort"} {
                 return 1
             }
         }
@@ -1286,7 +1307,7 @@ proc DumpBadLidsGuids { args } {
         # llength will be diffrent then 1 when duplicate guids acored
         if { ( ( [llength $DUPandZERO($entry)]==1 ) || ( $ID=="SystemGUID" ) ) \
 		 && ( $value != 0 ) } {
-            continue
+            continue;
 	}
         if {!$informHeader} {
             inform "-I-ibdiagnet:bad.guids.header"
@@ -1300,7 +1321,7 @@ proc DumpBadLidsGuids { args } {
 	}
         # use eval on the next line because $paramList is a list 
         if {[catch {eval inform "-E-discover:zero/duplicate.IDs.found" -ID $ID -value $value $paramList} e]} {
-            continue;
+            continue;;
         }
     }
     if {!$informHeader} {
@@ -1317,7 +1338,7 @@ proc DumpBadLinksLogic {} {
     set firstINITlink 0
     if {[info exists LINK_STATE]} {
         foreach link $LINK_STATE {                                                        
-            if {[PathIsBad $link] > 1} {continue}
+            if {[PathIsBad $link] > 1} {continue;}
             set paramlist "-DirectPath0 \{[lrange $link 0 end-1]\} -DirectPath1 \{$link\}"
             eval inform "-W-ibdiagnet:report.links.init.state" $paramlist
             set firstINITlink 1
@@ -1380,9 +1401,9 @@ proc DiscoverPath { Path2Start node } {
     while { 1 } {
         # Step #1: get the NodeGuid of $DirectPath
             if {[catch {set NodeInfo [SmMadGetByDr NodeInfo dump "$DirectPath"]}]} {
-                break
+                break;
             }
-            if {[PathIsBad $DirectPath] > 1} { break }
+            if {[PathIsBad $DirectPath] > 1} { break; }
             debug "981" DirectPath NodeInfo
             set NodeGuid  [WordAfterFlag $NodeInfo "-node_guid"]
             set PortGuid  [WordAfterFlag $NodeInfo "-port_guid"]
@@ -1412,7 +1433,7 @@ proc DiscoverPath { Path2Start node } {
             set NodePorts	[GetParamValue Ports $DirectPath]
 
             set NodeLid	[GetParamValue LID $DirectPath -port $EntryPort]
-            if { $NodeLid == "0x" } { break }
+            if { $NodeLid == "0x" } { break; }
             if { $NodeType == "SW" } { 
 	        set G(DrPath2LID,$DirectPath:0) $NodeLid 
             } else { 
@@ -1428,7 +1449,7 @@ proc DiscoverPath { Path2Start node } {
         ### If we "discover" by means of direct route
         if {$byDrPath} {
         # This is the stopping condition for direct routing
-	    if { $DirectPath == $Path2End } { break }
+	    if { $DirectPath == $Path2End } { break; }
 	    set exitPort [lindex $Path2End [llength $DirectPath]]
 
             # if the user gives a direct path passing through a HCA
@@ -1448,7 +1469,7 @@ proc DiscoverPath { Path2Start node } {
             # If we discover by means of lid-route
             
             # This is the good stopping condition for lid routing
-            if { $NodeLid == $destinationLid } { break } 
+            if { $NodeLid == $destinationLid } { break; } 
             # If we reached LID 0
             if { $NodeLid == 0 } { 
                 inform "-E-ibdiagpath:reached.lid.0" -DirectPath "$DirectPath"
@@ -1476,9 +1497,9 @@ proc DiscoverPath { Path2Start node } {
                         inform "-E-ibdiagpath:fdb.block.unreachable" \
                         -errorcode $errorCode -command "$cmd"
                         }
-                    break 
+                    break; 
                 }
-                if {[PathIsBad $DirectPath] > 1} { break }
+                if {[PathIsBad $DirectPath] > 1} { break; }
                 set exitPort [expr [lindex $FDBsBlock $LidMod64]]
                 if { ($exitPort == "0x00") } {
                     inform "-E-ibdiagpath:lid.route.deadend" \
@@ -1545,9 +1566,9 @@ proc RereadLongPaths {} {
 	# For the retries we use only the longest paths
         if { [lsearch -regexp $G(list,DirectPath) "^$DirectPath \[0-9\]"] == -1 } { 
             for { set count $InitCnt } { $count <= $G(argv,count) } { incr count } {
-                if {[PathIsBad $DirectPath]} { break }
+                if {[PathIsBad $DirectPath]} { break; }
                 #puts -nonewline "\r[expr ($countDr*100) / [llength [lrange $G(list,DirectPath) 1 end]]]%"
-                if {[catch { SmMadGetByDr NodeDesc dump "$DirectPath"}]} { break }
+                if {[catch { SmMadGetByDr NodeDesc dump "$DirectPath"}]} { break; }
             }
 	}
     }
@@ -1581,14 +1602,14 @@ proc PMCounterQuery {} {
 	# start from the second path in $G(list,DirectPath), because the first is ""
         # Ignore those links which has state INIT
         set drIsInit 0
-        if {[PathIsBad $directPath] > 1} { continue }
+        if {[PathIsBad $directPath] > 1} { continue; }
         for {set i 0} {$i < [llength $directPath]} {incr i} {
             if {[lsearch $LINK_STATE [lrange $directPath 0 $i]] != -1} {
                 set drIsInit 1
-                continue
+                continue;
             }
         }
-        if {$drIsInit} {continue}
+        if {$drIsInit} {continue;}
         
         set entryPort [GetEntryPort $directPath]
         if {[info exists tmpLidPort]} {
@@ -1635,7 +1656,7 @@ proc PMCounterQuery {} {
     }
     RereadLongPaths
     foreach tmpLidPort [array names LidPort] {
-        if {![info exists oldValues($tmpLidPort)]} {continue}
+        if {![info exists oldValues($tmpLidPort)]} {continue;}
 
         set entryPort [lindex [split $tmpLidPort :] 1]
         set directPath $LidPort($tmpLidPort)
@@ -1646,7 +1667,7 @@ proc PMCounterQuery {} {
             inform "-E-ibdiagpath:pmGet.failed" [split $tmpLidPort :]
         }
         set pmList ""
-        if {![info exists newValues($tmpLidPort)]} {continue}
+        if {![info exists newValues($tmpLidPort)]} {continue;}
         for { set i 0 } { $i < [llength $newValues($tmpLidPort)] } { incr i 2 } {
             set oldValue [lindex $oldValues($tmpLidPort) [expr $i + 1]]
             set newValue [lindex $newValues($tmpLidPort) [expr $i + 1]]
@@ -1905,7 +1926,7 @@ proc groupingEngine {groups} {
       if {![regexp {([^0-9]*)([0-9]+)(.*)} $suffix d1 w1 num w3]} {
          # no number - just keep this group
          lappend res $group
-         continue
+         continue;
       }
 
       append prefix $w1
@@ -2103,7 +2124,7 @@ proc DetectBadLinks { status cgetCmd cmd args } {
     set LidPortList ""
     for { set I 0 } { $I < [llength $DirectPath] } { incr I } {
         set ShortPath [lrange $DirectPath 0 $I]
-        if {[PathIsBad $ShortPath]} { break }
+        if {[PathIsBad $ShortPath]} { break; }
 	set path0 [lreplace $ShortPath end end]
 	set port0 [lindex $ShortPath end]
         if {![catch {set LID0 [GetParamValue LID $path0 -port $port0 -noread]}]} { 
@@ -2142,7 +2163,7 @@ proc DetectBadLinks { status cgetCmd cmd args } {
         for { set I 0 ; set errors 0 } { ($I < [llength $DirectPath]) && ($errors == 0) } { incr I } {
             set ShortPath [lrange $DirectPath 0 $I]
 	    set getCmd [concat "smNodeInfoMad getByDr [list $ShortPath]"]
-            if {[PathIsBad $ShortPath] > 1 } { break }
+            if {[PathIsBad $ShortPath] > 1 } { break; }
             for { set retry 0 } { ($retry < $maxnRetries) && ($errors < $maxnErrors) } { incr retry } {
                 incr errors [expr [eval $getCmd] != 0]
 	    }
@@ -2154,8 +2175,8 @@ proc DetectBadLinks { status cgetCmd cmd args } {
     # Final reading of Performance Counters
     foreach LidPortPath $LidPortList {
 	regexp {^([^:]+):([^:]+):([^:]+)$} $LidPortPath . Lid Port Path
-        if {[PathIsBad $ShortPath]} { break }
-	if {[catch { set newValues [join [PmListGet $Lid:$Port]] }]} { continue }
+        if {[PathIsBad $ShortPath]} { break; }
+	if {[catch { set newValues [join [PmListGet $Lid:$Port]] }]} { continue; }
 	foreach entry [ComparePMCounters $oldValues($Lid:$Port) $newValues] {
 	    if { ! [WordInList "$Path" $G(list,badpaths)] } {
                 lappend G(list,badpaths) $Path
@@ -2234,8 +2255,8 @@ proc ComparePMCounters { oldValues newValues args } {
     }
     foreach parameter [array names InfoPm] {
 	ParseOptionsList $InfoPm($parameter)
-	if { ! [info exists cfg(thresh)] } { continue }
-	if { $cfg(thresh) == 0 } { continue }
+	if { ! [info exists cfg(thresh)] } { continue; }
+	if { $cfg(thresh) == 0 } { continue; }
 
 	set oldValue	[WordAfterFlag $oldValues $parameter]
 	set newValue	[WordAfterFlag $newValues $parameter]
@@ -2650,7 +2671,7 @@ proc linkNamesGet { DirectPath args } {
 
     set linkKind "external"
     foreach I { 0 1 } { 
-	if { $Pointer(port${I}) == "" } { continue }
+	if { $Pointer(port${I}) == "" } { continue; }
 
 	set Name(port${I}) [IBPort_getName $Pointer(port${I})]
 	set Pointer(sysport${I}) [IBPort_p_sysPort_get $Pointer(port${I})]
@@ -2780,7 +2801,7 @@ proc name2Lid {localPortPtr destPortPtr exitPort} {
                 return $DirectPath
             }
         }
-        if {($localNodetype != 1) } {continue}
+        if {($localNodetype != 1) } {continue;}
         if {(($localNodetype == 1) && ($localNodePtr == $destNodePtr))|| ($index == 1) } {
         # in the current switch check if it's any of the switch ports
             for {set i 1} {$i <= [IBNode_numPorts_get $localNodePtr]} {incr i} {
@@ -2795,12 +2816,12 @@ proc name2Lid {localPortPtr destPortPtr exitPort} {
         # build a list of new ports
         for {set i 1} {$i <= [IBNode_numPorts_get $localNodePtr]} {incr i} {
             set tmpPort [IBNode_getPort $localNodePtr $i] 
-            if {$tmpPort == ""} { continue }
+            if {$tmpPort == ""} { continue; }
             if { [catch {set tmpRemotePtr [IBPort_p_remotePort_get $tmpPort]} e] } {
-                continue
+                continue;
             }
             if {($tmpRemotePtr != "")} {
-                if {[lsearch $listPorts $tmpRemotePtr] != -1} {continue}
+                if {[lsearch $listPorts $tmpRemotePtr] != -1} {continue;}
                 lappend listPorts $tmpRemotePtr
                 lappend Dr "$DirectPath $i"
                 set newDr "$DirectPath $i"
@@ -2882,7 +2903,7 @@ proc reportFabQualities {} {
                 foreach attr [lindex $attributes 0] {
                     if {($attr == "-this") || ($attr == "-mgid") || ($attr == "-port_gid")} {
                         #set [string range $attr 1 end] 0x00
-                        #continue
+                        #continue;
                     }
                     set [string range $attr 1 end] [OBJECT cget $attr]
 		}
@@ -2995,6 +3016,25 @@ proc GetParamValue { parameter DirectPath args } {
                 set port 0
             }
         }
+        # Check if the provided port is legal (bigger then zero, less or equal to Ports)
+        if {[info exists port]} {
+            if {$port < 0} {
+                return -code 1 -errorinfo "Node at end of Direct Path \"$DirectPath\" Does not have port $port"
+            }
+            if {$byDr} {
+                if { [catch {set maxPorts [GetParamValue Ports $DirectPath -byDr] }]} {
+                    return -code 1 -errorinfo "6.Direct Path \"$DirectPath\" is bad"
+                }
+            } else {
+                if { [catch {set maxPorts [GetParamValue Ports $DirectPath] }]} {
+                    return -code 1 -errorinfo "6.Direct Path \"$DirectPath\" is bad"
+                }
+            }
+            if {$port > $maxPorts} {
+                return -code 1 -errorinfo "Node at end of Direct Path \"$DirectPath\" Does not have port $port"
+            }
+        }
+
         ## setting port/node guids
         if {[info exists G(GuidByDrPath,$DirectPath)]} {
             set PortGuid $G(GuidByDrPath,$DirectPath)
@@ -3189,9 +3229,9 @@ proc writeLstFile {} {
     set FileID [InitOutputFile $G(tool).lst]
     foreach DirectPath $G(list,DirectPath) {
         # seperate the next 3 logical expr to avoid extra work
-        if {![llength $DirectPath]  } {continue }
-        if {[PathIsBad $DirectPath] > 1 } {continue }
-        if {[catch {linkAtPathEnd $DirectPath}] } {continue }
+        if {![llength $DirectPath]  } {continue; }
+        if {[PathIsBad $DirectPath] > 1 } {continue; }
+        if {[catch {linkAtPathEnd $DirectPath}] } {continue; }
 	set lstLine ""
         append lstLine "\{ [lstInfo port $path0 $port0] \} "
         append lstLine "\{ [lstInfo port $path1 $port1] \} "
@@ -3334,18 +3374,18 @@ proc writeFdbsFile { args } {
 
     foreach entry [array names G "DrPathOfGuid,*"] {
         set DirectPath $G($entry)
-        if {[PathIsBad $DirectPath] > 1} { continue }
+        if {[PathIsBad $DirectPath] > 1} { continue; }
         set NodeType [GetParamValue Type $G($entry)]
-        if {$NodeType != "SW"} { continue }
+        if {$NodeType != "SW"} { continue; }
 
         set PortGuid [lindex [split $entry ,] end]
         set NodeGuid $G(NodeGuid,$PortGuid) 
 
         set thisSwLid [GetParamValue LID $DirectPath X -noread]
-	if {[PathIsBad $DirectPath] > 1} { continue }
+	if {[PathIsBad $DirectPath] > 1} { continue; }
 	if [catch {set LinFDBTop \
 		       [SmMadGetByDr SwitchInfo -lin_top "$DirectPath"]}] { 
-	    continue 
+	    continue; 
 	}
 	set FDBs ""
 	for { set I 0 } { [expr $I *64] <= $LinFDBTop } { incr I } {
@@ -3410,15 +3450,15 @@ proc writeMcfdbsFile { } {
     foreach entry [array names G "DrPathOfGuid,*"] {
         set DirectPath $G($entry)
         if {[PathIsBad $DirectPath] > 1} { 
-            continue 
+            continue; 
         }
         set NodeType [GetParamValue Type $G($entry)]
-        if {$NodeType != "SW"} { continue }
+        if {$NodeType != "SW"} { continue; }
         set PortGuid [lindex [split $entry ,] end]
         set NodeGuid $G(NodeGuid,$PortGuid) 
 
         if {[catch { set McFDBCap [SmMadGetByDr SwitchInfo -mcast_cap "$DirectPath"] }]} { 
-            continue
+            continue;
         }
         set NumPorts [GetParamValue Ports $DirectPath]
         puts $FileID "\nSwitch $NodeGuid\nLID    : Out Port(s) "
@@ -3427,7 +3467,7 @@ proc writeMcfdbsFile { } {
             set LidGroup "0x[format %lx $LidGrp]"
             # read the entire McFDBs data for Lids $LidGroup .. $LidGroup + 0x1f
             for {set PortGroup 0} {$PortGroup <= $NumPorts} {incr PortGroup 16} {
-                if {[catch { set newBlock [SmMadGetByDr MftBlock dump "$DirectPath" $LidGroup $PortGroup] }]} { break }
+                if {[catch { set newBlock [SmMadGetByDr MftBlock dump "$DirectPath" $LidGroup $PortGroup] }]} { break; }
                 if {[lindex $newBlock 0] == "-mft"} {
                     append McFDBs " " [Hex2Bin [lrange $newBlock 1 end]]
                 } else {
@@ -3441,7 +3481,7 @@ proc writeMcfdbsFile { } {
                 for { set PortGroup 0; set idx 0 } { $PortGroup <= $NumPorts } { incr PortGroup 16; incr idx 32 } {
                     set mask "[lindex $McFDBs [expr $lidIdx + $idx]]$mask"
                 }
-                if { ! [regexp "1" $mask] } { continue }
+                if { ! [regexp "1" $mask] } { continue; }
                 set mcLid [format %04x [expr $lidIdx + $LidGroup]]
                 set outputLine "0x[string toupper $mcLid] :"
                 for { set Port 0; set maskIdx [expr [string length $mask]-1] } { $Port <= $NumPorts } { incr Port 1 ; incr maskIdx -1 } {
@@ -3449,7 +3489,7 @@ proc writeMcfdbsFile { } {
                         append outputLine " 0x[string toupper [format %03x $Port]] "
                         set LongPath [join "$DirectPath $Port"]
                         if {[catch {SmMadGetByDrNoDetectBadLinks NodeInfo dump $LongPath} e]} {
-                            continue
+                            continue;
                         }
                         catch { if { [GetParamValue Type $LongPath -byDr] != "SW" } { 
                                 set directPathName [DrPath2Name $LongPath -byDr]
@@ -3512,9 +3552,9 @@ proc debug { msgId args } {
 	catch { set value [uplevel set . $$var] }
 	catch { regsub {^\$} $value {} value }
 	if { ! [info exists value] } { 
-	    continue 
+	    continue; 
 	} elseif { $var == $value } { 
-	    continue 
+	    continue; 
 	} elseif { $var == "args" } {
 	    append message " $var = $value (len=[llength $value]);"
 	} else {
@@ -3573,7 +3613,7 @@ proc CheckAllinksSettings {} {
 
     foreach DirectPath $G(list,DirectPath) {
         if {$DirectPath == ""} {
-            continue
+            continue;
         }
         if {[lsearch $checkList "SPD"] != -1} {
             set tmpLinkspeed [GetParamValue "SPD" $DirectPath -port [GetEntryPort $DirectPath]]
@@ -3593,7 +3633,7 @@ proc CheckAllinksSettings {} {
         inform "-I-ibdiagnet:bad.link.width.header"
         if {[llength [array names LINK_PHY]]} {
             foreach link [lsort [array names LINK_PHY]] {                                                        
-                if {[PathIsBad $link] > 1} {continue}
+                if {[PathIsBad $link] > 1} {continue;}
                 set paramlist "-DirectPath0 \{[lrange $link 0 end-1]\} -DirectPath1 \{$link\}"
                 eval inform "-W-ibdiagnet:report.links.width.state" -phy $LINK_PHY($link) $paramlist
                 set firstINITlink 1
@@ -3607,7 +3647,7 @@ proc CheckAllinksSettings {} {
         inform "-I-ibdiagnet:bad.link.speed.header"
         if {[llength [array names LINK_SPD]]} {
             foreach link [lsort [array names LINK_SPD]] {                                                        
-                if {[PathIsBad $link] > 1} {continue}
+                if {[PathIsBad $link] > 1} {continue;}
                 set paramlist "-DirectPath0 \{[lrange $link 0 end-1]\} -DirectPath1 \{$link\}"
                 eval inform "-W-ibdiagnet:report.links.speed.state" -spd $LINK_SPD($link) $paramlist
                 set firstINITlink 1
