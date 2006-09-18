@@ -865,7 +865,6 @@ proc DiscoverFabric { PathLimit {startIndex 0}} {
             # or a knowen duplicated portGUID
             # TODO, also valid for NodeGUID
 
-
             # Dr for the first encounter with the current PG 
             set preDrPath $G(DrPathOfGuid,$PortGuid)
             # NG of current PG
@@ -1310,6 +1309,33 @@ proc DumpBadLidsGuids { args } {
     ### Checking for zero and duplicate IDs
     foreach entry [lsort [array names DUPandZERO]] {
         regexp {^([^:]*),([^:]*)$} $entry all value ID
+        if { ( ( [llength $DUPandZERO($entry)]==1 ) || ( $ID=="SystemGUID" ) ) && ( $value != 0 ) } {
+            unset DUPandZERO($entry)
+            continue;
+	}
+        foreach DirectPath $DUPandZERO($entry) {
+            lappend listOfNames \"[DrPath2Name  $DirectPath nameOnly -port [GetEntryPort $DirectPath]]\"
+	}
+    }
+
+    proc compareEntries {a b} {
+        scan [split $a ,] {%s %s} value_0 type_0
+        scan [split $b ,] {%s %s} value_1 type_1
+        if {$type_0 == $type_1} {
+            return [expr ($value_0  > $value_1 )]
+        }
+        if {$type_0 == "SystemGUID"} { return 1}
+        if {$type_1 == "SystemGUID"} { return 0}
+        if {$type_0 == "LID"} { return 1}
+        if {$type_1 == "LID"} { return 0}
+        if {$type_0 == "NodeGUID" } {return 1}
+        if {$type_1 == "NodeGUID" } {return 0}
+        return 0
+    }
+
+    #### Alliming the report
+    foreach entry [lsort -command compareEntries [array names DUPandZERO]] {
+        regexp {^([^:]*),([^:]*)$} $entry all value ID
         # llength will be diffrent then 1 when duplicate guids acored
         if { ( ( [llength $DUPandZERO($entry)]==1 ) || ( $ID=="SystemGUID" ) ) \
 		 && ( $value != 0 ) } {
@@ -1326,7 +1352,7 @@ proc DumpBadLidsGuids { args } {
             incr idx
 	}
         # use eval on the next line because $paramList is a list 
-        if {[catch {eval inform "-E-discover:zero/duplicate.IDs.found" -ID $ID -value $value $paramList} e]} {
+        if {[catch {eval inform "-E-discover:zero/duplicate.IDs.found" -ID $ID -value $value $paramList -maxName_Port [LengthMaxWord $listOfNames]} e]} {
             continue;;
         }
     }
