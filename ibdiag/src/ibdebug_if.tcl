@@ -1535,7 +1535,7 @@ proc inform { msgCode args } {
         }
 
         "-F-Fatal.header" {
-            append msgText "Fatal fabric condition found.%nPlease fix the above errors and rerun."
+            append msgText "Fatal fabric condition found.%n-F- Please fix the above errors and rerun."
         }
 
 

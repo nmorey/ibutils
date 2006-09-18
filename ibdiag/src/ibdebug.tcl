@@ -263,6 +263,22 @@ proc Init_ibis {} {
 }
 
 ##############################
+#  NAME         
+#  SYNOPSIS	
+#  FUNCTION	
+#               
+#  INPUTS       
+#  OUTPUT	
+#  RESULT       
+proc Delete_OldFiles {} {
+    global G
+    foreach arrayName [array names G "outfiles,*"] {
+        set tmpFn $G($arrayName)
+        file delete -force $tmpFn 
+    }
+}
+
+##############################
 #  NAME         Port_And_Idx_Settings
 #  SYNOPSIS	Port_And_Idx_Settings ibisInfo 
 #  FUNCTION	Sets the locat exit port and the local exit device
@@ -570,6 +586,9 @@ proc startIBDebug {} {
     ### Initialize ibis
     set ibisInfo [Init_ibis]
 
+    ### Delete previous files
+    Delete_OldFiles
+    
     ### Setting the local port and device index
     Port_And_Idx_Settings $ibisInfo
 
@@ -589,7 +608,7 @@ proc startIBDebug {} {
 #  DATAMODEL	I use $G(start.clock.seconds) to tell the total run time
 proc finishIBDebug {} { 
     global G
-    if { [info exists G(Fatel.err.found)] } {
+    if { [info exists G(Fatal.err.found)] } {
         inform "-F-Fatal.header"
     }
     listG
@@ -1317,7 +1336,7 @@ proc DumpBadLidsGuids { args } {
             continue;
 	}
         if {($ID == "NodeGUID") || ($ID == "PortGUID")} {
-            set G(Fatel.err.found) 1
+            set G(Fatal.err.found) 1
         }
         foreach DirectPath $DUPandZERO($entry) {
             lappend listOfNames \"[DrPath2Name  $DirectPath nameOnly -port [GetEntryPort $DirectPath]]\"
