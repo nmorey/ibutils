@@ -645,7 +645,7 @@ proc putsIn80Chars { string args } {
 ##############################
 
 ##############################
-proc retriveEntryFromArray {_arrayName _entry {_defMsg "UNKNOWEN"}} {
+proc retriveEntryFromArray {_arrayName _entry {_defMsg "UNKNOWN"}} {
     upvar 1 $_arrayName tmpArray
     if {[info exists tmpArray($_entry)]} {
         set res $tmpArray($_entry)
@@ -1532,6 +1532,10 @@ proc inform { msgCode args } {
         "-I-done" {
 	    putsIn80Chars " "
 	    append msgText "Done. Run time was [expr [clock seconds] - $args] seconds."
+        }
+
+        "-F-Fatal.header" {
+            append msgText "Fatal fabric condition found.%nPlease fix the above errors and rerun."
         }
 
 

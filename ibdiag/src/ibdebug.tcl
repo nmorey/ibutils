@@ -589,6 +589,9 @@ proc startIBDebug {} {
 #  DATAMODEL	I use $G(start.clock.seconds) to tell the total run time
 proc finishIBDebug {} { 
     global G
+    if { [info exists G(Fatel.err.found)] } {
+        inform "-F-Fatal.header"
+    }
     listG
     inform "-I-done" $G(start.clock.seconds)
     catch { close $G(logFileID) }
@@ -828,15 +831,15 @@ proc DiscoverFabric { PathLimit {startIndex 0}} {
         set NodeGuid [WordAfterFlag $NodeInfo "-node_guid"]
         set PortGuid [WordAfterFlag $NodeInfo "-port_guid"]
         set EntryPort [GetEntryPort $DirectPath -byNodeInfo $NodeInfo]
-        set boolNodeGuidknowen [expr ([lsearch $G(list,NodeGuids) $NodeGuid]!= -1)]
-        set boolPortGuidknowen [expr ([lsearch $G(list,PortGuids) $PortGuid]!= -1)]
+        set boolNodeGuidknown [expr ([lsearch $G(list,NodeGuids) $NodeGuid]!= -1)]
+        set boolPortGuidknown [expr ([lsearch $G(list,PortGuids) $PortGuid]!= -1)]
 
         set duplicatedGuidsFound ""
-        if {$boolPortGuidknowen && !$boolNodeGuidknowen} {
+        if {$boolPortGuidknown && !$boolNodeGuidknown} {
             set preDrPath $G(DrPathOfGuid,$PortGuid)
             set duplicatedGuidsFound port
         }
-        if {!$boolPortGuidknowen && $boolNodeGuidknowen} {
+        if {!$boolPortGuidknown && $boolNodeGuidknown} {
             set tmpPortGuid [lindex [array get G PortGuid,$NodeGuid:*] 1]
             set preDrPath $G(DrPathOfGuid,$tmpPortGuid)
 
@@ -858,11 +861,11 @@ proc DiscoverFabric { PathLimit {startIndex 0}} {
                 set duplicatedGuidsFound node
             }
         }
-        if {$boolPortGuidknowen && $boolNodeGuidknowen } {
+        if {$boolPortGuidknown && $boolNodeGuidknown } {
             # it's possible to get here with a second entry to a switch
             # and the previous entry determent that the switch PortGUID
             # is duplicated, so we need to check that it's not the source
-            # or a knowen duplicated portGUID
+            # or a known duplicated portGUID
             # TODO, also valid for NodeGUID
 
             # Dr for the first encounter with the current PG 
@@ -974,7 +977,7 @@ proc DiscoverFabric { PathLimit {startIndex 0}} {
                 }
             }
             if {[lsearch $duplicatedGuidsFound port]!= -1} {
-                # Check if you encounter a knowen duplicate Guid or it's a new one
+                # Check if you encounter a known duplicate Guid or it's a new one
                 # No - set a new mask GUID, 
                 # Yes - set the current portGUID to the masked one, and break; from here
                 set portAllreadyMasked 0
@@ -997,7 +1000,7 @@ proc DiscoverFabric { PathLimit {startIndex 0}} {
                 }
             }
             if {[lsearch $duplicatedGuidsFound node]!= -1} {
-                # Check if you encounter a knowen duplicate Guid or it's a new one
+                # Check if you encounter a known duplicate Guid or it's a new one
                 # No - set a new mask GUID, 
                 # Yes - set the current nodeGUID to the masked one, and break; from here
                 set nodeAllreadyMasked 0
@@ -1059,19 +1062,19 @@ proc DiscoverFabric { PathLimit {startIndex 0}} {
             continue;
         }
         
-        set boolNodeGuidknowen [expr ([lsearch $G(list,NodeGuids) $NodeGuid]!= -1)]
+        set boolNodeGuidknown [expr ([lsearch $G(list,NodeGuids) $NodeGuid]!= -1)]
         # The next condition means - if we reached to allready visited Switch
-        if {($boolNodeGuidknowen) && ($NodeType == "SW")} {
+        if {($boolNodeGuidknown) && ($NodeType == "SW")} {
             continue;
         }
-        # The next line makes sure we only count the unknowen Nodes
-        if {!(($boolNodeGuidknowen) && ($NodeType == "CA"))} {
+        # The next line makes sure we only count the unknown Nodes
+        if {!(($boolNodeGuidknown) && ($NodeType == "CA"))} {
             incr G(Counter,$NodeType)
         }
 
         set G(DrPathOfGuid,$PortGuid) $DirectPath
-        if {!$boolNodeGuidknowen} {lappend G(list,NodeGuids)  $NodeGuid}
-        if {!$boolPortGuidknowen} {lappend G(list,PortGuids)  $PortGuid}
+        if {!$boolNodeGuidknown} {lappend G(list,NodeGuids)  $NodeGuid}
+        if {!$boolPortGuidknown} {lappend G(list,PortGuids)  $PortGuid}
 
         set G(NodeGuid,$PortGuid) $NodeGuid
         set G(NodeInfo,$NodeGuid) $NodeInfo
@@ -1273,9 +1276,9 @@ proc CheckDuplicateGuids { _NodeGuid _DirectPath {_checks 1}} {
             #Found A port that once wasn't down and now it is DWN
             #if { [GetParamValue LOG $_DirectPath -port $PN] == "DWN"} { return 1 }
 
-            #All knowen exits return error = it's not the same node
+            #All known exits return error = it's not the same node
             # we use SmMadGetByDrNoDetectBadLinks, because we assume the direct path
-            # exists (in order to compare its endNode with the knowen node endNode)
+            # exists (in order to compare its endNode with the known node endNode)
             # and the link is ACTIVE, its not have to be so no need fr setting that dr
             # as Bad link also.
             if {[catch {set NodeInfo [SmMadGetByDrNoDetectBadLinks NodeInfo dump "$_DirectPath $PN"]}]} {
@@ -1313,6 +1316,9 @@ proc DumpBadLidsGuids { args } {
             unset DUPandZERO($entry)
             continue;
 	}
+        if {($ID == "NodeGUID") || ($ID == "PortGUID")} {
+            set G(Fatel.err.found) 1
+        }
         foreach DirectPath $DUPandZERO($entry) {
             lappend listOfNames \"[DrPath2Name  $DirectPath nameOnly -port [GetEntryPort $DirectPath]]\"
 	}
@@ -1615,7 +1621,7 @@ proc RereadLongPaths {} {
 
 ##############################
 #  SYNOPSIS     PMCounterQuery
-#  FUNCTION	Query all knowen ports, then Send $G(argv,count) MADs that don't wait for replies 
+#  FUNCTION	Query all known ports, then Send $G(argv,count) MADs that don't wait for replies 
 #               and then read all performance counters again
 proc PMCounterQuery {} { 
     # send $G(argv,count) MADs that don't wait for replies 
@@ -2421,7 +2427,7 @@ proc BadLinksUserInform { } {
 #  SYNOPSIS     RemoveDirectPath	  
 #  FUNCTION	Removes a direct path from $G(list,DirectPath)
 #               - when we in a loop
-#               - when we enter an allready knowen switch
+#               - when we enter an allready known switch
 #               - when we returned on an old link from the other end
 proc RemoveDirectPath {_drPath } {
     global G
@@ -3211,7 +3217,7 @@ proc lstInfo { type DirectPath port } {
     
     foreach parameter $lstItems {
 	# The following may fail - then the proc will return with error
-        # Knowen Issue - GetParamValue will return 
+        # Known Issue - GetParamValue will return 
         regsub {^0x} [GetParamValue $parameter $DirectPath -port $port] {} value
 	# .lst formatting of parameters and their values
 	if {[WordInList $parameter "VenID DevID Rev LID PN"]} {
