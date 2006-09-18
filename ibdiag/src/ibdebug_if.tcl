@@ -271,7 +271,7 @@ proc SetDefaultValues {} {
     global G argv env InfoArgv
     foreach entry [array names InfoArgv "*,default"] { 
         set flag [lindex [split $entry ,] 0]
-        if {[catch { set name $InfoArgv($flag,name)}]} { continue }
+        if {[catch { set name $InfoArgv($flag,name)}]} { continue; }
         if { $InfoArgv($entry) != "" } { 
              set G(argv,$name) $InfoArgv($entry)
 	}
@@ -283,8 +283,8 @@ proc SetEnvValues {} {
     foreach flag [toolsFlags envVars]  {
         set name $InfoArgv(-$flag,name)
 	set envVarName "IBDIAG_[string toupper [join [split $name .] _]]"
-	if { ! [info exists env($envVarName)] } { continue }
-	if { $env($envVarName) == "" } { continue }
+	if { ! [info exists env($envVarName)] } { continue; }
+	if { $env($envVarName) == "" } { continue; }
 	set G(argv,$name) $env($envVarName) 
     }
 }
@@ -308,10 +308,10 @@ proc parseArgv {} {
     set toolsFlags [toolsFlags $G(tool)]
     foreach section [split $toolsFlags ";" ] { 
 	foreach item $section { 
-	    if { ! [regexp {\(} $item] } { continue }
+	    if { ! [regexp {\(} $item] } { continue; }
 	    if { [regsub -all " $item " " $argv " {} .] == 0 } {
 		catch { unset infoFlags }
-		break
+		break;
 	    }
 	    if {[info exists infoFlags]} { 
 		if { $infoFlags != $section } { 
@@ -400,7 +400,7 @@ proc parseArgv {} {
 		    debug "337" item flag maxValue
 		    # special case: I allow the command -d ""
 		    if { ( [llength [join $item]] == 0 ) && ( [llength $valuesList] == 1 ) } {
-			break
+			break;
 		    }
 		    if {[catch {format %x $item} err]} {
 			if {[regexp "integer value too large to represent" $err]} { 
@@ -482,7 +482,7 @@ proc parseArgv {} {
 		append G(argv,$name) " " [lrange $argvList 0 [expr $I -1]]
 		set argvList [lreplace $argvList 0 [expr $I -1]]
 		if {[WordInList [lindex $argvList 0] $allLegalFlags]} {
-		    break
+		    break;
 		} else {
 		    append G(argv,$name) " " [lindex $argvList 0]
 		    set argvList [lreplace $argvList 0 0]
@@ -619,7 +619,7 @@ proc putsIn80Chars { string args } {
 		     || ( [string length $line] <= $len80 ) \
 		     || ( [set spcIdx [string last " " $interval]] == -1 ) } { 
 		append outline "$line"
-		break
+		break;
 	    } else { 
 		append outline "[string range $line 0 [expr $spcIdx -1]]\n$indent"
 		set line [string range $line [expr $spcIdx +1] end]
@@ -722,7 +722,7 @@ proc inform { msgCode args } {
     set listOfNames_Ports ""
     set listOfNames_EntryPorts ""
 
-    set maxType 3
+    set maxType 6
     set total 0
     set localDevice 0
     array set deviceNames { SW "Switch" CA "HCA" Rt "Router" }
@@ -780,7 +780,13 @@ proc inform { msgCode args } {
         lappend listOfNames_EntryPorts $NODE($i,Name_EntryPort)
     }
     set maxName [LengthMaxWord $listOfNames]
+    if {[info exists msgF(maxName)]} {
+        set maxName  $msgF(maxName)
+    }
     set maxName_Port [LengthMaxWord $listOfNames_Ports]
+    if {[info exists msgF(maxName_Port)]} {
+        set maxName_Port  $msgF(maxName_Port)
+    }
     set maxName_EntryPort [LengthMaxWord $listOfNames_EntryPorts]
 
     for {set i 0} {$i < $total } {incr i} {
@@ -1169,31 +1175,33 @@ proc inform { msgCode args } {
             if {($msgF(ID) == "SystemGUID") && ($msgF(value) == 0)} {
                 set msgText "-W- "
             }
+            append msgText "Found "
             set dontTrimLine 1
             if {$localDevice} {set G(LocalDeviceDuplicated) 1}
             if {$total > 1} { 
-               append msgText "#$total Devices with " 
+               append msgText "$total Devices with " 
             } else {
                append msgText "Device with " 
             }
             if { $msgF(value) != 0 } { append msgText "identical "}
-            append msgText "$msgF(ID) = $msgF(value) found in the fabric:"
+            append msgText "$msgF(ID)=$msgF(value):"
             
             for {set i 0} {$i < $total} {incr i} {
                 append msgText "%n"
                 append msgText "a $NODE($i,FullType,Spaces) $NODE($i,Name_Port,Spaces)"
                 if {$msgF(ID) != "PortGUID"} {
-                    append msgText " GUID=$NODE($i,PortGUID)"
+                    append msgText " PortGUID=$NODE($i,PortGUID)"
                 }
                 append msgText " at direct path=\"$PATH($i)\""
                 if {[BoolIsMaked $NODE($i,PortGUID)]} {
                     if {$msgF(ID) != "PortGUID"} {
-                        append msgText " (a duplicate portGUID)"
+                        append msgText " (duplicate portGUID)"
                     } else {
-                        append msgText " (masked to a GUID=$NODE($i,PortGUID))"
+                        append msgText " (masked to PortGUID=$NODE($i,PortGUID))"
                     }
                 }
             }
+            #append msgText %n
             set noExiting 1
         }
         "-I-discover:discovery.status" {
@@ -1450,9 +1458,9 @@ proc inform { msgCode args } {
         "-W-ibdiagnet:report.links.width.state" {
             append msgText "link with PHY=$msgF(phy) found at direct path \"$PATH(1)\"\n"
             append msgText "From : a $NODE(0,FullType,Spaces) $NODE(0,Name,Spaces)"
-            append msgText " GUID=$NODE(0,PortGUID) Port=[lindex [split $PATH(1) ,] end]\n"
+            append msgText " PortGUID=$NODE(0,PortGUID) Port=[lindex [split $PATH(1) ,] end]\n"
             append msgText "To   : a $NODE(1,FullType,Spaces) $NODE(1,Name,Spaces)"
-            append msgText " GUID=$NODE(1,PortGUID) Port=$NODE(1,EntryPort)"
+            append msgText " PortGUID=$NODE(1,PortGUID) Port=$NODE(1,EntryPort)"
         }
         "-I-ibdiagnet:bad.link.speed.header" {
             append msgText "Links With links speed != $G(argv,link.speed) (as set by -ls option)"
@@ -1463,9 +1471,9 @@ proc inform { msgCode args } {
         "-W-ibdiagnet:report.links.speed.state" {
             append msgText "link with SPD=$msgF(spd) found at direct path \"$PATH(1)\"\n"
             append msgText "From : a $NODE(0,FullType,Spaces) $NODE(0,Name,Spaces)"
-            append msgText " GUID=$NODE(0,PortGUID) Port=[lindex [split $PATH(1) ,] end]\n"
+            append msgText " PortGUID=$NODE(0,PortGUID) Port=[lindex [split $PATH(1) ,] end]\n"
             append msgText "To   : a $NODE(1,FullType,Spaces) $NODE(1,Name,Spaces)"
-            append msgText " GUID=$NODE(1,PortGUID) Port=$NODE(1,EntryPort)"
+            append msgText " PortGUID=$NODE(1,PortGUID) Port=$NODE(1,EntryPort)"
         }
         "-I-ibdiagnet:bad.link.logic.header" {
             append msgText "Links With Logical State = INIT"
@@ -1505,9 +1513,9 @@ proc inform { msgCode args } {
         "-W-ibdiagnet:report.links.init.state" {
             append msgText "link with LOG=INI found at direct path \"$PATH(1)\"\n"
             append msgText "From : a $NODE(0,FullType,Spaces) $NODE(0,Name,Spaces)"
-            append msgText " GUID=$NODE(0,PortGUID) Port=[lindex [split $PATH(1) ,] end]\n"
+            append msgText " PortGUID=$NODE(0,PortGUID) Port=[lindex [split $PATH(1) ,] end]\n"
             append msgText "To   : a $NODE(1,FullType,Spaces) $NODE(1,Name,Spaces)"
-            append msgText " GUID=$NODE(1,PortGUID) Port=$NODE(1,EntryPort)"
+            append msgText " PortGUID=$NODE(1,PortGUID) Port=$NODE(1,EntryPort)"
         }
         "-W-report:one.hca.in.fabric" {
             append msgText "The fabric has only one HCA. No fabric qualities report is issued."
@@ -1917,7 +1925,7 @@ ERROR CODES
     foreach item [toolsFlags $G(tool)] {
 	if { $item == ";" } { 
 	    append SYNOPSYS "\n\n  $G(tool)"
-	    continue
+	    continue;
 	}
 
 	set synopsysFlags ""
@@ -1986,7 +1994,7 @@ ERROR CODES
     foreach line $text { 
 	incr index
 	if { [incr read [expr [regexp "DESCRIPTION" $line] + ( $read && ! [regexp {[^ ]} $line] ) ]] > 1 } {
-	    break
+	    break;
 	}
     }
 

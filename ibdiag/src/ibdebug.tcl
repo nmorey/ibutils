@@ -1369,10 +1369,15 @@ proc DumpBadLinksLogic {} {
     inform "-I-ibdiagnet:bad.link.logic.header"
     set firstINITlink 0
     if {[info exists LINK_STATE]} {
+        foreach link $LINK_STATE {
+            lappend listOfNames \"[DrPath2Name [lrange $link 0 end-1] nameOnly ]\"
+            lappend listOfNames \"[DrPath2Name $link nameOnly ]\"
+	}
+
         foreach link $LINK_STATE {                                                        
             if {[PathIsBad $link] > 1} {continue;}
             set paramlist "-DirectPath0 \{[lrange $link 0 end-1]\} -DirectPath1 \{$link\}"
-            eval inform "-W-ibdiagnet:report.links.init.state" $paramlist
+            eval inform "-W-ibdiagnet:report.links.init.state" $paramlist -maxName [LengthMaxWord $listOfNames]
             set firstINITlink 1
         }
     }
