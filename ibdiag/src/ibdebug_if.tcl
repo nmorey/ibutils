@@ -1013,6 +1013,19 @@ proc inform { msgCode args } {
         } 
 
 
+        "-E-ibis:ibis_log.could.not.create.dir" {
+            append msgText "IBIS: $msgF(directory) - no such directory.%n"
+        }
+        "-E-ibis:ibis_log.dir.not.writable" {
+            append msgText "IBIS: $msgF(directory) Directory is write protected."
+        }
+        "-W-ibis:ibis_log.file.not.writable" {
+            append msgText "IBIS: Output file $msgF(file0) is write protected.\n"
+            append msgText "Writing info into $msgF(file1)."
+        }
+        "-E-ibis:ibis_log.file.not.writable" {
+            append msgText "IBIS: Output file $msgF(file0) is write protected.\n"
+        }
         "-E-ibis:ibis_init.failed" {
             append msgText "IBIS: Error from ibis_init: \"$msgF(errMsg)\""
         }

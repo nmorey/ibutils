@@ -241,13 +241,55 @@ proc ParseOptionsList { list } {
 #  INPUTS	NULL
 #  OUTPUT	the result of the command "ibis_get_local_ports_info"
 proc Init_ibis {} {
+    global tcl_platform env
+
+    set IBIS_LOG_DIR /tmp
+    set ibisFn ibis.log.[pid]
+    if {[info exists tcl_platform(platform)] } {
+        switch -exact -- $tcl_platform(platform) {
+            "windows" {
+                if {[info exists env(IBDIAG_OUT_DIR)]} {
+                    set IBIS_LOG_DIR $env(IBDIAG_OUT_DIR)
+                    set ibisFn ibis.log
+                } else { 
+                    if {[info exists env(IBDIAG_OUT_DIR)]} {
+                        set IBIS_LOG_DIR $env(Temp)
+                        set ibisFn ibis.log.[pid]
+                    }
+                }
+            }
+        }
+    }
+
+    #Try to create the file, check if the directory is ligit
+    if { ! [file isdirectory $IBIS_LOG_DIR] } {
+        if {[catch {file mkdir $IBIS_LOG_DIR} msg] } { 
+	    inform "-E-ibis:ibis_log.could.not.create.dir" -directory $IBIS_LOG_DIR
+	}
+    } elseif { ! [file writable $IBIS_LOG_DIR] } {
+	inform "-E-ibis:ibis_log.dir.not.writable" -directory $IBIS_LOG_DIR
+    }
+    if { [file exists $IBIS_LOG_DIR/$ibisFn] && ! [file writable $IBIS_LOG_DIR/$ibisFn] } {
+        set oldIbisFn $IBIS_LOG_DIR/$ibisFn
+        for {set i 0} {$i < 10000} {incr i} {    
+            set ibisFn $IBIS_LOG_DIR/ibis.log.[expr $i + [pid]]
+            if { [file writable $IBIS_LOG_DIR/$ibisFn] } {
+                "-W-ibis:ibis_log.file.not.writable" -file0 $oldIbisFn -file1 $ibisFn
+                break
+            }
+        }
+        if {$i == 10000} {
+            inform "-E-ibis:ibis_log.file.not.writable" -file0 $oldIbisFn
+        }
+    }
+
     catch { ibis_set_transaction_timeout 100 }
     #ibis_set_verbosity 0xffff
     if {[info exists env(IBMGTSIM_DIR)]} {
 	ibis_opts configure -log_file [file join $env(IBMGTSIM_DIR) ibis.log]
     } else {
-	if {[catch {set ID [open /tmp/ibis.log w]}]} {
-            ibis_opts configure -log_file /tmp/ibis.log.[pid]
+        if {[catch {set ID [open $IBIS_LOG_DIR/$ibisFn w]}]} {
+            ibis_opts configure -log_file $IBIS_LOG_DIR/$ibisFn
 	}
 	catch { close $ID }
     }
