@@ -115,13 +115,13 @@ ibnl_parser.cc: @MAINTAINER_MODE_TRUE@ $(srcdir)/ibnl_parser.yy
 		y.tab.c ibnl_parser.cc \
 	 	y.tab.h ibnl_parser.h \
 		y.output ibnl_parser.output -- bison -y -d
-	cp ibnl_parser.cc $(srcdir)/ibnl_parser.cc 
-	cp ibnl_parser.h $(srcdir)/ibnl_parser.h
+	if test ! ibnl_parser.cc -ef $(srcdir)/ibnl_parser.cc ; then cp ibnl_parser.cc $(srcdir)/ibnl_parser.cc ; fi
+	if test ! ibnl_parser.h -ef $(srcdir)/ibnl_parser.h ; then cp ibnl_parser.h $(srcdir)/ibnl_parser.h; fi
 
 ibnl_scanner.cc: @MAINTAINER_MODE_TRUE@ $(srcdir)/ibnl_scanner.ll
 	$(srcdir)/../config/ylwrap $(srcdir)/ibnl_scanner.ll \
 		lex.yy.c ibnl_scanner.cc -- flex
-	cp ibnl_scanner.cc $(srcdir)/ibnl_scanner.cc
+	if test ! ibnl_scanner.cc -ef $(srcdir)/ibnl_scanner.cc ; then cp ibnl_scanner.cc $(srcdir)/ibnl_scanner.cc; fi
 
 # Don't distribute common.h, since it is build host dependent!
 dist-hook:

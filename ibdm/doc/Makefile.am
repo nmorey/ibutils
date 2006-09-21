@@ -50,4 +50,5 @@ EXTRA_DIST = \
 
 %.1: @MAINTAINER_MODE_TRUE@ %.pod
 	$(srcdir)/ibdm_pod2man $< $@
-	cp -f $@ $(srcdir)/$@
+	if test ! $@ -ef $(srcdir)/$@ ; then cp -f $@ $(srcdir)/$@; fi
+
