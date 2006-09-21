@@ -1292,16 +1292,16 @@ IBFabric::parseTopology (string fn) {
 int 
 IBFabric::addLink(string type1, int numPorts1, 
                   uint64_t sysGuid1, uint64_t nodeGuid1,  uint64_t portGuid1, 
-                  int vend1, int devId1, int rev1, string desc1, int lid1, 
-                  int portNum1,
+                  int vend1, int devId1, int rev1, string desc1, 
+						int hcaIdx1, int lid1, int portNum1,
                   string type2, int numPorts2,
                   uint64_t sysGuid2, uint64_t nodeGuid2,  uint64_t portGuid2, 
-                  int vend2, int devId2, int rev2, string desc2, int lid2, 
-                  int portNum2,
+                  int vend2, int devId2, int rev2, string desc2, 
+						int hcaIdx2, int lid2, int portNum2,
                   IBLinkWidth width, IBLinkSpeed speed
                   ) {
   
-  char buf[32];
+  char buf[256];
   IBSystem *p_sys1, *p_sys2;
   IBNode *p_node1, *p_node2;
     
@@ -1328,7 +1328,7 @@ IBFabric::addLink(string type1, int numPorts1,
     p_node1 = makeNode(buf, p_sys1, IB_SW_NODE, numPorts1);
   } else {
     if (desc1.size()) 
-      sprintf(buf,"%s/U1", desc1.c_str());
+      sprintf(buf,"%s/U%d", desc1.c_str(), hcaIdx1);
     p_node1 = makeNode(buf, p_sys1, IB_CA_NODE, numPorts1);
   }
 
@@ -1337,7 +1337,7 @@ IBFabric::addLink(string type1, int numPorts1,
     p_node2 = makeNode(buf, p_sys2, IB_SW_NODE, numPorts2);
   } else {
     if (desc2.size()) 
-      sprintf(buf,"%s/U1", desc2.c_str());
+      sprintf(buf,"%s/U%d", desc2.c_str(), hcaIdx2);
     
     p_node2 = makeNode(buf, p_sys2, IB_CA_NODE, numPorts2);
   }
@@ -1353,8 +1353,8 @@ IBFabric::addLink(string type1, int numPorts1,
   
   // create system ports if required
   if (sysGuid1 != sysGuid2) {
-    if (type1 == "SW") {
-      sprintf(buf,"%s/P%u", p_node1->name.c_str(), portNum1);
+    if (type1 == "SW" || hcaIdx1 != 1) {
+		 sprintf(buf,"%s/P%u", p_node1->name.c_str(), portNum1);
     } else {
       sprintf(buf,"P%u", portNum1);
     }
@@ -1362,7 +1362,7 @@ IBFabric::addLink(string type1, int numPorts1,
     if (p_sysPort1 == NULL)
       p_sysPort1 = new IBSysPort(buf, p_sys1);
 
-    if (type2 == "SW") {    
+    if (type2 == "SW" || hcaIdx2 != 1) {
       sprintf(buf,"%s/P%u", p_node2->name.c_str(), portNum2);
     } else {
       sprintf(buf,"P%u", portNum2);
@@ -1430,11 +1430,11 @@ int
 IBFabric::parseSubnetLine(char *line) {
 
   string type1, desc1;
-  unsigned int  numPorts1, vend1, devId1, rev1, lid1, portNum1;
+  unsigned int  numPorts1, vend1, devId1, rev1, lid1, portNum1, hcaIdx1;
   uint64_t sysGuid1, nodeGuid1, portGuid1;
   
   string type2, desc2;
-  unsigned int  numPorts2, vend2, devId2, rev2, lid2, portNum2;
+  unsigned int  numPorts2, vend2, devId2, rev2, lid2, portNum2, hcaIdx2;
   uint64_t sysGuid2, nodeGuid2, portGuid2;
   IBLinkSpeed speed;
   IBLinkWidth width;
@@ -1482,8 +1482,10 @@ IBFabric::parseSubnetLine(char *line) {
     // the first word in the description please.
     pch = strtok(NULL, " ");
     // but now we must find an "HCA-" ...
+	 string dbg = string(pch + strlen(pch) + 1);
     if (!strncmp("HCA-", pch + strlen(pch) + 1, 4)) {
       desc1 = string(pch+1);
+      hcaIdx1 = atoi(pch + strlen(pch) + 5);
     }
   }
   // on some reare cases there is no space in desc:
@@ -1542,8 +1544,10 @@ IBFabric::parseSubnetLine(char *line) {
     // the first word in the description please.
     pch = strtok(NULL, " ");
     // but now we must find an "HCA-" ...
-    if (!strncmp("HCA-", pch + strlen(pch) + 1, 4))
+    if (!strncmp("HCA-", pch + strlen(pch) + 1, 4)) {
       desc2 = string(pch+1);
+      hcaIdx2 = atoi(pch + strlen(pch) + 5);
+	 }
   }
   // on some reare cases there is no space in desc:
   if (!strchr(pch,'}')) {
@@ -1589,9 +1593,9 @@ IBFabric::parseSubnetLine(char *line) {
   if (numPorts2 > 2) type2 = "SW"; else type2 = "CA";
   
   if (addLink(type1, numPorts1, sysGuid1, nodeGuid1, portGuid1, 
-                  vend1, devId1, rev1, desc1, lid1, portNum1,
+                  vend1, devId1, rev1, desc1, hcaIdx1, lid1, portNum1,
                   type2, numPorts2, sysGuid2, nodeGuid2, portGuid2, 
-                  vend2, devId2, rev2, desc2, lid2, portNum2,
+                  vend2, devId2, rev2, desc2, hcaIdx2, lid2, portNum2,
                   width, speed
               )) return (30);
   return(0);

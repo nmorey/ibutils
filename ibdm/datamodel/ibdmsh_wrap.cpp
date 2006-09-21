@@ -15946,7 +15946,7 @@ static int _wrap_IBFabric_parseTopology(ClientData clientData, Tcl_Interp *inter
     Tcl_SetIntObj(tcl_result,(long) _result);
     return TCL_OK;
 }
-#define IBFabric_addLink(_swigobj,_swigarg0,_swigarg1,_swigarg2,_swigarg3,_swigarg4,_swigarg5,_swigarg6,_swigarg7,_swigarg8,_swigarg9,_swigarg10,_swigarg11,_swigarg12,_swigarg13,_swigarg14,_swigarg15,_swigarg16,_swigarg17,_swigarg18,_swigarg19,_swigarg20,_swigarg21,_swigarg22,_swigarg23)  (_swigobj->addLink(_swigarg0,_swigarg1,_swigarg2,_swigarg3,_swigarg4,_swigarg5,_swigarg6,_swigarg7,_swigarg8,_swigarg9,_swigarg10,_swigarg11,_swigarg12,_swigarg13,_swigarg14,_swigarg15,_swigarg16,_swigarg17,_swigarg18,_swigarg19,_swigarg20,_swigarg21,_swigarg22,_swigarg23))
+#define IBFabric_addLink(_swigobj,_swigarg0,_swigarg1,_swigarg2,_swigarg3,_swigarg4,_swigarg5,_swigarg6,_swigarg7,_swigarg8,_swigarg9,_swigarg10,_swigarg11,_swigarg12,_swigarg13,_swigarg14,_swigarg15,_swigarg16,_swigarg17,_swigarg18,_swigarg19,_swigarg20,_swigarg21,_swigarg22,_swigarg23,_swigarg24,_swigarg25)  (_swigobj->addLink(_swigarg0,_swigarg1,_swigarg2,_swigarg3,_swigarg4,_swigarg5,_swigarg6,_swigarg7,_swigarg8,_swigarg9,_swigarg10,_swigarg11,_swigarg12,_swigarg13,_swigarg14,_swigarg15,_swigarg16,_swigarg17,_swigarg18,_swigarg19,_swigarg20,_swigarg21,_swigarg22,_swigarg23,_swigarg24,_swigarg25))
 static int _wrap_IBFabric_addLink(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
 
     int  _result;
@@ -15962,19 +15962,21 @@ static int _wrap_IBFabric_addLink(ClientData clientData, Tcl_Interp *interp, int
     string * _arg9;
     int  _arg10;
     int  _arg11;
-    string * _arg12;
-    int  _arg13;
-    uint64_t * _arg14;
+    int  _arg12;
+    string * _arg13;
+    int  _arg14;
     uint64_t * _arg15;
     uint64_t * _arg16;
-    int  _arg17;
+    uint64_t * _arg17;
     int  _arg18;
     int  _arg19;
-    string * _arg20;
-    int  _arg21;
+    int  _arg20;
+    string * _arg21;
     int  _arg22;
-    IBLinkWidth * _arg23 = &DefaultLinkWidth;
-    IBLinkSpeed * _arg24 = &DefaultLinkSpeed;
+    int  _arg23;
+    int  _arg24;
+    IBLinkWidth * _arg25 = &DefaultLinkWidth;
+    IBLinkSpeed * _arg26 = &DefaultLinkSpeed;
     Tcl_Obj * tcl_result;
     int tempint;
     uint64_t  temp;
@@ -15988,8 +15990,8 @@ static int _wrap_IBFabric_addLink(ClientData clientData, Tcl_Interp *interp, int
 
     clientData = clientData; objv = objv;
     tcl_result = Tcl_GetObjResult(interp);
-    if ((objc < 24) || (objc > 26)) {
-        Tcl_SetStringObj(tcl_result,"Wrong # args. IBFabric_addLink { IBFabric * } type1 numPorts1 sysGuid1 nodeGuid1 portGuid1 vend1 devId1 rev1 desc1 lid1 portNum1 type2 numPorts2 sysGuid2 nodeGuid2 portGuid2 vend2 devId2 rev2 desc2 lid2 portNum2 ?width? ?speed? ",-1);
+    if ((objc < 26) || (objc > 28)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. IBFabric_addLink { IBFabric * } type1 numPorts1 sysGuid1 nodeGuid1 portGuid1 vend1 devId1 rev1 desc1 hcaIdx1 lid1 portNum1 type2 numPorts2 sysGuid2 nodeGuid2 portGuid2 vend2 devId2 rev2 desc2 hcaIdx2 lid2 portNum2 ?width? ?speed? ",-1);
         return TCL_ERROR;
     }
 {
@@ -16097,57 +16099,61 @@ static int _wrap_IBFabric_addLink(ClientData clientData, Tcl_Interp *interp, int
     _arg10 = (int ) tempint;
     if (Tcl_GetIntFromObj(interp,objv[12],&tempint) == TCL_ERROR) return TCL_ERROR;
     _arg11 = (int ) tempint;
+    if (Tcl_GetIntFromObj(interp,objv[13],&tempint) == TCL_ERROR) return TCL_ERROR;
+    _arg12 = (int ) tempint;
 {
   int len;
-  static string _arg12_tmp;
-  _arg12_tmp = string(Tcl_GetStringFromObj(objv[13],&len));
-  _arg12 = &_arg12_tmp;
+  static string _arg13_tmp;
+  _arg13_tmp = string(Tcl_GetStringFromObj(objv[14],&len));
+  _arg13 = &_arg13_tmp;
 }
-    if (Tcl_GetIntFromObj(interp,objv[14],&tempint) == TCL_ERROR) return TCL_ERROR;
-    _arg13 = (int ) tempint;
+    if (Tcl_GetIntFromObj(interp,objv[15],&tempint) == TCL_ERROR) return TCL_ERROR;
+    _arg14 = (int ) tempint;
 {
-  temp2 = strtoull(Tcl_GetStringFromObj(objv[15],NULL), NULL,16);
-  _arg14 = &temp2;
-}
-{
-  temp3 = strtoull(Tcl_GetStringFromObj(objv[16],NULL), NULL,16);
-  _arg15 = &temp3;
+  temp2 = strtoull(Tcl_GetStringFromObj(objv[16],NULL), NULL,16);
+  _arg15 = &temp2;
 }
 {
-  temp4 = strtoull(Tcl_GetStringFromObj(objv[17],NULL), NULL,16);
-  _arg16 = &temp4;
+  temp3 = strtoull(Tcl_GetStringFromObj(objv[17],NULL), NULL,16);
+  _arg16 = &temp3;
 }
-    if (Tcl_GetIntFromObj(interp,objv[18],&tempint) == TCL_ERROR) return TCL_ERROR;
-    _arg17 = (int ) tempint;
+{
+  temp4 = strtoull(Tcl_GetStringFromObj(objv[18],NULL), NULL,16);
+  _arg17 = &temp4;
+}
     if (Tcl_GetIntFromObj(interp,objv[19],&tempint) == TCL_ERROR) return TCL_ERROR;
     _arg18 = (int ) tempint;
     if (Tcl_GetIntFromObj(interp,objv[20],&tempint) == TCL_ERROR) return TCL_ERROR;
     _arg19 = (int ) tempint;
+    if (Tcl_GetIntFromObj(interp,objv[21],&tempint) == TCL_ERROR) return TCL_ERROR;
+    _arg20 = (int ) tempint;
 {
   int len;
-  static string _arg20_tmp;
-  _arg20_tmp = string(Tcl_GetStringFromObj(objv[21],&len));
-  _arg20 = &_arg20_tmp;
+  static string _arg21_tmp;
+  _arg21_tmp = string(Tcl_GetStringFromObj(objv[22],&len));
+  _arg21 = &_arg21_tmp;
 }
-    if (Tcl_GetIntFromObj(interp,objv[22],&tempint) == TCL_ERROR) return TCL_ERROR;
-    _arg21 = (int ) tempint;
     if (Tcl_GetIntFromObj(interp,objv[23],&tempint) == TCL_ERROR) return TCL_ERROR;
     _arg22 = (int ) tempint;
-    if (objc >24) { 
+    if (Tcl_GetIntFromObj(interp,objv[24],&tempint) == TCL_ERROR) return TCL_ERROR;
+    _arg23 = (int ) tempint;
+    if (Tcl_GetIntFromObj(interp,objv[25],&tempint) == TCL_ERROR) return TCL_ERROR;
+    _arg24 = (int ) tempint;
+    if (objc >26) { 
 {
-  temp10 = char2width(Tcl_GetStringFromObj(objv[24],NULL));
-  _arg23 = &temp10;
+  temp10 = char2width(Tcl_GetStringFromObj(objv[26],NULL));
+  _arg25 = &temp10;
 }
     }
-    if (objc >25) { 
+    if (objc >27) { 
 {
-  temp20 = char2speed(Tcl_GetStringFromObj(objv[25],NULL));
-  _arg24 = &temp20;
+  temp20 = char2speed(Tcl_GetStringFromObj(objv[27],NULL));
+  _arg26 = &temp20;
 }
     }
 { 
   ibdm_tcl_error = 0;
-      _result = (int )IBFabric_addLink(_arg0,*_arg1,_arg2,*_arg3,*_arg4,*_arg5,_arg6,_arg7,_arg8,*_arg9,_arg10,_arg11,*_arg12,_arg13,*_arg14,*_arg15,*_arg16,_arg17,_arg18,_arg19,*_arg20,_arg21,_arg22,*_arg23,*_arg24);
+      _result = (int )IBFabric_addLink(_arg0,*_arg1,_arg2,*_arg3,*_arg4,*_arg5,_arg6,_arg7,_arg8,*_arg9,_arg10,_arg11,_arg12,*_arg13,_arg14,*_arg15,*_arg16,*_arg17,_arg18,_arg19,_arg20,*_arg21,_arg22,_arg23,_arg24,*_arg25,*_arg26);
 ; 
   if (ibdm_tcl_error) { 
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);

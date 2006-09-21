@@ -1148,11 +1148,11 @@ class IBFabric {
   int addLink(string type1, int numPorts1, uint64_t sysGuid1, 
 				  uint64_t nodeGuid1,  uint64_t portGuid1, 
 				  int vend1, int devId1, int rev1, string desc1, 
-				  int lid1, int portNum1,
+				  int hcaIdx1, int lid1, int portNum1,
 				  string type2, int numPorts2, uint64_t sysGuid2,
 				  uint64_t nodeGuid2,  uint64_t portGuid2, 
 				  int vend2, int devId2, int rev2, string desc2, 
-				  int lid2, int portNum2,
+				  int hcaIdx2, int lid2, int portNum2,
               IBLinkWidth width = DefaultLinkWidth, 
               IBLinkSpeed speed = DefaultLinkSpeed);
   // Add a link into the fabric - this will create system
