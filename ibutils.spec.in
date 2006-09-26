@@ -37,6 +37,13 @@
 %define __arch_install_post %{nil}
 %endif
 
+# Add ppc64 64 bit compile flages
+%ifarch ppc64
+%define ppc64_configure_options CFLAGS='-m64 -g -O2' CPPFLAGS='-m64 -g -O2' LDFLAGS='-m64 -g -O2 -L/usr/lib64/'
+%else
+%define ppc64_configure_options  %{nil} 
+%endif
+
 %{!?_prefix: %define _prefix /usr/local}
 
 %{!?configure_options: %define configure_options %{nil}}
@@ -65,7 +72,7 @@ ibutils provides IB network and path diagnostics.
 ### install
 ###
 %install
-%configure %{configure_options}
+%configure %{configure_options} %{ppc64_configure_options}
 # W/A for libtool issue: change libdir in all *.la files to point to ${RPM_BUILD_ROOT}/${libdir}
 # This W/A should be removed in post install section
 LA_FILES=$(find ${RPM_BUILD_ROOT}/%{_prefix} -type f -name '*.la')
