@@ -1,5 +1,5 @@
 ##############################
-### Initializ Databases
+### Initialize Databases
 ##############################
 # InitalizeIBdiag
 # InitalizeINFO_LST
@@ -128,15 +128,15 @@ proc InitalizeIBdiag {} {
     set G(argv,debug) [expr [lsearch -exact $argv "--debug"] >= 0 ]
     fconfigure stdout -buffering none
     ### configuration of constants
-    set G(config,badpath,maxnErrors)	3
-    set G(config,badpath,retriesStart)	100
-    set G(config,badpath,retriesEnd)	10000
+    set G(config,badpath,maxnErrors) 3
+    set G(config,badpath,retriesStart) 100
+    set G(config,badpath,retriesEnd) 10000
     set G(config,badpath,retriesGrowth)	10
-    # Maximum warnings/error reports for topology matching, before notifing 
+    # Maximum warnings/error reports for topology matching, before notifing
     # the user that his cluster is messed up
-    set G(config,warn.long.matchig.results)	20
+    set G(config,warn.long.matching.results) 20
     # The maximum value for integer-valued parameters
-    set G(config,maximal.integer)	1000000
+    set G(config,maximal.integer) 1000000
     set G(list,badpaths) ""
     set G(list,DirectPath) { "" }
     set G(list,NodeGuids) [list ]
@@ -147,12 +147,13 @@ proc InitalizeIBdiag {} {
     set G(HiddenFabric) 0
     set MASK(CurrentMaskGuid) 1
     set SECOND_PATH ""
-    set G(list,pm.counter) "all symbol_error_counter link_error_recovery_counter\
-            link_down_counter port_rcv_errors port_xmit_discard port_xmit_constraint_errors\
-            port_rcv_constraint_errors local_link_integrity_errors excesive_buffer_errors vl15_dropped"
+    set G(list,pm.counter) "symbol_error_counter link_error_recovery_counter\
+            link_down_counter port_rcv_errors port_xmit_discard vl15_dropped\
+            port_rcv_constraint_errors local_link_integrity_errors\ 
+            port_xmit_constraint_errors excesive_buffer_errors all"
 }
 
-##############################
+#################################
 #  NAME         InitalizeINFO_LST
 #  FUNCTION	Initalize the INFO_LST array, which defined the specific way 
 #               to read and interpreted the result from MADS
@@ -162,25 +163,21 @@ proc InitalizeIBdiag {} {
 proc InitalizeINFO_LST {} {
     global INFO_LST
     array set INFO_LST { 
-        Type	    { -source NodeInfo -flag node_type -width 8
-    		        -substitution "1=CA 2=SW 3=Rt" -string 1 }
-        Ports	    { -source NodeInfo -flag num_ports   -width 8 }
-        SystemGUID  { -source NodeInfo -flag sys_guid   -width 64 }
-        NodeGUID    { -source NodeInfo -flag node_guid   -width 64 }
-        PortGUID    { -source NodeInfo -flag port_guid   -width 64 }
-        DevID	    { -source NodeInfo -flag device_id   -width 16 }
-        Rev	    { -source NodeInfo -flag revision    -width 32 }
+        Type	    { -source NodeInfo -flag node_type -width 8 -substitution "1=CA 2=SW 3=Rt" -string 1 }
+        Ports	    { -source NodeInfo -flag num_ports -width 8 }
+        SystemGUID  { -source NodeInfo -flag sys_guid  -width 64 }
+        NodeGUID    { -source NodeInfo -flag node_guid -width 64 }
+        PortGUID    { -source NodeInfo -flag port_guid -width 64 }
+        DevID	    { -source NodeInfo -flag device_id -width 16 }
+        Rev	    { -source NodeInfo -flag revision  -width 32 }
         PN	    { -width 8 }
         PortNum	    { -source NodeInfo -flag port_num_vendor_id -width 8 -offset 0:32}
         VenID	    { -source NodeInfo -flag port_num_vendor_id -width 24 -offset 8:32}
         NodeDesc    { -source NodeDesc -flag description -width words -string 1 }
         LID	    { -source PortInfo -flag base_lid    -width 16 -fromport0 1 }
-        PHY	    { -source PortInfo -flag link_width_active -width 8
-    	                -substitution "1=1x 2=4x 4=8x 8=12x" -string 1 }
-        LOG	    { -source PortInfo -flag state_info1 -width 4 -offset 4:8
-    	                -substitution "1=DWN 2=INI 3=ARM 4=ACT" -string 1 }
-        SPD	    { -source PortInfo -flag link_speed  -width 4 -offset 0:8
-    	                -substitution "1=2.5 2=5 4=10" -string 1 }
+        PHY	    { -source PortInfo -flag link_width_active -width 8 -substitution "1=1x 2=4x 4=8x 8=12x" -string 1 }
+        LOG	    { -source PortInfo -flag state_info1 -width 4 -offset 4:8 -substitution "1=DWN 2=INI 3=ARM 4=ACT" -string 1 }
+        SPD         { -source PortInfo -flag link_speed  -width 4 -offset 0:8 -substitution "1=2.5 2=5 4=10" -string 1 }
     }
 }
 
@@ -209,10 +206,12 @@ proc InitOutputFile {_fileName} {
 ##############################
 #  NAME         ParseOptionsList
 #  SYNOPSIS     ParseOptionsList list 
-#  FUNCTION     defines the database (in uplevel) bearing the values of the options in a list
-#  INPUTS       a list $list of options (= strings starting with "-") and their values
+#  FUNCTION     defines the database (in uplevel) bearing the values of the 
+#               options in a list
+#  INPUTS       list $list of options (strings starting with "-") and their 
+#               values
 #  OUTPUT       NULL
-#  RESULT       the array $cfg() is defined in the level calling the procedure.
+#  RESULT       the array $cfg() is defined in the level calling the procedure
 #       	$cfg(option) is the value of the option
 proc ParseOptionsList { list } { 
     catch { uplevel unset cfg }
@@ -241,58 +240,45 @@ proc ParseOptionsList { list } {
 #  INPUTS	NULL
 #  OUTPUT	the result of the command "ibis_get_local_ports_info"
 proc Init_ibis {} {
-    global tcl_platform env
-
-    set IBIS_LOG_DIR /tmp
-    set ibisFn ibis.log.[pid]
+    global tcl_platform env G
+    catch { ibis_set_transaction_timeout 100 }
+    #ibis_set_verbosity 0xffff
+    set ibisOutDir /tmp
+    set ibisLogFile ibis.log 
     if {[info exists tcl_platform(platform)] } {
         switch -exact -- $tcl_platform(platform) {
             "windows" {
-                if {[info exists env(IBDIAG_OUT_DIR)]} {
-                    set IBIS_LOG_DIR $env(IBDIAG_OUT_DIR)
-                    set ibisFn ibis.log
-                } else { 
-                    if {[info exists env(IBDIAG_OUT_DIR)]} {
-                        set IBIS_LOG_DIR $env(Temp)
-                        set ibisFn ibis.log.[pid]
-                    }
+                if {[info exists env(Temp)]} {
+                    set ibisOutDir $env(Temp)
+                } else {
+                    set ibisOutDir $G(argv,out.dir)
                 }
             }
         }
     }
-
-    #Try to create the file, check if the directory is ligit
-    if { ! [file isdirectory $IBIS_LOG_DIR] } {
-        if {[catch {file mkdir $IBIS_LOG_DIR} msg] } { 
-	    inform "-E-ibis:ibis_log.could.not.create.dir" -directory $IBIS_LOG_DIR
-	}
-    } elseif { ! [file writable $IBIS_LOG_DIR] } {
-	inform "-E-ibis:ibis_log.dir.not.writable" -directory $IBIS_LOG_DIR
-    }
-    if { [file exists $IBIS_LOG_DIR/$ibisFn] && ! [file writable $IBIS_LOG_DIR/$ibisFn] } {
-        set oldIbisFn $IBIS_LOG_DIR/$ibisFn
-        for {set i 0} {$i < 10000} {incr i} {    
-            set ibisFn $IBIS_LOG_DIR/ibis.log.[expr $i + [pid]]
-            if { [file writable $IBIS_LOG_DIR/$ibisFn] } {
-                "-W-ibis:ibis_log.file.not.writable" -file0 $oldIbisFn -file1 $ibisFn
-                break
-            }
+    if {![file isdirectory $ibisOutDir]} {
+        if {[catch {file mkdir $ibisOutDir} errMsg]} {
+            inform "-E-ibis:could.not.create.directory" -value $ibisOutDir -errMsg $errMsg
         }
-        if {$i == 10000} {
-            inform "-E-ibis:ibis_log.file.not.writable" -file0 $oldIbisFn
-        }
-    }
-
-    catch { ibis_set_transaction_timeout 100 }
-    #ibis_set_verbosity 0xffff
-    if {[info exists env(IBMGTSIM_DIR)]} {
-	ibis_opts configure -log_file [file join $env(IBMGTSIM_DIR) ibis.log]
     } else {
-        if {[catch {set ID [open $IBIS_LOG_DIR/$ibisFn w]}]} {
-            ibis_opts configure -log_file $IBIS_LOG_DIR/$ibisFn
-	}
-	catch { close $ID }
+        if {![file writable $ibisOutDir]} {
+            inform "-E-ibis:directory.not.writable" -value $ibisOutDir 
+        }
     }
+    if {![file writable $ibisOutDir/$ibisLogFile]} {
+        if {![file writable $ibisOutDir/$ibisLogFile]} {
+            catch {set ibisLogFd [open $ibisOutDir/$ibisLogFile w]} errMsg
+            inform "-E-ibis:file.not.writable" -value $ibisOutDir/$ibisLogFile -errMsg $errMsg
+        }
+    }
+
+    inform "-V-ibis.ibis.log.file" -value $ibisOutDir/$ibisLogFile
+
+    #if {[info exists env(IBMGTSIM_DIR)]} {
+    #	ibis_opts configure -log_file [file join $env(IBMGTSIM_DIR) ibis.log]
+    #  }
+    ibis_opts configure -log_file /tmp/ibis.log.[pid]
+    
     if {[catch { ibis_init } ErrMsg]} { inform "-E-ibis:ibis_init.failed" -errMsg "$ErrMsg" }
 
     if {[catch { ibis_get_local_ports_info } ibisInfo ]} {
@@ -622,15 +608,15 @@ proc Topology_And_SysName_Settings {} {
 proc startIBDebug {} {
     global G env tcl_patchLevel
 
+    ### Delete previous files
+    Delete_OldFiles
+
     ### parsing command line arguments
     parseArgv
     
     ### Initialize ibis
     set ibisInfo [Init_ibis]
 
-    ### Delete previous files
-    Delete_OldFiles
-    
     ### Setting the local port and device index
     Port_And_Idx_Settings $ibisInfo
 
@@ -879,12 +865,14 @@ proc DiscoverFabric { PathLimit {startIndex 0}} {
 
         inform "-V-discover:discovery.status" -index $index -path "$DirectPath"
         inform "-I-discover:discovery.status"
-        # Reading NodeInfo across $DirectPath (continue; if failed)
-        if {[catch {set NodeInfo [SmMadGetByDr NodeInfo dump "$DirectPath"]}]} {
+
+        if {[PathIsBad $DirectPath] > $PathLimit} { 
             set badPathFound 1
             continue;
         }
-        if {[PathIsBad $DirectPath] > $PathLimit} { 
+
+        # Reading NodeInfo across $DirectPath (continue; if failed)
+        if {[catch {set NodeInfo [SmMadGetByDr NodeInfo dump "$DirectPath"]}]} {
             set badPathFound 1
             continue;
         }
@@ -953,38 +941,57 @@ proc DiscoverFabric { PathLimit {startIndex 0}} {
                 continue;
             }
 
-            # Check if both were togther before
-            if {$NodeGuid == $preNodeGuid } {
-                #check if you reached the source / orignial
-                # return 1 if not the same : current != original
-                if {[CheckDuplicateGuids $NodeGuid $DirectPath 1]} {
-                    set duplicatedGuidsFound "node port"
-                } else {
-                    # It's OK
-                }
-            } else {
-                # Check if we reached an HCA
-                if {$type_2 != "SW"} {
-                    # We are in HCA, PG is uniqe per entry, it must be duplicated PG
-                    lappend duplicatedGuidsFound "port"
-                    if {$type_3 != "SW"} {
-                        # We allready visited in the current NG
-                        # if it allready have an entry then NG is duplicated
+            set duplicatedGuidsFound ""
+            if {$type_2 == "CA"} {
+                if {$NodeGuid == $preNodeGuid } {
+                    #Case 1 The current PG and NG were once belonged to the same Node
+                    if {$type_1 == "CA"} {
+                        #Case 1.1 - Now in HCA previously in HCA
                         if {[info exists Neighbor($NodeGuid:$EntryPort)]} {
-                            lappend duplicatedGuidsFound "node"
+                            #Case 1.1.1
+                            set duplicatedGuidsFound "node port"    
                         } else {
-                            # It's NG is o.k. - reentering HCA
+                            #Case 1.1.2 - Possibly we reached an allready visited HCA with its PG duplicated
+                            #         Or It's the same HCA but both it's port are with the same PG
+                            #         the only way to be sure is to cahnge something in the current
+                            #         HCA and check if the second one changed also. Since that is not allowed
+                            #         Case 1.1.2.2 will be the same as Case 1.1.2.1
+
+                            #Case 1.1.2.1
+                            set duplicatedGuidsFound "node port"    
+                            #Case 1.1.2.2
+                            #set duplicatedGuidsFound "port"    
                         }
                     } else {
-                        # Now in HCA, prev NG found on SWITCH
-                        lappend duplicatedGuidsFound "node"
+                        #Case 1.2 - Now in HCA previously in SWITCH
+                        set duplicatedGuidsFound "node port"
                     }
                 } else {
+                    #Case 2 MAYBE The current PG and NG were not belonged to the same Node
+                    if {$type_3 == "CA"} {
+                        # Case 2.1 The NG was belong to HCA
+                        # ? Is it the same HCA ?
+                        # We can assume that it's the same HCA there for we treat it like it's not
+                    }
+                    set duplicatedGuidsFound "node port"
+                }
+            } else {
+                if {$NodeGuid != $preNodeGuid } {
                     if {![CheckDuplicateGuids $NodeGuid $DirectPath 1]} {
                         lappend duplicatedGuidsFound "port"
                     } else {
                         # We reached a SWITCH, if type1 && type2 are CA then
                         set duplicatedGuidsFound "node port"
+                    }
+                } else {
+                    if {$type_1 == "CA"} {
+                        #Case 3.1 the NG and PG were togther before and on an HCA
+                        set duplicatedGuidsFound "node port"
+                    } else {
+                        #Case 3.2 the NG and PG were togther before and on an SW
+                        if {[CheckDuplicateGuids $NodeGuid $DirectPath 1]} {
+                            set duplicatedGuidsFound "node port"
+                        }
                     }
                 }
             }
@@ -1022,12 +1029,24 @@ proc DiscoverFabric { PathLimit {startIndex 0}} {
                             if {[info exists G(PortGuid,$nodeMask:$EntryPort)]} {
                                 continue;
                             } 
-                            if {[GetParamValue Ports $DirectPath -byDr] != [GetParamValue Ports $preDrPath -byDr]} {
+                            if {[catch {set NodeInfo_0 [SmMadGetByDr NodeInfo dump "$DirectPath"]}]} {
                                 continue;
                             }
-                            if {[GetParamValue LID $DirectPath -port $EntryPort] != [GetParamValue LID $DirectPath -port $EntryPort]} {
+                            if {[catch {set NodeInfo_1 [SmMadGetByDr NodeInfo dump "$preDrPath"]}]} {
                                 continue;
                             }
+                            if {[llength $NodeInfo_0] != [llength $NodeInfo_1]} {
+                                continue;
+                            }
+                            for {set i 1 ; set unMatched 0} {$i < [llength $NodeInfo_0] } {incr i 2} {
+                                # Ignore -port_num_vendor_id and it's value
+                                if {[lindex $NodeInfo_0 [expr $i - 1]] == "-port_num_vendor_id"} {continue}
+                                if {[lindex $NodeInfo_0 $i] != [lindex $NodeInfo_0 $i]} {
+                                    set unMatched 1
+                                }
+                            }
+                            if {$unMatched} { continue}
+
                             set nodeAllreadyMasked 1
                             set portAllreadyMasked 0
                             set NodeGuid $nodeMask
@@ -2633,16 +2652,17 @@ proc reportTopologyMatching { args } {
     if {$G(matchTopologyResult) == 0} { return }
     set noheader [WordInList "-noheader" $args] 
     if { ! $noheader } { inform "-I-topology:matching.header" }
-
+    
     set MatchingResultLen [llength $G(MatchingResult)]
     if { $MatchingResultLen == 0 } {
 	inform "-I-topology:matching.perfect"
     } else { 
 	if { ! $noheader } { inform "-I-topology:matching.note" }
-	if { $MatchingResultLen > $G(config,warn.long.matchig.results) } { 
+	if { $MatchingResultLen > $G(config,warn.long.matching.results) } { 
 	    inform "-W-topology:matching.bad"
 	}
     }
+    
     if {[string is space [lindex $G(MatchingResult) end]]} {
         set G(MatchingResult) [lrange $G(MatchingResult) 0 end-1]
     }
@@ -2693,9 +2713,18 @@ proc DrPath2Name { DirectPath args } {
     if { ($G(matchTopologyResult)==0) } {
         if {![catch {set deviceType [GetParamValue Type $DirectPath $byDr]}]} {
             if {$deviceType == "CA"} {
-                if {![catch {set nodeDesc [lindex [GetParamValue NodeDesc $DirectPath $byDr] 0]}]} {
+                if {![catch {set nodeDesc [GetParamValue NodeDesc $DirectPath $byDr]}]} {
                     if {($nodeDesc == "") && ($addPort)} { return "PN=$port" }
-                    set res "$nodeDesc"
+                    set res ""
+                    set hca_idx ""
+                    scan $nodeDesc {%s %s} res hca_idx
+                    if {$hca_idx != ""} {
+                        set hca_idx [string range $hca_idx 4 end]
+                        if {([string is integer $hca_idx]) && ($hca_idx != 1)} {
+                            append res "/U$hca_idx"
+                        }
+                    }
+                    
                     if {($addPort)} { append res "/P$port" }
                     if {([llength $lidGuidDev] != 0) && !$nameOnly} {
                         append res " $lidGuidDev"

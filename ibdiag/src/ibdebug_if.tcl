@@ -634,8 +634,8 @@ proc putsIn80Chars { string args } {
 	    }
 	}
 	if { ! [WordInList "-logfile" $args] } {
-	    if {$nonewline} {
-		catch { puts -nonewline $G(logFileID) $outline }
+            if {$nonewline} {
+                catch { puts -nonewline $G(logFileID) $outline }
 	    } else {
 		catch { puts $G(logFileID) $outline }
 	    }
@@ -1013,19 +1013,6 @@ proc inform { msgCode args } {
         } 
 
 
-        "-E-ibis:ibis_log.could.not.create.dir" {
-            append msgText "IBIS: $msgF(directory) - no such directory.%n"
-        }
-        "-E-ibis:ibis_log.dir.not.writable" {
-            append msgText "IBIS: $msgF(directory) Directory is write protected."
-        }
-        "-W-ibis:ibis_log.file.not.writable" {
-            append msgText "IBIS: Output file $msgF(file0) is write protected.\n"
-            append msgText "Writing info into $msgF(file1)."
-        }
-        "-E-ibis:ibis_log.file.not.writable" {
-            append msgText "IBIS: Output file $msgF(file0) is write protected.\n"
-        }
         "-E-ibis:ibis_init.failed" {
             append msgText "IBIS: Error from ibis_init: \"$msgF(errMsg)\""
         }
@@ -1036,9 +1023,24 @@ proc inform { msgCode args } {
             append msgText "IBIS: No HCA was found on local machine."
         #    append msgText "Check if the driver is up."
         }
+        "-E-ibis:could.not.create.directory" { 
+            append msgText "IBIS: Failed to create directory (for ibis log file): $msgF(value).%n"
+            append msgText "Error message:%n\"$msgF(errMsg)\""
+        }
+        "-E-ibis:directory.not.writable" { 
+            append msgText "IBIS: The following directory (for ibis log file) is write protected: $msgF(value)."
+        }
+        "-E-ibis:file.not.writable" { 
+            append msgText "IBIS: The following file is write protected: $msgF(value)%n"
+            append msgText "Error message: \"$msgF(errMsg)\""
+        }
         "-V-ibis:ibis_get_local_ports_info" { 
             append msgText "IBIS: ibis_get_local_ports_info:%n$msgF(value)"
         }
+        "-V-ibis.ibis.log.file" {
+            append msgText "IBIS: ibis log file: $msgF(value)"
+        }
+
 
         "-E-loading:cannot.use.current.tcl.package" {
             append msgText "The current Tcl version is: Tcl$msgF(version). "
