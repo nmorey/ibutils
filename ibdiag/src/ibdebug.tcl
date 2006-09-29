@@ -265,19 +265,24 @@ proc Init_ibis {} {
             inform "-E-ibis:directory.not.writable" -value $ibisOutDir 
         }
     }
-    if {![file writable $ibisOutDir/$ibisLogFile]} {
+    if {[file exists $ibisOutDir/$ibisLogFile] && (![file writable $ibisOutDir/$ibisLogFile])} {
+        set ibisLogFile $ibisLogFile.[pid]
+    }
+    if {[file exists $ibisOutDir/$ibisLogFile]} {
         if {![file writable $ibisOutDir/$ibisLogFile]} {
-            catch {set ibisLogFd [open $ibisOutDir/$ibisLogFile w]} errMsg
-            inform "-E-ibis:file.not.writable" -value $ibisOutDir/$ibisLogFile -errMsg $errMsg
+            if {![file writable $ibisOutDir/$ibisLogFile]} {
+                catch {set ibisLogFd [open $ibisOutDir/$ibisLogFile w]} errMsg
+                inform "-E-ibis:file.not.writable" -value $ibisOutDir/$ibisLogFile -errMsg $errMsg
+            }
         }
     }
-
+    
     inform "-V-ibis.ibis.log.file" -value $ibisOutDir/$ibisLogFile
 
     #if {[info exists env(IBMGTSIM_DIR)]} {
     #	ibis_opts configure -log_file [file join $env(IBMGTSIM_DIR) ibis.log]
     #  }
-    ibis_opts configure -log_file /tmp/ibis.log.[pid]
+    ibis_opts configure -log_file $ibisOutDir/$ibisLogFile
     
     if {[catch { ibis_init } ErrMsg]} { inform "-E-ibis:ibis_init.failed" -errMsg "$ErrMsg" }
 
@@ -956,7 +961,6 @@ proc DiscoverFabric { PathLimit {startIndex 0}} {
                             #         the only way to be sure is to cahnge something in the current
                             #         HCA and check if the second one changed also. Since that is not allowed
                             #         Case 1.1.2.2 will be the same as Case 1.1.2.1
-
                             #Case 1.1.2.1
                             set duplicatedGuidsFound "node port"    
                             #Case 1.1.2.2
@@ -2662,7 +2666,6 @@ proc reportTopologyMatching { args } {
 	    inform "-W-topology:matching.bad"
 	}
     }
-    
     if {[string is space [lindex $G(MatchingResult) end]]} {
         set G(MatchingResult) [lrange $G(MatchingResult) 0 end-1]
     }
@@ -2724,7 +2727,6 @@ proc DrPath2Name { DirectPath args } {
                             append res "/U$hca_idx"
                         }
                     }
-                    
                     if {($addPort)} { append res "/P$port" }
                     if {([llength $lidGuidDev] != 0) && !$nameOnly} {
                         append res " $lidGuidDev"
