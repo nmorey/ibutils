@@ -835,7 +835,7 @@ proc PmListGet { LidPort } {
 #       DUPandZERO(<NodeGuid>,NodeGUID) : <DirectPath>
 #       DUPandZERO(<value>,<ID>)        : <DirectPath>
 #
-#       SM(<SMstate>                    : <DirectPath>,SMpriorty
+#       SM(<SMstate>                    : <DirectPath>,SMpriority
 #       
 #       SECOND_PATH - list of second paths
 #
@@ -2564,7 +2564,7 @@ proc DumpSMReport { {_fileName stdout} }  {
                 if { $tmpDirectPath == "" } {
                     set nodeName "The Local Device : $nodeName"
                 }
-                set msg "    $nodeName priorty:[lindex $element 1]"
+                set msg "    $nodeName priority:[lindex $element 1]"
                 if {$_fileName == "stdout"} {
                     inform "-I-ibdiagnet:SM.report.body" $nodeName [lindex $element 1]
                 } else {

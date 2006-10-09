@@ -62,7 +62,7 @@ ibdmtr:
 -----------
 Traces a direct route through the fabric while printing the path
 information at both node and system levels.
-Usage: ibdmtr [-v][-h] {-c <cbaling file>|-t <topo file>} -s <sm node name>  -p <sm port num> -d <comma-sep-dr-path>
+Usage: ibdmtr [-v][-h] {-c <cabling file>|-t <topo file>} -s <sm node name>  -p <sm port num> -d <comma-sep-dr-path>
 
 Description:
   This utility parses a cabling list or topology file

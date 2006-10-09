@@ -39,7 +39,7 @@ In case of duplicate port/node Guids, these file include the map between masked 
 
 =item F<ibdiagnet.sm> - 
 
-List of all the SM (state and priorty) in the fabric
+List of all the SM (state and priority) in the fabric
   
 =item F<ibdiagnet.pm> -
 

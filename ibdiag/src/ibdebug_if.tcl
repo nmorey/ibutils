@@ -1393,7 +1393,7 @@ proc inform { msgCode args } {
             append msgText "Checking bad guids"
         }
         "-I-ibdiagnet:SM.header" {
-            append msgText "Summary Fabric SM-state-priorty"
+            append msgText "Summary Fabric SM-state-priority"
         }
         "-E-ibdiagnet:no.lst.file" {
             set noExiting 1
@@ -1415,8 +1415,8 @@ proc inform { msgCode args } {
         "-I-ibdiagnet:SM.report.body" {
             set msgText "    "
             set nodeName [lindex $args 0]
-            set priorty  [lindex $args 1]
-            append msgText "$nodeName  priorty:$priorty"
+            set priority [lindex $args 1]
+            append msgText "$nodeName  priority:$priority"
         }
         "-I-ibdiagnet:check.credit.loops.header" {
             append msgText "Checking credit loops"
@@ -1771,7 +1771,7 @@ proc showHelpPage { args } {
                        switches
     ibdiagnet.masks  - In case of duplicate port/node Guids, these file include
                        the map between masked Guid and real Guids 
-    ibdiagnet.sm     - A dump of all the SM (state and priorty) in the fabric
+    ibdiagnet.sm     - A dump of all the SM (state and priority) in the fabric
     ibdiagnet.pm     - In case -pm option was provided, this file contain a dump
                        of all the nodes PM counters
   In addition to generating the files above, the discovery phase also checks for

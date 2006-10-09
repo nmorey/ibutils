@@ -30,7 +30,7 @@ if test "x$with_ibdm" = xnone; then
    elif test -d [`pwd`]/../ibdm; then
       with_ibdm=[`pwd`]/../ibdm
    else
-      AC_MSG_ERROR([--with-ibdm must be provided - failde to find standard IBDM installation])
+      AC_MSG_ERROR([--with-ibdm must be provided - failed to find standard IBDM installation])
    fi
 fi
 
