@@ -15,17 +15,17 @@
 # -deafult "" means that the parameter does have a default value, but it will set later (after ibis is ran, in porc startIBDebug).
 ## TODO: sm_key is a 64-bit integer - will it be correctly cheked in parseArgv ?
 array set InfoArgv {
-    -P,name     "query.performence.monitors"
+    -P,name     "query.performance.monitors"
     -P,desc     "If any of the provided pm is greater then its provided value, print it to screen"
     -P,param	"<PM counter>=<Trash Limit>" 
     -P,regexp   "pm.name.>=1"
     -P,error	"-E-argv:not.legal.PM"
 
-    -pc,name    "reset.performence.monitors"
+    -pc,name    "reset.performance.monitors"
     -pc,arglen  0
     -pc,desc    "reset all the fabric links pmCounters"
     
-    -pm,name    "performence.monitors"
+    -pm,name    "performance.monitors"
     -pm,arglen	0
     -pm,desc	"Dumps all pmCounters values into .pm file"
 

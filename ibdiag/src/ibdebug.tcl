@@ -1745,7 +1745,7 @@ proc PMCounterQuery {} {
         # preparing database for reading PMs
         if {![catch {set tmpLID [GetParamValue LID $directPath -port $entryPort]}]} { 
             if { $tmpLID != 0 } { 
-                if {[info exists G(argv,reset.performence.monitors)]} {
+                if {[info exists G(argv,reset.performance.monitors)]} {
                     catch {pmClrAllCounters $tmpLID $entryPort}
                 }
                 set tmpLidPort "$tmpLID:$entryPort"
@@ -1767,7 +1767,7 @@ proc PMCounterQuery {} {
         unset tmpLidPort
         if {![catch {set tmpLID [GetParamValue LID $directPath -port $entryPort]}]} { 
             if { $tmpLID != 0 } { 
-                if {[info exists G(argv,reset.performence.monitors)]} {
+                if {[info exists G(argv,reset.performance.monitors)]} {
                     catch {pmClrAllCounters $tmpLID $entryPort}
                 }
                 set tmpLidPort "$tmpLID:$entryPort"
@@ -1839,7 +1839,7 @@ proc PMCounterQuery {} {
             inform "-W-ibdiagnet:bad.pm.counter.report" -deviceName $name -listOfErrors $badValues
         }
 
-        if {[info exists G(argv,performence.monitors)]} {
+        if {[info exists G(argv,performance.monitors)]} {
             lappend PM_DUMP(nodeNames) $name
             set PM_DUMP($name,pmCounterList) $pmCounterList
             set PM_DUMP($name,pmCounterValue) $newValues($tmpLidPort)
@@ -1848,7 +1848,7 @@ proc PMCounterQuery {} {
     if {$firstPMcounter == 0} {
         inform "-I-ibdiagnet:no.pm.counter.report"
     }
-    if {[info exists G(argv,performence.monitors)]} {
+    if {[info exists G(argv,performance.monitors)]} {
         writePMFile
     }
     return 1
@@ -2377,8 +2377,8 @@ proc ComparePMCounters { oldValues newValues args } {
 
     set errList ""
     set pmRequestList ""
-    if {[info exists G(argv,query.performence.monitors)]} {
-        set pmRequestList [split $G(argv,query.performence.monitors) {, =}]
+    if {[info exists G(argv,query.performance.monitors)]} {
+        set pmRequestList [split $G(argv,query.performance.monitors) {, =}]
     }
     foreach parameter [array names InfoPm] {
 	ParseOptionsList $InfoPm($parameter)
@@ -2394,7 +2394,7 @@ proc ComparePMCounters { oldValues newValues args } {
             lappend errList "$parameter valueChange $oldValue->$newValue"
 	} elseif { ( $oldValue == $overflow ) || ( $newValue == $overflow ) } {
 	    lappend errList "$parameter overflow $overflow"
-	} elseif {[info exists G(argv,query.performence.monitors)]} {
+	} elseif {[info exists G(argv,query.performance.monitors)]} {
             if {[lsearch $pmRequestList $parameter] != -1} {
                 set pmTrash [WordAfterFlag $pmRequestList $parameter]
                 if {$newValue >= $pmTrash} {
