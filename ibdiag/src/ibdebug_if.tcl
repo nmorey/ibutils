@@ -12,9 +12,15 @@
 # name: the name to be used when refering to the flag (e.g., topo.file for -t)
 # default: the default value (if exists)
 # param: a string describing the value given to the flag - to be written in the tool's synopsys (e.g., the "count" in: [-c <count>])
-# -deafult "" means that the parameter does have a default value, but it will set later (after ibis is ran, in porc startIBDebug).
+# -deafult "" means that the parameter does have a default value, but it will set later (after ibis is ran, in proc StartIBDebug).
 ## TODO: sm_key is a 64-bit integer - will it be correctly cheked in parseArgv ?
 array set InfoArgv {
+    -sl,name    "service.level"
+    -sl,param	"service level" 
+    -sl,regexp	"integer.nonneg.==1"
+    -sl,error	"-E-argv:not.pos.integer"
+    -sl,maxvalue "15"
+
     -P,name     "query.performance.monitors"
     -P,desc     "If any of the provided pm is greater then its provided value, print it to screen"
     -P,param	"<PM counter>=<Trash Limit>" 
@@ -236,7 +242,7 @@ proc toolsFlags { tool } {
     # If a few flags are thus encompassed, then they are mutex
     switch -exact -- $tool { 
 	ibping	   { return "(n|l|d) c w v    t s i p o" }
-	ibdiagpath { return "(n|l|d) c   v    t s i p o lw ls pm pc P" }
+	ibdiagpath { return "(n|l|d) c   v    t s i p o lw ls pm pc P sl" }
 	ibdiagnet  { return "        c   v r  t s i p o lw ls pm pc P" }
 	ibcfg	   { return "(n|l|d) (c|q)    t s i p o" }
 	ibmad	   { return "(m) (a) (n|l|d)  t s i p o ; (q) a" }
@@ -535,7 +541,7 @@ proc parseArgv {} {
 	} elseif { ! [file writable $dir] } {
 	    inform "-E-argv:dir.not.writable" -flag "-o" -value $dir
 	}
-	foreach extention { "lst" "fdbs" "mcfdbs" "log" "neighbor" "masks" "sm" "pm"} {
+	foreach extention $G(files_extention) {
 	    set G(outfiles,.${extention}) [file join $dir $G(tool).${extention}]
 	}
     }
@@ -746,7 +752,6 @@ proc inform { msgCode args } {
         set NODE($i,EntryPort) [GetEntryPort $msgF($entry)]
 
         if {$NODE($i,Type) == "SW"} {
-            set maxType 6
             set DrPath2Name_3 [DrPath2Name $msgF($entry) -port 0]
         } else {
             set DrPath2Name_3 [DrPath2Name $msgF($entry) -port $NODE($i,EntryPort)]
@@ -755,10 +760,10 @@ proc inform { msgCode args } {
         set DrPath2Name_4 [DrPath2Name $msgF($entry) -port $NODE($i,EntryPort)]
 
         if { $msgF($entry) == "" } {
-            set NODE($i,FullName)       "The Local Device $DrPath2Name_1"
-	    set NODE($i,Name)           "The Local Device \"$DrPath2Name_2\""
-            set NODE($i,Name_Port)      "The Local Device \"$DrPath2Name_3\""
-            set NODE($i,Name_EntryPort) "The Local Device \"$DrPath2Name_4\""
+            set NODE($i,FullName)       "$G(Desc_LocalDev) $DrPath2Name_1"
+            set NODE($i,Name)           "$G(Desc_LocalDev) \"$DrPath2Name_2\""
+            set NODE($i,Name_Port)      "$G(Desc_LocalDev) \"$DrPath2Name_3\""
+            set NODE($i,Name_EntryPort) "$G(Desc_LocalDev) \"$DrPath2Name_4\""
             set localDevice 1
         } else {
             set NODE($i,FullName)       "$DrPath2Name_1"
@@ -1149,8 +1154,13 @@ proc inform { msgCode args } {
             append msgText "Using device $G(argv,dev.idx) as the local device."
         }
         "-E-localPort:local.port.crashed" {
-            append msgText "Discovery at local link failed: $msgF(command) - failed "
-            append msgText "$numOfRetries consecutive times."
+            append msgText "Discovery at local link failed: "
+            if {![catch {set portState [GetParamValue LOG $msgF(DirectPath0) -port $NODE(0,EntryPort) -byDr]}]} {
+                if {$portState == "DWN"} {
+                    append msgText "[DrPath2Name "" -port $NODE(0,EntryPort)] is DOWN%n"   
+                }
+            }
+            append msgText "$msgF(command) - failed $numOfRetries consecutive times."
         }
         "-E-localPort:local.port.failed" {
             append msgText "Local link is bad: $msgF(command) - failed $msgF(fails) "
@@ -1275,6 +1285,9 @@ proc inform { msgCode args } {
  	    append msgText "The following device: $NODE(0,FullName)%n"
  	    append msgText "does not have port number $msgF(port)."
         }
+        "-E-ibdiagpath:link.not.active" {
+            append msgText "$NODE(0,FullName) is in INIT state." 
+        }
         "-E-ibdiagpath:link.down" {
             append msgText "Illegal route was issued.%n"
             append msgText "Port \#$msgF(port) of:$NODE(0,FullName), is DOWN."
@@ -1332,7 +1345,7 @@ proc inform { msgCode args } {
         "-I-ibdiagpath:read.lft.header" {
             set from [lindex $args 0]
             set to   [lindex $args 1]
-            append msgText "Traversing the path from $from to $to port"
+            append msgText "Traversing the path from $from to $to"
         }
         "-I-ibdiagpath:obtain.src.and.dst.lids" {
             append msgText "Obtaining source and destination LIDs:\n"
@@ -1350,6 +1363,29 @@ proc inform { msgCode args } {
         }
         "-W-ibdiagpath:ardessing.local.node" { 
             append msgText "Addressing local node. Only local port will be checked."
+        }
+        "-I-ibdiagpath:service.level.header" {
+            append msgText "Service Level check"
+        }
+        "-I-ibdiagpath:service.level.report" {
+            if {[info exists G(argv,service.level)]} {
+                if {[lsearch $msgF(suitableSl) $G(argv,service.level)] != -1} {
+                    append msgText "The provided Service Level: $G(argv,service.level) can be used%n"
+                } else {
+                    for {set i 0} {$i < 2} {incr i} {
+                        set name${i} $NODE($i,Name)
+                        if {$NODE($i,Name) == ""} {
+                            set name${i} $NODE($i,FullName) 
+                        }
+                    }
+                    append msgText "SL${G(argv,service.level)} can not be used in a $msgF(route)%n"
+                    append msgText "Path is broken between: $name0%nand: $NODE(0,FullName)%n"
+                    append msgText "SL${G(argv,service.level)} is mapped to VL${msgF(VL)} "
+                    append msgText "but the maximum VL allowed is VL${msgF(opVL)}"
+                }
+            } else {
+                append msgText "The following SL can be used : $msgF(suitableSl)"
+            }
         }
 
         
@@ -1471,10 +1507,11 @@ proc inform { msgCode args } {
             append msgText "No unmatched Links (with width != $G(argv,link.width)) were found"
         }
         "-W-ibdiagnet:report.links.width.state" {
+            set dontTrimLine 1
             append msgText "link with PHY=$msgF(phy) found at direct path \"$PATH(1)\"\n"
-            append msgText "From : a $NODE(0,FullType,Spaces) $NODE(0,Name,Spaces)"
+            append msgText "From: a $NODE(0,FullType,Spaces) $NODE(0,Name,Spaces)"
             append msgText " PortGUID=$NODE(0,PortGUID) Port=[lindex [split $PATH(1) ,] end]\n"
-            append msgText "To   : a $NODE(1,FullType,Spaces) $NODE(1,Name,Spaces)"
+            append msgText "To:   a $NODE(1,FullType,Spaces) $NODE(1,Name,Spaces)"
             append msgText " PortGUID=$NODE(1,PortGUID) Port=$NODE(1,EntryPort)"
         }
         "-I-ibdiagnet:bad.link.speed.header" {
@@ -1484,10 +1521,11 @@ proc inform { msgCode args } {
             append msgText "No unmatched Links (with speed != $G(argv,link.speed)) were found"
         }
         "-W-ibdiagnet:report.links.speed.state" {
+            set dontTrimLine 1
             append msgText "link with SPD=$msgF(spd) found at direct path \"$PATH(1)\"\n"
-            append msgText "From : a $NODE(0,FullType,Spaces) $NODE(0,Name,Spaces)"
+            append msgText "From: a $NODE(0,FullType,Spaces) $NODE(0,Name,Spaces)"
             append msgText " PortGUID=$NODE(0,PortGUID) Port=[lindex [split $PATH(1) ,] end]\n"
-            append msgText "To   : a $NODE(1,FullType,Spaces) $NODE(1,Name,Spaces)"
+            append msgText "To:   a $NODE(1,FullType,Spaces) $NODE(1,Name,Spaces)"
             append msgText " PortGUID=$NODE(1,PortGUID) Port=$NODE(1,EntryPort)"
         }
         "-I-ibdiagnet:bad.link.logic.header" {
@@ -1526,10 +1564,11 @@ proc inform { msgCode args } {
             append msgText "The local link is in INIT state, no PM counter reading could take place"
         }
         "-W-ibdiagnet:report.links.init.state" {
+            set dontTrimLine 1
             append msgText "link with LOG=INI found at direct path \"$PATH(1)\"\n"
-            append msgText "From : a $NODE(0,FullType,Spaces) $NODE(0,Name,Spaces)"
+            append msgText "From: a $NODE(0,FullType,Spaces) $NODE(0,Name,Spaces)"
             append msgText " PortGUID=$NODE(0,PortGUID) Port=[lindex [split $PATH(1) ,] end]\n"
-            append msgText "To   : a $NODE(1,FullType,Spaces) $NODE(1,Name,Spaces)"
+            append msgText "To:   a $NODE(1,FullType,Spaces) $NODE(1,Name,Spaces)"
             append msgText " PortGUID=$NODE(1,PortGUID) Port=$NODE(1,EntryPort)"
         }
         "-W-report:one.hca.in.fabric" {
