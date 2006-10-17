@@ -163,6 +163,7 @@ proc ibdiagpathMain {} {
     set maxLen [lindex [lsort -integer $llen] end]
     # preparing the list of lid-s and ports for reading the PM counters
     PMCounterQuery
+    SL_2_VL $paths $targets
     return
 }
 ######################################################################
@@ -173,7 +174,7 @@ proc ibdiagpathMain {} {
 ### Initialize ibis
 InitalizeIBdiag
 InitalizeINFO_LST
-startIBDebug
+StartIBDebug
 
 ### Figuring out the paths to take and Reading Performance Counters
 set G(detect.bad.links) 1
@@ -181,5 +182,5 @@ ibdiagpathMain
 set G(detect.bad.links) 0
 CheckAllinksSettings
 ### Finishing
-finishIBDebug
+FinishIBDebug
 ######################################################################
