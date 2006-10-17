@@ -3793,4 +3793,84 @@ proc CheckAllinksSettings {} {
     }
     return 
 }
-                                              
+
+proc SL_2_VL {_paths _targets} {
+    global G
+    for {set i 0} {$i < 16} {incr i} {
+        set SL_VL($i,VL) -1
+    }
+    set path [lindex $_paths end]
+    for {set i 0} {$i < [llength $path]} {incr i} {
+        set tmpPath [lrange $path 0 $i]
+        set smallPath [lreplace $tmpPath end end ]
+        set entryPort [GetParamValue PortNum $tmpPath -byDr]
+
+        set inPort [GetParamValue PortNum $smallPath -byDr]
+        set outPort [lindex $tmpPath end]
+        set slVlTable [SmMadGetByDr SlVlTable dump "$smallPath" $inPort $outPort]
+        set slVlString ""
+        foreach item $slVlTable  {
+            append slVlString [string range $item 2 end]
+        }
+        set tmpOpVL [GetParamValue OpVL "$tmpPath" -port $entryPort -byDr]
+        set slVlString $slVlString
+        for {set j 0} {$j < 16} {incr j} {
+            if {$SL_VL($j,VL) != -1} { continue}
+            if {$tmpOpVL < [string index $slVlString $j]} {
+                set SL_VL($j,VL) [string index $slVlString $j]
+                set SL_VL($j,directPath) $tmpPath
+                set SL_VL($j,opVL) $tmpOpVL
+            }
+        }
+    }
+
+    for {set i 0} {$i < 16} {incr i} {
+        if {$SL_VL($i,VL) == -1} {
+            lappend suitableSl $i
+        }   
+    }
+
+    set directPath ""
+    set opVL ""
+    set VL -1
+    if {[info exists G(argv,lid.route)]} {
+        set lidRoute ""
+        foreach lid [split $G(argv,lid.route) ,] {
+            lappend lidRoute "0x[format %x $lid]"
+        }
+        if {[llength $_targets] > 1} {
+            set route "path From lid: [lindex $lidRoute 0] To lid: [lindex $lidRoute 1]"
+        } else {
+            set route "path From lid: $G(RootPort,Lid) To lid: [lindex $lidRoute 0]"
+        }   
+    }
+    if {[info exists G(argv,by-name.route)]} {
+        set nameRoute [split $G(argv,by-name.route) ,]
+        if {[llength $_targets] > 1} {
+            set route "path From: [lindex $nameRoute 0] To: [lindex $nameRoute 1]"
+        } else {
+            set route "path From: [DrPath2Name ""] To: [lindex $nameRoute 0]"
+        }
+    }
+
+    if {[info exists G(argv,direct.route)]} {
+        set route "direct route: $G(argv,direct.route)"
+    }
+
+    if {[info exists G(argv,service.level)]} {
+        if {$SL_VL($G(argv,service.level),VL) != -1 } {
+            set directPath "$SL_VL($G(argv,service.level),directPath)"
+            set opVL [Hex2Dec $SL_VL($G(argv,service.level),opVL)]
+            set VL [Hex2Dec $SL_VL($G(argv,service.level),VL)]
+        } 
+    }
+
+    inform "-I-ibdiagpath:service.level.header"
+    inform "-I-ibdiagpath:service.level.report" -suitableSl $suitableSl -DirectPath0 $directPath -DirectPath1 [lreplace  $directPath end end] -opVL $opVL -VL $VL -route $route
+ }
+
+ proc Hex2Dec {hexaNum} {
+    scan $hexaNum "%x" dec
+    return $dec
+}
+
