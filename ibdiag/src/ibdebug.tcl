@@ -2670,7 +2670,7 @@ proc RemoveDirectPath {_drPath } {
 ### SM handling
 ######################################################################
 proc CheckSM {} {
-    global SM
+    global SM G
     set master 3
     if {![info exists SM($master)]} {
         inform "-I-ibdiagnet:bad.sm.header" 
@@ -2692,7 +2692,7 @@ proc CheckSM {} {
 }
 
 proc DumpSMReport { {_fileName stdout} }  {
-    global SM
+    global SM G
     set tmpStateList "not-active dicovering standby master"
     for {set i 3} {$i > -1} {incr i -1} {
         if {[info exists SM($i)]} {
