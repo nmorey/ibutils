@@ -314,6 +314,7 @@ ibsac_query( IN ibis_t *   const p_ibis,
   user.method = method;
   user.attr_id = attr_id;
   user.comp_mask = comp_mask;
+  user.attr_mod = 0;
   user.p_attr = p_attr;
   switch (attr_id) {
   case IB_MAD_ATTR_NODE_RECORD:
