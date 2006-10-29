@@ -1208,7 +1208,167 @@ ibvs_mirror_write_global(
 	return(status);
 }
 
+int
+ibvs_plft_map_get_global(
+  IN uint16_t lid,
+  IN uint8_t upper_ports,
+  OUT	char **pp_new_plft_map_str)
+{		
+   ib_api_status_t status;
+   ib_vs_t         vs_mads[1];
+	char *          buff;
+	ib_vs_plft_map_t *p_map = (ib_vs_plft_map_t *)&vs_mads[0];
 
+   status = ibvs_plft_map_get(p_ibvs_global,lid,upper_ports,vs_mads);
+   if (status) {
+     ibis_set_tcl_error("ERROR : Fail to get private LFT map");
+		*pp_new_plft_map_str = NULL;
+   } else {
+		buff = (char *)malloc(1024);
+		*pp_new_plft_map_str = buff;
+		sprintf(buff, 
+				  "{ib_port0 0x%x} "
+				  "{shared_plft_port0 0x%x} "
+				  "{size0 0x%x} "
+				  "{ib_port1 0x%x} "
+				  "{shared_plft_port1 0x%x} "
+				  "{size1 0x%x} "
+				  "{ib_port2 0x%x} "
+				  "{shared_plft_port2 0x%x} "
+				  "{size2 0x%x} "
+				  "{ib_port3 0x%x} "
+				  "{shared_plft_port3 0x%x} "
+				  "{size3 0x%x} "
+				  "{ib_port4 0x%x} "
+				  "{shared_plft_port4 0x%x} "
+				  "{size4 0x%x} "
+				  "{ib_port5 0x%x} "
+				  "{shared_plft_port5 0x%x} "
+				  "{size5 0x%x} "
+				  "{ib_port6 0x%x} "
+				  "{shared_plft_port6 0x%x} "
+				  "{size6 0x%x} "
+				  "{ib_port7 0x%x} "
+				  "{shared_plft_port7 0x%x} "
+				  "{reserved7 0x%x} "
+				  "{size7 0x%x} "
+				  "{ib_port8 0x%x} "
+				  "{shared_plft_port8 0x%x} "
+				  "{size8 0x%x} "
+				  "{ib_port9 0x%x} "
+				  "{shared_plft_port9 0x%x} "
+				  "{reserved9 0x%x} "
+				  "{size9 0x%x} "
+				  "{ib_port10 0x%x} "
+				  "{shared_plft_port10 0x%x} "
+				  "{size10 0x%x} "
+				  "{ib_port11 0x%x} "
+				  "{shared_plft_port11 0x%x} "
+				  "{size11 0x%x} "
+				  "{ib_port12 0x%x} "
+				  "{shared_plft_port12 0x%x} "
+				  "{size12 0x%x}",
+				  p_map->ib_port0,
+				  p_map->shared_plft_port0,
+				  p_map->size0,
+				  p_map->ib_port1,
+				  p_map->shared_plft_port1,
+				  p_map->size1,
+				  p_map->ib_port2,
+				  p_map->shared_plft_port2,
+				  p_map->size2,
+				  p_map->ib_port3,
+				  p_map->shared_plft_port3,
+				  p_map->size3,
+				  p_map->ib_port4,
+				  p_map->shared_plft_port4,
+				  p_map->size4,
+				  p_map->ib_port5,
+				  p_map->shared_plft_port5,
+				  p_map->size5,
+				  p_map->ib_port6,
+				  p_map->shared_plft_port6,
+				  p_map->size6,
+				  p_map->ib_port7,
+				  p_map->shared_plft_port7,
+				  p_map->reserved7,
+				  p_map->size7,
+				  p_map->ib_port8,
+				  p_map->shared_plft_port8,
+				  p_map->size8,
+				  p_map->ib_port9,
+				  p_map->shared_plft_port9,
+				  p_map->reserved9,
+				  p_map->size9,
+				  p_map->ib_port10,
+				  p_map->shared_plft_port10,
+				  p_map->size10,
+				  p_map->ib_port11,
+				  p_map->shared_plft_port11,
+				  p_map->size11,
+				  p_map->ib_port12,
+				  p_map->shared_plft_port12,
+				  p_map->size12
+				  );
+   }
+	return(status);
+}
+
+int
+ibvs_general_info_get_global(
+  IN uint16_t lid,
+  OUT	char **pp_gen_info_str)
+{
+   ib_api_status_t status;
+   ib_vs_t         vs_mads[1];
+	char *          buff;
+	char            psid[13];
+	ib_vs_gen_info_t *p_info = (ib_vs_gen_info_t *)&vs_mads[0];
+   status = ibvs_general_info_get(p_ibvs_global,lid,vs_mads);
+   if (status) {
+     ibis_set_tcl_error("ERROR : Fail to get general info");
+		*pp_gen_info_str = 0;
+   } else {
+		buff = (char *)malloc(1024);
+		*pp_gen_info_str = buff;
+		strncpy(psid, (char *)p_info->fw_psid, 12);
+		psid[12] = '\0';
+		sprintf(buff, 
+				  "{hw_rev 0x%x} "
+				  "{hw_devid 0x%x} "
+				  "{hw_uptime 0x%x} "
+				  "{fw_major 0x%x} "
+				  "{fw_minor 0x%x} "
+				  "{fw_sub_minor 0x%x} "
+				  "{fw_build_id 0x%x} "
+				  "{fw_month 0x%x} "
+				  "{fw_day 0x%x} "
+				  "{fw_year 0x%x} "
+				  "{fw_hour 0x%x} "
+				  "{fw_psid \"%s\"} "
+				  "{fw_ini_ver 0x%x} "
+				  "{sw_major 0x%x} "
+				  "{sw_minor 0x%x} "
+				  "{sw_sub_minor 0x%x}",
+				  cl_ntoh16(p_info->hw_rev),
+				  cl_ntoh16(p_info->hw_devid),
+				  cl_ntoh32(p_info->hw_uptime),
+				  p_info->fw_major,
+				  p_info->fw_minor,
+				  p_info->fw_sub_minor,
+				  cl_ntoh32(p_info->fw_build_id),
+				  p_info->fw_month,
+				  p_info->fw_day,
+				  cl_ntoh16(p_info->fw_year),
+				  cl_ntoh16(p_info->fw_hour),
+				  psid,
+				  cl_ntoh32(p_info->fw_ini_ver),
+				  p_info->sw_major,
+				  p_info->sw_minor,
+				  p_info->sw_sub_minor);
+   }
+	return(status);
+}
 
 
 #define uint16_vs_arr_t uint16_t
@@ -5333,6 +5493,122 @@ static int _wrap_vsMirrorWrite(ClientData clientData, Tcl_Interp *interp, int ob
   }
 }    tcl_result = Tcl_GetObjResult(interp);
     Tcl_SetIntObj(tcl_result,(long) _result);
+    return TCL_OK;
+}
+static int _wrap_vsGetGeneralInfo(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    int  _result;
+    uint16_t * _arg0;
+    char ** _arg1;
+    char * p_c;
+    Tcl_Obj * tcl_result;
+    uint16_t  temp;
+
+    clientData = clientData; objv = objv;
+{
+  _arg1 = &p_c;
+}
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. vsGetGeneralInfo lid ",-1);
+        return TCL_ERROR;
+    }
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[1],NULL), NULL, 0);
+  _arg0 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp), 
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+  
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp), 
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (int )ibvs_general_info_get_global(*_arg0,_arg1);
+; 
+  if (ibis_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+    Tcl_SetIntObj(tcl_result,(long) _result);
+{
+  Tcl_SetStringObj(tcl_result,*_arg1,strlen(*_arg1));
+  if (*_arg1) free(*_arg1);
+}
+    return TCL_OK;
+}
+static int _wrap_vsGetPrivateLFTMap(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    int  _result;
+    uint16_t * _arg0;
+    uint8_t * _arg1;
+    char ** _arg2;
+    char * p_c;
+    Tcl_Obj * tcl_result;
+    uint16_t  temp;
+    uint8_t  temp0;
+
+    clientData = clientData; objv = objv;
+{
+  _arg2 = &p_c;
+}
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. vsGetPrivateLFTMap lid upper_ports ",-1);
+        return TCL_ERROR;
+    }
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[1],NULL), NULL, 0);
+  _arg0 = &temp;
+}
+{
+  temp0 = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
+  _arg1 = &temp0;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp), 
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+  
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp), 
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (int )ibvs_plft_map_get_global(*_arg0,*_arg1,_arg2);
+; 
+  if (ibis_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+    Tcl_SetIntObj(tcl_result,(long) _result);
+{
+  Tcl_SetStringObj(tcl_result,*_arg2,strlen(*_arg2));
+  if (*_arg2) free(*_arg2);
+}
     return TCL_OK;
 }
 static int _wrap_bbmVpdRead(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
@@ -57181,6 +57457,8 @@ SWIGEXPORT(int,Ibis_Init)(Tcl_Interp *interp) {
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "vsFlashWriteSectorMulti", _wrap_vsFlashWriteSectorMulti, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "vsMirrorRead", _wrap_vsMirrorRead, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "vsMirrorWrite", _wrap_vsMirrorWrite, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "vsGetGeneralInfo", _wrap_vsGetGeneralInfo, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "vsGetPrivateLFTMap", _wrap_vsGetPrivateLFTMap, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "bbmVpdRead", _wrap_bbmVpdRead, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "bbmVpdWrite", _wrap_bbmVpdWrite, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "bbmVSDRead", _wrap_bbmVSDRead, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
