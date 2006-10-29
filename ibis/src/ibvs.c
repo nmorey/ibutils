@@ -130,6 +130,17 @@ ibvs_bind(
     goto Exit;
   }
 
+  status = ibis_gsi_mad_ctrl_bind(
+    &(IbisObj.mad_ctrl),
+	 IB_MCLASS_SUBN_LID,
+    &p_ibvs->h_smp_bind
+    );
+
+  if( status != IB_SUCCESS )
+  {
+    goto Exit;
+  }
+
   status = ibis_gsi_mad_ctrl_set_class_attr_cb(
     &(IbisObj.mad_ctrl),
     VS_CLASS ,
@@ -193,6 +204,20 @@ ibvs_bind(
     ibis_gsi_sync_mad_batch_callback,
     (void *)p_ibvs);
   
+  status = ibis_gsi_mad_ctrl_set_class_attr_cb(
+    &(IbisObj.mad_ctrl),
+    VS_CLASS ,
+    VS_GENERAL_INFO_ATTR,
+    ibis_gsi_sync_mad_batch_callback,
+    (void *)p_ibvs);
+
+  status = ibis_gsi_mad_ctrl_set_class_attr_cb(
+    &(IbisObj.mad_ctrl),
+    IB_MCLASS_SUBN_LID,
+    VS_SM_PLFT_MAP_ATTR,
+    ibis_gsi_sync_mad_batch_callback,
+    (void *)p_ibvs);
+
   if( status != IB_SUCCESS )
   {
     goto Exit;
@@ -1309,3 +1334,104 @@ ibvs_mirror_write(
   return (status);
 }
 
+
+ib_api_status_t
+ibvs_plft_map_get(
+  IN ibvs_t* const p_ibvs,
+  IN uint16_t lid,
+  IN uint8_t upper_ports,
+  OUT ib_vs_t *p_vs_mad)
+{
+  osm_mad_addr_t   mad_addr;
+  osm_madw_t      *p_madw;
+  ib_api_status_t  status;
+  osm_madw_t      *p_madw_arr[1];
+  uint32_t         attr_mod = 0;
+
+  OSM_LOG_ENTER( &(IbisObj.log), ibvs_plft_map_get );
+
+  osm_log(&(IbisObj.log), OSM_LOG_DEBUG,
+          "ibvs_plft_map_get: "
+          " Sending VS PrivateLFT Map lid:0x%04X",
+			 lid);
+
+  mad_addr.dest_lid = cl_hton16(lid);
+  mad_addr.path_bits = 0;
+  mad_addr.static_rate = 0;
+  mad_addr.addr_type.gsi.remote_qp=cl_hton32(0);
+  mad_addr.addr_type.gsi.remote_qkey = 0;
+  mad_addr.addr_type.gsi.pkey = 0;
+  mad_addr.addr_type.gsi.service_level = 0;
+  mad_addr.addr_type.gsi.global_route = FALSE;
+
+  p_madw =
+    osm_mad_pool_get(&(IbisObj.mad_pool),
+                     p_ibvs->h_bind, MAD_PAYLOAD_SIZE, &mad_addr);
+
+  *p_madw_arr = p_madw;
+
+  if (upper_ports)
+	  attr_mod = 1<<16;
+
+  p_madw->resp_expected = TRUE;
+  ((ib_mad_t *)p_madw->p_mad)->method = IB_MAD_METHOD_GET;
+  ((ib_mad_t *)p_madw->p_mad)->class_ver = 1;
+  ((ib_mad_t *)p_madw->p_mad)->mgmt_class = IB_MCLASS_SUBN_LID;
+  ((ib_mad_t *)p_madw->p_mad)->base_ver = 1;
+  ((ib_mad_t *)p_madw->p_mad)->attr_id = cl_hton16(VS_SM_PLFT_MAP_ATTR);
+  ((ib_mad_t *)p_madw->p_mad)->attr_mod = cl_hton32(attr_mod);
+  ((ib_mad_t *)p_madw->p_mad)->trans_id = ibis_get_tid();
+
+  status = ibis_gsi_send_sync_mad_batch(
+    &(IbisObj.mad_ctrl),
+    p_ibvs->h_smp_bind,
+    1,
+    p_madw_arr,
+    sizeof(ib_smp_t),
+    (uint8_t*)p_vs_mad);
+
+  OSM_LOG_EXIT(&(IbisObj.log));
+  return (status);
+}
+
+ib_api_status_t
+ibvs_general_info_get(
+  IN ibvs_t* const p_ibvs,
+  IN uint16_t lid,
+  OUT ib_vs_t *p_vs_mad)
+{
+  osm_mad_addr_t        mad_addr;
+  osm_madw_t            *p_madw;
+  ib_api_status_t status;
+  osm_madw_t     *p_madw_arr[1];
+
+  OSM_LOG_ENTER( &(IbisObj.log), ibvs_general_info_get );
+
+  osm_log(&(IbisObj.log), OSM_LOG_DEBUG,
+          "ibvs_general_info_get: "
+          " Sending VS GeneralInfo to lid:0x%04X",
+		  lid);
+
+  __ibvs_init_mad_addr(lid, &mad_addr);
+
+  p_madw =
+    osm_mad_pool_get(&(IbisObj.mad_pool),
+                     p_ibvs->h_bind, MAD_PAYLOAD_SIZE, &mad_addr);
+
+  *p_madw_arr = p_madw;
+
+  __ibvs_init_mad_hdr(VENDOR_GET, VS_GENERAL_INFO_ATTR, 0, p_madw);  
+ ((ib_vs_t *)p_madw->p_mad)->vendor_key = 
+	 cl_hton64(IbisObj.p_opt->v_key);
+
+  status = ibis_gsi_send_sync_mad_batch(
+    &(IbisObj.mad_ctrl),
+    p_ibvs->h_bind,
+    1,
+    p_madw_arr,
+    sizeof(ib_vs_t),
+    (uint8_t*)p_vs_mad);
+
+  OSM_LOG_EXIT(&(IbisObj.log));
+  return (status);
+}

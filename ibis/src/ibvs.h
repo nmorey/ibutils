@@ -42,6 +42,7 @@ typedef struct _ibvs
 {
   ibvs_state_t       state;
   osm_bind_handle_t  h_bind;
+  osm_bind_handle_t  h_smp_bind;
 } ibvs_t;
 
 
@@ -911,7 +912,6 @@ ibvs_mirror_write(
   IN uint16_t lid,
   IN uint32_t rx_mirror,
   IN uint32_t tx_mirror);
-
 /*
 * PARAMETERS
 *       p_ibvs
@@ -935,5 +935,74 @@ ibvs_mirror_write(
 *       ibvs_mirror_read
 *********/
 
+/****f* IBIS: ibvs/ibvs_plft_map_get
+* NAME
+*     ibvs_plft_map_get
+*
+* DESCRIPTION
+*      Get Private LFT Map 
+*
+* SYNOPSIS
+*/
+ib_api_status_t
+ibvs_plft_map_get(
+  IN ibvs_t* const p_ibvs,
+  IN uint16_t lid,
+  IN uint8_t upper_ports,
+  OUT ib_vs_t *p_vs_mad);
+/*
+* PARAMETERS
+*       p_ibvs
+*               A pointer to the ibvs_t struct.
+*
+*       lid
+*               The Destination lid of the MAD.
+*
+*       upper_ports 
+*               In non zero will return the upper ports map
+*
+*       p_vs_mad
+*               A pointer to a Vendor Specific MAD that was received.
+*
+* RETURN VALUE
+*       The status of the get
+*      
+* NOTES
+*       
+* SEE ALSO
+*********/
+
+/****f* IBIS: ibvs/ibvs_general_info_get
+* NAME
+*     ibvs_general_info_get 
+*
+* DESCRIPTION
+*      Get General Info
+*
+* SYNOPSIS
+*/
+ib_api_status_t
+ibvs_general_info_get(
+  IN ibvs_t* const p_ibvs,
+  IN uint16_t lid,
+  OUT ib_vs_t *p_vs_mad);
+/*
+* PARAMETERS
+*       p_ibvs
+*               A pointer to the ibvs_t struct.
+*
+*       lid
+*               The Destination lid of the MAD.
+*
+*       p_vs_mad
+*               A pointer to a Vendor Specific MAD that was received.
+*
+* RETURN VALUE
+*       The status of the get
+*      
+* NOTES
+*       
+* SEE ALSO
+*********/
 
 #endif /* _IBVS_H_ */

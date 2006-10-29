@@ -74,6 +74,8 @@
 #define VS_MIRROR_DATA_OFFSET 0
 #define VS_I2C_DATA_OFFSET 3
 #define VS_FLASH_DATA_OFFSET 2
+#define VS_GENERAL_INFO_ATTR 0x17
+#define VS_SM_PLFT_MAP_ATTR 0xff10
 
 typedef enum _ibvs_state
 {
@@ -112,6 +114,110 @@ ib_net32_t size;
 ib_net32_t offset;
 ib_net32_t data[54];
 }	PACK_SUFFIX ib_vs_flash_t;
+#include <complib/cl_packoff.h>
+
+#include <complib/cl_packon.h>
+typedef struct _ib_vs_plft_map
+{
+	ib_mad_t mad_header;
+	ib_net64_t m_key;
+	ib_net16_t dr_slid;
+	ib_net16_t dr_dlid;
+	uint32_t	  resv1[7];
+
+	uint8_t ib_port0;
+	uint8_t shared_plft_port0;
+	uint8_t reserved0;
+	uint8_t size0;
+
+	uint8_t ib_port1;
+	uint8_t shared_plft_port1;
+	uint8_t reserved1;
+	uint8_t size1;
+
+	uint8_t ib_port2;
+	uint8_t shared_plft_port2;
+	uint8_t reserved2;
+	uint8_t size2;
+
+	uint8_t ib_port3;
+	uint8_t shared_plft_port3;
+	uint8_t reserved3;
+	uint8_t size3;
+
+	uint8_t ib_port4;
+	uint8_t shared_plft_port4;
+	uint8_t reserved4;
+	uint8_t size4;
+
+	uint8_t ib_port5;
+	uint8_t shared_plft_port5;
+	uint8_t reserved5;
+	uint8_t size5;
+
+	uint8_t ib_port6;
+	uint8_t shared_plft_port6;
+	uint8_t reserved6;
+	uint8_t size6;
+
+	uint8_t ib_port7;
+	uint8_t shared_plft_port7;
+	uint8_t reserved7;
+	uint8_t size7;
+
+	uint8_t ib_port8;
+	uint8_t shared_plft_port8;
+	uint8_t reserved8;
+	uint8_t size8;
+
+	uint8_t ib_port9;
+	uint8_t shared_plft_port9;
+	uint8_t reserved9;
+	uint8_t size9;
+
+	uint8_t ib_port10;
+	uint8_t shared_plft_port10;
+	uint8_t reserved10;
+	uint8_t size10;
+
+	uint8_t ib_port11;
+	uint8_t shared_plft_port11;
+	uint8_t reserved11;
+	uint8_t size11;
+
+	uint8_t ib_port12;
+	uint8_t shared_plft_port12;
+	uint8_t reserved12;
+	uint8_t size12;
+}	PACK_SUFFIX ib_vs_plft_map_t;
+#include <complib/cl_packoff.h>
+
+#include <complib/cl_packon.h>
+typedef struct _ib_vs_gen_info
+{
+	ib_mad_t mad_header;
+	ib_net64_t vendor_key;
+	uint16_t hw_rev;
+	uint16_t hw_devid;
+	uint8_t  hw_reserved[20];
+	uint32_t hw_uptime;
+	uint8_t  fw_major;
+	uint8_t  fw_minor;
+	uint8_t  fw_sub_minor;
+	uint32_t fw_build_id;
+	uint8_t  fw_month;
+	uint8_t  fw_day;
+	uint16_t fw_year;
+	uint16_t reserved3;
+	uint16_t fw_hour;
+	uint8_t  fw_psid[12];
+	uint32_t fw_ini_ver;
+	uint32_t fw_reserved[6];
+	uint8_t  sw_reserved;
+	uint8_t  sw_major;
+	uint8_t  sw_minor;
+	uint8_t  sw_sub_minor;
+}	PACK_SUFFIX ib_vs_gen_info_t;
 #include <complib/cl_packoff.h>
 
 #endif /* _IBVS_BASE_H_ */
