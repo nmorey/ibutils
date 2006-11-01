@@ -1307,7 +1307,7 @@ IBFabric::addLink(string type1, int numPorts1,
     
   // make sure the system1 exists
   if (!desc1.size()) {
-    sprintf(buf, "system:%016" PRIx64, sysGuid1);
+    sprintf(buf, "S%016" PRIx64, sysGuid1);
     string sysName1 = string(buf);
     p_sys1 = makeGenericSystem(sysName1);
   } else {
@@ -1315,7 +1315,7 @@ IBFabric::addLink(string type1, int numPorts1,
   }
 
   if (!desc2.size()) {
-    sprintf(buf, "system:%016" PRIx64, sysGuid2);
+    sprintf(buf, "S%016" PRIx64, sysGuid2);
     string sysName2 = string(buf);
     p_sys2 = makeGenericSystem(sysName2);
   } else {
@@ -1323,7 +1323,7 @@ IBFabric::addLink(string type1, int numPorts1,
   }
 
   // make sure the nodes exists
-  sprintf(buf,"node:%016" PRIx64, nodeGuid1);
+  sprintf(buf,"N%016" PRIx64, nodeGuid1);
   if (type1 == "SW") {
     p_node1 = makeNode(buf, p_sys1, IB_SW_NODE, numPorts1);
   } else {
@@ -1332,7 +1332,7 @@ IBFabric::addLink(string type1, int numPorts1,
     p_node1 = makeNode(buf, p_sys1, IB_CA_NODE, numPorts1);
   }
 
-  sprintf(buf,"node:%016" PRIx64, nodeGuid2);
+  sprintf(buf,"N%016" PRIx64, nodeGuid2);
   if (type2 == "SW") {
     p_node2 = makeNode(buf, p_sys2, IB_SW_NODE, numPorts2);
   } else {
