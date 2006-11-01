@@ -1874,7 +1874,8 @@ SubnMgtCheckMCGrp(
           p_firstHcaConnectedSwitch = p_node;
       }
     }
-  }     
+  }
+
 
   cout << "-I- Multicast Group:" << mlidStr << " has:" << groupSwitches.size()
        << " switches and:" << groupHCAs.size() << " HCAs" << endl;
@@ -1885,7 +1886,7 @@ SubnMgtCheckMCGrp(
   // Check the connectivity of the multicast group:
   // Start with an arbitrary switch and check all are connected with 
   // no loops.
-   
+  
   map< IBNode *, uint8_t, less < IBNode *> > visitedNodeFromPort;
   list< bfsEntry > nodesQueue;
   bfsEntry thisStep, nextStep;
@@ -1894,6 +1895,7 @@ SubnMgtCheckMCGrp(
   // originally connected to HCAs we track the first HCA connected switch and
   // start with it
   thisStep.pNode = p_firstHcaConnectedSwitch;
+
   thisStep.inPort = 0; // start as we got in from port 0 we can go out any port
   nodesQueue.push_back(thisStep);
   
@@ -1933,10 +1935,11 @@ SubnMgtCheckMCGrp(
       
       if (vI != visitedNodeFromPort.end()) 
       {
+        int prevPort =  (*vI).second ;
         cout << "-E- Found a loop on MLID:" << mlidStr
              << " got to node:" << pRemNode->name
              << " through port:" << pPort->p_remotePort->num
-             << " previoulsy visited through port:" << (*vI).second << endl;
+             << " previoulsy visited through port:" << prevPort << endl;
         anyErr++;
         continue;
       }
@@ -1981,13 +1984,13 @@ SubnMgtCheckMCGrp(
       if (connHcas.size())
       {
         cout << "-E- Disconnected switch:" << p_node->name << " in group:"
-           << mlidStr << endl;
+             << mlidStr << endl;
         for (list_pnode::iterator hlI = connHcas.begin();
              hlI != connHcas.end();
              hlI++)
-          cout << "-E- Disconencted HCA:" << (*hlI)->name << endl;
-      anyErr++;
-    }
+          cout << "-E- Disconnected HCA:" << (*hlI)->name << endl;
+        anyErr++;
+      }
       else
       {
         cout << "-W- Switch:" << p_node->name << " has MFT entry of group:"
@@ -2124,10 +2127,11 @@ SubnReportNonUpDownMulticastGroupFromCaSwitch(
       
       if (vI != visitedNodeFromPort.end()) 
       {
+        int prevPort =  (*vI).second ;
         cout << "-E- Found a loop on MLID:" << mlidStr
              << " got to node:" << pRemNode->name
              << " through port:" << pPort->p_remotePort->num
-             << " previoulsy visited through port:" << (*vI).second << endl;
+             << " previoulsy visited through port:" << prevPort << endl;
         anyErr++;
         continue;
       }
@@ -2318,19 +2322,91 @@ SubnMgtCheckFabricMCGrpsForCreditLoopPotential(
 // * Set FDB to target LID to the "in-port"
 // * Recurse through all ports connected to lower level switches not including the in-port
 
+static inline void 
+markPortUtilization(IBPort *p_port)
+{
+  p_port->counter1++;
+}
+
+// given source and destination nodes find the port with lowest 
+// utilization (subscriptions) and return its number
+static int 
+getLowestUtilzedPortFromTo( IBNode *p_fromNode, IBNode *p_toNode)
+{
+  int minUtil;
+  int minUtilPortNum = 0;
+  IBPort *p_port;
+
+  for (unsigned int pn = 1; pn <= p_fromNode->numPorts; pn++) 
+  {
+    p_port = p_fromNode->getPort(pn);
+    
+    if (! p_port) continue;
+    if (! p_port->p_remotePort) continue;
+    if (p_port->p_remotePort->p_node != p_toNode) continue;
+    
+    // the hops should match the min 
+    if ((minUtilPortNum == 0) || (p_port->counter1 < minUtil))
+    {
+      minUtilPortNum = pn;
+      minUtil = p_port->counter1;
+    }
+  }
+  return( minUtilPortNum );
+}
+
+// given a node and a target LID find the port that has min hops 
+// to that LID and lowest utilization
+static int
+getLowestUtilzedPortToLid(IBNode *p_node, unsigned int dLid)
+{
+  IBPort *p_port;
+  int minUtil;
+  int minUtilPortNum = 0;
+
+  // get the minimal hop count from this node:
+  int minHop = p_node->getHops(NULL,dLid);
+
+  for (unsigned int pn = 1; pn <= p_node->numPorts; pn++)
+  {
+    p_port = p_node->getPort(pn);
+    
+    if (! p_port) continue;
+    if (! p_port->p_remotePort) continue;
+    
+    // the hops should match the min 
+    if (p_node->getHops(p_port, dLid) == minHop) 
+    {
+      if ((minUtilPortNum == 0) || (p_port->counter1 < minUtil))
+      {
+        minUtilPortNum = pn;
+        minUtil = p_port->counter1;
+      }
+    }
+  }
+  return( minUtilPortNum );
+}
+
 int 
 SubnMgtFatTreeBwd(IBNode *p_node, uint16_t dLid, unsigned int outPortNum)
 {
    IBPort* p_port;
 
    if (FabricUtilsVerboseLevel & FABU_LOG_VERBOSE)
-	  cout << "-V- SubnMgtFatTreeBwd from:" << p_node->name << " dlid:" << dLid 
+		cout << "-V- SubnMgtFatTreeBwd from:" << p_node->name << " dlid:" << dLid 
 	       << " out-port:" << outPortNum << endl;
 
-   // * Set FDB to target LID to the "in-port"
+   // Set FDB to target LID to the "in-port"
    p_node->setLFTPortForLid(dLid, outPortNum);
+	
+   // mark this port was utilized
+   markPortUtilization(p_node->getPort(outPortNum));
+
+	// get the remote node to avoid decending down through it
+	p_port = p_node->getPort(outPortNum);
+	IBNode *p_origRemNode = p_port->p_remotePort->p_node;
    
-   // * Recurse through all ports connected to lower level switches not including the in-port
+   // Recurse through all ports connected to lower level switches not including the in-port
    for (unsigned int pn = 1; pn <= p_node->numPorts; pn++)
    {
 	  if (pn == outPortNum) continue;
@@ -2339,7 +2415,9 @@ SubnMgtFatTreeBwd(IBNode *p_node, uint16_t dLid, unsigned int outPortNum)
 	  if (!p_port || !p_port->p_remotePort) continue;
 
 	  IBNode *p_remNode = p_port->p_remotePort->p_node;
-	  
+	  // we might have several ports 
+	  if (p_remNode == p_origRemNode) continue;
+
 	  if (p_remNode->type != IB_SW_NODE) continue;
 
 	  // avoid going up or sideways in the tree
@@ -2347,8 +2425,10 @@ SubnMgtFatTreeBwd(IBNode *p_node, uint16_t dLid, unsigned int outPortNum)
 
 	  // avoid loops by inspecting the FDB value of the remote port
 	  if (p_remNode->getLFTPortForLid(dLid) != IB_LFT_UNASSIGNED) continue;
-	  
-	  SubnMgtFatTreeBwd(p_remNode, dLid, p_port->p_remotePort->num);
+
+	  // select the best port from the remote node to this one:
+     int remPortNum = getLowestUtilzedPortFromTo(p_remNode, p_node);
+	  SubnMgtFatTreeBwd(p_remNode, dLid, remPortNum);
    }
    return(0);
 }
@@ -2356,29 +2436,11 @@ SubnMgtFatTreeBwd(IBNode *p_node, uint16_t dLid, unsigned int outPortNum)
 int 
 SubnMgtFatTreeFwd(IBNode *p_node, uint16_t dLid)
 {
-   // get the minimal hop count from this port:
-   int minHop = p_node->getHops(NULL,dLid);
    int outPortNum = 0;
    IBPort *p_port;
 
-   if (FabricUtilsVerboseLevel & FABU_LOG_VERBOSE)
-	  cout << "-V- SubnMgtFatTreeFwd from:" << p_node->name << " dlid:" << dLid << endl;
-
    // Find the out-port to be used for going to that LID (use # paths to select from many?)
-   for (unsigned int pn = 1; pn <= p_node->numPorts; pn++) 
-   {
-	 p_port = p_node->getPort(pn);
-
-	 if (! p_port) continue;
-	 if (! p_port->p_remotePort) continue;
-
-	 // the hops should match the min 
-	 if (p_node->getHops(p_port, dLid) == minHop) 
-	 {
-		outPortNum = pn;
-		break;
-	 }
-   }
+   outPortNum = getLowestUtilzedPortToLid(p_node, dLid);
 
    if (!outPortNum)
    {
@@ -2387,13 +2449,19 @@ SubnMgtFatTreeFwd(IBNode *p_node, uint16_t dLid)
 	  exit(1);
    }
 
+   if (FabricUtilsVerboseLevel & FABU_LOG_VERBOSE)
+	  cout << "-V- SubnMgtFatTreeFwd from:" << p_node->name << " dlid:" << dLid 
+          << " through port:" << outPortNum << endl;
+
+   p_port = p_node->getPort(outPortNum);
+
    // Set FDB to that LID (actually done by the Backward traversal)
 
    // Recurse to the direction of the LID
    if (p_port->p_remotePort->p_node->type == IB_SW_NODE)
 	  SubnMgtFatTreeFwd(p_port->p_remotePort->p_node, dLid);
 
-   // * Perform Backward traversal through all ports connected to lower level switches in-port = out-port
+   // Perform Backward traversal through all ports connected to lower level switches in-port = out-port
    SubnMgtFatTreeBwd(p_node, dLid, outPortNum);
 
    return(0);
@@ -2469,6 +2537,8 @@ SubnMgtFatTreeRoute(IBFabric *p_fabric) {
 		lI != rootNodes.end();
 		lI++)
   {
+    set<int, less<int> > switchAllocatedLids;
+
 	 p_node = *lI;
 
 	 // Foreach port select one of the LIDs that it MinHop to and are still in WORKMAP
@@ -2493,18 +2563,29 @@ SubnMgtFatTreeRoute(IBFabric *p_fabric) {
 			  // remove from set
 			  unRoutedLids.erase(mI);
 
-			  if (FabricUtilsVerboseLevel & FABU_LOG_VERBOSE)
-				 cout << "-V- Routing to LID:" << dLid << " through root port:" 
-					  << p_port->getName() << endl;
-			  // Traverse forward to that LID assigning LFT
-			  SubnMgtFatTreeFwd(p_node, dLid);
+           // as it is important we handle lids in order we just collect them here and 
+           // later use in order
+           switchAllocatedLids.insert(dLid);
 
 			  // escape the for loop
 			  break;
 		   }
 		}
-	 }
-  }
+	 } // all ports of switch
+    
+    // now handle all allocated lids of this switch:
+    for ( set<int, less<int> >::iterator alI = switchAllocatedLids.begin();
+          alI != switchAllocatedLids.end();
+          alI++)
+    {
+      unsigned int dLid = *alI;
+      if (FabricUtilsVerboseLevel & FABU_LOG_VERBOSE)
+        cout << "-V- Routing to LID:" << dLid << " through root port:" 
+             << p_port->getName() << endl;
+      // Traverse forward to that LID assigning LFT
+      SubnMgtFatTreeFwd(p_node, dLid);
+    }
+  } // all rank 0 switches
 
   // double check no more HCA LIDs to route...
   if (unRoutedLids.size())
