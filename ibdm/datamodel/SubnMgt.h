@@ -130,5 +130,9 @@ SubnMgtCheckFabricMCGrpsForCreditLoopPotential(
 int
 LinkCoverageAnalysis(IBFabric *p_fabric, list_pnode rootNodes);
 
+// Perform FatTree analysis
+int 
+FatTreeAnalysis(IBFabric *p_fabric);
+
 #endif /* IBDM_SUBN_MGT_H */
 
