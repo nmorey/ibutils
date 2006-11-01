@@ -490,7 +490,7 @@ Route the fabric using algorithm that fits only full fat trees
 
 =item [ returns int  ] ibdmFatTreeAnalysis p_fabric 
 
-Analyze the fabric to see if it is a fat tree
+Analyze the fabric to see if it is a fat tree and route it if it is
 
 =item [ returns int  ] ibdmVerifyCAtoCARoutes p_fabric 
 
