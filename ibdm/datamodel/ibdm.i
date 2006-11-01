@@ -336,6 +336,16 @@
     return( SubnMgtCheckFabricMCGrpsForCreditLoopPotential(p_fabric, nodesRank));
   }
 
+  int ibdmRankFabricByRoots(IBFabric *p_fabric, list_pnode rootNodes) {
+    map_pnode_int nodesRank;
+    if (SubnRankFabricNodesByRootNodes(p_fabric, rootNodes, nodesRank))
+    {
+      printf("-E- fail to rank the fabric by the given root nodes.\n");
+      return(1);
+    }
+    return(0);
+  }
+
 %}
 
 
@@ -940,6 +950,7 @@ class IBPort {
   unsigned int	   base_lid;       // The base lid assigned to the port.
   IBLinkWidth     width;          // The link width of the port
   IBLinkSpeed     speed;          // The link speed of the port
+  unsigned int    counter1;       // a generic value to be used by various algorithms
   
   IBPort(IBNode *p_nodePtr, int number);
   // constructor
@@ -1238,6 +1249,9 @@ int ibdmFatTreeRoute(IBFabric *p_fabric, list_pnode rootNodes);
 // Perform Fat Tree specific routing by assigning a single LID to 
 // each root node port a single LID to route through.
 
+%name(ibdmFatTreeAnalysis) int FatTreeAnalysis(IBFabric *p_fabric);
+// Performs FatTree structural analysis
+
 %name(ibdmVerifyCAtoCARoutes) 
  int SubnMgtVerifyAllCaToCaRoutes(IBFabric *p_fabric);
 // Verify point to point connectivity
@@ -1259,6 +1273,9 @@ list_pnode SubnMgtFindTreeRootNodes(IBFabric *p_fabric);
 list_pnode SubnMgtFindRootNodesByMinHop(IBFabric *p_fabric);
 // Analyze the fabric to find its root nodes using statistical methods 
 // on the profiles of min hops to CAs
+
+int ibdmRankFabricByRoots(IBFabric *p_fabric, list_pnode rootNodes);
+// Just rank the fabric according to the given nodes list
 
 int ibdmReportNonUpDownCa2CaPaths(IBFabric *p_fabric, list_pnode rootNodes);
 // Find any routes that exist in the FDB's from CA to CA and do not adhare to
