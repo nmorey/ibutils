@@ -32,21 +32,35 @@
 # $Id$
 #--
 
-bin_SCRIPTS = ibdiagnet ibdiagpath
-EXTRA_DIST = ibdebug_if.tcl ibdebug.tcl ibdiagnet.in ibdiagnet.pkg ibdiagnet.tcl \
-	ibdiagpath.in ibdiagpath.pkg ibdiagpath.tcl
+bin_SCRIPTS = ibdiagnet ibdiagpath ibdiagui
+EXTRA_DIST = ibdebug_if.tcl ibdebug.tcl \
+	ibdiagnet.in ibdiagnet.pkg ibdiagnet.tcl \
+	ibdiagpath.in ibdiagpath.pkg ibdiagpath.tcl \
+	ibdiagui.in ibdiagui.pkg ibdiagui.tcl 
 
 ibdiagnet: ibdiagnet.in
 	sed -e 's=%ibdiag_libdir%='$(DESTDIR)$(libdir)'=' \
 	    -e 's=%with_ibdm_lib%='$(with_ibdm_lib)'=' \
 	    -e 's=%with_ibis%='$(with_ibis)'=' $(srcdir)/ibdiagnet.in > ibdiagnet
+
 ibdiagpath: ibdiagpath.in
 	sed -e 's=%ibdiag_libdir%='$(DESTDIR)$(libdir)'=' \
             -e 's=%with_ibdm_lib%='$(with_ibdm_lib)'=' \
             -e 's=%with_ibis%='$(with_ibis)'=' $(srcdir)/ibdiagpath.in > ibdiagpath
 
+ibdiagui: ibdiagui.in
+	sed -e 's=%ibdiag_libdir%='$(DESTDIR)$(libdir)'=' \
+	    -e 's=%with_ibdm_lib%='$(with_ibdm_lib)'=' \
+	    -e 's=%with_tk_lib%='$(with_tk_lib)'=' \
+	    -e 's=%with_graphviz_lib%='$(with_graphviz_lib)'=' \
+	    -e 's=%with_ibis%='$(with_ibis)'=' $(srcdir)/ibdiagui.in > ibdiagui
+
+clean:
+	rm -f ibdiagui ibdiagnet ibdiagpath
+
 NET_LIB_DIR=$(DESTDIR)/$(libdir)/ibdiagnet$(VERSION)
 PATH_LIB_DIR=$(DESTDIR)/$(libdir)/ibdiagpath$(VERSION)
+UI_LIB_DIR=$(DESTDIR)/$(libdir)/ibdiagui$(VERSION)
 install-exec-am: install-binSCRIPTS
 	mkdir -p $(NET_LIB_DIR)
 	cp $(srcdir)/ibdiagnet.pkg $(NET_LIB_DIR)/pkgIndex.tcl
@@ -58,3 +72,8 @@ install-exec-am: install-binSCRIPTS
 	cp $(srcdir)/ibdebug.tcl $(PATH_LIB_DIR)/ibdebug.tcl
 	cp $(srcdir)/ibdebug_if.tcl $(PATH_LIB_DIR)/ibdebug_if.tcl
 	cp $(srcdir)/ibdiagpath.tcl $(PATH_LIB_DIR)/ibdiagpath.tcl
+	mkdir -p $(UI_LIB_DIR)
+	cp $(srcdir)/ibdiagui.pkg $(UI_LIB_DIR)/pkgIndex.tcl
+	cp $(srcdir)/ibdebug.tcl $(UI_LIB_DIR)/ibdebug.tcl
+	cp $(srcdir)/ibdebug_if.tcl $(UI_LIB_DIR)/ibdebug_if.tcl
+	cp $(srcdir)/ibdiagui.tcl $(UI_LIB_DIR)/ibdiagui.tcl

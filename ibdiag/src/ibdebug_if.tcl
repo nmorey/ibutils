@@ -182,6 +182,7 @@ if {[info exists tcl_platform(platform)] } {
 ### some changes from the default definitions 
 # (e.g., for ibdiagpath, since it recieves addresses of two ports...)
 switch -exact -- $G(tool) { 
+	"ibdiagui" -
     "ibdiagnet"	{ 
 	array set InfoArgv { 
             -c,desc     "The minimal number of packets to be sent across each link"
@@ -243,6 +244,7 @@ proc toolsFlags { tool } {
     switch -exact -- $tool { 
 	ibping	   { return "(n|l|d) c w v    t s i p o" }
 	ibdiagpath { return "(n|l|d) c   v    t s i p o lw ls pm pc P sl" }
+	ibdiagui -
 	ibdiagnet  { return "        c   v r  t s i p o lw ls pm pc P" }
 	ibcfg	   { return "(n|l|d) (c|q)    t s i p o" }
 	ibmad	   { return "(m) (a) (n|l|d)  t s i p o ; (q) a" }
@@ -1966,7 +1968,18 @@ ERROR CODES
   -1 - Fail to find target device
   -2 - Fail to parse command line (might be wrong attribute method field)
   <1-N> - Remote mad status"
-
+##############################
+### ibdiagui help page
+##############################
+    set helpPage(ibdiagui) \
+"DESCRIPTION
+  ibdiagui is a GUI wrapper for ibdiagnet.
+  Its main features:
+  1. Display a graph of teh discovered fabric (with optional names annotattion)
+  2. Hyperlink the ibdiagnet log to the graph objects
+  3. Show each object properties and object type specific actions 
+     on a properties pannel.
+"
 # OPTIONS
 # -<field-i> <val-i>: specific attribute field and value. Automatically sets the component mask bit.
 ##############################
