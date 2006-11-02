@@ -173,10 +173,6 @@ class FatTree {
    // get a free tupple given the reference one and the index to change:
    vec_byte getFreeTupple(vec_byte refTupple, unsigned int changeIdx);
 
-   // get the value for a given tupple
-   unsigned int tuppleValue(vec_byte tupple,
-                            int fromRank = -2, int toRank = -2);
-
    // convert tupple to string
    string getTuppleStr(vec_byte tupple);
 
@@ -200,19 +196,10 @@ class FatTree {
    vec_int numSwInRank;     // number of switches for that level
    vec_int downByRank;      // number of remote child switches s at rank
    vec_int upByRank;        // number of remote parent switches at rank
-   vec_int maxDigitByIdx;  // maximal index used by each level
 
    // extract fat tree coefficients and update validity flag
    // return 0 if OK
    int extractCoefficients();
-
-   // Routing formulation related coefficients
-
-   // delta of Hca Idx between port groups per rank
-   vec_int deltaHcaIdxByRank;
-
-   // the product of maximal digit of all levels below that rank
-   vec_int maxDigitProductByIdx;
 
 public:
    // construct the fat tree by matching the topology to it.
@@ -314,28 +301,10 @@ vec_byte FatTree::getFreeTupple(vec_byte refTupple, unsigned int changeIdx)
       res[changeIdx] = i;
       map_tupple_ftnode::const_iterator tI = NodeByTupple.find(res);
       if (tI == NodeByTupple.end())
-      {
-         if (maxDigitByIdx[rank] < i)
-            maxDigitByIdx[rank] = i;
          return res;
-      }
    }
    cout << "ABORT: fail to get free tupple! (in 255 indexies)" << endl;
    abort();
-}
-
-unsigned int
-FatTree::tuppleValue(vec_byte tupple, int fromIdx, int toIdx)
-{
-   unsigned int s = 0;
-   if (toIdx == -2) toIdx = N - 2;
-   if (fromIdx == -2) fromIdx = 0;
-
-   for (int idx = fromIdx; idx <= toIdx; idx++) {
-      s += maxDigitProductByIdx[idx]*tupple[idx+1];
-   }
-
-   return(s);
 }
 
 string FatTree::getTuppleStr(vec_byte tupple)
@@ -461,10 +430,6 @@ FatTree::extractCoefficients()
               << " (" << downByRank[rank] << " groups)"
               << endl;
       }
-      for (int idx = 0; idx < N-1; idx++)
-         cout << "-V- idx:" << idx << " max-digit:"
-              << maxDigitByIdx[idx] << endl;
-
    }
   
    if (anyErr) return 1;
@@ -497,32 +462,6 @@ FatTree::extractCoefficients()
       cout << "-I- HCAs per leaf switch set to:"
            << maxHcasPerLeafSwitch << endl;
 
-   // the delta is calculated by multiplying
-   // the number of down going ports at each level
-   int prevDelta = 1, delta;
-   deltaHcaIdxByRank.push_back(1);
-   for (int rank = N-1; rank >=0; rank--) {
-      delta = prevDelta * downByRank[rank];
-      deltaHcaIdxByRank[rank] = delta;
-      prevDelta = delta;
-      if (FabricUtilsVerboseLevel & FABU_LOG_VERBOSE)
-         cout << "-V- deltaHcaIdxByRank[" << rank << "] ="
-              << deltaHcaIdxByRank[rank] << endl;
-   }
-
-   // calculate the product of max digits
-   int prod = 1;
-   for (int idx = N-2; idx >= 0; idx--) {
-      if (idx == N-2)
-         maxDigitProductByIdx[idx] = 1;
-      else
-         maxDigitProductByIdx[idx] =
-            (maxDigitByIdx[idx+1]+1)*maxDigitProductByIdx[idx+1];
-
-      if (FabricUtilsVerboseLevel & FABU_LOG_VERBOSE)
-         cout << "-V- maxDigitProductByIdx[" << idx << "] ="
-              << maxDigitProductByIdx[idx] << endl;
-   }
    cout << "-I- Topology is a valid Fat Tree" << endl;
    isValid = 1;
 
@@ -541,13 +480,6 @@ FatTree::FatTree(IBFabric *p_f)
 
    if (! p_node) return;
    N = p_node->rank + 1; // N = number of levels (our first rank is 0 ...)
-
-   // we track the maximal digit value on each level
-   for(int l = 0; l < N; l++) {
-      maxDigitByIdx.push_back(0);
-      maxDigitProductByIdx.push_back(1);
-      deltaHcaIdxByRank.push_back(0);
-   }
 
    // BFS from the first switch connected to HCA found on the fabric
    list< IBNode * > bfsQueue;
