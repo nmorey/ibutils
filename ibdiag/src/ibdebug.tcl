@@ -255,7 +255,7 @@ proc ParseOptionsList { _options } {
 #  OUTPUT	the result of the command "ibis_get_local_ports_info"
 #  RESULT       ibis.log fn and path are defined, ibis transaction_timeout is defined
 proc Init_ibis {} {
-    global tcl_platform env G
+    global tcl_platform env G argv0
     catch { ibis_set_transaction_timeout 100 }
     #ibis_set_verbosity 0xffff
 
@@ -281,7 +281,7 @@ proc Init_ibis {} {
     }
 
     # Set fn for ibis.log
-    set ibisLogFile ibis.log 
+    set ibisLogFile ${argv0}_ibis.log
     if {[file exists $ibisOutDir/$ibisLogFile] && (![file writable $ibisOutDir/$ibisLogFile])} {
         set ibisLogFile $ibisLogFile.[pid]
     }
