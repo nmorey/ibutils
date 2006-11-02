@@ -224,12 +224,13 @@ public:
    bool isValid;
 
    // propagate FDB assignments going up the tree ignoring the out port
-   int assignLftUpWards(FatTreeNode *p_ftNode, uint16_t dLid, int outPortNum);
+   int assignLftUpWards(FatTreeNode *p_ftNode, uint16_t dLid, 
+								int outPortNum, int switchPathOnly);
    
    // propagate FDB assignments going down the tree
    int
    assignLftDownWards(FatTreeNode *p_ftNode, uint16_t dLid,
-                      int outPortNum);
+                      int outPortNum, int switchPathOnly);
 
    // route the fat tree
    int route();
@@ -724,68 +725,9 @@ FatTree::FatTree(IBFabric *p_f)
 //
 //////////////////////////////////////////////////////////////////////////////
 
-// given source and destination nodes find the port with lowest
-// utilization (subscriptions) and return its number
-static int
-getLowestUtilzedPortFromTo( IBNode *p_fromNode, IBNode *p_toNode)
-{
-   int minUtil;
-   int minUtilPortNum = 0;
-   IBPort *p_port;
-
-   for (unsigned int pn = 1; pn <= p_fromNode->numPorts; pn++)
-   {
-      p_port = p_fromNode->getPort(pn);
-   
-      if (! p_port) continue;
-      if (! p_port->p_remotePort) continue;
-      if (p_port->p_remotePort->p_node != p_toNode) continue;
-   
-      // the hops should match the min
-      if ((minUtilPortNum == 0) || (p_port->counter1 < minUtil))
-      {
-         minUtilPortNum = pn;
-         minUtil = p_port->counter1;
-      }
-   }
-   return( minUtilPortNum );
-}
-
-// given a node and a target LID find the port that has min hops
-// to that LID and lowest utilization
-static int
-getLowestUtilzedPortToLid(IBNode *p_node, unsigned int dLid)
-{
-   IBPort *p_port;
-   int minUtil;
-   int minUtilPortNum = 0;
-
-   // get the minimal hop count from this node:
-   int minHop = p_node->getHops(NULL,dLid);
-
-   for (unsigned int pn = 1; pn <= p_node->numPorts; pn++)
-   {
-      p_port = p_node->getPort(pn);
-   
-      if (! p_port) continue;
-      if (! p_port->p_remotePort) continue;
-   
-      // the hops should match the min
-      if (p_node->getHops(p_port, dLid) == minHop)
-      {
-         if ((minUtilPortNum == 0) || (p_port->counter1 < minUtil))
-         {
-            minUtilPortNum = pn;
-            minUtil = p_port->counter1;
-         }
-      }
-   }
-   return( minUtilPortNum );
-}
-
 int
 FatTree::assignLftUpWards(FatTreeNode *p_ftNode, uint16_t dLid,
-                          int outPortNum)
+                          int outPortNum, int switchPathOnly)
 {
    IBPort* p_port;
    IBNode *p_node = p_ftNode->p_node;
@@ -793,14 +735,31 @@ FatTree::assignLftUpWards(FatTreeNode *p_ftNode, uint16_t dLid,
    if (FabricUtilsVerboseLevel & FABU_LOG_VERBOSE)
       cout << "-V- assignLftUpWards invoked on node:" << p_node->name
            << " out-port:" << outPortNum
-           << " to dlid:" << dLid  << endl;
+           << " to dlid:" << dLid  
+			  << " switchPathOnly:" << switchPathOnly
+			  << endl;
 
    // Foreach one of the child port groups select the port which is
    // less utilized and set its LFT - then recurse into it
    // go over all child ports
    for (int i = 0; i < p_ftNode->childPorts.size(); i++) {
       if (!p_ftNode->childPorts[i].size()) continue;
-   
+
+		// we can skip handling the remote node if
+		// it already has an assigned LFT for this target lid
+		int firstPortNum = p_ftNode->childPorts[i].front();
+		IBPort *p_firstPort = p_node->getPort(firstPortNum);
+		IBNode *p_remNode = p_firstPort->p_remotePort->p_node;
+		if (p_remNode->getLFTPortForLid(dLid) != IB_LFT_UNASSIGNED)
+		{
+			if (FabricUtilsVerboseLevel & FABU_LOG_VERBOSE)
+				cout << "-V- assignLftUpWards skip already assigned remote node:" 
+					  << p_remNode->name
+					  << " switchPathOnly:" << switchPathOnly
+					  << endl;
+			continue;
+		}
+		
       int bestUsage = 0;
       IBPort *p_bestPort = NULL;
       int found = 0;
@@ -841,10 +800,9 @@ FatTree::assignLftUpWards(FatTreeNode *p_ftNode, uint16_t dLid,
       if (p_bestPort != NULL)
       {
          // mark utilization
-         p_bestPort->counter1++;
+         if (!switchPathOnly) p_bestPort->counter1++;
 
          IBPort *p_bestRemPort = p_bestPort->p_remotePort;
-         IBNode *p_remNode = p_bestRemPort->p_node;
          p_remNode->setLFTPortForLid(dLid, p_bestRemPort->num);
 
          if (FabricUtilsVerboseLevel & FABU_LOG_VERBOSE)
@@ -854,7 +812,8 @@ FatTree::assignLftUpWards(FatTreeNode *p_ftNode, uint16_t dLid,
       
          FatTreeNode *p_remFTNode =
             getFatTreeNodeByNode(p_bestRemPort->p_node);
-         assignLftUpWards(p_remFTNode, dLid, p_bestRemPort->num);
+         assignLftUpWards(p_remFTNode, dLid, p_bestRemPort->num, 
+								  switchPathOnly);
       }
    }
 
@@ -867,7 +826,7 @@ FatTree::assignLftUpWards(FatTreeNode *p_ftNode, uint16_t dLid,
 // we also start an upwards assignment to this node
 int
 FatTree::assignLftDownWards(FatTreeNode *p_ftNode, uint16_t dLid,
-                            int outPortNum)
+                            int outPortNum, int switchPathOnly)
 {
    IBPort *p_port;
    IBNode *p_node = p_ftNode->p_node;
@@ -875,24 +834,27 @@ FatTree::assignLftDownWards(FatTreeNode *p_ftNode, uint16_t dLid,
    if (FabricUtilsVerboseLevel & FABU_LOG_VERBOSE)
       cout << "-V- assignLftDownWards from:" << p_node->name
            << " dlid:" << dLid
-           << " through port:" << outPortNum << endl;
-
-   // assign the FDB
+           << " through port:" << outPortNum
+			  << " switchPathOnly:" << switchPathOnly
+			  << endl;
 
    if (outPortNum != 0xFF)
    {
+      // Set FDB to that LID 
+		if (!switchPathOnly || 
+			 (p_node->getLFTPortForLid(dLid) == IB_LFT_UNASSIGNED))
+			p_node->setLFTPortForLid(dLid, outPortNum);
+		
       p_port = p_node->getPort(outPortNum);
    
-      // Set FDB to that LID (actually done by the Backward traversal)
-      p_node->setLFTPortForLid(dLid, outPortNum);
-   
       // mark the usage of this port
-      p_port->counter1++;
+      if (p_port && !switchPathOnly) p_port->counter1++;
    }
 
    // find the remote port (following the parents list order)
    // that is not used or less used.
    int bestUsage = 0;
+	int bestGroup = -1;
    IBPort *p_bestRemPort = NULL;
    int found = 0;
    // go over all child ports
@@ -913,6 +875,7 @@ FatTree::assignLftDownWards(FatTreeNode *p_ftNode, uint16_t dLid,
          {
             p_bestRemPort = p_remPort;
             bestUsage = usage;
+				bestGroup = i;
             // can not have better usage then no usage
             if (usage == 0)
                found = 1;
@@ -920,20 +883,42 @@ FatTree::assignLftDownWards(FatTreeNode *p_ftNode, uint16_t dLid,
       }
    }
 
-   // go up that port
-   if (p_bestRemPort != NULL)
-   {
-      FatTreeNode *p_remFTNode = getFatTreeNodeByNode(p_bestRemPort->p_node);
+	FatTreeNode *p_remFTNode;
+	// first visit the official path!
+	if (bestGroup != -1) 
+	{
+		p_remFTNode = getFatTreeNodeByNode(p_bestRemPort->p_node);
+		if (!p_remFTNode)
+			cout << "-E- Fail to get FatTree Node for node:"
+				  << p_bestRemPort->p_node->name << endl;
+		else
+         assignLftDownWards(p_remFTNode, dLid, p_bestRemPort->num,
+									 switchPathOnly);
+	}
+
+	// need to go all up all the possible ways to make sure all switch are
+	// connected to all HCAs
+	for (int i = 0; i < p_ftNode->parentPorts.size(); i++) {
+		if (!p_ftNode->parentPorts[i].size()) continue;
+		IBPort* p_remPort;
+		// if we are on the "best group" we know the best port
+		if (bestGroup == i) continue;
+		
+		// no need to equalize
+		int portNum = p_ftNode->parentPorts[i].front();
+		p_port = p_node->getPort(portNum);
+		p_remPort = p_port->p_remotePort;
+		p_remFTNode = getFatTreeNodeByNode(p_remPort->p_node);
       if (!p_remFTNode)
          cout << "-E- Fail to get FatTree Node for node:"
               << p_bestRemPort->p_node->name << endl;
       else
-         assignLftDownWards(p_remFTNode, dLid, p_bestRemPort->num);
+         assignLftDownWards(p_remFTNode, dLid, p_remPort->num, 1);
    }
 
    // Perform Backward traversal through all ports connected to lower
    // level switches in-port = out-port
-   assignLftUpWards(p_ftNode, dLid, outPortNum);
+	assignLftUpWards(p_ftNode, dLid, outPortNum, switchPathOnly);
 
    return(0);
 }
@@ -969,7 +954,7 @@ int FatTree::route()
          if (FabricUtilsVerboseLevel & FABU_LOG_VERBOSE)
             cout << "-V- Start routing LID:" << lid
                  << " at HCA idx:" << hcaIdx << endl;
-         assignLftDownWards(p_ftNode, lid, portNum);
+         assignLftDownWards(p_ftNode, lid, portNum, 0);
 
          hcaIdx++;
       }
@@ -984,11 +969,42 @@ int FatTree::route()
                  << p_node->name
                  << " at HCA idx:" << hcaIdx << endl;
 
-         assignLftDownWards(p_ftNode, 0, 0xFF);
+         assignLftDownWards(p_ftNode, 0, 0xFF, 0);
 
          hcaIdx++;
       }
    }
+
+	// now go over all switches and route to them
+   for (map_tupple_ftnode::iterator tI = NodeByTupple.begin();
+        tI != NodeByTupple.end();
+        tI++)
+   {
+   
+      FatTreeNode *p_ftNode = &((*tI).second);
+      IBNode *p_node = p_ftNode->p_node;
+
+		if (p_node->type != IB_SW_NODE) continue;
+		
+		// find the LID of the switch:
+		int lid = 0;
+	   for (unsigned int pn = 1; (lid == 0) && (pn <= p_node->numPorts); pn++)
+	   {
+			IBPort *p_port = p_node->getPort(pn);
+			if (p_port)
+				lid = p_port->base_lid;
+		}
+		if (lid == 0) 
+		{
+			cout << "-E- failed to find LID for switch:" << p_node->name << endl;
+		} else {
+         if (FabricUtilsVerboseLevel & FABU_LOG_VERBOSE)
+            cout << "-V- routing to LID:" << lid << " of switch:"
+                 << p_node->name << endl;
+			assignLftDownWards(p_ftNode, lid, 0, 0);
+		}
+	}
+	
    return(0);
 }
 
