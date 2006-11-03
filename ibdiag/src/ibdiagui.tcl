@@ -1525,7 +1525,7 @@ proc LogAnalyze {{startIndex 0.0}} {
 
 	set startChar 0
 	set numGuids 0 
-	set rex {GUID=*(0x[0-9a-fA-F]+)}
+	set rex {[Gg][Uu][Ii][Dd]=*(0x[0-9a-fA-F]+)}
 	while {[regexp -start $startChar -indices -- $rex $text all guid]} {
 		set sIdx [lindex $guid 0]
 		set eIdx [expr [lindex $guid 1] + 1]
@@ -2267,7 +2267,7 @@ if {$testModeDirIdx >= 0} {
 }
 
 InitalizeIBdiag
-startIBDebug
+StartIBDebug
 
 # We init the Tk only after parsing the command line
 # to avoid the interpretation of args by Tk.
