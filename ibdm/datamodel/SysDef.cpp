@@ -523,11 +523,38 @@ IBSystemsCollection *theSysDefsCollection()
   // we only need to initialize once.
   if (! p_sysDefsColl) {
     p_sysDefsColl = new IBSystemsCollection();
-#ifdef IBDM_IBNL_DIR
     list< string > dirs;
-    dirs.push_back(string(IBDM_IBNL_DIR "/ibdm1.0/ibnl"));
-    p_sysDefsColl->parseSysDefsFromDirs(dirs);
+#ifdef IBDM_IBNL_DIR
+    dirs.push_back(string(IBDM_IBNL_DIR "/ibnl"));
 #endif
+	 char *ibnlDirs = getenv("IBDM_IBNL_PATH");
+	 if (ibnlDirs != NULL)
+	 {
+		 string delimiters(":, ");
+		 string str = string(ibnlDirs);
+		 // Skip delimiters at beginning.
+		 string::size_type lastPos = str.find_first_not_of(delimiters, 0);
+		 // Find first "non-delimiter".
+		 string::size_type pos     = str.find_first_of(delimiters, lastPos);
+
+		 while (string::npos != pos || string::npos != lastPos)
+		 {
+			 // Found a token, add it to the vector.
+			 dirs.push_back(str.substr(lastPos, pos - lastPos));
+			 // Skip delimiters.  Note the "not_of"
+			 lastPos = str.find_first_not_of(delimiters, pos);
+			 // Find next "non-delimiter"
+			 pos = str.find_first_of(delimiters, lastPos);
+		 }
+	 }
+
+	 if (dirs.size() == 0)
+	 {
+		 cout << "-E- No IBNL directories provided. " << endl;
+		 cout << "    Please provide environment variable IBDM_IBNL_PATH" <<endl;
+		 cout << "    with a colon separated list of ibnl directories." << endl;
+	 }
+    p_sysDefsColl->parseSysDefsFromDirs(dirs);
   }
   return p_sysDefsColl;
 }
