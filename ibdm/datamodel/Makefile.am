@@ -67,9 +67,9 @@ endif
 # We have a special mode where we know the package will be eventually moved
 # to $with_final_prefix
 if USE_FINAL_PREFIX
-IBNL_PATH=-DIBDM_IBNL_DIR='"$(with_final_prefix)/lib"' 
+IBNL_PATH=-DIBDM_IBNL_DIR='"$(with_final_prefix)/lib/ibdm$(VERSION)"' 
 else
-IBNL_PATH=-DIBDM_IBNL_DIR='"$(libdir)"'
+IBNL_PATH=-DIBDM_IBNL_DIR='"$(libdir)/ibdm$(VERSION)"'
 endif
 
 AM_CXXFLAGS = $(DBG) $(IBNL_PATH) $(TCL_CPPFLAGS) $(REGEXP_INCLUDE)
@@ -135,4 +135,4 @@ install-exec-am: install-binPROGRAMS
 	mkdir -p $(DESTDIR)$(libdir)/ibdm$(VERSION)
 	cp .libs/$(shell grep dlname libibdm.la | sed 's/.*=\(.*\)/\1/') \
 	   $(DESTDIR)$(libdir)/ibdm$(VERSION)/libibdm.so.$(VERSION)
-	cp $(srcdir)/pkgIndex.tcl $(DESTDIR)$(libdir)/ibdm$(VERSION)/pkgIndex.tcl
+	sed 's/%VERSION%/'$(VERSION)'/' $(srcdir)/pkgIndex.tcl > $(DESTDIR)$(libdir)/ibdm$(VERSION)/pkgIndex.tcl
