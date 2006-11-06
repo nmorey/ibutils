@@ -66,13 +66,15 @@ source [file join [file dirname [info script]] ibdebug.tcl]
 ### Action 
 ######################################################################
 ### Initialize ibis and pre-setting for ibdiag
-InitalizeIBdiag
-InitalizeINFO_LST
-StartIBDebug
-set G(detect.bad.links) 1
+InitializeIBDIAG
+InitializeINFO_LST
+StartIBDIAG
+
+set G(bool:detect.bad.links) 1
 
 ### Discover the cluster
 if {[catch {DiscoverFabric 0} e]} {
+    puts <$e>
     ### Discover the hidden cluster
     if {[catch {DiscoverHiddenFabric} e]} { 
         inform "-I-discover:discovery.status"
@@ -87,7 +89,7 @@ writeMasksFile
 writeLstFile
 
 ### match topology (if topology was given)
-set G(matchTopologyResult) [matchTopology $G(outfiles,.lst)]
+set G(bool:match.topology.result) [matchTopology $G(outfiles,.lst)]
 DumpBadLidsGuids
 DumpBadLinksLogic
 CheckSM
@@ -105,11 +107,14 @@ BadLinksUserInform
 ### report the results of topology matching (after bad links report)
 reportTopologyMatching
 
+### run packages provided procs
+RunPkgProcs
+
 ### report fabric qualities
 if {[catch {reportFabQualities} e]} { puts "\n\nERROR $errorInfo $e" ; exit 1}
 
 ### Finishing
-FinishIBDebug
+FinishIBDIAG
 ######################################################################
-package provide $G(tool)
+package provide $G(var:tool.name)
 

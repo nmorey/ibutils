@@ -67,11 +67,11 @@ proc ibdiagpathMain {} {
     global G errorInfo
     set addressingLocalPort 0
     # So we could use topology file names
-    set G(matchTopologyResult) [info exists G(argv,topo.file)]
+    set G(bool:match.topology.result) [info exists G(argv:topo.file)]
     # lid routing
-    if {[info exists G(argv,lid.route)]} {
-        set targets [split $G(argv,lid.route) ","]
-        if { $G(argv,lid.route) == $G(RootPort,Lid) } { 
+    if {[info exists G(argv:lid.route)]} {
+        set targets [split $G(argv:lid.route) ","]
+        if { $G(argv:lid.route) == $G(data:root.port.lid) } { 
             set addressingLocalPort 1
         }
         if {[llength $targets] == 2} {
@@ -82,31 +82,31 @@ proc ibdiagpathMain {} {
     }
     
     # direct routing
-    if [info exists G(argv,direct.route)] {
-        set targets [list [split $G(argv,direct.route) ","]]
-        if { $G(argv,direct.route) == "" } {
+    if [info exists G(argv:direct.route)] {
+        set targets [list [split $G(argv:direct.route) ","]]
+        if { $G(argv:direct.route) == "" } {
             set addressingLocalPort 1
         }
     }
     # CHECK some Where that the names are legal
-    if [info exists G(argv,by-name.route)] {
-        array set mergedNodesArray [join [IBFabric_NodeByName_get $G(fabric,.topo)]]
+    if [info exists G(argv:by-name.route)] {
+        array set mergedNodesArray [join [IBFabric_NodeByName_get $G(IBfabric:.topo)]]
 
-        set localNodePtr  [IBFabric_getNode $G(fabric,.topo) $G(argv,sys.name)]
-        set localPortPtr  [IBNode_getPort $localNodePtr $G(argv,port.num)]
+        set localNodePtr  [IBFabric_getNode $G(IBfabric:.topo) $G(argv:sys.name)]
+        set localPortPtr  [IBNode_getPort $localNodePtr $G(argv:port.num)]
         set localPortName [IBPort_getName $localPortPtr]
         if {[catch {set tmpRemote [IBPort_p_remotePort_get $localPortPtr]}]} {
             continue
         }
         foreach portPtr [getArgvPortNames] {
             if { $portPtr == $localPortPtr } {
-                lappend targets $G(RootPort,Lid)
+                lappend targets $G(data:root.port.lid)
             } else {
-                if {[catch {set tmpDR [name2Lid $tmpRemote $portPtr $G(argv,port.num)]} e]} {
+                if {[catch {set tmpDR [name2Lid $tmpRemote $portPtr $G(argv:port.num)]} e]} {
                     inform "-E-topology:bad.sysName.or.bad.topoFile" -name [IBPort_getName $portPtr]
                 }
                 if {$tmpDR == -1} {
-                    inform "-E-topology:no.route.to.host.in.topo.file" -name [IBPort_getName $portPtr] -topo.file $G(argv,topo.file)
+                    inform "-E-topology:no.route.to.host.in.topo.file" -name [IBPort_getName $portPtr] -topo.file $G(argv:topo.file)
                 }
                 if {[lindex $tmpDR end ] == 0} {
                     if {[catch {set newTarget [GetParamValue LID [lrange $tmpDR 0 end-1] -port 0 -byDr]} e]} {
@@ -127,7 +127,7 @@ proc ibdiagpathMain {} {
                 lappend targetsNames 
             }
             lappend targetsNames [IBPort_getName $portPtr]
-            if { "$targets" == $G(RootPort,Lid) } { 
+            if { "$targets" == $G(data:root.port.lid) } { 
                 set addressingLocalPort 1 
             } 
         }
@@ -136,11 +136,11 @@ proc ibdiagpathMain {} {
                 -name1 [lindex $targetsNames 1] -lid0 [lindex $targets 0] -lid1 [lindex $targets 1]
         } else {
             inform "-I-ibdiagpath:obtain.src.and.dst.lids" -name0 $localPortName \
-                -name1 [lindex $targetsNames 0] -lid0 $G(RootPort,Lid) -lid1 [lindex $targets 0]
+                -name1 [lindex $targetsNames 0] -lid0 $G(data:root.port.lid) -lid1 [lindex $targets 0]
         }
     }
     set paths ""
-    set G(detect.bad.links) 1
+    set G(bool:detect.bad.links) 1
     for {set i 0} {$i < [llength $targets]} {incr i} {
         set address [lindex $targets $i]
         if { !$addressingLocalPort} {
@@ -156,11 +156,11 @@ proc ibdiagpathMain {} {
         }
         set paths [concat $paths [DiscoverPath [lindex $paths end] $address]]
     }
-    set G(detect.bad.links) 0
+    set G(bool:detect.bad.links) 0
     ## for the special case when addressing the local node
     if $addressingLocalPort {
         inform "-W-ibdiagpath:ardessing.local.node"
-        set paths $G(argv,port.num)
+        set paths $G(argv:port.num)
     }
 
     # Translating $src2trgtPath (starting at node at index $startIndex) into a list of LIDs and ports
@@ -191,15 +191,19 @@ proc ibdiagpathMain {} {
 ### Action 
 ######################################################################
 ### Initialize ibis
-InitalizeIBdiag
-InitalizeINFO_LST
-StartIBDebug
+InitializeIBDIAG
+InitializeINFO_LST
+StartIBDIAG
 
 ### Figuring out the paths to take and Reading Performance Counters
-set G(detect.bad.links) 1
+set G(bool:detect.bad.links) 1
 ibdiagpathMain
-set G(detect.bad.links) 0
+set G(bool:detect.bad.links) 0
 CheckAllinksSettings
+
+### run packages provided procs
+RunPkgProcs
+
 ### Finishing
-FinishIBDebug
+FinishIBDIAG
 ######################################################################
