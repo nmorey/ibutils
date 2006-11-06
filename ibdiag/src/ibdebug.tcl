@@ -1419,17 +1419,21 @@ proc DiscoverPath { _path2Start node } {
 
         if {$DirectPath != ""} {
             if {![catch {set tmpLog [GetParamValue LOG [lrange $DirectPath 0 end-1] -port [lindex $DirectPath end] -byDr]}]} {
-                if {$tmpLog == "INI"} {
-                        lappend LINK_STATE [join "$DirectPath"]
+                if {$tmpLog == "INI"} { 
+                    lappend LINK_STATE [join "$DirectPath"]
+                    if { ![info exists G(argv:symmetric.multi.processing)]} {
                         PrintPath $_path2Start
                         inform "-E-ibdiagpath:link.not.active" -DirectPath0 [lrange $DirectPath 0 end-1] -port  [lindex $DirectPath end]
+                    }
                 }
             }
             if {![catch {set tmpLog [GetParamValue LOG $DirectPath -port $EntryPort -byDr]}]} {
-                if {$tmpLog == "INI"} {
-                        lappend LINK_STATE [join "$DirectPath"]
+                if {$tmpLog == "INI"} { 
+                    lappend LINK_STATE [join "$DirectPath"]
+                    if { ![info exists G(argv:symmetric.multi.processing)]} {
                         PrintPath $_path2Start
                         inform "-E-ibdiagpath:link.not.active" -DirectPath0 $DirectPath -port $EntryPort
+                    }
                 }
             }
         }

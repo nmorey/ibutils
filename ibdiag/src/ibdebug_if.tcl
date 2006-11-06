@@ -15,7 +15,12 @@
 # -deafult "" means that the parameter does have a default value, but it will set later (after ibis is ran, in proc StartIBDIAG).
 ## TODO: sm_key is a 64-bit integer - will it be correctly cheked in parseArgv ?
 array set InfoArgv {
+    -smp,name   "symmetric.multi.processing"
+    -smp,desc	"Instructs the tool to run in smp mode"
+    -smp,arglen	0
+
     -sl,name    "service.level"
+    -sl,desc    "Determine if the provided sl is legit for the route"
     -sl,param	"service level" 
     -sl,regexp	"integer.nonneg.==1"
     -sl,error	"-E-argv:not.pos.integer"
@@ -240,13 +245,13 @@ proc SetToolsFlags {} {
     # If a few flags are thus encompassed, then they are mutex
     global TOOLS_FLAGS
     array set TOOLS_FLAGS {
-        ibping	   "(n|l|d) c w v    t s i p o"
-        ibdiagpath "(n|l|d) c   v    t s i p o . pm pc P . lw ls sl ."
-        ibdiaggui  "        c   v r  t s i p o . pm pc P . lw ls ."
-        ibdiagnet  "        c   v r  t s i p o . pm pc P . lw ls ."
-        ibcfg	   "(n|l|d) (c|q)    t s i p o"
-        ibmad	   "(m) (a) (n|l|d)  t s i p o ; (q) a"
-        ibsac	   "(m) (a) k        t s i p o ; (q) a"
+        ibping	   "(n|l|d) . c w v o     . t s i p "
+        ibdiagpath "(n|l|d) . c   v o smp . t s i p . pm pc P . lw ls sl ."
+        ibdiaggui  "        c   v r o   . t s i p . pm pc P . lw ls ."
+        ibdiagnet  "        c   v r o   . t s i p . pm pc P . lw ls ."
+        ibcfg	   "(n|l|d) (c|q)       . t s i p o"
+        ibmad	   "(m) (a) (n|l|d)     . t s i p o ; (q) a"
+        ibsac	   "(m) (a) k           .t s i p o ; (q) a"
 
         envVars	   "t s i p o"
         general	   "h V -vars"
@@ -2216,7 +2221,9 @@ ERROR CODES
 	    set flagNparam "-$flag"
 	    catch { append flagNparam " <$InfoArgv(-$flag,param)>" }
 	    set flagNdesc "$flagNparam:"
-	    catch { append flagNdesc " $InfoArgv(-$flag,desc)" }
+            if {[catch { append flagNdesc " $InfoArgv(-$flag,desc)" }]} {
+                append flagNdesc " "
+            }
 	    catch { 
 		if { ( [set defVal $InfoArgv(-$flag,default)] != "" ) \
 			 && ( ! [WordInList $flag "i v"] ) } {
