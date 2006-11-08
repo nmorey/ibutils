@@ -761,13 +761,13 @@ proc GraphUpdate {lstFile} {
 
 	set gFabric [new_IBFabric]
 
-	if {![info exists G(argv,topo.file)]} {
+	if {![info exists G(argv:topo.file)]} {
 		puts "-I- Parsing subnet lst: $lstFile"
 		IBFabric_parseSubnetLinks $gFabric $lstFile
 	} else {
 		# load the topo
 		set gTopoFabric [new_IBFabric]
-		IBFabric_parseTopology $gTopoFabric $G(argv,topo.file)
+		IBFabric_parseTopology $gTopoFabric $G(argv:topo.file)
 
 		# load the lst
 		set gLstFabric [new_IBFabric]
@@ -775,7 +775,7 @@ proc GraphUpdate {lstFile} {
 
 		# compare and merge
 		set m [ibdmMatchFabrics $gTopoFabric $gLstFabric \
-					 $G(argv,sys.name) $G(argv,port.num) $G(RootPort,Guid)]
+					 $G(argv:sys.name) $G(argv:port.num) $G(data:root.port.guid)]
 		puts $m
 
 		ibdmBuildMergedFabric $gTopoFabric $gLstFabric $gFabric
@@ -1073,7 +1073,7 @@ proc guiHighLightByDR {startPort route} {
 		# try to get a port by that name
 		set port [findPortByName $startPort]
 		if {$port == ""} {
-			SetStatus "-W- Fail to find system port or port with name:\"$name\""
+			SetStatus "-W- Fail to find system port or port with name:\"$startPort\""
 			return
 		}
 	} else {
@@ -1292,7 +1292,7 @@ proc getDrToNode {targetNode} {
 	global G
 	global gFabric
 
-	set startPort [IBFabric_getPortByGuid $gFabric $G(RootPort,Guid)]
+	set startPort [IBFabric_getPortByGuid $gFabric $G(data:root.port.guid)]
 	if {$startPort == ""} {
 		puts "-E- Fail to find start port !"
 		return -1
@@ -1607,7 +1607,7 @@ proc LogObjSelect {log type w x y} {
 			}
 		}
 		ROUTE {
-			guiHighLightByDR  "$G(argv,sys.name)/P$G(argv,port.num)" $val
+			guiHighLightByDR  "$G(argv:sys.name)/P$G(argv:port.num)" $val
 		}
 		GUID {
 			set x [guiHighLightByGuid system $val]
@@ -1742,6 +1742,108 @@ proc initPropsGui {p} {
 # MAIN MENU COMMANDS
 # 
 ##############################################################################
+proc getNodeLid {node} {
+	set port ""
+	for {set pn 1} {$pn <= [IBNode_numPorts_get $node]} {incr pn} {
+		set port [IBNode_getPort $node $pn]
+		if {$port != ""} {
+			set remPort [IBPort_p_remotePort_get $port]
+			if {$remPort != ""} {break}
+		}
+	}
+	if {$remPort == ""} {return 0}
+	set lid [IBPort_base_lid_get $port]
+	return $lid
+}
+
+# given a key and a list of ley/value pairs get the pair
+proc assoc {key key_list} {
+   foreach kv $key_list {
+      if {[lindex $kv 0] == $key} {return [lindex $kv 1]}
+   }
+
+   return ""
+}
+
+proc SetVL0Statics {} {
+	global gFabric
+
+	set staticCredits 0x68
+	foreach nNNode [IBFabric_NodeByName_get $gFabric] {
+		set node [lindex $nNNode 1]
+		set sys [IBNode_p_system_get $node]
+		set name "[IBSystem_name_get $sys]/[lindex $nNNode 0]"
+		set devId [IBNode_devId_get $node]
+		set lid [getNodeLid $node]
+		if {$lid == 0} {
+			puts "-W- Ignoring node $name with zero LID"
+			continue
+		}
+
+		# differet treatment for switches and HCAs
+		switch $devId {
+			23108 -
+			25204 -
+			25208 -
+			25218 {
+				# port 1 0x100A0.24 (len 7)
+				set v [crRead $lid 0x100A0]
+				set d [assoc data $v]
+				if {$d == ""} {
+					puts "-W- Failed to obtain data from $name lid:$lid"
+					continue
+				}
+
+				set nd [format 0x%x [expr $d & 0x8fffffff | ($staticCredits << 24)]]
+				if {$d != $nd} {
+					puts "-I- Updating $name P1 $d -> $nd"
+					crWrite $lid $nd 0x100A0 
+				}
+				if {$devId != 25208} {
+					# port 2 0x108A0.24
+					set v [crRead $lid 0x108A0]
+					set d [assoc data $v]
+					if {$d == ""} {
+						puts "-W- Failed to obtain data from $name lid:$lid"
+						continue
+					}
+
+					set nd [format 0x%x [expr $d & 0x8fffffff | ($staticCredits << 24)]]
+					if {$d != $nd} {
+						puts "-I- Updating $name P2 $d -> $nd"
+						crWrite $lid $nd 0x108A0
+					}
+				}
+			}
+			47396 {
+				set addr 101280
+				for {set i 0} {$i < 24} {incr i} {
+					# IB port 1 101280.16
+					# CR 0  101280.16 (len 16)
+					# CR 1  102280.16
+					# CR 23 118280.16
+					set v [crRead $lid $addr]
+					set d [assoc data $v]
+					if {$d == ""} {
+						puts "-W- Failed to obtain data from $name lid:$lid"
+						continue
+					}
+					set nd [format 0x%x [expr $d & 0xffff | ($staticCredits << 16)]]
+					if {$d != $nd} {
+						puts "-I- Updating $name P[expr $i + 1] $d -> $nd"
+						crWrite $lid $nd $addr
+					}
+					
+					incr addr 0x1000
+				}
+			}
+			default {
+				puts "-W- Ignoring node $name with devId:$devId"
+			}
+		}
+	}
+
+}
 
 proc DiagNet {} {
 	global G
@@ -1895,7 +1997,7 @@ proc FindByDR {} {
 		pack $f.x -side bottom -fill x -expand yes
 		pack $f
 		wm title .find_by_dr "IBDiagUI - Find objects on a Directed Route"
-		set FindByDR(port) "$G(argv,sys.name)/P$G(argv,port.num)"
+		set FindByDR(port) "$G(argv:sys.name)/P$G(argv:port.num)"
 	}
 	wm deiconify .find_by_dr
 }
@@ -2007,6 +2109,8 @@ proc initMenuBar {m} {
 	
 	menu $m.refresh.menu -tearoff no
 	$m.refresh.menu add command -label Network -command DiagNet
+	$m.refresh.menu add command -label "Add Statics to VL0" \
+		-command SetVL0Statics
 	
 	menu $m.find.menu -tearoff no
 	$m.find.menu add command -label Name -command FindByName
@@ -2266,8 +2370,11 @@ if {$testModeDirIdx >= 0} {
 	set testModeDir 0
 }
 
-InitalizeIBdiag
-StartIBDebug
+InitializeIBDIAG
+StartIBDIAG
+if {! [info exists G(argv:sys.name)]} {
+	set G(argv:sys.name) [lindex [split [info hostname] .] 0]
+}
 
 # We init the Tk only after parsing the command line
 # to avoid the interpretation of args by Tk.
