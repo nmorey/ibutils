@@ -247,7 +247,7 @@ proc SetToolsFlags {} {
     array set TOOLS_FLAGS {
         ibping	   "(n|l|d) . c w v o     . t s i p "
         ibdiagpath "(n|l|d) . c   v o smp . t s i p . pm pc P . lw ls sl ."
-        ibdiaggui  "        c   v r o   . t s i p . pm pc P . lw ls ."
+        ibdiagui   "        c   v r o   . t s i p . pm pc P . lw ls ."
         ibdiagnet  "        c   v r o   . t s i p . pm pc P . lw ls ."
         ibcfg	   "(n|l|d) (c|q)       . t s i p o"
         ibmad	   "(m) (a) (n|l|d)     . t s i p o ; (q) a"
@@ -378,7 +378,8 @@ proc parseArgv {} {
     set argvList $argv
 
     regsub -all {[()|]} $infoFlags " " allLegalFlags
-    set allLegalFlags "-[join $allLegalFlags " -"]"
+	 set allLegalFlags "-[join $allLegalFlags { -}]"
+
     while { [llength $argvList] > 0 } {
         set flag  [lindex $argvList 0]
         if {[BoolPackageFlag $flag]} {
