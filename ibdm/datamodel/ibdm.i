@@ -977,9 +977,9 @@ class IBNode {
  public:
   string			   name;      // Name of the node (instance name of the chip)
   IBNodeType		type;      // Either a CA or SW
-  uint16_t        devId;     // The device ID of the node
-  uint16_t        revId;     // The device revision Id.
-  uint16_t        vendId;    // The device Vendor ID.
+  uint32_t        devId;     // The device ID of the node
+  uint32_t        revId;     // The device revision Id.
+  uint32_t        vendId;    // The device Vendor ID.
   string          attributes;// Comma-sep string of arbitrary attributes k=v
 %readonly
   IBSystem	     *p_system; // What system we belong to

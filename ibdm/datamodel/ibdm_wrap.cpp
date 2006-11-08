@@ -7049,16 +7049,16 @@ static int _wrap_IBNode_type_get(ClientData clientData, Tcl_Interp *interp, int 
 #define IBNode_devId_set(_swigobj,_swigval) (_swigobj->devId = *(_swigval),_swigval)
 static int _wrap_IBNode_devId_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
 
-    uint16_t * _result;
+    uint32_t * _result;
     IBNode * _arg0;
-    uint16_t * _arg1;
+    uint32_t * _arg1;
     Tcl_Obj * tcl_result;
-    uint16_t  temp;
+    uint32_t  temp;
 
     clientData = clientData; objv = objv;
     tcl_result = Tcl_GetObjResult(interp);
     if ((objc < 3) || (objc > 3)) {
-        Tcl_SetStringObj(tcl_result,"Wrong # args. IBNode_devId_set { IBNode * } { uint16_t * } ",-1);
+        Tcl_SetStringObj(tcl_result,"Wrong # args. IBNode_devId_set { IBNode * } { uint32_t * } ",-1);
         return TCL_ERROR;
     }
 {
@@ -7131,12 +7131,12 @@ static int _wrap_IBNode_devId_set(ClientData clientData, Tcl_Interp *interp, int
   }
 }
 {
-  temp = atoi(Tcl_GetStringFromObj(objv[2],NULL));
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
   _arg1 = &temp;
 }
 { 
   ibdm_tcl_error = 0;
-      _result = (uint16_t *)IBNode_devId_set(_arg0,_arg1);
+      _result = (uint32_t *)IBNode_devId_set(_arg0,_arg1);
 ; 
   if (ibdm_tcl_error) { 
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
@@ -7153,7 +7153,7 @@ static int _wrap_IBNode_devId_set(ClientData clientData, Tcl_Interp *interp, int
 #define IBNode_devId_get(_swigobj) (&_swigobj->devId)
 static int _wrap_IBNode_devId_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
 
-    uint16_t * _result;
+    uint32_t * _result;
     IBNode * _arg0;
     Tcl_Obj * tcl_result;
 
@@ -7234,7 +7234,7 @@ static int _wrap_IBNode_devId_get(ClientData clientData, Tcl_Interp *interp, int
 }
 { 
   ibdm_tcl_error = 0;
-      _result = (uint16_t *)IBNode_devId_get(_arg0);
+      _result = (uint32_t *)IBNode_devId_get(_arg0);
 ; 
   if (ibdm_tcl_error) { 
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
@@ -7251,16 +7251,16 @@ static int _wrap_IBNode_devId_get(ClientData clientData, Tcl_Interp *interp, int
 #define IBNode_revId_set(_swigobj,_swigval) (_swigobj->revId = *(_swigval),_swigval)
 static int _wrap_IBNode_revId_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
 
-    uint16_t * _result;
+    uint32_t * _result;
     IBNode * _arg0;
-    uint16_t * _arg1;
+    uint32_t * _arg1;
     Tcl_Obj * tcl_result;
-    uint16_t  temp;
+    uint32_t  temp;
 
     clientData = clientData; objv = objv;
     tcl_result = Tcl_GetObjResult(interp);
     if ((objc < 3) || (objc > 3)) {
-        Tcl_SetStringObj(tcl_result,"Wrong # args. IBNode_revId_set { IBNode * } { uint16_t * } ",-1);
+        Tcl_SetStringObj(tcl_result,"Wrong # args. IBNode_revId_set { IBNode * } { uint32_t * } ",-1);
         return TCL_ERROR;
     }
 {
@@ -7333,12 +7333,12 @@ static int _wrap_IBNode_revId_set(ClientData clientData, Tcl_Interp *interp, int
   }
 }
 {
-  temp = atoi(Tcl_GetStringFromObj(objv[2],NULL));
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
   _arg1 = &temp;
 }
 { 
   ibdm_tcl_error = 0;
-      _result = (uint16_t *)IBNode_revId_set(_arg0,_arg1);
+      _result = (uint32_t *)IBNode_revId_set(_arg0,_arg1);
 ; 
   if (ibdm_tcl_error) { 
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
@@ -7355,7 +7355,7 @@ static int _wrap_IBNode_revId_set(ClientData clientData, Tcl_Interp *interp, int
 #define IBNode_revId_get(_swigobj) (&_swigobj->revId)
 static int _wrap_IBNode_revId_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
 
-    uint16_t * _result;
+    uint32_t * _result;
     IBNode * _arg0;
     Tcl_Obj * tcl_result;
 
@@ -7436,7 +7436,7 @@ static int _wrap_IBNode_revId_get(ClientData clientData, Tcl_Interp *interp, int
 }
 { 
   ibdm_tcl_error = 0;
-      _result = (uint16_t *)IBNode_revId_get(_arg0);
+      _result = (uint32_t *)IBNode_revId_get(_arg0);
 ; 
   if (ibdm_tcl_error) { 
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
@@ -7453,16 +7453,16 @@ static int _wrap_IBNode_revId_get(ClientData clientData, Tcl_Interp *interp, int
 #define IBNode_vendId_set(_swigobj,_swigval) (_swigobj->vendId = *(_swigval),_swigval)
 static int _wrap_IBNode_vendId_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
 
-    uint16_t * _result;
+    uint32_t * _result;
     IBNode * _arg0;
-    uint16_t * _arg1;
+    uint32_t * _arg1;
     Tcl_Obj * tcl_result;
-    uint16_t  temp;
+    uint32_t  temp;
 
     clientData = clientData; objv = objv;
     tcl_result = Tcl_GetObjResult(interp);
     if ((objc < 3) || (objc > 3)) {
-        Tcl_SetStringObj(tcl_result,"Wrong # args. IBNode_vendId_set { IBNode * } { uint16_t * } ",-1);
+        Tcl_SetStringObj(tcl_result,"Wrong # args. IBNode_vendId_set { IBNode * } { uint32_t * } ",-1);
         return TCL_ERROR;
     }
 {
@@ -7535,12 +7535,12 @@ static int _wrap_IBNode_vendId_set(ClientData clientData, Tcl_Interp *interp, in
   }
 }
 {
-  temp = atoi(Tcl_GetStringFromObj(objv[2],NULL));
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
   _arg1 = &temp;
 }
 { 
   ibdm_tcl_error = 0;
-      _result = (uint16_t *)IBNode_vendId_set(_arg0,_arg1);
+      _result = (uint32_t *)IBNode_vendId_set(_arg0,_arg1);
 ; 
   if (ibdm_tcl_error) { 
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
@@ -7557,7 +7557,7 @@ static int _wrap_IBNode_vendId_set(ClientData clientData, Tcl_Interp *interp, in
 #define IBNode_vendId_get(_swigobj) (&_swigobj->vendId)
 static int _wrap_IBNode_vendId_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
 
-    uint16_t * _result;
+    uint32_t * _result;
     IBNode * _arg0;
     Tcl_Obj * tcl_result;
 
@@ -7638,7 +7638,7 @@ static int _wrap_IBNode_vendId_get(ClientData clientData, Tcl_Interp *interp, in
 }
 { 
   ibdm_tcl_error = 0;
-      _result = (uint16_t *)IBNode_vendId_get(_arg0);
+      _result = (uint32_t *)IBNode_vendId_get(_arg0);
 ; 
   if (ibdm_tcl_error) { 
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
