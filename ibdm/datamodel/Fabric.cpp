@@ -1323,23 +1323,34 @@ IBFabric::addLink(string type1, int numPorts1,
   }
 
   // make sure the nodes exists
-  sprintf(buf,"N%016" PRIx64, nodeGuid1);
-  if (type1 == "SW") {
-    p_node1 = makeNode(buf, p_sys1, IB_SW_NODE, numPorts1);
-  } else {
-    if (desc1.size()) 
-      sprintf(buf,"%s/U%d", desc1.c_str(), hcaIdx1);
-    p_node1 = makeNode(buf, p_sys1, IB_CA_NODE, numPorts1);
+  p_node1 = getNodeByGuid(nodeGuid1);
+  if (! p_node1) {
+	  // if we got a desc name 
+	  if ((type1 != "SW") && desc1.size())
+		  sprintf(buf,"%s/U%d", desc1.c_str(), hcaIdx1);
+	  else
+		  sprintf(buf,"U%d", NodeByGuid.size() + 1);
+	  if (type1 == "SW") {
+		  p_node1 = makeNode(buf, p_sys1, IB_SW_NODE, numPorts1);
+	  } else {
+		  p_node1 = makeNode(buf, p_sys1, IB_CA_NODE, numPorts1);
+	  }
+	  p_node1->guid_set(nodeGuid1);
   }
 
-  sprintf(buf,"N%016" PRIx64, nodeGuid2);
-  if (type2 == "SW") {
-    p_node2 = makeNode(buf, p_sys2, IB_SW_NODE, numPorts2);
-  } else {
-    if (desc2.size()) 
-      sprintf(buf,"%s/U%d", desc2.c_str(), hcaIdx2);
-    
-    p_node2 = makeNode(buf, p_sys2, IB_CA_NODE, numPorts2);
+  p_node2 = getNodeByGuid(nodeGuid2);
+  if (! p_node2) {
+	  // if we got a desc name 
+	  if ((type2 != "SW") && desc2.size())
+		  sprintf(buf,"%s/U%d", desc2.c_str(), hcaIdx2);
+	  else
+		  sprintf(buf,"U%d", NodeByGuid.size() + 1);
+	  if (type2 == "SW") {
+		  p_node2 = makeNode(buf, p_sys2, IB_SW_NODE, numPorts2);
+	  } else {
+		  p_node2 = makeNode(buf, p_sys2, IB_CA_NODE, numPorts2);
+	  }
+	  p_node2->guid_set(nodeGuid2);
   }
 
   // we want to use the host names if they are defined:
@@ -1470,9 +1481,14 @@ IBFabric::parseSubnetLine(char *line) {
 
   pch = strtok(NULL, " ");
   if (!pch || strncmp(pch,"DevID:",6)) return(8);
-  devId1 = strtol(pch+6, NULL, 16);
-  
+  char *pdid1 = pch+6;
   pch = strtok(NULL, " ");
+
+  // handle old broken DevId field in subnet.lst
+  // which was adding 0000 suffix. Should have been 16 bits only
+  if (strlen(pdid1) == 8) pdid1[4] = '\0';
+  devId1 = strtol(pdid1, NULL, 16);
+  
   if (!pch || strncmp(pch,"Rev:",4)) return(9);
   rev1 = strtol(pch+4, NULL, 16);
 
@@ -1534,9 +1550,14 @@ IBFabric::parseSubnetLine(char *line) {
 
   pch = strtok(NULL, " ");
   if (!pch || strncmp(pch,"DevID:",6)) return(21);
-  devId2 = strtol(pch+6, NULL, 16);
-  
+  char *pdid2 = pch+6;
   pch = strtok(NULL, " ");
+
+  // handle old broken DevId field in subnet.lst
+  // which was adding 0000 suffix. Should have been 16 bits only
+  if (strlen(pdid2) == 8) pdid2[4] = '\0';
+  devId2 = strtol(pdid2, NULL, 16);
+  
   if (!pch || strncmp(pch,"Rev:",4)) return(22);
   rev2 = strtol(pch+4, NULL, 16);
 
