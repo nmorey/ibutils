@@ -118,7 +118,7 @@ NODE {
   return NODE;
 }
 
-4x|8x|12x {
+1x|4x|8x|12x {
 	 yylval.sval = (char *)malloc(strlen(yytext) + 1);
     strcpy(yylval.sval, yytext);
 #ifdef DEBUG
