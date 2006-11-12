@@ -423,9 +423,12 @@ proc SetPortNDevice {_ibisInfo} {
         }
         # Special case for ibdiagpath
         if { ( $portState != "ACTIVE" ) && ( $G(var:tool.name) == "ibdiagpath" ) } {
-            inform "-E-localPort:local.port.of.device.not.active" \
-                 -port $G(argv:port.num) -state $portState -device $G(argv:dev.idx)
-        }
+            # -smp flag allow ibdiagpath to work with INIT state
+            if {(![info exists G(argv:symmetric.multi.processing)]) || ($portState != "INIT") } {
+                inform "-E-localPort:local.port.of.device.not.active" \
+                    -port $G(argv:port.num) -state $portState -device $G(argv:dev.idx)
+            }
+        }    
     }
 
     # Perform if only a specific device index was requested 
@@ -439,9 +442,11 @@ proc SetPortNDevice {_ibisInfo} {
         foreach name [lsort [array names PORT_HCA $G(argv:dev.idx),*:PortState]] {
             set portState $PORT_HCA($name)
             if { $portState == "DOWN" } {continue;} 
-            if { ( $portState != "ACTIVE" ) && ( $G(var:tool.name) == "ibdiagpath" ) } {
-                continue;
-            }
+	    if { ( $portState != "ACTIVE" ) && ( $G(var:tool.name) == "ibdiagpath" ) } {
+                if {(![info exists G(argv:symmetric.multi.processing)]) || ($portState != "INIT") } {
+                    continue;
+                }
+            }    
             incr upPorts
             if {$allPortsDown} {
                 set saveEntry $name
@@ -473,7 +478,11 @@ proc SetPortNDevice {_ibisInfo} {
             set portState $PORT_HCA($name)
             if { $portState == "DOWN" } {continue;} 
             set saveState $portState
-            if { ( $portState != "ACTIVE" ) && ( $G(var:tool.name) == "ibdiagpath" ) } {continue;}
+            if { ( $portState != "ACTIVE" ) && ( $G(var:tool.name) == "ibdiagpath" ) } {
+                if {(![info exists G(argv:symmetric.multi.processing)]) || ($portState != "INIT") } {
+                    continue;
+                }
+            }            
             if {$allPortsDown} {
                 set saveState $portState
                 set G(argv:dev.idx) [lindex [split $name ": ,"] 0]
@@ -507,7 +516,11 @@ proc SetPortNDevice {_ibisInfo} {
             set portState $PORT_HCA($name)
             if { $portState == "DOWN" } {continue;} 
             set saveState $portState
-            if { ( $portState != "ACTIVE" ) && ( $G(var:tool.name) == "ibdiagpath" ) } {continue;}
+	    if { ( $portState != "ACTIVE" ) && ( $G(var:tool.name) == "ibdiagpath" ) } {
+                if {(![info exists G(argv:symmetric.multi.processing)]) || ($portState != "INIT") } {
+                    continue;
+                }
+            }            
             if {$allPortsDown} {
                 set G(argv:dev.idx)  [lindex [split $name ": ,"] 0]
                 set G(argv:port.num) [lindex [split $name ": ,"] 1]
@@ -1573,6 +1586,9 @@ proc DiscoverPath { _path2Start node } {
 }
 proc PrintPath {_Path2Start} {
     global PATH_DUMP G
+    if {![info exists PATH_DUMP]} {
+	return
+    }	
     if { ($_Path2Start != "") && [GetParamValue Type $_Path2Start] != "SW" } {
         set lidGuidDev $PATH_DUMP($_Path2Start,To)
         inform "-I-ibdiagpath:read.lft.from" "$lidGuidDev"
