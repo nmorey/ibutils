@@ -1364,7 +1364,7 @@ IBFabric::addLink(string type1, int numPorts1,
   
   // create system ports if required
   if (sysGuid1 != sysGuid2) {
-    if (type1 == "SW" || hcaIdx1 != 1) {
+    if (type1 == "SW" || desc1.size() == 0 || hcaIdx1 != 1) {
 		 sprintf(buf,"%s/P%u", p_node1->name.c_str(), portNum1);
     } else {
       sprintf(buf,"P%u", portNum1);
@@ -1373,7 +1373,7 @@ IBFabric::addLink(string type1, int numPorts1,
     if (p_sysPort1 == NULL)
       p_sysPort1 = new IBSysPort(buf, p_sys1);
 
-    if (type2 == "SW" || hcaIdx2 != 1) {
+    if (type2 == "SW" || desc2.size() == 0 || hcaIdx2 != 1) {
       sprintf(buf,"%s/P%u", p_node2->name.c_str(), portNum2);
     } else {
       sprintf(buf,"P%u", portNum2);
@@ -1441,11 +1441,11 @@ int
 IBFabric::parseSubnetLine(char *line) {
 
   string type1, desc1;
-  unsigned int  numPorts1, vend1, devId1, rev1, lid1, portNum1, hcaIdx1;
+  unsigned int  numPorts1, vend1, devId1, rev1, lid1, portNum1, hcaIdx1 = 0;
   uint64_t sysGuid1, nodeGuid1, portGuid1;
   
   string type2, desc2;
-  unsigned int  numPorts2, vend2, devId2, rev2, lid2, portNum2, hcaIdx2;
+  unsigned int  numPorts2, vend2, devId2, rev2, lid2, portNum2, hcaIdx2 = 0;
   uint64_t sysGuid2, nodeGuid2, portGuid2;
   IBLinkSpeed speed;
   IBLinkWidth width;
@@ -1502,7 +1502,7 @@ IBFabric::parseSubnetLine(char *line) {
     if (!strncmp("HCA-", pch + strlen(pch) + 1, 4)) {
       desc1 = string(pch+1);
       hcaIdx1 = atoi(pch + strlen(pch) + 5);
-    }
+	 }
   }
   // on some reare cases there is no space in desc:
   if (!strchr(pch,'}')) {
@@ -1568,7 +1568,7 @@ IBFabric::parseSubnetLine(char *line) {
     if (!strncmp("HCA-", pch + strlen(pch) + 1, 4)) {
       desc2 = string(pch+1);
       hcaIdx2 = atoi(pch + strlen(pch) + 5);
-	 }
+	 } 
   }
   // on some reare cases there is no space in desc:
   if (!strchr(pch,'}')) {
