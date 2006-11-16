@@ -3524,6 +3524,13 @@ proc lstInfo { type DirectPath port } {
                 }
                 lappend Info "$value" 
             }
+            "SystemGUID" {
+               # use node guid instead for zero system image guid
+               if {$value == "0x0000000000000000"} {
+                   regsub {^0x} [GetParamValue NodeGUID $DirectPath -port $port] {} value
+               }
+               lappend Info "${parameter}${sep}${value}"
+            }
 	    "NodeDesc"	{ lappend Info "\{$value\}" }
 	    "DevID"	{ lappend Info "${parameter}${sep}${value}0000" }
 	    "VenID"	{ lappend Info "${parameter}${sep}00${value}" }
