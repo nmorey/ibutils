@@ -32,11 +32,14 @@
 # $Id$
 #--
 
-man_MANS = ibdiagnet.1 ibdiagpath.1
-EXTRA_DIST = ibdiagnet.pod ibdiagpath.pod ibdiag_pod2man
+man_MANS = ibdiagnet.1 ibdiagpath.1 ibdiagui.1
+EXTRA_DIST = ibdiagnet.pod ibdiagpath.pod ibdiagui.pod ibdiag_pod2man
 
 ibdiagnet.1: ibdiagnet.pod
 	$(srcdir)/ibdiag_pod2man $(srcdir)/ibdiagnet.pod ibdiagnet.1
 
 ibdiagpath.1: ibdiagpath.pod
 	$(srcdir)/ibdiag_pod2man $(srcdir)/ibdiagpath.pod ibdiagpath.1
+
+ibdiagui.1: ibdiagui.pod
+	$(srcdir)/ibdiag_pod2man $(srcdir)/ibdiagui.pod ibdiagui.1
