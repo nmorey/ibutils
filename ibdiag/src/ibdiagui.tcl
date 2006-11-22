@@ -286,6 +286,9 @@ proc LoadAnnotationsFile {} {
    global ANNOTATIONS
    global ANNOTATION_FILE P
 
+   if {![info exists ANNOTATION_FILE]} {
+      return
+   }
    if {![file readable $ANNOTATION_FILE]} {
       return
    }
