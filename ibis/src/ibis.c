@@ -100,7 +100,6 @@ ibis_init(
   )
 {
   ib_api_status_t status;
-  char *p_tmp;
 
   IbisObj.port_guid = 0;
   ibis_construct();
