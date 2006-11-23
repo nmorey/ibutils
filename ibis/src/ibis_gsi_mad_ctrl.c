@@ -775,7 +775,7 @@ ibis_gsi_mad_ctrl_set_class_attr_cb(
   osm_log(p_ctrl->p_log, OSM_LOG_ERROR,
           "ibis_gsi_mad_ctrl_set_class_attr_cb: "
           "Setting CB for class:0x%x attr:0x%x on vectors: %p,%p.\n",
-          mad_class, attr, p_ctrl->class_vector, p_attr_vector
+          mad_class, attr, &p_ctrl->class_vector, p_attr_vector
           );
 
  Exit:
