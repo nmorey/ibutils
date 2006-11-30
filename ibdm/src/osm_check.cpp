@@ -84,7 +84,8 @@ show_help() {
     << "   ibdmchk [-v][-h][-r <roots file>] [-s <subnet file>] [-f <fdb file>] [-l <lmc>]\n\n"
     << "  Description:\n"
     << "   After the cluster is built and OpenSM is run (using flag -D 0x43) it reports the\n"
-    << "   subnet and FDB tables into the files /tmp/subnet.lst and /tmp/osm.fdbs.\n"
+    << "   subnet and FDB tables into the files osm-subnet.lst, osm.fdbs and osm.fdbs in\n"
+	 << "   /var/log/ (or subnet.lst, osm.fdbs and osm.mcfdbs into /tmp in older versions).\n"
     << "   Based on these files the utility checks all CA to CA connectivity. Further analysis\n"
     << "   for credit deadlock potential is performed and reported. \n"
     << "   In case of an LMC > 0 it reports histograms for how many systems and nodes\n"
@@ -96,11 +97,11 @@ show_help() {
     << "  Options:\n"
     << "  -v|--verbose = verbsoe mode\n"
     << "  -h|--help = provide this help message\n"
-    << "  -s|--subnet <file> = OpenSM subnet.lst file (default is /tmp/subnet.lst)\n"
+    << "  -s|--subnet <file> = OpenSM subnet.lst file (/var/log/osm-subnet.lst or /tmp/subnet.lst)\n"
     << "  -f|--fdb <file> = OpenSM dump of Ucast LFDB. Use -D 0x41 to generate it.\n"
-    << "     (default is /tmp/osm.fdbs).\n"
+    << "     (default is /var/log/osm.fdbs or /tmp/osm.fdbs).\n"
     << "  -m|--mcfdb <file> = OpenSM dump of Multicast LFDB. Use -D 0x41 to generate it.\n"
-    << "     (default is /tmp/osm.mcfdbs).\n"
+    << "     (default is /var/log/osm.mcfdbs or /tmp/osm.mcfdbs).\n"
     << "  -r|--roots <roots file> = a file holding all root nodes guids (one per line).\n"
     << "\n"
     << "Author: Eitan Zahavi, Mellanox Technologies LTD.\n"
@@ -182,9 +183,9 @@ ParseRootNodeGuidsFile( IBFabric *p_fabric, string fileName)
 int main (int argc, char **argv) {
 
   FabricUtilsVerboseLevel = FABU_LOG_ERROR;
-  string subnetFile = string("/tmp/subnet.lst");
-  string fdbFile = string("/tmp/osm.fdbs");
-  string mcFdbFile = string("/tmp/osm.mcfdbs");
+  string subnetFile = string("");
+  string fdbFile = string("");
+  string mcFdbFile = string("");
   string TopoFile = string("");
   string SmNodeName = string("");
   string RootsFileName = string("");
@@ -421,6 +422,42 @@ int main (int argc, char **argv) {
 	}
    
   } else {
+	  int anyMissingFile = 0;
+	  // resolve the default files 
+	  if (fdbFile.size() == 0) {
+		  if (access("/var/log/osm.fdbs",R_OK) == 0)
+			  fdbFile = string("/var/log/osm.fdbs");
+		  else if (access("/tmp/osm.fdbs",R_OK) == 0)
+			  fdbFile = string("/tmp/osm.fdbs");
+		  else {
+			  cout << "-E- Could not find a readble osm.fdbs in /var/log or  /tmp" << endl;
+			  anyMissingFile = 1;
+		  }
+	  }
+	  if (mcFdbFile.size() == 0) {
+		  if (access("/var/log/osm.mcfdbs",R_OK) == 0)
+			  mcFdbFile = string("/var/log/osm.mcfdbs");
+		  else if (access("/tmp/osm.mcfdbs",R_OK) == 0)
+			  mcFdbFile = string("/tmp/osm.mcfdbs");
+		  else {
+			  cout << "-E- Could not find a readble osm.mcfdbs in /var/log or  /tmp" << endl;
+			  anyMissingFile = 1;
+		  }
+	  }
+
+	  if (subnetFile.size() == 0) {
+		  if (access("/var/log/osm-subnet.lst",R_OK) == 0)
+			  subnetFile = string("/var/log/osm-subnet.lst");
+		  else if (access("/tmp/subnet.lst",R_OK) == 0)
+			  subnetFile = string("/tmp/subnet.lst");
+		  else {
+			  cout << "-E- Could not find a readble /var/log/osm-subnet.lst or /tmp/subnet.lst" << endl;
+			  anyMissingFile = 1;
+		  }
+	  }
+	  if (anyMissingFile)
+		  exit(1);
+			  
     printf(" IBDMCHK OpenSM Routing Verification Mode:\n");
     printf(" FDB File = %s\n", fdbFile.c_str());
     printf(" MCFDB File = %s\n", mcFdbFile.c_str());

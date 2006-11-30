@@ -129,7 +129,7 @@
 .\" ========================================================================
 .\"
 .IX Title "IBDMCHK 1"
-.TH IBDMCHK 1 "2006-06-06" "IBDM 1.0" "IB DATA MODEL PACKAGE"
+.TH IBDMCHK 1 "2006-11-29" "IBDM 1.0" "IB DATA MODEL PACKAGE"
 .SH "NAME"
 \&\fBIBDM \- Network Checker and Attributes Analyzer\fR
 .SH "SYNOPSYS"
@@ -189,7 +189,7 @@ Use up/down routing algorithm instead of OpenSM min\-hop.
 .IX Item "-r|--roots <roots file> A file with all the roots node names (one on each line)."
 .SH "VERIFICATION MODE DESCRIPTION"
 .IX Header "VERIFICATION MODE DESCRIPTION"
-After the cluster is built and OpenSM is run (using flag \-D 0x43) it reports the subnet and \s-1FDB\s0 tables into the files /tmp/subnet.lst and /tmp/osm.fdbs.
+After the cluster is built and OpenSM is run (using flag \-D 0x43) it reports the subnet and \s-1FDB\s0 tables into the files osm\-subnet.lst, osm.fdbs and osm.fdbs in /var/log/ (or subnet.lst, osm.fdbs and osm.mcfdbs into /tmp in older OpenSM versions).
 Based on these files the utility checks all \s-1CA\s0 to \s-1CA\s0 connectivity. Further analysis for credit deadlock potential is performed and reported. 
 In case of an \s-1LMC\s0 > 0 it reports histograms for how many systems and nodes are common between the different paths for the same port pairs.
 .SH "ARGUMENTS"
@@ -211,15 +211,15 @@ Provides this help message
 .RE
 .IP "\-s|\-\-subnet <file>"
 .IX Item "-s|--subnet <file>"
-OpenSM subnet.lst file (default is /tmp/subnet.lst)
+OpenSM subnet.lst file (default is /var/log/osm\-subnet.lst or /tmp/subnet.lst)
 .RE
 .IP "\-f|\-\-fdb <file>"
 .IX Item "-f|--fdb <file>"
-OpenSM dump of Ucast \s-1LFDB\s0. Use \-D 0x41 to generate it (default is /tmp/osm.fdbs).
+OpenSM dump of Ucast \s-1LFDB\s0. Use \-D 0x41 to generate it (default is /var/log/osm.fdbs or /tmp/osm.fdbs).
 .RE
 .IP "\-m|\-\-mcfdb <file>"
 .IX Item "-m|--mcfdb <file>"
-OpenSM dump of Multicast \s-1LFDB\s0. Use \-D 0x41 to generate it (default is /tmp/osm.mcfdbs).
+OpenSM dump of Multicast \s-1LFDB\s0. Use \-D 0x41 to generate it (default is /var/log/osm.mcfdbs or /tmp/osm.mcfdbs).
 .RE
 .IP "\-r|\-\-roots <roots file>"
 .IX Item "-r|--roots <roots file>"

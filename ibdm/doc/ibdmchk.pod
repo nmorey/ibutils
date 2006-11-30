@@ -62,7 +62,7 @@ A file with all the roots node names (one on each line).
 
 =head1 VERIFICATION MODE DESCRIPTION
 
-After the cluster is built and OpenSM is run (using flag -D 0x43) it reports the subnet and FDB tables into the files /tmp/subnet.lst and /tmp/osm.fdbs.
+After the cluster is built and OpenSM is run (using flag -D 0x43) it reports the subnet and FDB tables into the files osm-subnet.lst, osm.fdbs and osm.fdbs in /var/log/ (or subnet.lst, osm.fdbs and osm.mcfdbs into /tmp in older OpenSM versions).
 Based on these files the utility checks all CA to CA connectivity. Further analysis for credit deadlock potential is performed and reported. 
 In case of an LMC > 0 it reports histograms for how many systems and nodes are common between the different paths for the same port pairs.
 
@@ -84,15 +84,15 @@ Provides this help message
 
 =item -s|--subnet <file>
 
-OpenSM subnet.lst file (default is /tmp/subnet.lst)
+OpenSM subnet.lst file (default is /var/log/osm-subnet.lst or /tmp/subnet.lst)
 
 =item -f|--fdb <file>
 
-OpenSM dump of Ucast LFDB. Use -D 0x41 to generate it (default is /tmp/osm.fdbs).
+OpenSM dump of Ucast LFDB. Use -D 0x41 to generate it (default is /var/log/osm.fdbs or /tmp/osm.fdbs).
 
 =item -m|--mcfdb <file>
 
-OpenSM dump of Multicast LFDB. Use -D 0x41 to generate it (default is /tmp/osm.mcfdbs).
+OpenSM dump of Multicast LFDB. Use -D 0x41 to generate it (default is /var/log/osm.mcfdbs or /tmp/osm.mcfdbs).
 
 =item -r|--roots <roots file> 
 
