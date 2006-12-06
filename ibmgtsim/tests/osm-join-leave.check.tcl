@@ -47,7 +47,7 @@ proc checker {simDir osmPath osmPortGuid} {
    after 60000
    
    set ibdmchkLog [file join $simDir ibdmchk.log]
-   set subnetFile [file join $simDir subnet.lst]
+   set subnetFile [file join $simDir osm-subnet.lst]
    set fdbsFile [file join $simDir osm.fdbs]
    set mcfdbsFile [file join $simDir osm.mcfdbs]
    set cmd "ibdmchk -s $subnetFile -f $fdbsFile -m $mcfdbsFile"
