@@ -135,4 +135,4 @@ install-exec-am: install-binPROGRAMS
 	mkdir -p $(DESTDIR)$(libdir)/ibdm$(VERSION)
 	cp .libs/$(shell grep dlname libibdm.la | sed 's/.*=\(.*\)/\1/') \
 	   $(DESTDIR)$(libdir)/ibdm$(VERSION)/libibdm.so.$(VERSION)
-	sed 's/%VERSION%/'$(VERSION)'/' $(srcdir)/pkgIndex.tcl > $(DESTDIR)$(libdir)/ibdm$(VERSION)/pkgIndex.tcl
+	sed 's/%VERSION%/'$(VERSION)'/g' $(srcdir)/pkgIndex.tcl > $(DESTDIR)$(libdir)/ibdm$(VERSION)/pkgIndex.tcl

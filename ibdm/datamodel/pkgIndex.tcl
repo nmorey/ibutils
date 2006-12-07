@@ -1,5 +1,5 @@
 # Main idea here is to intialize the ibnl_path
-proc ibdmLoad {dir} { 
+proc ibdmLoad%VERSION% {dir} { 
    global ibnl_path 
    global env
    # support env variable for extending the search path for
@@ -13,4 +13,4 @@ proc ibdmLoad {dir} {
    load [file join $dir libibdm.so.%VERSION%]
 }
 
-package ifneeded ibdm %VERSION% [list ibdmLoad $dir]
+package ifneeded ibdm %VERSION% [list ibdmLoad%VERSION% $dir]

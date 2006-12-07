@@ -131,5 +131,5 @@ install-libLTLIBRARIES:
 install-exec-am: install-binPROGRAMS 
 	mkdir -p $(DESTDIR)/$(libdir)/ibis$(VERSION)
 	cp .libs/libibis.so.$(LIB_FILE_TRIPLET) $(DESTDIR)/$(libdir)/ibis$(VERSION)/libibis.so.$(VERSION)
-	sed 's/%VERSION%/'$(VERSION)'/' $(srcdir)/pkgIndex.tcl > $(DESTDIR)/$(libdir)/ibis$(VERSION)/pkgIndex.tcl
+	sed 's/%VERSION%/'$(VERSION)'/g' $(srcdir)/pkgIndex.tcl > $(DESTDIR)/$(libdir)/ibis$(VERSION)/pkgIndex.tcl
 
