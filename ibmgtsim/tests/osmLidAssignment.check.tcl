@@ -108,7 +108,8 @@ proc checker {simDir osmPath osmPortGuid} {
       puts "SIM: [gets $simCtrlSock]"
 
       # wait for sweep to end or exit
-      if {[osmWaitForUpOrDeadWithTimeout $osmLog 1000000]} {
+		set ignorePrev 1
+      if {[osmWaitForUpOrDeadWithTimeout $osmLog 1000000 $ignorePrev]} {
          return 1
       }
       
