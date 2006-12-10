@@ -243,12 +243,16 @@ proc osmWaitForUpOrDead {osmLog {ignorePrev 0}} {
 
 # wait for the SM with the given log to be either dead or in subnet up
 # also support 
-proc osmWaitForUpOrDeadWithTimeout {osmLog timeout_ms} {
+proc osmWaitForUpOrDeadWithTimeout {osmLog timeout_ms {ignorePrev 0}} {
    global osmUpOrDeadEvents osmUpOrDeadLogLen
    global osmLogCallbacks
    
    # wait for OpenSM to complete setting up the fabric
-   set osmUpOrDeadLogLen 0
+   if {![info exists osmUpOrDeadLogLen] || $ignorePrev} {
+		set osmUpOrDeadLogLen 0
+		set osmUpOrDeadEvents {}
+	}
+
    set osmLogCallbacks($osmLog) \
       "{waitForOsmEvent osmUpOrDeadEvents osmUpOrDeadLogLen $osmLog}"
    
