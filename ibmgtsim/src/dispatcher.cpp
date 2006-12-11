@@ -49,35 +49,71 @@ IBMSDispatcher::IBMSDispatcher(
   uint64_t dStdDev_usec)
 {
   MSG_ENTER_FUNC;  
+
+  MSGREG(err1, 'E', "Failed to init timer thread.", "dispatcher");
+  MSGREG(err2, 'E', "Failed to init worker thread:$.", "dispatcher");
+
   avgDelay_usec = dAvg_usec;
   stdDevDelay_usec = dStdDev_usec;
 
-  /* init the spinlock */
-  cl_spinlock_construct(&lock);
-  cl_spinlock_init(&lock);
+  /* init the locks */
+  pthread_mutex_init( &madQueueByWakeupLock, NULL);
+  pthread_mutex_init( &madDispatchQueueLock, NULL);
 
-  /* construct and init the timer object */
-  cl_timer_construct(&timer);
-  cl_timer_init(&timer, IBMSDispatcher::timerCallback, this);
+  /* init signals */
+  pthread_cond_init( &newMadIntoWaitQ, NULL);
+  pthread_cond_init( &newMadIntoDispatchQ, NULL);
 
-  /* construct and init the thread pool */
-  cl_thread_pool_construct(&workersPool);
-  cl_thread_pool_init(&workersPool, 
-                      numWorkers, 
-                      IBMSDispatcher::workerCallback,
-                      this,
-                      "ibms_worker");
+  /* we will need numWorkers + 1 threads */
+  threads = (pthread_t*)calloc(sizeof(pthread_t), numWorkers+1);
+
+  /* initialize the exit mode */
+  exit_now = FALSE;
+
+  /* construct and init the thread that implements the timer  */
+  if (pthread_create(&threads[0], NULL, &IBMSDispatcher::timerCallback, this))
+  {
+	  MSGSND(err1);
+	  exit(1);
+  }
+
+  /* construct and init the worker threads */
+  for (int i = 1; i <= numWorkers; i++)
+  {
+	  if (pthread_create(&threads[i], 
+								NULL, &IBMSDispatcher::workerCallback, this))
+	  {
+		  MSGSND(err2, i);
+		  exit(1);
+	  }
+  }
+
   MSG_EXIT_FUNC;  
 }
 
 /* distructor */
 IBMSDispatcher::~IBMSDispatcher()
 {
-  MSG_ENTER_FUNC;  
-  cl_thread_pool_destroy(&workersPool);
-  cl_spinlock_destroy(&lock);
-  cl_timer_destroy(&timer);
-  MSG_EXIT_FUNC;  
+  MSG_ENTER_FUNC;
+  
+  exit_now = TRUE;
+
+  /* first tell the timer to exit */
+  pthread_mutex_lock( &madQueueByWakeupLock );
+  pthread_cond_signal( &newMadIntoWaitQ );
+  pthread_mutex_unlock( &madQueueByWakeupLock );
+
+  /* now broadcast to all worker threads */
+  pthread_mutex_lock( &madDispatchQueueLock );
+  pthread_cond_broadcast( &newMadIntoDispatchQ );
+  pthread_mutex_unlock( &madDispatchQueueLock );
+
+  pthread_mutex_destroy( &madQueueByWakeupLock );
+  pthread_mutex_destroy( &madDispatchQueueLock );
+  pthread_cond_destroy( &newMadIntoWaitQ );
+  pthread_cond_destroy( &newMadIntoDispatchQ );
+
+  MSG_EXIT_FUNC;
 }
 
 /* sets the average delay for a mad on the wire */
@@ -102,37 +138,40 @@ int IBMSDispatcher::dispatchMad(
 {
   MSG_ENTER_FUNC;  
 
-  MSGREG(inf1, 'V', "Queued a mad to expire in $ msec $ usec at $ usec", "dispatcher");
-
-  /* obtain a lock on the Q */
-  cl_spinlock_acquire(&lock);
+  MSGREG(inf1, 'V', "Queued a mad to expire in $ msec $ usec at $ usec", 
+			"dispatcher");
 
   /* randomize the time we want the mad wait the event wheel */
   uint64_t waitTime_usec =
-    llrint((2.0 * rand()) / RAND_MAX * stdDevDelay_usec) + (avgDelay_usec - stdDevDelay_usec);
+    llrint((2.0 * rand()) / RAND_MAX * stdDevDelay_usec) +
+	  (avgDelay_usec - stdDevDelay_usec);
   
   madItem item;
   item.pFromNode = pFromNode;
   item.fromPort = fromPort;
   item.madMsg = msg;
 
-  uint64_t wakeupTime_up = cl_get_time_stamp() + waitTime_usec;
+  struct timeval now;
+  gettimeofday(&now, NULL);
+  uint64_t wakeupTime_up = now.tv_sec*1000000 + now.tv_usec + waitTime_usec;
 
-  /* store the mad in the sorted by wakeup map */
-  madQueueByWakeup[wakeupTime_up] = item;
-  
   /* set the timer to the next event - trim to max delay of the current mad */
   uint32_t waitTime_msec = waitTime_usec/1000;
 
   MSGSND(inf1, waitTime_msec, waitTime_usec, wakeupTime_up);
 
-  if (madQueueByWakeup.size() > 1) 
-    cl_timer_trim(&timer, waitTime_msec);
-  else
-    cl_timer_start(&timer, waitTime_msec);
-  
+  /* obtain a lock on the Q */
+  pthread_mutex_lock( &madQueueByWakeupLock );
+
+  /* store the mad in the sorted by wakeup map */
+  madQueueByWakeup[wakeupTime_up] = item;
+
+  /* signal the timer */
+  pthread_cond_signal( &newMadIntoWaitQ );
+
   /* release the lock */
-  cl_spinlock_release(&lock);
+  pthread_mutex_unlock( &madQueueByWakeupLock );
+  
   MSG_EXIT_FUNC;  
   return 0;
 }
@@ -141,91 +180,116 @@ int IBMSDispatcher::dispatchMad(
   The call back function for the threads 
   Loop to handle all outstanding MADs (those expired their wakeup time)
 */
-void 
+void *
 IBMSDispatcher::workerCallback(void *context)
 {
   MSG_ENTER_FUNC;  
   IBMSDispatcher *pDisp = (IBMSDispatcher *)context;
 
-  MSGREG(inf1,'V',"Popping mad message with wakeup: $","dispatcher");
-  MSGREG(inf2,'V',"Entered workerCallback","dispatcher");
+  MSGREG(inf1,'V',"Entered workerCallback","dispatcher");
 
-  MSGSND(inf2);
+  MSGSND(inf1);
 
-  int done = 0;
   madItem curMadMsgItem;
-  map_uint64_mad::iterator mI;
 
-  while (!done) 
+  /* get the first message in the waiting map */
+  pthread_mutex_lock( &pDisp->madDispatchQueueLock );
+
+  while (! pDisp->exit_now) 
   {
-    /* get the first message in the waiting map */
-    cl_spinlock_acquire(&pDisp->lock);
-  
-    mI = pDisp->madQueueByWakeup.begin();
+    if (! pDisp->madDispatchQueue.empty() )
+	 {
+		 curMadMsgItem = pDisp->madDispatchQueue.front();
+		 pDisp->madDispatchQueue.pop_front();
+		 pthread_mutex_unlock( &pDisp->madDispatchQueueLock );
 
-    uint64_t curTime_usec = cl_get_time_stamp();
-    done = (mI == pDisp->madQueueByWakeup.end()) || 
-      ((*mI).first > curTime_usec);
+		 pDisp->routeMadToDest( curMadMsgItem );
 
-    if (! done)
-    {
-      curMadMsgItem = (*mI).second;
-      MSGSND(inf1,(*mI).first);
-      pDisp->madQueueByWakeup.erase(mI);
-
-      cl_spinlock_release(&pDisp->lock);
-
-      /* handle the mad */
-      pDisp->routeMadToDest(curMadMsgItem);
-    }
+		 pthread_mutex_lock( &pDisp->madDispatchQueueLock );
+	 }
+	 else
+	 {
+		 pthread_cond_wait( &pDisp->newMadIntoDispatchQ, 
+								  &pDisp->madDispatchQueueLock );
+	 }
   }
 
-  cl_spinlock_release(&pDisp->lock);
+  pthread_mutex_unlock( &pDisp->madDispatchQueueLock );
   MSG_EXIT_FUNC;  
+  return NULL;
 }
 
 /* 
-   The call-back function for the timer - should signal the threads 
-   if there is an outstanding mad - and re-set the timer next event 
+   The the timer thread main
+	Loop using a cond wait - 
+	When loop expires check to see if work exists and signal the threads
+	Then sleep for next time
 */
-void 
+void *
 IBMSDispatcher::timerCallback(void *context)
 {
   MSG_ENTER_FUNC;  
   IBMSDispatcher *pDisp = (IBMSDispatcher *)context;
+  struct timespec nextWakeup;
+  struct timeval now;
+  madItem curMadMsgItem;
+  boolean_t wait;
 
   MSGREG(inf1, 'V', "Schedule next timer callback in $ [msec]", "dispatcher");
   MSGREG(inf2, 'V', "Signaling worker threads", "dispatcher");
   
   /* obtain a lock on the Q */
-  cl_spinlock_acquire(&pDisp->lock);
+  pthread_mutex_lock( &pDisp->madQueueByWakeupLock );
   
-  /* search for the next wakeup time on the list */
-  uint32_t nextWakeUp_msec = 0;
-  map_uint64_mad::iterator mI = pDisp->madQueueByWakeup.begin();
-  if (mI != pDisp->madQueueByWakeup.end())
-  {
-    uint64_t curTime_usec = cl_get_time_stamp();
-    uint64_t wakeUpTime_usec = (*mI).first;
-    /* we are looking for an entry further down the road */
-    if (curTime_usec < wakeUpTime_usec)
-      nextWakeUp_msec = (wakeUpTime_usec - curTime_usec)/1000 + 1;
+  while (! pDisp->exit_now ) {
+	  
+	  map_uint64_mad::iterator mI = pDisp->madQueueByWakeup.begin();
+	  if (mI != pDisp->madQueueByWakeup.end())
+	  {
+		  gettimeofday(&now, NULL);
+		  uint64_t curTime_usec = now.tv_sec*1000000 + now.tv_usec;
+		  uint64_t wakeUpTime_usec = (*mI).first;
+		 
+		  /* we are looking for an entry further down the road */
+		  if (curTime_usec < wakeUpTime_usec)
+		  {
+			  /* just calculate the next wait time */
+			  nextWakeup.tv_sec = wakeUpTime_usec / 1000000;
+			  nextWakeup.tv_nsec = 1000*(wakeUpTime_usec %1000000);
+			  MSGSND(inf1, (wakeUpTime_usec - curTime_usec) / 1000 );
+			  wait = TRUE;
+		  }
+		  else
+		  {
+			  /* pop the message and move to the dispatch queue */
+			  curMadMsgItem = (*mI).second;
+			  MSGSND(inf2);
+			  pthread_mutex_lock( &pDisp->madDispatchQueueLock );
+			  pDisp->madDispatchQueue.push_back( curMadMsgItem );
+			  pDisp->madQueueByWakeup.erase(mI);
+			  pthread_cond_signal( &pDisp->newMadIntoDispatchQ );
+			  pthread_mutex_unlock( &pDisp->madDispatchQueueLock );
+			  wait = FALSE;
+		  }
+	  } else {
+		  nextWakeup.tv_sec = 1;
+		  nextWakeup.tv_nsec = 0;
+		  wait = TRUE;
+		  MSGSND(inf1, 1000);
+	  } 
+
+	  if ( wait == TRUE )
+	  {
+		  pthread_cond_timedwait( &pDisp->newMadIntoWaitQ, 
+										  &pDisp->madQueueByWakeupLock, 
+										  &nextWakeup );
+	  }
   }
 
-  cl_spinlock_release(&pDisp->lock);
+  pthread_mutex_unlock( &pDisp->madQueueByWakeupLock );
 
-  /* might be zero if no outstanding mads */
-  if (nextWakeUp_msec)
-  {
-    /* restart the timer on the current time - the key */
-    cl_timer_start(&pDisp->timer, nextWakeUp_msec);
-    MSGSND(inf1, nextWakeUp_msec);
-  }
-  
-  /* signal the workers threads */
-  MSGSND(inf2);
-  cl_thread_pool_signal(&pDisp->workersPool);
-  MSG_EXIT_FUNC;  
+  MSG_EXIT_FUNC;
+  return NULL;
 }
 
 /* do LID routing */

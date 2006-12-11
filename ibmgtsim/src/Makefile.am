@@ -41,7 +41,7 @@ else
 DBG = -O2 -Wall
 endif
 
-AM_CXXFLAGS = $(DBG)
+AM_CXXFLAGS = $(DBG) $(OSM_CFLAGS)
 
 if IBDM_REF_IS_USED
 INCLUDES		= -I$(with_ibdm)/datamodel $(TCL_CPPFLAGS)
@@ -66,7 +66,7 @@ IBDM_IFC=$(with_ibdm)/include/ibdm/ibdm.i
 endif
 
 AM_CPPFLAGS = -I$(INCLUDES) $(IBDM_INC) $(OSM_CFLAGS)
-LDADD = $(IBDM_LIB) $(OSM_LDFLAGS)
+LDADD = $(IBDM_LIB) -lpthread
 
 # AM_LDFLAGS = -static
 
@@ -78,16 +78,10 @@ LDADD = $(IBDM_LIB) $(OSM_LDFLAGS)
 ibmssh_SOURCES = sim.cpp server.cpp node.cpp dispatcher.cpp \
 	 ibmssh_wrap.cpp sma.cpp pma.cpp vsa.cpp randmgr.cpp
 
-# Only teh OpenIB builds of OpenSM can really be linked staticlly
-if OSM_BUILD_OPENIB
 ibmssh_LDFLAGS = -static -Wl,-rpath -Wl,$(TCL_PREFIX)/lib \
 	-Wl,-rpath -Wl,$(IBDM_PREFIX)/lib 
-else
-ibmssh_LDFLAGS = -static -Wl,-rpath -Wl,$(TCL_PREFIX)/lib \
-	-Wl,-rpath -Wl,$(IBDM_PREFIX)/lib 
-endif
 
-ibmssh_LDADD = -libmscli $(IBDM_LIB) $(OSM_LDFLAGS) $(TCL_LIBS)
+ibmssh_LDADD = -libmscli $(IBDM_LIB) $(TCL_LIBS) -lpthread
 
 # SWIG FILES:
 SWIG_IFC_FILES= $(srcdir)/sim.i $(srcdir)/ib_types.i $(IBDM_IFC) \
@@ -115,7 +109,7 @@ EXTRA_DIST = swig_alternate_mangling.cpp
 
 # Quiter for the server
 ibmsquit_SOURCES = client.cpp msgmgr.cpp simmsg.cpp tcpcomm.cpp
-ibmsquit_CPPFLAGS = -DBUILD_QUIT_CLIENT=1 -I$(INCLUDES) $(OSM_CFLAGS)
+ibmsquit_CPPFLAGS = -DBUILD_QUIT_CLIENT=1 -I$(INCLUDES)
 
 # tester of the client code 
 #ibmgt_client_SOURCES = client.cpp msgmgr.cpp simmsg.cpp tcpcomm.cpp

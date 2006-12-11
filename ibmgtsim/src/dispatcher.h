@@ -51,9 +51,8 @@
 *********/
 
 #include "simmsg.h"
-#include <complib/cl_threadpool.h>
-#include <complib/cl_timer.h>
 #include <map>
+#include <list>
 
 class IBMSDispatcher {
 
@@ -64,19 +63,31 @@ class IBMSDispatcher {
   };
 
   typedef std::map<uint64_t, struct madItem > map_uint64_mad;
+  typedef std::list< struct madItem > mad_list;
 
-  /* the event wheel times when an incoming message becomes accessible */
-  cl_timer_t timer;
-
+  /* we track our worker threads and timer in the array of sub-threads */
+  pthread_t *threads;
+  
   /* the queue of mads waiting for processing */
   map_uint64_mad madQueueByWakeup;
   
-  /* the pool of worker threads to route the mads and hand to the node 
-     mad processors */
-  cl_thread_pool_t workersPool;
+  /* lock to synchronize popping up and pushing into the madQueueByWakeup */
+  pthread_mutex_t madQueueByWakeupLock;
+
+  /* list of mads waiting for dispatching */
+  mad_list madDispatchQueue;
+
+  /* lock to synchronize popping and pushing into mad dispatch list */
+  pthread_mutex_t madDispatchQueueLock;
   
-  /* lock to synchronize popping up and pushing into the madQueue */
-  cl_spinlock_t lock;
+  /* signal the timer waits on - signaled when new mads are pushed into Q */
+  pthread_cond_t newMadIntoWaitQ;
+
+  /* signal the workers when new MAD moved to dispatch Q */
+  pthread_cond_t newMadIntoDispatchQ;
+
+  /* flag to tell the threads to exit */
+  boolean_t exit_now;
 
   /* average delay from introducing the mad to when it appear on the queue */
   uint64_t avgDelay_usec;
@@ -95,11 +106,13 @@ class IBMSDispatcher {
   int routeMadToDest(madItem &item);
   
   /* The callback function for the threads */
-  static void workerCallback(void *context);
+  static void *workerCallback(void *context);
   
-  /* The callback function for the timer - should signal the threads 
-     if there is an outstanding mad - and re-set the timer next event */
-  static void timerCallback(void *context);
+  /* 
+	* The timer thread main - should signal the threads 
+	* if there is an outstanding mad - or wait for next one
+	*/
+  static void *timerCallback(void *context);
 
  public:
   /* constructor */

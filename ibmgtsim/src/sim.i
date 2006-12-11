@@ -53,7 +53,6 @@
 #include <getopt.h>
 #include <inttypes.h>
 #include <ibdm/Fabric.h>
-#include <complib/cl_debug.h>
 #include <errno.h>
 #include "sim.h"
 #include "node.h"
@@ -471,9 +470,8 @@ class IBMSNode {
 %include mads.i
 
 %{
-  /* we need to explicitly exit complib if we explictly started it if static linked */
   void ibmssh_exit(ClientData clientData ) {
-    complib_exit();
+	  
   }
 %}
 //
@@ -484,11 +482,7 @@ class IBMSNode {
   /* mixing declarations .... */
   {
 	 Tcl_PkgProvide(interp,"ibms", "1.0");	 
-
-    /* we use static linking with complib so init just in case */
 #ifdef OSM_BUILD_OPENIB
-    complib_init();
-
     Tcl_CreateExitHandler(ibmssh_exit, NULL);
 #endif
 
