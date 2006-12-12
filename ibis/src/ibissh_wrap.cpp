@@ -57949,9 +57949,6 @@ SWIGEXPORT(int,Ibis_Init)(Tcl_Interp *interp) {
 								 TclsacPKeyRecMethodCmd,
 								 (ClientData)&ibsac_pkey_rec, 0);
 
-
-	 Tcl_PkgProvide(interp,"ibis", "1.0");	 
-
     /*
       use an embedded Tcl code for doing init if given command line 
       parameters: -port_num <port num> 
