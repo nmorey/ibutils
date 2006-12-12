@@ -180,7 +180,7 @@ class FatTree {
    void dump();
 
    // track a connection to remote switch
-   int FatTree::trackConnection(
+   int trackConnection(
       FatTreeNode *p_ftNode,
       vec_byte     tupple,   // the connected node tupple
       unsigned int rank,     // rank of the local node
