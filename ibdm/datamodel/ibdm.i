@@ -1377,8 +1377,6 @@ int CongTrackPath(IBFabric *p_fabric, uint16_t srcLid, uint16_t dstLid);
 
   /* mixing declarations .... */
   {
-	 Tcl_PkgProvide(interp,"ibdm", "1.0");	 
-	 
 	 // Register the objects for alternate mangling
     SWIG_AlternateObjMangling["_IBFabric_p"] = &ibdmGetObjTclNameByPtr;
     SWIG_AlternateNameToObj  ["_IBFabric_p"] = &ibdmGetObjPtrByTclName;

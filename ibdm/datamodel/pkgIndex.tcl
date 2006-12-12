@@ -10,7 +10,8 @@ proc ibdmLoad%VERSION% {dir} {
       set ibnl_path ""
    }
    puts "Loading IBDM from: $dir"
-   load [file join $dir libibdm.so.%VERSION%]
+   uplevel \#0 load [file join $dir libibdm.so.%VERSION%]
+	package provide ibdm %VERSION%
 }
 
 package ifneeded ibdm %VERSION% [list ibdmLoad%VERSION% $dir]
