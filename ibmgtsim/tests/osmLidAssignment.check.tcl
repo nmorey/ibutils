@@ -108,7 +108,7 @@ proc checker {simDir osmPath osmPortGuid} {
       puts "SIM: [gets $simCtrlSock]"
 
       # wait for sweep to end or exit
-		set ignorePrev 1
+      set ignorePrev 1
       if {[osmWaitForUpOrDeadWithTimeout $osmLog 1000000 $ignorePrev]} {
          return 1
       }
@@ -116,6 +116,23 @@ proc checker {simDir osmPath osmPortGuid} {
       # wait 3 seconds
       after 3000
       
+      # inject a change bit 
+      puts $simCtrlSock "setOneSwitchChangeBit \$fabric"
+      puts "SIM: [gets $simCtrlSock]"
+
+      # wait for sweep to end or exit
+      set ignorePrev 1
+      if {[osmWaitForUpOrDeadWithTimeout $osmLog 1000000 $ignorePrev]} {
+         return 1
+      }
+      
+      # wait 3 seconds
+      after 3000
+      
+      # inject a change bit 
+      puts $simCtrlSock "setOneSwitchChangeBit \$fabric"
+      puts "SIM: [gets $simCtrlSock]"
+
       # check for lid validity:
       puts $simCtrlSock "checkLidValues \$fabric $lmc"
       set res [gets $simCtrlSock]
