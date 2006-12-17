@@ -104,23 +104,27 @@ proc checker {simDir osmPath osmPortGuid} {
       puts "SIM: [gets $simCtrlSock]"
 
       # inject a change bit 
+      puts "-I- Injecting change bit"
       puts $simCtrlSock "setOneSwitchChangeBit \$fabric"
       puts "SIM: [gets $simCtrlSock]"
 
       # wait for sweep to end or exit
+      puts "-I- Waiting for subnet up"
       set ignorePrev 1
       if {[osmWaitForUpOrDeadWithTimeout $osmLog 1000000 $ignorePrev]} {
          return 1
       }
       
-      # wait 3 seconds
-      after 3000
+      # wait 30 seconds
+      after 30000
       
       # inject a change bit 
+      puts "-I- Injecting change bit"
       puts $simCtrlSock "setOneSwitchChangeBit \$fabric"
       puts "SIM: [gets $simCtrlSock]"
 
       # wait for sweep to end or exit
+      puts "-I- Waiting for subnet up"
       set ignorePrev 1
       if {[osmWaitForUpOrDeadWithTimeout $osmLog 1000000 $ignorePrev]} {
          return 1
@@ -130,6 +134,7 @@ proc checker {simDir osmPath osmPortGuid} {
       after 3000
       
       # check for lid validity:
+      puts "-I- Checking LID Validity"
       puts $simCtrlSock "checkLidValues \$fabric $lmc"
       set res [gets $simCtrlSock]
       puts "SIM: Number of check errors:$res"
