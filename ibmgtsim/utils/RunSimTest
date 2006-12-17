@@ -256,13 +256,18 @@ proc osmWaitForUpOrDeadWithTimeout {osmLog timeout_ms {ignorePrev 0}} {
    set osmLogCallbacks($osmLog) \
       "{waitForOsmEvent osmUpOrDeadEvents osmUpOrDeadLogLen $osmLog}"
    
-   after $timeout_ms [list set osmUpOrDeadEvents {exit 0 {}}]
+   after $timeout_ms [list set osmUpOrDeadEvents {timeout 0 {}}]
    puts "-I- Waiting for OpenSM subnet up ..."
    set done 0
    while {$done == 0} {
       vwait osmUpOrDeadEvents
       foreach event $osmUpOrDeadEvents {
          if {[lindex $event 0] == "exit"} {
+				puts "-E- OpenSM exit event"
+            set exitCode 1
+            set done 1
+         } elseif {[lindex $event 0] == "timeout"} {
+				puts "-E- Exiting on timeout after $timeout_ms msec"
             set exitCode 1
             set done 1
          } elseif {[lindex $event 0] == "SubnetUp"} {
