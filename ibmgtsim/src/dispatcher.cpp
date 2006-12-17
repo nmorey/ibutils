@@ -243,10 +243,10 @@ IBMSDispatcher::timerCallback(void *context)
   
   while (! pDisp->exit_now ) {
 	  
+	  gettimeofday(&now, NULL);
 	  map_uint64_mad::iterator mI = pDisp->madQueueByWakeup.begin();
 	  if (mI != pDisp->madQueueByWakeup.end())
 	  {
-		  gettimeofday(&now, NULL);
 		  uint64_t curTime_usec = now.tv_sec*1000000 + now.tv_usec;
 		  uint64_t wakeUpTime_usec = (*mI).first;
 		 
@@ -272,7 +272,7 @@ IBMSDispatcher::timerCallback(void *context)
 			  wait = FALSE;
 		  }
 	  } else {
-		  nextWakeup.tv_sec = 1;
+		  nextWakeup.tv_sec = now.tv_sec+2;
 		  nextWakeup.tv_nsec = 0;
 		  wait = TRUE;
 		  MSGSND(inf1, 1000);
