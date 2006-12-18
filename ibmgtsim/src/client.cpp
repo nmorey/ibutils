@@ -206,11 +206,15 @@ ibms_connect(uint64_t portGuid,
       clientConn.pServer = NULL;
     }
     
-  } while (trys++ < 10);
+  } while (trys++ < 50);
   
   if (!clientConn.pServer)
+  {
+	  printf("-E- Failed to connect to simulator!\n");
     return 0;
-  
+  }
+  printf("-I- Connected to simulator!\n");
+
   char thisHostName[32];
   gethostname(thisHostName, sizeof(thisHostName)-1);
 
