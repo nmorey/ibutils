@@ -3,7 +3,7 @@ puts "Running Simulation flow for Muticast Routing test"
 puts "Randomally Joining all the Fabric Ports with random delays"
 
 # send a single port join request
-proc sendJoinForPort {port} {
+proc sendJoinForPort {port smLid} {
    puts "-I- Joining port $port"
    # allocate a new mc member record:
    set mcm [new_madMcMemberRec]
@@ -25,8 +25,8 @@ proc sendJoinForPort {port} {
    # we need the comp_mask to include the mgid, port gid and join state:
    set compMask [format "0x%X" [expr (1<<16) | 3]]
                   
-   # send it assuming the SM_LID is always 1:
-   madMcMemberRec_send_set $mcm sim$node $portNum 1 $compMask
+   # send it 
+   madMcMemberRec_send_set $mcm sim$node $portNum $smLid $compMask
 
    # deallocate
    delete_madMcMemberRec $mcm
@@ -71,11 +71,18 @@ proc randomJoinAllHCAPorts {fabric maxDelay_ms} {
    set orederedPorts [lsort -index 1 -real $orederedPorts]
    set numHcasJoined 0
 
+   # get the SM LID  
+   # HACK: Assumes the SM node is H-1/U1 Port 1
+   set smNode [IBFabric_getNode $fabric "H-1/U1"]
+   set smPort [IBNode_getPort $smNode 1]
+   set smPortInfo [IBMSNode_getPortInfo sim$smNode 1]
+   set smLid [ib_port_info_t_base_lid_get $smPortInfo]
+
    # Now do the joins - waiting random time between them:
    foreach portNOrder $orederedPorts {
       set port [lindex $portNOrder 0]
       
-      if {![sendJoinForPort $port]} {
+      if {![sendJoinForPort $port $smLid]} {
          incr numHcasJoined
       }
       
