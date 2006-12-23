@@ -261,7 +261,7 @@ proc runner {simDir osmPath osmPortGuid} {
 
    # start the SM
    set valgrind "/usr/bin/valgrind --tool=memcheck"
-   set osmCmd "$osmPath -P$partitionPolicyFile -D 0x3 -d2 -t 2000 -f $osmLog -g $osmPortGuid"
+   set osmCmd "$osmPath -P$partitionPolicyFile -D 0x3 -d2 -t 4000 -f $osmLog -g $osmPortGuid"
    puts "-I- Starting: $osmCmd"
    set osmPid [eval "exec $osmCmd > $osmStdOutLog &"]
    
@@ -306,7 +306,7 @@ proc checker {simDir osmPath osmPortGuid} {
 
       puts "-I- Invoking osmtest from node:$nodeName port:$portNum"
 
-      set osmTestCmd1 "$osmTestPath -t 2000 -g $portGuid -l $osmTestLog -f c -i $osmTestInventory"
+      set osmTestCmd1 "$osmTestPath -t 4000 -g $portGuid -l $osmTestLog -f c -i $osmTestInventory"
       puts "-I- Invoking: $osmTestCmd1 ..."
       
       # HACK: we currently ignore osmtest craches on exit flow:
