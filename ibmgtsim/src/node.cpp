@@ -241,6 +241,13 @@ int IBMSNode::processMad(uint8_t inPort, ibms_mad_msg_t &madMsg)
     return 1;
   }
 
+  /*
+	 we need to avoid locking the node as much as possible.
+	 A deadlock on client processor might exist - so we 
+	 will collect all mad processors and only then invoke them
+  */
+  list_mad_processor tmpProcs;
+
   pthread_mutex_lock(&lock);
 
   /* OK we got some processors - so call them */
@@ -248,10 +255,16 @@ int IBMSNode::processMad(uint8_t inPort, ibms_mad_msg_t &madMsg)
        lI != madProccessors[mgtClass].end();
        lI++)
   {
+	  tmpProcs.push_back(*lI);
+  }
+  pthread_mutex_unlock(&lock);
+
+  for (list_mad_processor::iterator lI = tmpProcs.begin();
+       lI != tmpProcs.end();
+       lI++)
+  {
     (*lI)->processMad(inPort, madMsg);
   }
-
-  pthread_mutex_unlock(&lock);
   return 0;
 }
 
@@ -428,7 +441,7 @@ IBMSNode::getRemoteNodeByOutPort(
 
   MSGREG(inf1, 'V', "No Remote connection on node:$ port:$", "node");
   MSGREG(inf2, 'V', "Link is not ACTIVE on node:$ port:$ it is:$", "node");
-  MSGREG(inf3, 'V', "MAD is dropped on node:$ port:$", "node");
+  MSGREG(inf3, 'I', "MAD is dropped on node:$ port:$", "node");
  
   if (ppRemNode) *ppRemNode = NULL;
   if (ppRemIBPort) *ppRemIBPort = NULL;
