@@ -62,14 +62,14 @@ class IBMSDispatcher {
     ibms_mad_msg_t  madMsg;    /* the mad message */
   };
 
-  typedef std::map<uint64_t, struct madItem > map_uint64_mad;
+  typedef std::multimap<uint64_t, struct madItem > mmap_uint64_mad;
   typedef std::list< struct madItem > mad_list;
 
   /* we track our worker threads and timer in the array of sub-threads */
   pthread_t *threads;
   
   /* the queue of mads waiting for processing */
-  map_uint64_mad madQueueByWakeup;
+  mmap_uint64_mad madQueueByWakeup;
   
   /* lock to synchronize popping up and pushing into the madQueueByWakeup */
   pthread_mutex_t madQueueByWakeupLock;

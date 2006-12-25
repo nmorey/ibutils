@@ -138,8 +138,9 @@ int IBMSDispatcher::dispatchMad(
 {
   MSG_ENTER_FUNC;  
 
-  MSGREG(inf1, 'V', "Queued a mad to expire in $ msec $ usec at $ usec", 
-			"dispatcher");
+  MSGREG(inf1, 'V', 
+         "Queued a mad from:$ tid:$ to expire in $ msec $ usec at $ usec",
+         "dispatcher");
 
   /* randomize the time we want the mad wait the event wheel */
   uint64_t waitTime_usec =
@@ -158,13 +159,15 @@ int IBMSDispatcher::dispatchMad(
   /* set the timer to the next event - trim to max delay of the current mad */
   uint32_t waitTime_msec = waitTime_usec/1000;
 
-  MSGSND(inf1, waitTime_msec, waitTime_usec, wakeupTime_up);
+  MSGSND(inf1, item.pFromNode->getIBNode()->name,
+         msg.header.trans_id,
+         waitTime_msec, waitTime_usec, wakeupTime_up);
 
   /* obtain a lock on the Q */
   pthread_mutex_lock( &madQueueByWakeupLock );
 
   /* store the mad in the sorted by wakeup map */
-  madQueueByWakeup[wakeupTime_up] = item;
+  madQueueByWakeup.insert(pair< uint64_t, madItem>(wakeupTime_up, item));
 
   /* signal the timer */
   pthread_cond_signal( &newMadIntoWaitQ );
@@ -244,12 +247,12 @@ IBMSDispatcher::timerCallback(void *context)
   while (! pDisp->exit_now ) {
 	  
 	  gettimeofday(&now, NULL);
-	  map_uint64_mad::iterator mI = pDisp->madQueueByWakeup.begin();
+	  mmap_uint64_mad::iterator mI = pDisp->madQueueByWakeup.begin();
 	  if (mI != pDisp->madQueueByWakeup.end())
 	  {
 		  uint64_t curTime_usec = now.tv_sec*1000000 + now.tv_usec;
 		  uint64_t wakeUpTime_usec = (*mI).first;
-		 
+
 		  /* we are looking for an entry further down the road */
 		  if (curTime_usec < wakeUpTime_usec)
 		  {
