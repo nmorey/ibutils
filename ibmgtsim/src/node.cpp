@@ -118,32 +118,40 @@ void IBMSMadProcessor::addProcToNode(uint16_t mgtClass)
 /* constructor handles the registration of the new processor */
 IBMSMadProcessor::IBMSMadProcessor(
   class IBMSNode *pSNode,
-  list_uint16 &mgtClassesList)
+  list_uint16 &mgtClassesList,
+  boolean_t preLocked)
 {
 
   /* we need to have a lock here */
   pSimNode = pSNode;
   mgtClasses = mgtClassesList;
 
-  pthread_mutex_lock(&pSimNode->lock);
+  if (preLocked == FALSE)
+	  pthread_mutex_lock(&pSimNode->lock);
  
   for (list_uint16::iterator lI = mgtClasses.begin();
        lI != mgtClasses.end(); lI++)
     addProcToNode(*lI);
 
-  pthread_mutex_unlock(&pSimNode->lock);
+  if (preLocked == FALSE)
+	  pthread_mutex_unlock(&pSimNode->lock);
 }
 
 /* single class constructor */
-IBMSMadProcessor::IBMSMadProcessor(class IBMSNode *pSNode, uint16_t mgtClass)
+IBMSMadProcessor::IBMSMadProcessor(
+	class IBMSNode *pSNode, 
+	uint16_t mgtClass, 
+	boolean_t preLocked)
 {
   /* we need to have a lock here */
   pSimNode = pSNode;
   mgtClasses.push_back(mgtClass);
 
-  pthread_mutex_lock(&pSimNode->lock);
+  if (preLocked == FALSE)
+	  pthread_mutex_lock(&pSimNode->lock);
   addProcToNode(mgtClass);
-  pthread_mutex_unlock(&pSimNode->lock);
+  if (preLocked == FALSE)
+	  pthread_mutex_unlock(&pSimNode->lock);
 }
 
 /* destructor must clean from node list */
@@ -241,13 +249,6 @@ int IBMSNode::processMad(uint8_t inPort, ibms_mad_msg_t &madMsg)
     return 1;
   }
 
-  /*
-	 we need to avoid locking the node as much as possible.
-	 A deadlock on client processor might exist - so we 
-	 will collect all mad processors and only then invoke them
-  */
-  list_mad_processor tmpProcs;
-
   pthread_mutex_lock(&lock);
 
   /* OK we got some processors - so call them */
@@ -255,16 +256,10 @@ int IBMSNode::processMad(uint8_t inPort, ibms_mad_msg_t &madMsg)
        lI != madProccessors[mgtClass].end();
        lI++)
   {
-	  tmpProcs.push_back(*lI);
+	  (*lI)->processMad(inPort, madMsg);
   }
   pthread_mutex_unlock(&lock);
 
-  for (list_mad_processor::iterator lI = tmpProcs.begin();
-       lI != tmpProcs.end();
-       lI++)
-  {
-    (*lI)->processMad(inPort, madMsg);
-  }
   return 0;
 }
 

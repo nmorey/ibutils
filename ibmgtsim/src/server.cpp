@@ -54,6 +54,9 @@
 */
 
 /* handle client request - should be called under lock */
+/* NOTE: to avoid deadlocks we require the node to be
+	locked before. We are using special constructor for 
+	the MADProcessor marking the node is preLocked  */
 int 
 IBMSClientConn::handleBindMsg(
   ibms_bind_msg_t &msg)
@@ -71,7 +74,7 @@ IBMSClientConn::handleBindMsg(
     return 1;
   }
   
-  /* keep track off active mad processors */
+  /* keep track of active mad processors */
   madProcessors.push_back(madProcessor);
   
   MSG_EXIT_FUNC;
@@ -82,6 +85,7 @@ IBMSClientConn::handleBindMsg(
 IBMSClientConn::~IBMSClientConn()
 {
   MSG_ENTER_FUNC;
+  /* NOTE: each mad processor will lock the node */
   for(list_pmad_proc::iterator lI = madProcessors.begin();
       lI != madProcessors.end();
       lI++)
@@ -237,7 +241,7 @@ IBMSServer::handleDisconnectMsg(
   
   MSGSND(inf1, pNode->name, pPort->num);
   
-  /* we need to lock the map of the server to insert the new client */
+  /* we need to lock the map of the server to delete the client */
   pthread_mutex_lock(&lock);
   
   /* if the client is not previously registered */
@@ -253,10 +257,16 @@ IBMSServer::handleDisconnectMsg(
   /* remove the connection from the list and delete it */
   IBMSClientConn *clientConn = (*sI).second;
   sockToClientMap.erase(sI);
-  delete clientConn;
 
   /* unlock the map */
   pthread_mutex_unlock(&lock);
+
+  /*
+	 we need to delete the client itself not under the lock
+	 since otherwise we will run into deadlock with the node lock 
+  */
+  delete clientConn;
+
   MSG_EXIT_FUNC;  
   return 0;
 }
@@ -286,11 +296,32 @@ IBMSServer::handleBindMsg(
     return 1;
   }
   
-  /* let the client conn create a new mad processor for that binding */
+  IBMSClientConn *pClient = (*sI).second;
+  IBMSNode *pSimNode = pClient->pSimNode;
+
+  pthread_mutex_unlock(&lock);
+  
+  /* now that we know the client we can pre-lock the node */
+  pthread_mutex_lock(&pSimNode->lock);
+  pthread_mutex_lock(&lock);
+
+  /* to be safe we find again */
+  sI = sockToClientMap.find(clientSock);
+  if (sI == sockToClientMap.end())
+  {
+    MSGSND(err1, clientSock); 
+    pthread_mutex_unlock(&lock);
+	 pthread_mutex_unlock(&pSimNode->lock);
+    MSG_EXIT_FUNC;
+    return 1;
+  }
+
   status = (*sI).second->handleBindMsg(bindMsg);
 
   pthread_mutex_unlock(&lock);
-  MSG_EXIT_FUNC;  
+  pthread_mutex_unlock(&pSimNode->lock);
+
+  MSG_EXIT_FUNC;
   return(status);
 }  
 

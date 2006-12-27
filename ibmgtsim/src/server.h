@@ -92,6 +92,7 @@ class IBMSClientConn : GenClient {
   int handleBindMsg(ibms_bind_msg_t &msg);
 
   friend class IBMSClientMsgProcessor;
+  friend class IBMSServer;
 };
 
 /*
@@ -114,7 +115,7 @@ class IBMSClientMsgProcessor : IBMSMadProcessor {
 
   /* construct the new processor */
   IBMSClientMsgProcessor(class IBMSClientConn *pCli, ibms_bind_msg_t &msg) :
-    IBMSMadProcessor(pCli->pSimNode, msg.mgt_class) {
+    IBMSMadProcessor(pCli->pSimNode, msg.mgt_class, TRUE) {
     MSGREG(inf1,'V', "Binding client to node:$ class:$","server");
     filter = msg;
     pClient = pCli;

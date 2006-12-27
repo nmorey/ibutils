@@ -124,8 +124,8 @@ public:
   virtual int processMad(uint8_t inPort, ibms_mad_msg_t &madMsg) {return(0);};
   
   /* constructors - should register class in the  in the node. */
-  IBMSMadProcessor(class IBMSNode *pSNode, uint16_t mgtClass);
-  IBMSMadProcessor(class IBMSNode *pSNode, list_uint16 &mgtClasses);
+  IBMSMadProcessor(class IBMSNode *pSNode, uint16_t mgtClass, boolean_t preLocked = FALSE);
+  IBMSMadProcessor(class IBMSNode *pSNode, list_uint16 &mgtClasses, boolean_t preLocked = FALSE);
   
   /* destructor - clean up from the node too */
   virtual ~IBMSMadProcessor();
@@ -294,6 +294,7 @@ class IBMSNode {
   
   /* for the sake of updating the map of mgtClass to list of handlers */
   friend class IBMSMadProcessor;
+  friend class IBMSServer;
 };
 
 #endif /* IBMS_NODE_H */
