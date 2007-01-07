@@ -269,7 +269,7 @@ proc ParseOptionsList { _options } {
 #  OUTPUT	the result of the command "ibis_get_local_ports_info"
 #  RESULT       ibis.log fn and path are defined, ibis transaction_timeout is defined
 proc InitializeIBIS {} {
-    global tcl_platform env G argv0
+    global tcl_platform env G
     catch { ibis_set_transaction_timeout 100 }
     #ibis_set_verbosity 0xffff
 
@@ -295,7 +295,7 @@ proc InitializeIBIS {} {
     }
 
     # Set fn for ibis.log
-    set ibisLogFile ${argv0}_ibis.log
+    set ibisLogFile $G(var:tool.name)_ibis.log
     if {[file exists $ibisOutDir/$ibisLogFile] && (![file writable $ibisOutDir/$ibisLogFile])} {
         set ibisLogFile $ibisLogFile.[pid]
     }
@@ -3523,6 +3523,13 @@ proc lstInfo { type DirectPath port } {
 		    }
                 }
                 lappend Info "$value" 
+            }
+            "SystemGUID" {
+               # use node guid instead for zero system image guid
+               if {$value == "0x0000000000000000"} {
+                   regsub {^0x} [GetParamValue NodeGUID $DirectPath -port $port] {} value
+               }
+               lappend Info "${parameter}${sep}${value}"
             }
             "SystemGUID" {
                # use node guid instead for zero system image guid
