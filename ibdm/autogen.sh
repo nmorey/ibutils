@@ -1,5 +1,42 @@
 #!/bin/bash
 
+# get two strings of version numbers
+# parse the two strings and compare
+function compare_versions() {
+   cat <<EOF > /tmp/$$.awk
+/[0-9]+\.[0-9]+(\.[0-9]+)?[    ]+[0-9]+\.[0-9]+(\.[0-9]+)?/{
+  vb = "$2";
+  nb = split(vb,b,"[.]");
+  va = "$1";
+  na = split(va,a,"[.]");
+  for (i = na + 1; i < 4; i++) {
+      a[i] = 0;
+  }
+  for (i = nb + 1; i < 4; i++) {
+      b[i] = 0;
+  }
+  for (i = 1; i <= 3; i++) {
+    if (b[i] < a[i]) {
+#      print "FAIL:" va ">" vb " at index:" i;
+        exit(1);
+    } else if (b[i] > a[i]) {
+#       print "OK:" va "<" vb " at index:" i;
+       exit(0);
+    }
+  }
+#  print "OK:" va "==" vb;
+  exit(0);
+}
+{
+  exit(1);
+}
+EOF
+  echo "$1 $2 " | awk -f /tmp/$$.awk
+  status=$?
+  rm /tmp/$$.awk
+  return $status
+}
+
 # We change dir since the later utilities assume to work in the project dir
 cd ${0%*/*}
 # remove previous
@@ -7,43 +44,25 @@ cd ${0%*/*}
 \rm -rf aclocal.m4
 # make sure autoconf is up-to-date
 ac_ver=`autoconf --version | head -n 1 | awk '{print $NF}'`
-ac_maj=`echo $ac_ver|sed 's/\..*//'`
-ac_min=`echo $ac_ver|sed 's/.*\.//'`
-if [[ $ac_maj -lt 2 ]]; then
-    echo Min autoconf version is 2.59
-    exit 1
-elif [[ $ac_maj -eq 2 && $ac_min -lt 59 ]]; then
+compare_versions 2.59 $ac_ver
+if test $? = 1; then
     echo Min autoconf version is 2.59
     exit 1
 fi
+
 # make sure automake is up-to-date
 am_ver=`automake --version | head -n 1 | awk '{print $NF}'`
-am_maj=`echo $am_ver|sed 's/\..*//'`
-am_min=`echo $am_ver|sed 's/[^\.]*\.\([^\.]*\)\.*.*/\1/'`
-am_sub=`echo $am_ver|sed 's/[^\.]*\.[^\.]*\.*//'`
-if [[ $am_maj -lt 1 ]]; then
+compare_versions 1.9.2 $am_ver
+if test $? = 1; then
     echo Min automake version is 1.9.2
     exit 1
-elif [[ $am_maj -eq 1 && $am_min -lt 9 ]]; then
-    echo "automake version is too old:$am_maj.$am_min.$am_sub < required 1.9.2"
-    exit 1
-elif [[ $am_maj -eq 1 && $am_min -eq 9 && $am_sub -lt 2 ]]; then
-    echo "automake version is too old:$am_maj.$am_min.$am_sub < required 1.9.2"
-    exit 1
 fi
+
 # make sure libtool is up-to-date
 lt_ver=`libtool --version | head -n 1 | awk '{print $4}'`
-lt_maj=`echo $lt_ver|sed 's/\..*//'`
-lt_min=`echo $lt_ver|sed 's/[^\.]*\.\([^\.]*\)\.*.*/\1/'`
-lt_sub=`echo $lt_ver|sed 's/[^\.]*\.[^\.]*\.*//'`
-if [[ $lt_maj -lt 1 ]]; then
+compare_versions 1.4.2 $lt_ver
+if test $? = 1; then
     echo Min libtool version is 1.4.2
-    exit 1
-elif [[ $lt_maj -eq 1 && $lt_min -lt 4 ]]; then
-    echo "libtool version is too old:$lt_maj.$lt_min.$lt_sub < required 1.4.2"
-    exit 1
-elif [[ $lt_maj -eq 1 && $lt_min -eq 4 && $lt_sub -lt 2 ]]; then
-    echo "libtool version is too old:$lt_maj.$lt_min.$lt_sub < required 1.4.2"
     exit 1
 fi
 
