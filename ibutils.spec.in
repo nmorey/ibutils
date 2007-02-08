@@ -57,7 +57,7 @@ License: GPL/BSD
 Url: http://openib.org/downloads/%{name}-%{version}.tar.gz
 Group: System Environment/Libraries
 Source: %{name}-%{version}.tar.gz
-BuildRoot: %{?build_root:%{build_root}}%{!?build_root:/var/tmp/IBED}
+BuildRoot: %{?build_root:%{build_root}}%{!?build_root:/var/tmp/OFED}
 # Requires: opensm
 Vendor: Mellanox Technologies Ltd.
 %description 
@@ -152,13 +152,15 @@ fi
 # %{_libdir}/ibibdmcom.a
 %{_libdir}/libibdm.so*
 %{_libdir}/libibdm.a
-%{_libdir}/ibis1.0
-%{_libdir}/ibdm1.0
-%{_libdir}/ibdiagnet1.0
-%{_libdir}/ibdiagpath1.0
+%{_libdir}/ibis1.2
+%{_libdir}/ibdm1.2
+%{_libdir}/ibdiagnet1.2
+%{_libdir}/ibdiagpath1.2
+%{_libdir}/ibdiagui1.2
 %{_prefix}/include/ibdm
 %{_mandir}/man1/ibdiagnet.1*
 %{_mandir}/man1/ibdiagpath.1*
+%{_mandir}/man1/ibdiagui.1*
 %{_mandir}/man1/ibis.1*
 %{_mandir}/man1/ibtopodiff.1*
 %{_mandir}/man1/ibdmtr.1*
