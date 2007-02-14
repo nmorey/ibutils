@@ -146,6 +146,7 @@ fi
 %{_prefix}/bin/ibnlparse
 %{_prefix}/bin/ibdmtr
 %{_prefix}/bin/ibdmchk
+%{_prefix}/bin/ibdiagui
 %{_prefix}/bin/ibdiagnet
 %{_prefix}/bin/ibdiagpath
 %{_libdir}/libibdmcom.so*
