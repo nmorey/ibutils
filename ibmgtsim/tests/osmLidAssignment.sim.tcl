@@ -262,7 +262,7 @@ proc setNodePortsState {node state} {
    global DISCONNECTED_NODES
    # simply go over all ports of the node excluding port 0 and
    # set the link logic state on the port info to DOWN
-   for {set pn 1} {$pn < [IBNode_numPorts_get $node]} {incr pn} {
+   for {set pn 1} {$pn <= [IBNode_numPorts_get $node]} {incr pn} {
       set pi [IBMSNode_getPortInfo sim$node $pn]
       set speed_state [ib_port_info_t_state_info1_get $pi]
       ib_port_info_t_state_info1_set $pi [expr $speed_state & 0xf0 | $state]

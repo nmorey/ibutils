@@ -211,7 +211,7 @@ proc setNodePortsState {node state} {
    set name [IBNode_name_get $node]
    # simply go over all ports of the node excluding port 0 and
    # set the link logic state on the port info to $state
-   for {set pn 1} {$pn < [IBNode_numPorts_get $node]} {incr pn} {
+   for {set pn 1} {$pn <= [IBNode_numPorts_get $node]} {incr pn} {
 
       set port [IBNode_getPort $node $pn]
       if {$port != ""} {
