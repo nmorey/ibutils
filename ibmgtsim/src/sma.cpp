@@ -56,14 +56,6 @@
 #define ANAFA_DEVID 43132
 #define ANAFA2_DEVID 47396
 
-#define IB_PHYS_PORT_STATE_SLEEP 1
-#define IB_PHYS_PORT_STATE_POLLING 2
-#define IB_PHYS_PORT_STATE_DISABLED 3
-#define IB_PHYS_PORT_STATE_TRAINING 4
-#define IB_PHYS_PORT_STATE_UP 5
-#define IB_PHYS_PORT_STATE_RECOVERING 6
-#define IB_PHYS_PORT_STATE_TEST 7
-
 void
 ibms_dump_mad(
   IN const  ibms_mad_msg_t  &madMsg,
@@ -326,7 +318,7 @@ void IBMSSma::initPortInfo()
     ib_port_info_set_neighbor_mtu(&tmpPortInfo, 1);
     ib_port_info_set_vl_cap(&tmpPortInfo, 4);
     ib_port_info_set_port_state( &tmpPortInfo, IB_LINK_ACTIVE);
-    ib_port_info_set_port_phys_state( IB_PHYS_PORT_STATE_UP, &tmpPortInfo);
+    ib_port_info_set_port_phys_state( 5, &tmpPortInfo);
 
     tmpPortInfo.subnet_timeout = 0;
     tmpPortInfo.resp_time_value = 0x6;
@@ -357,7 +349,7 @@ void IBMSSma::initPortInfo()
       MSGSND(wrn1);
       //TODO handle not connected port generic - remove all assignments from below
       ib_port_info_set_port_state( &tmpPortInfo, IB_LINK_DOWN);
-      ib_port_info_set_port_phys_state( IB_PHYS_PORT_STATE_DISABLED, &tmpPortInfo);
+      ib_port_info_set_port_phys_state( 2, &tmpPortInfo);
       pSimNode->nodePortsInfo.push_back( tmpPortInfo );
       i++;
       continue;
@@ -389,8 +381,8 @@ void IBMSSma::initPortInfo()
     }
        
     // PortPhysState and LinkDownDefaultState
-    ib_port_info_set_port_phys_state( IB_PHYS_PORT_STATE_UP, &tmpPortInfo);
-    ib_port_info_set_link_down_def_state( &tmpPortInfo, IB_PHYS_PORT_STATE_POLLING );
+    ib_port_info_set_port_phys_state( 5, &tmpPortInfo);
+    ib_port_info_set_link_down_def_state( &tmpPortInfo, 2);
     tmpPortInfo.mtu_smsl = 1;
     ib_port_info_set_neighbor_mtu( &tmpPortInfo, 4);
     ib_port_info_set_vl_cap(&tmpPortInfo, 4);
@@ -821,19 +813,9 @@ int IBMSSma::setPortInfoGeneral(ibms_mad_msg_t &respMadMsg,
   pReqPortInfo = (ib_port_info_t*)(pReqMad->data);
   pNodePortInfo = &(pSimNode->nodePortsInfo[portNum]);
 
-  if ( ib_port_info_get_port_phys_state(&portInfoElm) == IB_PHYS_PORT_STATE_DISABLED )
+  if (ib_port_info_get_port_state(&portInfoElm) == IB_LINK_DOWN)
   {
-    MSGREG(err0, 'E', "PortInfo PhysPortState is Disabled - Port Not connected !", "setPortInfoGeneral");
-    MSGSND(err0);
-    status = IB_MAD_STATUS_INVALID_FIELD;
-
-    MSG_EXIT_FUNC;
-    return status;
-  }
-
-  if ( ib_port_info_get_port_state(&portInfoElm) == IB_LINK_DOWN )
-  {
-    MSGREG(err0, 'E', "PortInfo PortState is Down - Ignoring Request !", "setPortInfoGeneral");
+    MSGREG(err0, 'W', "PortInfo PortState is Down - Port Not connected !", "setPortInfoGeneral");
     MSGSND(err0);
     status = IB_MAD_STATUS_INVALID_FIELD;
 
@@ -874,16 +856,7 @@ int IBMSSma::setPortInfoGeneral(ibms_mad_msg_t &respMadMsg,
       return status;
     }
 
-	 // if the port is connected (and phys state is not 
-	 // disabled - but we ignore phys state) taking it down 
-	 // will actually make it back init
-    if (newPortState == IB_LINK_DOWN) 
-	 {
-		 MSGREG(verb0, 'V', "PortInfo PortState set to INIT after request for DOWN for $ port $", "setPortInfoGeneral");
-		 MSGSND(verb0, pSimNode->getIBNode()->name , portNum);
-		 newPortState = IB_LINK_INIT;
-	 }
-
+    if (newPortState == IB_LINK_DOWN) newPortState = IB_LINK_INIT;
     // if all checks passed then set and change required
     if (newPortState)
     {

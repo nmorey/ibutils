@@ -6,7 +6,7 @@ IBMgtSim depends on:
 * libtool > 1.4.2
 * tcl8.3/8.4 (dev-rpm or source)
 * OpenSM 1.7.0(or later) and 
-* ibdm 1.0 or later
+* ibdm 1.0
 
 During configuration you will need to provide paths to these
 packages if not installed in their "standard location".
@@ -31,7 +31,7 @@ HOWTO BUILD
 -----------
 
 1. bootstrap:
-   In a fresh git co directory you need to run ./autogen.sh
+   In a fresh SVN co directory you need to run ./config/bootstrap
    Make sure the autoconf -V is version 2.59 or newer.
 
 2. configure:
@@ -63,10 +63,10 @@ HOWTO BUILD
 4. install:
    make install
 
-The following steps 5-7 describe the manual way to start the Simulator
-server and OpenSM. This information is provided mainly for reference,
-as the most practical way to run teh Simulator is to use RunSimTest
-which is described in step 8.
+The following steps 5-7 describe the manual way to start teh Simulator server 
+and OpenSM. This information is provided mainly for reference, as the most
+practical way to run teh Simulator is to use RunSimTest which is described in
+step 8.
 
 5. run the server:
    setenv IBMGTSIM_DIR <some dir used by the server and its clients>
