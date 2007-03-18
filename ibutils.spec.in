@@ -75,16 +75,18 @@ ibutils provides IB network and path diagnostics.
 %configure %{configure_options} %{ppc64_configure_options}
 # W/A for libtool issue: change libdir in all *.la files to point to ${RPM_BUILD_ROOT}/${libdir}
 # This W/A should be removed in post install section
-LA_FILES=$(find ${RPM_BUILD_ROOT}/%{_prefix} -type f -name '*.la')
-for la_file in ${LA_FILES}
-do
-    case ${la_file##*/} in
-        libibumad.la|libosmcomp.la|libopensm.la|libosmvendor.la)
-        perl -ni -e "s@(libdir=).*@\$1'${RPM_BUILD_ROOT}%{_libdir}'@; print" ${la_file}
-        perl -ni -e "s@ %{_libdir}@\ ${RPM_BUILD_ROOT}%{_libdir}@g; print" ${la_file}
-        ;;
-    esac
-done
+if [ -d ${RPM_BUILD_ROOT}/%{_prefix} ]; then
+  LA_FILES=$(find ${RPM_BUILD_ROOT}/%{_prefix} -type f -name '*.la')
+  for la_file in ${LA_FILES}
+  do
+      case ${la_file##*/} in
+          libibumad.la|libosmcomp.la|libopensm.la|libosmvendor.la)
+          perl -ni -e "s@(libdir=).*@\$1'${RPM_BUILD_ROOT}%{_libdir}'@; print" ${la_file}
+          perl -ni -e "s@ %{_libdir}@\ ${RPM_BUILD_ROOT}%{_libdir}@g; print" ${la_file}
+          ;;
+      esac
+  done
+fi
 
 %{__make} %{?mflags}
 %{__make} install DESTDIR=$RPM_BUILD_ROOT %{?mflags_install}
@@ -108,6 +110,8 @@ echo "%{_libdir}" >> $RPM_BUILD_ROOT/etc/ld.so.conf.d/ibutils.conf
 #Remove installed driver after rpm build finished
 # Leave $RPM_BUILD_ROOT in order to build dependent packages
 rm -rf $RPM_BUILD_DIR/%{name}-%{version}
+# But remove man pages to avoid issues in later rebuilds
+rm -rf $RPM_BUILD_ROOT/%{_mandir}/man1
 
 ###
 ### pre section
