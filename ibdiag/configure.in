@@ -24,13 +24,14 @@ AC_ARG_ENABLE(libcheck,
   *) AC_MSG_ERROR(bad value ${enableval} for --enable-libcheck) ;;
 esac],[libcheck=true])
 
+if test $libcheck = true; then
 dnl Checks for libraries.
 CHECK_IBIS_EXEC_DIR
 CHECK_IBDM_TCLLIB
 SET_TK_LIBS
 SET_GRAPHVIZ_LIBS
+fi
 
 dnl Create the following Makefiles
-AC_CONFIG_FILES([Makefile src/Makefile doc/Makefile])
-AC_OUTPUT()
+AC_OUTPUT(Makefile src/Makefile doc/Makefile)
 
