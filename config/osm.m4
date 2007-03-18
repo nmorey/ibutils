@@ -54,7 +54,7 @@ dnl ----------------------------------------------------------------
 
 dnl Define a way for the user to provide path to OpenSM 
 AC_ARG_WITH(osm,
-[  --with-osm=<dir> define where to find OSM],
+[  --with-osm=<dir> define OSM prefix],
 AC_MSG_NOTICE(Using OSM from:$with_osm),
 with_osm="none")
 
