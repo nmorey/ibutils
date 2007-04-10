@@ -57674,7 +57674,7 @@ SWIGEXPORT(int,Ibis_Init)(Tcl_Interp *interp) {
     /* we initialize the structs etc only once. */
     if (0 == notFirstTime++) {
       Tcl_StaticPackage(interp, "ibis", Ibis_Init, NULL);
-      
+      Tcl_PkgProvide(interp, "ibis", IBIS_VERSION); 
       /* Default Options  */
       memset(&IbisOpts, 0,sizeof(ibis_opt_t));
       IbisOpts.transaction_timeout = 4*OSM_DEFAULT_TRANS_TIMEOUT_MILLISEC;
