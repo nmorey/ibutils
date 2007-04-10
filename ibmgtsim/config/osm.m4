@@ -36,6 +36,7 @@ dnl   /usr/local/ibgd/apps/osm
 dnl   /usr/mellanox/osm
 dnl   /usr/mellanox/osm-sim
 dnl   /usr/local/lib/libopensm.a
+dnl   /usr/lib/libopensm.a
 dnl
 dnl Figure out what kind of BUILD it is gen1 or gen2:
 dnl if the with_osm/include/infiniband exists we are on gen2 stack
@@ -54,7 +55,7 @@ dnl ----------------------------------------------------------------
 
 dnl Define a way for the user to provide path to OpenSM 
 AC_ARG_WITH(osm,
-[  --with-osm=<dir> define where to find OSM],
+[  --with-osm=<dir> define OSM prefix],
 AC_MSG_NOTICE(Using OSM from:$with_osm),
 with_osm="none")
 
@@ -83,6 +84,9 @@ if test "x$libcheck" = "xtrue"; then
       elif (test -f /usr/local/lib64/libopensm.so ||
 				test -f /usr/local/lib/libopensm.so); then
          with_osm=/usr/local
+      elif (test -f /usr/lib64/libopensm.so ||
+				test -f /usr/lib/libopensm.so); then
+         with_osm=/usr
       else
          AC_MSG_ERROR([OSM: --with-osm must be provided - fail to find standard OpenSM installation])
       fi

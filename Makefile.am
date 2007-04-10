@@ -36,10 +36,11 @@
 
 # note that order matters: make the lib first then use it
 if BUILD_IBMGTSIM
-SUBDIRS 		= ibis ibdm ibdiag ibmgtsim
-else
-SUBDIRS 		= ibis ibdm ibdiag
+IBMGTSIMDIR             = ibmgtsim
 endif
+
+SUBDIRS                 = ibis ibdm ibdiag $(IBMGTSIMDIR)
+DIST_SUBDIRS            = ibis ibdm ibdiag $(IBMGTSIMDIR)
 
 # this will control the update of the files in order
 MAINTAINERCLEANFILES = Makefile.in aclocal.m4 configure config-h.in 
