@@ -830,7 +830,7 @@
   char **sub_lists;
 #endif
   int num_sub_lists;
-  uint8_t idx;
+  unsigned int idx;
 
   /* we will use the TCL split list to split into elements */
   if (Tcl_SplitList(interp, 
@@ -981,6 +981,7 @@ class IBNode {
   uint32_t        revId;     // The device revision Id.
   uint32_t        vendId;    // The device Vendor ID.
   string          attributes;// Comma-sep string of arbitrary attributes k=v
+  uint8_t         rank;      // The rank of the node in the tree
 %readonly
   IBSystem	     *p_system; // What system we belong to
   IBFabric	     *p_fabric; // What fabric we belong to.

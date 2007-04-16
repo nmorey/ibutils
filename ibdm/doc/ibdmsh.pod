@@ -186,6 +186,10 @@ The device Vendor ID.
 
 Comma-sep string of arbitrary attributes k=v
         
+=item [ Member data: returns uint8_t ] -rank
+
+The rank of the node (0 is a root)
+
 =item [ Member data: returns IBSystem * ] -p_system
 
 What system we belong to
