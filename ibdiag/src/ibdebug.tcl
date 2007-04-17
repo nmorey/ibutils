@@ -1989,7 +1989,8 @@ proc PMCounterQuery {} {
         # set a list of all pm counters and reduced each one which is reported as an error 
         set pmCounterList "symbol_error_counter link_error_recovery_counter\
             link_down_counter port_rcv_errors port_xmit_discard port_xmit_constraint_errors\
-            port_rcv_constraint_errors local_link_integrity_errors excesive_buffer_errors vl15_dropped" 
+            port_rcv_constraint_errors local_link_integrity_errors excesive_buffer_errors vl15_dropped\
+            port_xmit_data port_rcv_data port_xmit_pkts port_rcv_pkts"
 
         foreach entry [ComparePMCounters $oldValues($tmpLidPort) $newValues($tmpLidPort)] {
             scan $entry {%s %s %s} parameter err value
