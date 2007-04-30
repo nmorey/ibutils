@@ -39,6 +39,7 @@
 #include <fstream>
 #include <sstream>
 #include <map>
+
 using namespace std;
 
 /*
@@ -59,22 +60,27 @@ using namespace std;
 // on every out port of every node.
 typedef list< pair< uint16_t, uint16_t> > list_src_dst;
 typedef map< IBPort *, list_src_dst, less<IBPort * > > map_pport_paths;
+typedef map< IBPort *, int , less<IBPort * > > map_pport_int;
+typedef map< int, float > map_int_float;
 
 // for each fabric we keep:
 class CongFabricData {
 public:
    map_pport_paths portPaths;
+	map_pport_int   portNumPaths;
    long            numPaths;
    int             stageWorstCase;
    int             worstWorstCase;
    list<int>       stageWorstCases;
    vec_int         numPathsHist;
    IBPort         *p_worstPort;
+	int             maxRank;
    CongFabricData() {
       stageWorstCase = 0;
       worstWorstCase = 0;
       p_worstPort = NULL;
       numPaths = 0;
+		maxRank = 0;
    };
 };
 
@@ -102,7 +108,9 @@ int  CongInit(IBFabric *p_fabric)
         nI++)
    {
       p_node = (*nI).second;
-   
+		if (p_node->rank > CongFabrics[p_fabric].maxRank)
+			CongFabrics[p_fabric].maxRank = p_node->rank;
+
       for( unsigned int pn = 1; pn <= p_node->numPorts; pn++)
       {
          p_port = p_node->getPort(pn);
@@ -131,52 +139,127 @@ CongCleanup(IBFabric *p_fabric)
    return(0);
 }
 
-// initialize new set of congestion tracking for the given fabric
-// error if invoked without an init
-int
+// analyze a single stage. We propagte a floating point fraction of 
+// link BW with each src,dst pair such that cong apear only on first
+// link a contention run through
+
+int 
 CongZero(IBFabric *p_fabric)
 {
+	map_int_float dst_frac;
+	int going_up = 1;
+
    // get the reference to the actual data structure:
    map_pfabric_cong::iterator cI = CongFabrics.find(p_fabric);
    if (cI == CongFabrics.end())
    {
-      cout << "-E- Congestion Tracker not previously initialized" << endl;
+      cout << "-E- Congestion Tracker not previously initialized." << endl;
       return(1);
    }
 
    CongFabricData &congData = (*cI).second;
+	congData.stageWorstCase = 0;
 
-   // store out worst case
-   congData.stageWorstCases.push_back(congData.stageWorstCase);
-   congData.stageWorstCase = 0;
+	// start from all leaf switches and walk up then down again
+	for (int rank = congData.maxRank; rank >= -congData.maxRank; rank--) {
+		int numPortsInLevel = 0;
+		if (!rank) going_up = 0;
 
-   // update the histogram before cleanup
-   for (map_pport_paths::iterator pI = congData.portPaths.begin();
-        pI != congData.portPaths.end();
-        pI++)
-   {
-      for(unsigned int i = congData.numPathsHist.size();
-          i <= (*pI).second.size(); i++)
-         congData.numPathsHist.push_back(0);
+		for (map_str_pnode::iterator nI = p_fabric->NodeByName.begin();
+			  nI != p_fabric->NodeByName.end(); 
+			  nI++) {
+			IBNode *p_node = (*nI).second;
 
-      int numPaths = (*pI).second.size();
-      congData.numPathsHist[numPaths]++;
+			// we treat nodes with rank equals to absolute rank index
+			if (p_node->rank != abs(rank)) continue;
+			
+			for (unsigned int pn = 1; pn <= p_node->numPorts; pn++) {
+				IBPort *p_port = p_node->getPort(pn);
+				
+				// do we have a port on the other side ? 
+				if (!p_port || !p_port->p_remotePort) continue;
+				
+				// if we go up ignore the port if not going up 
+				if (going_up && 
+					 ( (p_port->p_remotePort->p_node->type == IB_CA_NODE) ||
+						(p_port->p_remotePort->p_node->rank >= rank) ) )
+					continue;
+				
+				// if we go down ignore the port if not going down
+				if (!going_up && 
+					 (p_port->p_remotePort->p_node->type == IB_SW_NODE) &&
+					 (p_port->p_remotePort->p_node->rank <= -rank)) 
+					continue;
 
-      if (FabricUtilsVerboseLevel & FABU_LOG_VERBOSE)
-      {
-         if (numPaths > 1)
-         {
-            cout << "-V- port:" << (*pI).first->getName() << " coliding:";
+				numPortsInLevel++;
+				map_pport_paths::iterator pI = congData.portPaths.find(p_port);
+
+				// now see what pairs are routed through the port
+				float sumFracs = 0;
             for (list_src_dst::iterator lI = (*pI).second.begin();
                  lI != (*pI).second.end();
-                 lI++)
-               cout << (*lI).first << "," << (*lI).second << " ";
-            cout << endl;
-         }
-      }
-      (*pI).second.clear();
-   }
-   return(0);
+                 lI++) {
+					int dst = (*lI).second;
+
+					// find the fraction for that destination:
+					map_int_float::iterator fI = dst_frac.find(dst);
+					if (fI == dst_frac.end()) {
+						dst_frac[dst] = 1.0;
+						sumFracs += 1.0;
+					} else {
+						sumFracs += dst_frac[dst];
+					}
+				}
+
+				// update statistics
+				int numPaths = (int)sumFracs;
+				congData.portNumPaths[p_port] = numPaths;
+
+				for(unsigned int i = congData.numPathsHist.size(); i <= numPaths; i++)
+					congData.numPathsHist.push_back(0);
+				congData.numPathsHist[numPaths]++;
+
+				if (congData.stageWorstCase < numPaths)
+					congData.stageWorstCase = numPaths;
+
+				// debug:
+				if (FabricUtilsVerboseLevel & FABU_LOG_VERBOSE)
+				{
+					if (sumFracs > 1.0)
+					{
+						cout << "-V- port:" << (*pI).first->getName() << " Coliding:";
+						for (list_src_dst::iterator lI = (*pI).second.begin();
+							  lI != (*pI).second.end();
+							  lI++)
+							cout << (*lI).first << "," << (*lI).second
+								  << "(" << dst_frac[(*lI).second] << ") ";
+						cout << endl;
+					}
+				}
+
+				// update fractions
+				if (sumFracs > 1.0) {
+					for (list_src_dst::iterator lI = (*pI).second.begin();
+						  lI != (*pI).second.end();
+						  lI++) {
+						int dst = (*lI).second;
+						
+						dst_frac[dst] = dst_frac[dst] / sumFracs;
+					}
+				}
+				
+				// clear the list for the future ...
+				(*pI).second.clear();
+
+			} // ports in right direction
+		} // all nodes
+		if (FabricUtilsVerboseLevel & FABU_LOG_VERBOSE) 
+			cout << "-V- Scanned rank:" << rank << " ports:" << numPortsInLevel << endl;
+	} // ranks 
+
+   congData.stageWorstCases.push_back(congData.stageWorstCase);
+
+	return (0);
 }
 
 // Track a single path
@@ -407,7 +490,8 @@ CongDump(IBFabric *p_fabric, ostringstream &out)
         pI != congData.portPaths.end();
         pI++)
    {
-      out << "PORT:" << (*pI).first->getName() << endl;
+      out << "PORT:" << (*pI).first->getName() 
+			 << " NUM:" << congData.portNumPaths[(*pI).first] << endl;
       for ( list_src_dst::iterator lI = (*pI).second.begin();
             lI != (*pI).second.end();
             lI++)
