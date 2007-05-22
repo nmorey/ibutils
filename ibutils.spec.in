@@ -103,8 +103,17 @@ if ( "\${path}" !~ *%{_prefix}/bin* ) then
 endif
 EOF
 
+touch ibutils-files
 install -d $RPM_BUILD_ROOT/etc/ld.so.conf.d
 echo "%{_libdir}" >> $RPM_BUILD_ROOT/etc/ld.so.conf.d/ibutils.conf
+case %{_prefix} in
+        /usr | /usr/)
+        ;;
+        *)
+        echo "/etc/ld.so.conf.d/ibutils.conf" >> ibutils-files
+        ;;
+esac
+
 
 %clean
 #Remove installed driver after rpm build finished
@@ -142,7 +151,7 @@ fi
 ###
 ### Files
 ###
-%files
+%files -f ibutils-files
 %defattr(-,root,root)
 %{_prefix}/bin/ibis
 %{_prefix}/bin/ibdmsh
@@ -175,7 +184,6 @@ fi
 %{_mandir}/man1/ibdm-ibnl-file.1*
 /etc/profile.d/ibutils.sh
 /etc/profile.d/ibutils.csh
-/etc/ld.so.conf.d/ibutils.conf
 %if %{build_ibmgtsim}
 %{_prefix}/bin/mkSimNodeDir
 %{_prefix}/bin/ibmssh
