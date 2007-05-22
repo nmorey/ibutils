@@ -208,6 +208,7 @@ class IBPort {
   IBLinkWidth     width;          // The link width of the port
   IBLinkSpeed     speed;          // The link speed of the port
   unsigned int    counter1;       // a generic value to be used by various algorithms
+  unsigned int    counter2;       // a generic value to be used by various algorithms
   
   // constructor
   IBPort(IBNode *p_nodePtr, int number);

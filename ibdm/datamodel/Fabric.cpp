@@ -62,6 +62,7 @@ IBPort::IBPort(IBNode *p_nodePtr, int number) {
   base_lid = IB_LID_UNASSIGNED;
   memset(&guid,0,sizeof(uint64_t));
   counter1 = 0;
+  counter2 = 0;
 }
 
 // destructor
