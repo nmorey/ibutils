@@ -652,8 +652,11 @@ FatTree::FatTree(IBFabric *p_f)
 //     Perform backward traversal marking up ports to that remote node
 //
 // Data Model:
-// We use the fat tree to get ordering
-// Track port utilization by the "counter1" field of the port
+// We use the fat tree to get ordering.
+// "main" routing is the routing from HCA to HCA.
+// "side" routing is used from all SW to all HCAs (and dynamic routing)
+// Track port utilization for the "main" routing by the "counter1" 
+// Track port utilzation of the "side" routing in "counter2" field of the port
 //
 //////////////////////////////////////////////////////////////////////////////
 
@@ -722,6 +725,8 @@ FatTree::assignLftUpWards(FatTreeNode *p_ftNode, uint16_t dLid,
 
          // look on the local usage as we mark usage entering a port
          int usage = p_port->counter1;
+			if (switchPathOnly)
+				usage += p_port->counter2;
          if ((p_bestPort == NULL) || (usage < bestUsage))
          {
             p_bestPort = p_port;
@@ -731,8 +736,11 @@ FatTree::assignLftUpWards(FatTreeNode *p_ftNode, uint16_t dLid,
    
       if (p_bestPort != NULL)
       {
-         // mark utilization
-         if (!switchPathOnly) p_bestPort->counter1++;
+			// mark utilization
+			if (switchPathOnly) 
+				p_bestPort->counter2++;
+			else
+				p_bestPort->counter1++;
 
          IBPort *p_bestRemPort = p_bestPort->p_remotePort;
          p_remNode->setLFTPortForLid(dLid, p_bestRemPort->num);
@@ -772,15 +780,22 @@ FatTree::assignLftDownWards(FatTreeNode *p_ftNode, uint16_t dLid,
 
    if (outPortNum != 0xFF)
    {
-      // Set FDB to that LID 
+		// Set FDB to that LID only if not preset or we are on "main" route
 		if (!switchPathOnly || 
-			 (p_node->getLFTPortForLid(dLid) == IB_LFT_UNASSIGNED))
+			 (p_node->getLFTPortForLid(dLid) == IB_LFT_UNASSIGNED)) {
 			p_node->setLFTPortForLid(dLid, outPortNum);
-		
-      p_port = p_node->getPort(outPortNum);
-   
-      // mark the usage of this port
-      if (p_port && !switchPathOnly) p_port->counter1++;
+			
+			p_port = p_node->getPort(outPortNum);
+			
+			// mark the usage of this port
+			if (p_port) {
+				if (switchPathOnly) {
+					p_port->counter2++;
+				} else {
+					p_port->counter1++;
+				}
+			}
+		}
    }
 
    // find the remote port (following the parents list order)
@@ -803,6 +818,9 @@ FatTree::assignLftDownWards(FatTreeNode *p_ftNode, uint16_t dLid,
          IBPort *p_remPort = p_port->p_remotePort;
          if (p_remPort == NULL) continue;
          int usage = p_remPort->counter1;
+			if (switchPathOnly)
+				usage += p_remPort->counter2;
+
          if ((p_bestRemPort == NULL) || (usage < bestUsage))
          {
             p_bestRemPort = p_remPort;
@@ -835,17 +853,36 @@ FatTree::assignLftDownWards(FatTreeNode *p_ftNode, uint16_t dLid,
 		IBPort* p_remPort;
 		// if we are on the "best group" we know the best port
 		if (bestGroup == i) continue;
-		
-		// no need to equalize
-		int portNum = p_ftNode->parentPorts[i].front();
-		p_port = p_node->getPort(portNum);
-		p_remPort = p_port->p_remotePort;
-		p_remFTNode = getFatTreeNodeByNode(p_remPort->p_node);
+
+		// find the best port of the group i
+		p_bestRemPort = NULL;
+		found = 0;
+      for (list<int>::iterator lI = p_ftNode->parentPorts[i].begin();
+           !found && (lI != p_ftNode->parentPorts[i].end());
+           lI++) {
+			
+         // can not have more then one port in group...
+         int portNum = *lI;
+         IBPort *p_port = p_node->getPort(portNum); // must be if marked parent
+         IBPort *p_remPort = p_port->p_remotePort;
+         if (p_remPort == NULL) continue;
+         int usage = p_remPort->counter1 + p_remPort->counter2;
+			
+         if ((p_bestRemPort == NULL) || (usage < bestUsage))
+         {
+            p_bestRemPort = p_remPort;
+            bestUsage = usage;
+            // can not have better usage then no usage
+            if (usage == 0)
+               found = 1;
+         }
+      }
+		p_remFTNode = getFatTreeNodeByNode(p_bestRemPort->p_node);
       if (!p_remFTNode)
          cout << "-E- Fail to get FatTree Node for node:"
               << p_bestRemPort->p_node->name << endl;
       else
-         assignLftDownWards(p_remFTNode, dLid, p_remPort->num, 1);
+         assignLftDownWards(p_remFTNode, dLid, p_bestRemPort->num, 1);
    }
 
    // Perform Backward traversal through all ports connected to lower
