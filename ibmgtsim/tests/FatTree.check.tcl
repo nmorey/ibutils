@@ -53,9 +53,9 @@ proc checker {simDir osmPath osmPortGuid} {
    after 5000
 
    # Check that the fat-tree routing has run to completion.
-   # If it has, then osm-ftree-ca-order.dump file should exist 
+   # If it has, then opensm-ftree-ca-order.dump file should exist 
    # in the simulation directory.
-   set osmFtreeCAOrderDump [file join $simDir osm-ftree-ca-order.dump]
+   set osmFtreeCAOrderDump [file join $simDir opensm-ftree-ca-order.dump]
    if {[file exists $osmFtreeCAOrderDump]} {
       puts "-I- Fat-tree CA ordering file exists"
    } else {
