@@ -1641,7 +1641,7 @@ proc inform { msgCode args } {
         }
         "-W-ibdiagnet:bad.pm.counter.report" {
             append msgText "$NODE(0,FullNamePort_Last)%n"
-            append msgText "      Performence Monitor counter"
+            append msgText "      Performance Monitor counter"
             append msgText "[string repeat " " [expr [LengthMaxWord $G(var:list.pm.counter)] - 27]] : "
             append msgText "Value"
 
