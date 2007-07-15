@@ -193,7 +193,7 @@ FW revision:   0x300020002
       
          # port info
          set of [open [file join $simDir $sysName $caName port$pn info] w]
-         puts $of "state:         INIT
+         puts $of "state:         ACTIVE
 LID:           [format 0x%04x $lid]
 LMC:           0x0000
 SM LID:        [format 0x%04x $smLid]
