@@ -318,14 +318,14 @@ proc DrawAnnotationFromFile {} {
    foreach e [array names ANNOTATIONS sysport:*] {
       set sysPortName [string range $e [string length sysport:] end]
       set anno $ANNOTATIONS($e)
-   
+
       # find the sys port
       set sysPort [findSysPortByName $sysPortName]
       if {$sysPort == ""} {
          puts "-W- failed to find sys port:$sysPortName"
          continue
       }
-   
+
       set sysName [IBSystem_name_get [IBSysPort_p_system_get $sysPort]]
       set portName [IBSysPort_name_get $sysPort]
       # get the items of this port
@@ -334,7 +334,7 @@ proc DrawAnnotationFromFile {} {
          puts "-W- No items for sys port:$sysPortName"
          continue
       }
-   
+
       set bbox [$C bbox $items]
       set outCoords [bboxCenter $bbox [expr rand()*0.95]]
       $C create text $outCoords -tags anno -fill red \
@@ -394,7 +394,7 @@ proc drawSystem {sys graph} {
 
    # puts "-I- Drawing system $sys"
    set sysName [IBSystem_name_get $sys]
-  
+
    # remove extra "system" from auto systems
    if {[regexp {^system:(.*)} $sysName d1 n]} {
       set sysName "0x$n"
@@ -498,10 +498,10 @@ proc drawNodeConns {node graph} {
       set port [IBNode_getPort $node $pn]
       if {$port == ""} {continue}
       set portName [IBPort_getName $port]
-   
+
       set remPort [IBPort_p_remotePort_get $port]
       if {$remPort == ""} {continue}
-   
+
       set remPortName [IBPort_getName $remPort]
       if {[info exists CONN($remPortName)] } {continue}
 
@@ -513,7 +513,7 @@ proc drawNodeConns {node graph} {
       # we can skip connections within same system if it
       # is not expanded
       if {($sys == $toSys) && !$isExpanded} {continue}
-   
+
       # now we need to figure out if we are connecting
       # system ports or not
       set sysPort [IBPort_p_sysPort_get $port]
@@ -535,7 +535,7 @@ proc drawNodeConns {node graph} {
          }
          set fromPort "f$SYS_PORT_IDX_BY_NAME($sys,$fromPortName)"
       }
-   
+
       set remSysPort [IBPort_p_sysPort_get $remPort]
       set isRemExpanded [info exists EXPAND_SYSTEMS($toSysName)]
       if {$remSysPort == "" || $isRemExpanded} {
@@ -546,14 +546,14 @@ proc drawNodeConns {node graph} {
          set toPortName [IBSysPort_name_get $remSysPort]
          set toPort "f$SYS_PORT_IDX_BY_NAME($toSys,$toPortName)"
       }
-   
+
       #     puts  "-V- Connecting from:$fromRec / $fromPort -> $toRec / $toPort ... "
       set conn \
          [$graph addedge "$toRec" "$fromRec" \
              tailport $toPort headport $fromPort \
              arrowhead normal arrowtail normal \
             ]
-   
+
       set CONN($portName) $conn
 
       # use coloring for link speed/width
@@ -638,7 +638,7 @@ proc bindMenusToTags {c} {
          set handleItem [$c create rectangle $x0 \
                             [expr $y0 - $dy] $x1 [expr $y1 + $dy] \
                             -outline {} -tags $tags]
-      
+
          $c bind $handleItem <1> [list $hdlFunc %W %x %y]
       }
    }
@@ -951,7 +951,7 @@ proc zoomToObjByIbdmId {type obj} {
       }
       node {
          set name [IBNode_name_get $obj]
-         set items [$C find withtag ${name}&&node]       
+         set items [$C find withtag ${name}&&node]      
       }
       sysport {
          set sys [IBSysPort_p_system_get $obj]
@@ -988,7 +988,7 @@ proc guiHighLightByName {objType name} {
             return
          }
          PropsUpdate system $sys
-      
+
          set items [$C find withtag ${name}&&system]
       }
       sysport {
@@ -1045,7 +1045,7 @@ proc guiHighLightByName {objType name} {
             SetStatus "-W- Fail to find node for port by name:\"$name\""
             return
          }
-      
+
          set port [IBNode_getPort $node $portNum]
          if {$port == ""} {
             SetStatus "-W- Fail to find port by name:\"$name\""
@@ -1105,13 +1105,13 @@ proc guiHighLightByGuid {objType guid} {
             set name [IBSystem_name_get $sys]
          } elseif {$port != ""} {
             set node [IBPort_p_node_get $port]
-            set sys [IBNode_p_system_get $node]       
+            set sys [IBNode_p_system_get $node]      
             set name [IBSystem_name_get $sys]
          } else {
             SetStatus "-W- Fail to find system by guid:$guid"
             return
          }
-      
+
          set obj $sys
          set items [$C find withtag ${name}&&system]
       }
@@ -1144,13 +1144,13 @@ proc guiHighLightByGuid {objType guid} {
             SetStatus "-W- Fail to find system port by guid:$guid"
             return
          }
-      
+
          set sysPort [IBPort_p_sysPort_get $port]
          if {$sysPort == ""} {
             SetStatus "-W- Fail to find system port for port with guid:$guid"
             return
          }
-      
+
          set sys [IBSysPort_p_system_get $sysPort]
          set sysName [IBSystem_name_get $sys]
          set name [IBSysPort_name_get $sysPort]
@@ -1208,7 +1208,7 @@ proc guiHighLightByLid {objType lid} {
             SetStatus "-W- Fail to find system port for port with lid:$lid"
             return
          }
-      
+
          set sys [IBSysPort_p_system_get $sysPort]
          set sysName [IBSystem_name_get $sys]
          set name [IBSysPort_name_get $sysPort]
@@ -1327,7 +1327,7 @@ proc guiHighLightByDR {startPort route} {
       set name "P[IBPort_num_get $outPort]"
       set iItems [$C find withtag ${name}&&port&&of:$nodeName]
       set allItems [concat $allItems $iItems]
-   
+
       set sysPort [IBPort_p_sysPort_get $outPort]
       if {$sysPort != ""} {
          set sys [IBSysPort_p_system_get $sysPort]
@@ -1341,7 +1341,7 @@ proc guiHighLightByDR {startPort route} {
       if {[llength $iItems]} {
          set outCoords [bboxCenter [$C bbox [lindex $iItems 0]] [expr rand()*0.95]]
       }
-   
+
       set port [IBPort_p_remotePort_get $outPort]
       if {$port == ""} {
          SetStatus "-W- No remote port on path at node:\"[IBNode_name_get $node]\" port:$p\""
@@ -1493,7 +1493,7 @@ proc PropsPort {port} {
       set PROPS(port,sysp) \
          "[IBSystem_name_get $sys]/[IBSysPort_name_get $sysPort]"
    } else {
-      set PROPS(port,sysp) "NONE"   
+      set PROPS(port,sysp) "NONE"  
    }
 }
 
@@ -1544,7 +1544,7 @@ proc getDrToNode {targetNode} {
    while {[llength $Q]} {
       set nodeNPath [lindex $Q 0]
       set Q [lreplace $Q 0 0]
-   
+
       set node [lindex $nodeNPath 0]
       set path [lindex $nodeNPath 1]
 
@@ -1860,7 +1860,7 @@ proc LogObjSelect {log type w x y} {
          set y [guiHighLightByGuid sysport $val]
          if {$x != "" || $y != ""} {
             SetStatus "-I- Find by GUID succeeded"
-         }     
+         }    
       }
    }
 }
@@ -1909,7 +1909,7 @@ proc initPropsGui {p} {
             sys System         {PropsUpdate system  $PROPS(sysport,sys,id)  1}
             port "Node Port"   {PropsUpdate port    $PROPS(sysport,port,id) 1}
             rem "Connected to" {PropsUpdate sysport $PROPS(sysport,rem,id)  1}
-            width Width ""    
+            width Width ""   
             speed Speed ""
             anno Annotation ""
          }
@@ -1943,7 +1943,7 @@ proc initPropsGui {p} {
       foreach {attr lbl cmd} [lindex $propSet 2] {
          frame $f.$attr -borderwidth 2 -relief ridge
          label $f.$attr.l -text "$lbl:"
-      
+
          if {[string range $lbl 0 0] == "\#"} {
             label $f.$attr.v -textvariable PROPS($obj,$attr)
             set PROPS($obj,$attr,menu) \
@@ -2085,7 +2085,7 @@ proc SetVL0Statics {} {
                   puts "-I- Updating $name P[expr $i + 1] $d -> $nd"
                   crWrite $lid $nd $addr
                }
-            
+
                incr addr 0x1000
             }
          }
@@ -2136,14 +2136,14 @@ proc EnforceAnnotations {} {
    foreach e [array names ANNOTATIONS sysport:*] {
       set sysPortName [string range $e [string length sysport:] end]
       set anno $ANNOTATIONS($e)
-   
+
       # find the sys port
       set sysPort [findSysPortByName $sysPortName]
       if {$sysPort == ""} {
          puts "-W- failed to find sys port:$sysPortName"
          continue
       }
-   
+
       set port [IBSysPort_p_nodePort_get $sysPort]
       set node [IBPort_p_node_get $port]
 
@@ -2156,12 +2156,12 @@ proc EnforceAnnotations {} {
          set state enable
          incr numEn
       }
-   
+
       set drPath [getDrToNode $node]
       if {$drPath == -1} {
          return
       }
-   
+
       set portNum [IBPort_num_get $port]
       catch {set res [exec ibportstate -D $drPath $portNum $state]}
    }
@@ -2180,7 +2180,7 @@ proc FindByName {} {
       labelframe $f.e -text "Name:" -padx 2 -pady 2 -borderwidth 2
       entry $f.e.e -textvariable FindByName(name)
       pack $f.e.e -side left -fill x -expand yes
-   
+
       labelframe $f.b -text "Object Type:" -padx 2 -pady 2 -borderwidth 2
       foreach {type name} {system System sysport "System Port" node Node port Port} {
          radiobutton $f.b.b$type -text "$name" -variable FindByName(type) \
@@ -2213,7 +2213,7 @@ proc FindByGUID {} {
       labelframe $f.e -text "GUID:" -padx 2 -pady 2 -borderwidth 2
       entry $f.e.e -textvariable FindByGuid(guid)
       pack $f.e.e -side left -fill x -expand yes
-   
+
       labelframe $f.b -text "Object Type:" -padx 2 -pady 2 -borderwidth 2
       foreach {type name} {system "System" sysport "System Port" node "Node" port "Port"} {
          radiobutton $f.b.b$type -text "$name" -variable FindByGuid(type) \
@@ -2246,7 +2246,7 @@ proc FindByLID {} {
       labelframe $f.e -text "LID:" -padx 2 -pady 2 -borderwidth 2
       entry $f.e.e -textvariable FindByLid(lid)
       pack $f.e.e -side left -fill x -expand yes
-   
+
       labelframe $f.b -text "Object Type:" -padx 2 -pady 2 -borderwidth 2
       foreach {type name} {system "System" sysport "System Port" node "Node" port "Port"} {
          radiobutton $f.b.b$type -text "$name" -variable FindByLid(type) \
@@ -2279,7 +2279,7 @@ proc FindByDR {} {
       labelframe $f.e -text "Directed Route:" -padx 2 -pady 2 -borderwidth 2
       entry $f.e.e -textvariable FindByDR(DR)
       pack $f.e.e -side left -fill x -expand yes
-   
+
       labelframe $f.p -text "Start Port:" -padx 2 -pady 2 -borderwidth 2
       entry $f.p.e -textvariable FindByDR(port)
       pack $f.p.e -side left -fill x -expand yes
@@ -2325,7 +2325,7 @@ proc SetRoots {} {
    if {![winfo exists .set_roots_opts]} {
       set t [toplevel .set_roots_opts]
       wm withdraw $t
-   
+
       set f [frame $t.f -padx 2 -pady 2 -borderwidth 2]
       label $f.l -text "Root systems names:"
       entry $f.e -textvariable SYSTEM_ORDER
@@ -2372,14 +2372,14 @@ proc SetAnnotationsFile {} {
    if {![winfo exists .load_annos]} {
       set t [toplevel .load_annos]
       wm withdraw $t
-   
+
       set f [frame $t.f -padx 2 -pady 2 -borderwidth 2]
       label $f.l -text "Annotation File Name"
       entry $f.e -textvariable ANNOTATION_FILE
       button $f.b -text LOAD -command LoadAnnotationsFile
       pack $f.l $f.e $f.b -side top -expand yes -fill x
       pack $f
-   
+
       wm title .load_annos "IBDiagUI - Set Color Options"
 
       if {![info exists ANNOTATION_FILE]} {
@@ -2394,13 +2394,13 @@ proc SetIBDiagFlags {} {
    if {![winfo exists .ibdiag_flags]} {
       set t [toplevel .ibdiag_flags]
       wm withdraw $t
-   
+
       set f [frame $t.f -padx 2 -pady 2 -borderwidth 2]
       label $f.l -text "IBDiagNet Flags:"
       entry $f.e -textvariable IBDIAGNET_FLAGS
       pack $f.l $f.e -side top -expand yes -fill x
       pack $f
-   
+
       wm title .ibdiag_flags "IBDiagUI - Set IBDiagNet Flags"
    }
    wm deiconify .ibdiag_flags
@@ -2412,7 +2412,7 @@ proc HelpAbout {} {
    set tl [toplevel  .help_about]
    label $tl.l -text {
       IBDIAG GUI
-     
+
       Version: 1.0
       Date: Sep 2006
       Author: Eitan Zahavi <eitan@mellanox.co.il>
@@ -2490,7 +2490,7 @@ proc initMenuBar {m} {
 
    pack $m.file $m.refresh $m.find $m.opts -side left
 
-   pack $m.help -side right   
+   pack $m.help -side right  
 }
 
 #--------------------------------------------------------
@@ -2636,12 +2636,12 @@ proc initMainFrame {f} {
 
 proc setLogColors {} {
    global L
-   $L tag configure errors   -foreground [getColor txtErr]   
-   $L tag configure warnings -foreground [getColor txtWarn]  
-   $L tag configure infos    -foreground [getColor txtInfo]  
+   $L tag configure errors   -foreground [getColor txtErr]  
+   $L tag configure warnings -foreground [getColor txtWarn] 
+   $L tag configure infos    -foreground [getColor txtInfo] 
    $L tag configure NAME   -background   [getColor txtName]
-   $L tag configure LID    -background   [getColor txtLid]  
-   $L tag configure GUID   -background   [getColor txtGuid] 
+   $L tag configure LID    -background   [getColor txtLid] 
+   $L tag configure GUID   -background   [getColor txtGuid]
    $L tag configure ROUTE  -background   [getColor txtRoute]
 }
 
