@@ -269,6 +269,76 @@ class IBMSNode {
     return(0);
   };
 
+  /* get a specific SL2VL Table */
+  ib_slvl_table_t * getSL2VLTable(uint8_t inPortNum, uint8_t outPortNum) {
+    if (inPortNum >= sl2VlInPortEntry.size()) {
+		printf("-E- getSL2VLTable Node:%s in-port:%u > %u\n",
+				 pNode->name.c_str(), inPortNum, 
+				 (unsigned int)(sl2VlInPortEntry.size() - 1));
+		return NULL;
+	 }
+    if (outPortNum >= sl2VlInPortEntry[inPortNum].size()) {
+		printf("-E- getSL2VLTable Node:%s out-port:%u > %u\n",
+				 pNode->name.c_str(), outPortNum, 
+				 (unsigned int)(sl2VlInPortEntry[inPortNum].size() - 1));
+		return NULL;
+	 }
+    return &sl2VlInPortEntry[inPortNum][outPortNum];
+  };
+
+  /* set a specific SL2VL Table */
+  int setSL2VLTable(uint8_t inPortNum, uint8_t outPortNum, 
+						  ib_slvl_table_t *tbl) {
+    if (inPortNum >= sl2VlInPortEntry.size()) {
+		printf("-E- setSL2VLTable Node:%s in-port:%u > %u\n",
+				 pNode->name.c_str(), inPortNum, 
+				 (unsigned int)(sl2VlInPortEntry.size() - 1));
+		return 1;
+	 }
+    if (outPortNum >= sl2VlInPortEntry[inPortNum].size()) {
+		printf("-E- setSL2VLTable Node:%s out-port:%u > %u\n",
+				 pNode->name.c_str(), outPortNum, 
+				 (unsigned int)(sl2VlInPortEntry[inPortNum].size() - 1));
+		return 1;
+	 }
+    (sl2VlInPortEntry[inPortNum])[outPortNum] = *tbl;
+	 return 0;
+  };
+
+  /* get a specific VLArb Table */
+  ib_vl_arb_table_t * getVLArbLTable(uint8_t portNum, uint8_t blockIndex) {
+	 if ((blockIndex < 1) || (blockIndex > 4)) {
+		printf("-E- getVLArbLTable blockIndex:%u out of range 1..4\n",
+				 blockIndex);
+		return NULL;
+	 }
+    if (portNum >= vlArbPortEntry.size()) {
+		printf("-E- getVLArbLTable Node:%s port-num:%u > %u\n",
+				 pNode->name.c_str(), portNum, 
+				 (unsigned int)(vlArbPortEntry.size() - 1));
+		return NULL;
+	 }
+    return &vlArbPortEntry[portNum][blockIndex];
+  };
+
+  /* set a specific SL2VL Table */
+  int setVLArbLTable(uint8_t portNum, uint8_t blockIndex, 
+						   ib_vl_arb_table_t *tbl) {
+	 if ((blockIndex < 1) || (blockIndex > 4)) {
+		printf("-E- setVLArbLTable blockIndex:%u out of range 1..4\n",
+				 blockIndex);
+		return 1;
+	 }
+    if (portNum >= vlArbPortEntry.size()) {
+		printf("-E- getVLArbLTable Node:%s port-num:%u > %u\n",
+				 pNode->name.c_str(), portNum, 
+				 (unsigned int)(vlArbPortEntry.size() - 1));
+		return 1;
+	 }
+	 (vlArbPortEntry[portNum])[blockIndex] = *tbl;
+	 return 0;
+  };
+
   /*
     Get remote node by given port number. 
     Handle both HCA and SW.

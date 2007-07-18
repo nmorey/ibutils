@@ -1764,7 +1764,7 @@ static int _wrap_ibdmFatTreeRoute(ClientData clientData, Tcl_Interp *interp, int
   char **sub_lists;
 #endif
   int num_sub_lists;
-  uint8_t idx;
+  unsigned int idx;
 
   /* we will use the TCL split list to split into elements */
   if (Tcl_SplitList(interp, 
@@ -2495,7 +2495,7 @@ static int _wrap_ibdmRankFabricByRoots(ClientData clientData, Tcl_Interp *interp
   char **sub_lists;
 #endif
   int num_sub_lists;
-  uint8_t idx;
+  unsigned int idx;
 
   /* we will use the TCL split list to split into elements */
   if (Tcl_SplitList(interp, 
@@ -2634,7 +2634,7 @@ static int _wrap_ibdmReportNonUpDownCa2CaPaths(ClientData clientData, Tcl_Interp
   char **sub_lists;
 #endif
   int num_sub_lists;
-  uint8_t idx;
+  unsigned int idx;
 
   /* we will use the TCL split list to split into elements */
   if (Tcl_SplitList(interp, 
@@ -2866,7 +2866,7 @@ static int _wrap_ibdmCheckFabricMCGrpsForCreditLoopPotential(ClientData clientDa
   char **sub_lists;
 #endif
   int num_sub_lists;
-  uint8_t idx;
+  unsigned int idx;
 
   /* we will use the TCL split list to split into elements */
   if (Tcl_SplitList(interp, 
@@ -3005,7 +3005,7 @@ static int _wrap_ibdmLinkCoverageAnalysis(ClientData clientData, Tcl_Interp *int
   char **sub_lists;
 #endif
   int num_sub_lists;
-  uint8_t idx;
+  unsigned int idx;
 
   /* we will use the TCL split list to split into elements */
   if (Tcl_SplitList(interp, 
@@ -3358,7 +3358,7 @@ static int _wrap_ibdmTraceRouteByLFT(ClientData clientData, Tcl_Interp *interp, 
   char **sub_lists;
 #endif
   int num_sub_lists;
-  uint8_t idx;
+  unsigned int idx;
 
   /* we will use the TCL split list to split into elements */
   if (Tcl_SplitList(interp, 
@@ -8374,6 +8374,208 @@ static int _wrap_IBNode_attributes_get(ClientData clientData, Tcl_Interp *interp
 }
     return TCL_OK;
 }
+#define IBNode_rank_set(_swigobj,_swigval) (_swigobj->rank = *(_swigval),_swigval)
+static int _wrap_IBNode_rank_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    IBNode * _arg0;
+    uint8_t * _arg1;
+    Tcl_Obj * tcl_result;
+    uint8_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. IBNode_rank_set { IBNode * } { uint8_t * } ",-1);
+        return TCL_ERROR;
+    }
+{
+  
+  void *ptr;
+  if (ibdmGetObjPtrByTclName(objv[1], &ptr) != TCL_OK) {
+	 char err[128];
+	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
+	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+  }
+	 
+  _arg0 = (IBNode *)ptr;
+}
+{
+  /* the format is always: <type>:<idx>[:<name>] */
+  
+  // get the type from the given source 
+  char buf[128];
+  strcpy(buf, Tcl_GetStringFromObj(objv[1],0));
+  char *colonIdx = index(buf,':');
+  if (!colonIdx) {
+	 char err[128];
+	 sprintf(err, "-E- Bad formatted ibdm object:%s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;
+  }
+  *colonIdx = '\0';
+
+  if (!strcmp("IBNode ", "IBFabric ")) {
+	if (strcmp(buf, "fabric")) {
+	 char err[256];
+	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+	}	
+  } else if (!strcmp("IBNode ", "IBSystem ")) {
+	if (strcmp(buf, "system")) {
+	 char err[256];
+	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+	}
+  } else if (!strcmp("IBNode ", "IBSysPort ")) {
+	if (strcmp(buf, "sysport")) {
+	 char err[256];
+	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+	}
+  } else if (!strcmp("IBNode ", "IBNode ")) {
+	if (strcmp(buf, "node")) {
+	 char err[256];
+	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+	}
+  } else if (!strcmp("IBNode ", "IBPort ")) {
+	if (strcmp(buf, "port")) {
+	 char err[256];
+	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+	}
+  } else {
+	 char err[256];
+	 sprintf(err, "-E- basetype 'IBNode ' is unknown");
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+  }
+}
+{
+  temp = atoi(Tcl_GetStringFromObj(objv[2],NULL));
+  _arg1 = &temp;
+}
+{ 
+  ibdm_tcl_error = 0;
+      _result = (uint8_t *)IBNode_rank_set(_arg0,_arg1);
+; 
+  if (ibdm_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define IBNode_rank_get(_swigobj) (&_swigobj->rank)
+static int _wrap_IBNode_rank_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    IBNode * _arg0;
+    Tcl_Obj * tcl_result;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. IBNode_rank_get { IBNode * } ",-1);
+        return TCL_ERROR;
+    }
+{
+  
+  void *ptr;
+  if (ibdmGetObjPtrByTclName(objv[1], &ptr) != TCL_OK) {
+	 char err[128];
+	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
+	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+  }
+	 
+  _arg0 = (IBNode *)ptr;
+}
+{
+  /* the format is always: <type>:<idx>[:<name>] */
+  
+  // get the type from the given source 
+  char buf[128];
+  strcpy(buf, Tcl_GetStringFromObj(objv[1],0));
+  char *colonIdx = index(buf,':');
+  if (!colonIdx) {
+	 char err[128];
+	 sprintf(err, "-E- Bad formatted ibdm object:%s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;
+  }
+  *colonIdx = '\0';
+
+  if (!strcmp("IBNode ", "IBFabric ")) {
+	if (strcmp(buf, "fabric")) {
+	 char err[256];
+	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+	}	
+  } else if (!strcmp("IBNode ", "IBSystem ")) {
+	if (strcmp(buf, "system")) {
+	 char err[256];
+	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+	}
+  } else if (!strcmp("IBNode ", "IBSysPort ")) {
+	if (strcmp(buf, "sysport")) {
+	 char err[256];
+	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+	}
+  } else if (!strcmp("IBNode ", "IBNode ")) {
+	if (strcmp(buf, "node")) {
+	 char err[256];
+	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+	}
+  } else if (!strcmp("IBNode ", "IBPort ")) {
+	if (strcmp(buf, "port")) {
+	 char err[256];
+	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+	}
+  } else {
+	 char err[256];
+	 sprintf(err, "-E- basetype 'IBNode ' is unknown");
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+  }
+}
+{ 
+  ibdm_tcl_error = 0;
+      _result = (uint8_t *)IBNode_rank_get(_arg0);
+; 
+  if (ibdm_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
 #define IBNode_p_system_get(_swigobj) ((IBSystem *) _swigobj->p_system)
 static int _wrap_IBNode_p_system_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
 
@@ -10442,6 +10644,8 @@ static int TclIBNodeMethodCmd(ClientData clientData, Tcl_Interp *interp, int obj
                     cmd = _wrap_IBNode_vendId_set;
                 }  else if (strcmp(_str,"-attributes") == 0) {
                     cmd = _wrap_IBNode_attributes_set;
+                }  else if (strcmp(_str,"-rank") == 0) {
+                    cmd = _wrap_IBNode_rank_set;
                 } 
           if (cmd) {
             oldarg = objv[i];
@@ -10451,13 +10655,13 @@ static int TclIBNodeMethodCmd(ClientData clientData, Tcl_Interp *interp, int obj
             if (rcode == TCL_ERROR) return rcode;
             cmd = 0;
           } else {
-            Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be { -name -type -devId -revId -vendId -attributes  }",-1);
+            Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be { -name -type -devId -revId -vendId -attributes -rank  }",-1);
             return TCL_ERROR;
           }
         i+=2;
       }
       if ((i < objc) || (i == 2)) {
-        Tcl_SetStringObj(tcl_result,"{ -name -type -devId -revId -vendId -attributes  }",-1);
+        Tcl_SetStringObj(tcl_result,"{ -name -type -devId -revId -vendId -attributes -rank  }",-1);
         return TCL_ERROR;
       }
       return TCL_OK;
@@ -10477,6 +10681,8 @@ static int TclIBNodeMethodCmd(ClientData clientData, Tcl_Interp *interp, int obj
                     cmd = _wrap_IBNode_vendId_get;
                 }  else if (strcmp(_str,"-attributes") == 0) {
                     cmd = _wrap_IBNode_attributes_get;
+                }  else if (strcmp(_str,"-rank") == 0) {
+                    cmd = _wrap_IBNode_rank_get;
                 }  else if (strcmp(_str,"-p_system") == 0) {
                     cmd = _wrap_IBNode_p_system_get;
                 }  else if (strcmp(_str,"-p_fabric") == 0) {
@@ -10501,11 +10707,11 @@ static int TclIBNodeMethodCmd(ClientData clientData, Tcl_Interp *interp, int obj
           objv[2] = oldarg;
           return rcode;
         } else {
-          Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this -name -type -devId -revId -vendId -attributes -p_system -p_fabric -numPorts -Ports -MinHopsTable -LFT  }",-1);
+          Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this -name -type -devId -revId -vendId -attributes -rank -p_system -p_fabric -numPorts -Ports -MinHopsTable -LFT  }",-1);
           return TCL_ERROR;
         }
       } else {
-        Tcl_SetStringObj(tcl_result,"{ -this -name -type -devId -revId -vendId -attributes -p_system -p_fabric -numPorts -Ports -MinHopsTable -LFT  }", -1);
+        Tcl_SetStringObj(tcl_result,"{ -this -name -type -devId -revId -vendId -attributes -rank -p_system -p_fabric -numPorts -Ports -MinHopsTable -LFT  }", -1);
         return TCL_ERROR;
       }
     } else if ((c == 'd') && (strncmp(_str,"dump",length) == 0) && (length >= 2)) {
@@ -10554,6 +10760,13 @@ static int TclIBNodeMethodCmd(ClientData clientData, Tcl_Interp *interp, int obj
         rcode = (*cmd)(clientData,interp,objc,&objv[1]);
         objv[2] = oldarg;
         Tcl_AppendStringsToObj(pDumpObj, "-attributes ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_IBNode_rank_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-rank ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
         Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
         cmd = _wrap_IBNode_p_system_get;
         oldarg = objv[2];
@@ -27799,6 +28012,7 @@ static int _wrap_IBMSNode_setPKeyTblBlock(ClientData clientData, Tcl_Interp *int
   char *p_pkey;
   char *str_token;
   int i = 0;
+  memset(&tmp, 0, sizeof(ib_pkey_table_t));
 
   strncpy(buf, Tcl_GetStringFromObj(objv[4],NULL), 255);
   buf[255] = '\0';
@@ -27819,6 +28033,452 @@ static int _wrap_IBMSNode_setPKeyTblBlock(ClientData clientData, Tcl_Interp *int
 { 
   ibms_tcl_error = 0;
       _result = (int )IBMSNode_setPKeyTblBlock(_arg0,*_arg1,*_arg2,_arg3);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+    Tcl_SetIntObj(tcl_result,(long) _result);
+    return TCL_OK;
+}
+#define IBMSNode_getVLArbLTable(_swigobj,_swigarg0,_swigarg1)  (_swigobj->getVLArbLTable(_swigarg0,_swigarg1))
+static int _wrap_IBMSNode_getVLArbLTable(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_vl_arb_table_t * _result;
+    IBMSNode * _arg0;
+    uint8_t * _arg1;
+    uint8_t * _arg2;
+    Tcl_Obj * tcl_result;
+    uint8_t  temp;
+    uint8_t  temp0;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 4) || (objc > 4)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. IBMSNode_getVLArbLTable { IBMSNode * } portNum blockIndex ",-1);
+        return TCL_ERROR;
+    }
+{
+  
+  void *ptr;
+  if (ibmsGetSimNodePtrByTclName(objv[1], &ptr) != TCL_OK) {
+	 char err[128];
+	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
+	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+  }
+	 
+  _arg0 = (IBMSNode *)ptr;
+}
+{
+  /* the format is always: <type>:<idx>[:<name>] */
+  
+  // get the type from the given source 
+  char buf[128];
+  strcpy(buf, Tcl_GetStringFromObj(objv[1],0));
+  char *colonIdx = index(buf,':');
+  if (!colonIdx) {
+	 char err[128];
+	 sprintf(err, "-E- Bad formatted ibdm object:%s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;
+  }
+  *colonIdx = '\0';
+
+  if (!strcmp("IBMSNode ", "IBMSNode ")) {
+    if (strcmp(buf, "simnode")) {
+      char err[256];
+      sprintf(err, "-E- basetype is IBMSNode  but received obj of type %s", buf);
+      Tcl_SetStringObj(tcl_result, err, strlen(err));
+      return TCL_ERROR;	 
+    }
+  } else {
+	 char err[256];
+	 sprintf(err, "-E- basetype 'IBMSNode ' is unknown");
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+  }
+}
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
+  _arg1 = &temp;
+}
+{
+  temp0 = strtoul(Tcl_GetStringFromObj(objv[3],NULL), NULL, 0);
+  _arg2 = &temp0;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_vl_arb_table_t *)IBMSNode_getVLArbLTable(_arg0,*_arg1,*_arg2);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[256];
+  int i;
+  if (_result != NULL) 
+  {
+    for (i = 0; i < 32; i++) 
+    {
+      sprintf(buff, "{0x%02x 0x%02x} ", _result->vl_entry[i].vl, _result->vl_entry[i].weight);
+      Tcl_AppendToObj(tcl_result,buff,strlen(buff));
+    }
+  }
+  else
+  {
+    Tcl_SetStringObj(tcl_result, "{0 0} {0 0} {0 0} {0 0} {0 0} {0 0} {0 0} {0 0} {0 0} {0 0} {0 0} {0 0} {0 0} {0 0} {0 0} {0 0} {0 0} {0 0} {0 0} {0 0} {0 0} {0 0} {0 0} {0 0} {0 0} {0 0} {0 0} {0 0} {0 0} {0 0} {0 0} {0 0}", -1);
+  }
+}
+    return TCL_OK;
+}
+#define IBMSNode_setVLArbLTable(_swigobj,_swigarg0,_swigarg1,_swigarg2)  (_swigobj->setVLArbLTable(_swigarg0,_swigarg1,_swigarg2))
+static int _wrap_IBMSNode_setVLArbLTable(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    int  _result;
+    IBMSNode * _arg0;
+    uint8_t * _arg1;
+    uint8_t * _arg2;
+    ib_vl_arb_table_t * _arg3;
+    Tcl_Obj * tcl_result;
+    uint8_t  temp;
+    uint8_t  temp0;
+    ib_vl_arb_table_t  tmp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 5) || (objc > 5)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. IBMSNode_setVLArbLTable { IBMSNode * } portNum blockIndex tbl ",-1);
+        return TCL_ERROR;
+    }
+{
+  
+  void *ptr;
+  if (ibmsGetSimNodePtrByTclName(objv[1], &ptr) != TCL_OK) {
+	 char err[128];
+	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
+	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+  }
+	 
+  _arg0 = (IBMSNode *)ptr;
+}
+{
+  /* the format is always: <type>:<idx>[:<name>] */
+  
+  // get the type from the given source 
+  char buf[128];
+  strcpy(buf, Tcl_GetStringFromObj(objv[1],0));
+  char *colonIdx = index(buf,':');
+  if (!colonIdx) {
+	 char err[128];
+	 sprintf(err, "-E- Bad formatted ibdm object:%s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;
+  }
+  *colonIdx = '\0';
+
+  if (!strcmp("IBMSNode ", "IBMSNode ")) {
+    if (strcmp(buf, "simnode")) {
+      char err[256];
+      sprintf(err, "-E- basetype is IBMSNode  but received obj of type %s", buf);
+      Tcl_SetStringObj(tcl_result, err, strlen(err));
+      return TCL_ERROR;	 
+    }
+  } else {
+	 char err[256];
+	 sprintf(err, "-E- basetype 'IBMSNode ' is unknown");
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+  }
+}
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
+  _arg1 = &temp;
+}
+{
+  temp0 = strtoul(Tcl_GetStringFromObj(objv[3],NULL), NULL, 0);
+  _arg2 = &temp0;
+}
+{
+  int i;
+
+  int numEntries, numElements, code;
+  const char **subListStrings, **elements;
+
+  code = Tcl_SplitList(interp, Tcl_GetStringFromObj(objv[4],NULL), 
+							  &numEntries, &subListStrings);
+  if (code != TCL_OK) {
+	 printf("Wrong format for vl_arb_table should be list of lists:%s\n", 
+			  Tcl_GetStringFromObj(objv[4],NULL));
+	 return TCL_ERROR;
+  }
+  
+  memset(&tmp, 0, sizeof(ib_vl_arb_table_t));
+  for (i = 0; i < numEntries; i++) {
+	 code = Tcl_SplitList(interp, subListStrings[i], &numElements, &elements);
+	 if (code != TCL_OK) {
+		printf("Wrong format for vl_arb_table sublist:%s\n", subListStrings[i]);
+		Tcl_Free((char *) subListStrings);
+		return TCL_ERROR;
+	 }
+	 if (numElements != 2) {
+		printf("Wrong format for vl_arb_table sublist:%s num elements:%d != 2\n",
+				 subListStrings[i], numElements);
+		Tcl_Free((char *) elements);
+		Tcl_Free((char *) subListStrings);
+		return TCL_ERROR;
+	 }
+	 errno = 0;
+	 tmp.vl_entry[i].vl = strtoul(elements[0],NULL,0);
+	 if (errno) {
+		printf("Wrong format for vl_arb_table sublist %d vl:%s\n",
+				 i, elements[0]);
+		Tcl_Free((char *) elements);
+		Tcl_Free((char *) subListStrings);
+		return TCL_ERROR;
+	 }
+	 tmp.vl_entry[i].weight =  strtoul(elements[1],NULL,0);
+	 if (errno) {
+		 printf("Wrong format for vl_arb_table sublist %d weight:%s\n",
+				  i, elements[1]);
+		Tcl_Free((char *) elements);
+		Tcl_Free((char *) subListStrings);
+		return TCL_ERROR;
+	 }
+	 Tcl_Free((char *) elements);
+  }
+  Tcl_Free((char *) subListStrings);
+
+  _arg3 = &tmp;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (int )IBMSNode_setVLArbLTable(_arg0,*_arg1,*_arg2,_arg3);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+    Tcl_SetIntObj(tcl_result,(long) _result);
+    return TCL_OK;
+}
+#define IBMSNode_getSL2VLTable(_swigobj,_swigarg0,_swigarg1)  (_swigobj->getSL2VLTable(_swigarg0,_swigarg1))
+static int _wrap_IBMSNode_getSL2VLTable(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_slvl_table_t * _result;
+    IBMSNode * _arg0;
+    uint8_t * _arg1;
+    uint8_t * _arg2;
+    Tcl_Obj * tcl_result;
+    uint8_t  temp;
+    uint8_t  temp0;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 4) || (objc > 4)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. IBMSNode_getSL2VLTable { IBMSNode * } inPortNum outPortNum ",-1);
+        return TCL_ERROR;
+    }
+{
+  
+  void *ptr;
+  if (ibmsGetSimNodePtrByTclName(objv[1], &ptr) != TCL_OK) {
+	 char err[128];
+	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
+	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+  }
+	 
+  _arg0 = (IBMSNode *)ptr;
+}
+{
+  /* the format is always: <type>:<idx>[:<name>] */
+  
+  // get the type from the given source 
+  char buf[128];
+  strcpy(buf, Tcl_GetStringFromObj(objv[1],0));
+  char *colonIdx = index(buf,':');
+  if (!colonIdx) {
+	 char err[128];
+	 sprintf(err, "-E- Bad formatted ibdm object:%s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;
+  }
+  *colonIdx = '\0';
+
+  if (!strcmp("IBMSNode ", "IBMSNode ")) {
+    if (strcmp(buf, "simnode")) {
+      char err[256];
+      sprintf(err, "-E- basetype is IBMSNode  but received obj of type %s", buf);
+      Tcl_SetStringObj(tcl_result, err, strlen(err));
+      return TCL_ERROR;	 
+    }
+  } else {
+	 char err[256];
+	 sprintf(err, "-E- basetype 'IBMSNode ' is unknown");
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+  }
+}
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
+  _arg1 = &temp;
+}
+{
+  temp0 = strtoul(Tcl_GetStringFromObj(objv[3],NULL), NULL, 0);
+  _arg2 = &temp0;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (ib_slvl_table_t *)IBMSNode_getSL2VLTable(_arg0,*_arg1,*_arg2);
+; 
+  if (ibms_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[64];
+  int i;
+  int entry;
+  if (_result != NULL) 
+  {
+    for (i = 0; i < 8; i++) 
+	 {
+		 entry = _result->raw_vl_by_sl[i];
+		 sprintf(buff, "0x%02x 0x%02x ", ((entry & 0xf0) >> 4), (entry & 0xf));
+		 Tcl_AppendToObj(tcl_result,buff,strlen(buff));
+	 }
+  }
+  else
+  {
+    Tcl_SetStringObj(tcl_result, "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 ", -1);
+  }
+}
+    return TCL_OK;
+}
+#define IBMSNode_setSL2VLTable(_swigobj,_swigarg0,_swigarg1,_swigarg2)  (_swigobj->setSL2VLTable(_swigarg0,_swigarg1,_swigarg2))
+static int _wrap_IBMSNode_setSL2VLTable(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    int  _result;
+    IBMSNode * _arg0;
+    uint8_t * _arg1;
+    uint8_t * _arg2;
+    ib_slvl_table_t * _arg3;
+    Tcl_Obj * tcl_result;
+    uint8_t  temp;
+    uint8_t  temp0;
+    ib_slvl_table_t  tmp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 5) || (objc > 5)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. IBMSNode_setSL2VLTable { IBMSNode * } inPortNum outPortNum tbl ",-1);
+        return TCL_ERROR;
+    }
+{
+  
+  void *ptr;
+  if (ibmsGetSimNodePtrByTclName(objv[1], &ptr) != TCL_OK) {
+	 char err[128];
+	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
+	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+  }
+	 
+  _arg0 = (IBMSNode *)ptr;
+}
+{
+  /* the format is always: <type>:<idx>[:<name>] */
+  
+  // get the type from the given source 
+  char buf[128];
+  strcpy(buf, Tcl_GetStringFromObj(objv[1],0));
+  char *colonIdx = index(buf,':');
+  if (!colonIdx) {
+	 char err[128];
+	 sprintf(err, "-E- Bad formatted ibdm object:%s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;
+  }
+  *colonIdx = '\0';
+
+  if (!strcmp("IBMSNode ", "IBMSNode ")) {
+    if (strcmp(buf, "simnode")) {
+      char err[256];
+      sprintf(err, "-E- basetype is IBMSNode  but received obj of type %s", buf);
+      Tcl_SetStringObj(tcl_result, err, strlen(err));
+      return TCL_ERROR;	 
+    }
+  } else {
+	 char err[256];
+	 sprintf(err, "-E- basetype 'IBMSNode ' is unknown");
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;	 
+  }
+}
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
+  _arg1 = &temp;
+}
+{
+  temp0 = strtoul(Tcl_GetStringFromObj(objv[3],NULL), NULL, 0);
+  _arg2 = &temp0;
+}
+{
+  int i;
+  int entry, value;
+  int numEntries, code;
+  const char **subListStrings;
+
+  code = Tcl_SplitList(interp, Tcl_GetStringFromObj(objv[4],NULL), 
+							  &numEntries, &subListStrings);
+  if (code != TCL_OK) {
+	 printf("Wrong format for ib_slvl_table_t should be list:%s\n", 
+			  Tcl_GetStringFromObj(objv[4],NULL));
+	 return TCL_ERROR;
+  }
+  if (numEntries > 16) {
+	 printf("Maximal number of SL2VL entries is 16:%s\n", 
+			  Tcl_GetStringFromObj(objv[4],NULL));
+	 Tcl_Free((char *) subListStrings);
+	 return TCL_ERROR;
+  }
+  memset(&tmp, 0, sizeof(ib_slvl_table_t));
+  for (i = 0; i < numEntries; i++) {
+	  errno = 0;
+	  value = strtoul(subListStrings[i],NULL,0);
+	  if (errno) {
+		  printf("Wrong format for vl_arb_table sublist %d vl:%s\n",
+					i, subListStrings[i]);
+		  Tcl_Free((char *) subListStrings);
+		  return TCL_ERROR;
+	  }
+	  if (value > 15) {
+		  printf("Given VL at index %d is %d > 15\n", i, value);
+		  Tcl_Free((char *) subListStrings);
+		  return TCL_ERROR;
+	  }
+	  entry = tmp.raw_vl_by_sl[i/2];
+	  if (i % 2) {
+		  entry = (value & 0xf) | (entry & 0xf0) ;
+	  } else {
+		  entry = ((value & 0xf) << 4) | (entry & 0xf);		
+	  }
+	  tmp.raw_vl_by_sl[i/2] = entry;
+  }
+  Tcl_Free((char *) subListStrings);
+
+  _arg3 = &tmp;
+}
+{ 
+  ibms_tcl_error = 0;
+      _result = (int )IBMSNode_setSL2VLTable(_arg0,*_arg1,*_arg2,_arg3);
 ; 
   if (ibms_tcl_error) { 
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
@@ -28215,7 +28875,7 @@ static int TclIBMSNodeMethodCmd(ClientData clientData, Tcl_Interp *interp, int o
   tcl_result = Tcl_GetObjResult(interp);
   objv = (Tcl_Obj **) _objv; 
   if (objc < 2) {
-    Tcl_SetStringObj(tcl_result,"IBMSNode methods : { dump cget configure getIBNode getLinkStatus setPhyPortErrProfile getPhyPortErrProfile setPhyPortPMCounter getPhyPortPMCounter getPortInfo setLinkStatus getNodeInfo getSwitchInfo getPKeyTblBlock setPKeyTblBlock setCrSpace getCrSpace getMFTBlock setMFTBlock  }",-1);
+    Tcl_SetStringObj(tcl_result,"IBMSNode methods : { dump cget configure getIBNode getLinkStatus setPhyPortErrProfile getPhyPortErrProfile setPhyPortPMCounter getPhyPortPMCounter getPortInfo setLinkStatus getNodeInfo getSwitchInfo getPKeyTblBlock setPKeyTblBlock getVLArbLTable setVLArbLTable getSL2VLTable setSL2VLTable setCrSpace getCrSpace getMFTBlock setMFTBlock  }",-1);
     return TCL_ERROR;
   }
   obj = Tcl_NewObj();
@@ -28247,6 +28907,14 @@ static int TclIBMSNodeMethodCmd(ClientData clientData, Tcl_Interp *interp, int o
         cmd = _wrap_IBMSNode_getPKeyTblBlock;
     }    else if (strcmp(_str,"setPKeyTblBlock") == 0) {
         cmd = _wrap_IBMSNode_setPKeyTblBlock;
+    }    else if (strcmp(_str,"getVLArbLTable") == 0) {
+        cmd = _wrap_IBMSNode_getVLArbLTable;
+    }    else if (strcmp(_str,"setVLArbLTable") == 0) {
+        cmd = _wrap_IBMSNode_setVLArbLTable;
+    }    else if (strcmp(_str,"getSL2VLTable") == 0) {
+        cmd = _wrap_IBMSNode_getSL2VLTable;
+    }    else if (strcmp(_str,"setSL2VLTable") == 0) {
+        cmd = _wrap_IBMSNode_setSL2VLTable;
     }    else if (strcmp(_str,"setCrSpace") == 0) {
         cmd = _wrap_IBMSNode_setCrSpace;
     }    else if (strcmp(_str,"getCrSpace") == 0) {
@@ -28317,7 +28985,7 @@ static int TclIBMSNodeMethodCmd(ClientData clientData, Tcl_Interp *interp, int o
       }
     }
   if (!cmd) {
-    Tcl_SetStringObj(tcl_result,"Invalid Method. Must be { dump cget configure getIBNode getLinkStatus setPhyPortErrProfile getPhyPortErrProfile setPhyPortPMCounter getPhyPortPMCounter getPortInfo setLinkStatus getNodeInfo getSwitchInfo getPKeyTblBlock setPKeyTblBlock setCrSpace getCrSpace getMFTBlock setMFTBlock }",-1);
+    Tcl_SetStringObj(tcl_result,"Invalid Method. Must be { dump cget configure getIBNode getLinkStatus setPhyPortErrProfile getPhyPortErrProfile setPhyPortPMCounter getPhyPortPMCounter getPortInfo setLinkStatus getNodeInfo getSwitchInfo getPKeyTblBlock setPKeyTblBlock getVLArbLTable setVLArbLTable getSL2VLTable setSL2VLTable setCrSpace getCrSpace getMFTBlock setMFTBlock }",-1);
     return TCL_ERROR;
   }
   oldarg = objv[1];
@@ -38580,6 +39248,15 @@ SWIGEXPORT(int,Ibdm_Init)(Tcl_Interp *interp) {
     SWIG_AlternateObjMangling["_ib_pm_counters_t_p"] = &ibmsGetIBStructObjNameByPtr;
     SWIG_AlternateNameToObj  ["_ib_pm_counters_t_p"] = &ibmsGetIBStructObjPtrByTclName;
 
+    SWIG_AlternateObjMangling["_ib_vl_arb_table_t_p"] = &ibmsGetIBStructObjNameByPtr;
+    SWIG_AlternateNameToObj  ["_ib_vl_arb_table_t_p"] = &ibmsGetIBStructObjPtrByTclName;
+
+    SWIG_AlternateObjMangling["_ib_slvl_table_t_p"] = &ibmsGetIBStructObjNameByPtr;
+    SWIG_AlternateNameToObj  ["_ib_slvl_table_t_p"] = &ibmsGetIBStructObjPtrByTclName;
+
+    SWIG_AlternateObjMangling["_ib_pkey_table_t_p"] = &ibmsGetIBStructObjNameByPtr;
+    SWIG_AlternateNameToObj  ["_ib_pkey_table_t_p"] = &ibmsGetIBStructObjPtrByTclName;
+
     // declare the simulator object :
     Tcl_CreateObjCommand(interp,"IBMgtSimulator", 
 								 TclIBMgtSimMethodCmd,
@@ -38627,6 +39304,8 @@ SWIGEXPORT(int,Ibdm_Init)(Tcl_Interp *interp) {
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "IBNode_vendId_get", _wrap_IBNode_vendId_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "IBNode_attributes_set", _wrap_IBNode_attributes_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "IBNode_attributes_get", _wrap_IBNode_attributes_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "IBNode_rank_set", _wrap_IBNode_rank_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "IBNode_rank_get", _wrap_IBNode_rank_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "IBNode_p_system_get", _wrap_IBNode_p_system_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "IBNode_p_fabric_get", _wrap_IBNode_p_fabric_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "IBNode_numPorts_get", _wrap_IBNode_numPorts_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
@@ -38898,6 +39577,10 @@ SWIGEXPORT(int,Ibdm_Init)(Tcl_Interp *interp) {
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "IBMSNode_getSwitchInfo", _wrap_IBMSNode_getSwitchInfo, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "IBMSNode_getPKeyTblBlock", _wrap_IBMSNode_getPKeyTblBlock, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "IBMSNode_setPKeyTblBlock", _wrap_IBMSNode_setPKeyTblBlock, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "IBMSNode_getVLArbLTable", _wrap_IBMSNode_getVLArbLTable, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "IBMSNode_setVLArbLTable", _wrap_IBMSNode_setVLArbLTable, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "IBMSNode_getSL2VLTable", _wrap_IBMSNode_getSL2VLTable, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "IBMSNode_setSL2VLTable", _wrap_IBMSNode_setSL2VLTable, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "IBMSNode_setCrSpace", _wrap_IBMSNode_setCrSpace, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "IBMSNode_getCrSpace", _wrap_IBMSNode_getCrSpace, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "IBMSNode_getMFTBlock", _wrap_IBMSNode_getMFTBlock, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);

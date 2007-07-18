@@ -127,6 +127,143 @@
   Tcl_SetStringObj($target,buff,strlen(buff));
 }
 
+%typemap(tcl8,out) ib_vl_arb_table_t* {
+  char buff[256];
+  int i;
+  if ($source != NULL) 
+  {
+    for (i = 0; i < 32; i++) 
+    {
+      sprintf(buff, "{0x%02x 0x%02x} ", $source->vl_entry[i].vl, $source->vl_entry[i].weight);
+      Tcl_AppendToObj($target,buff,strlen(buff));
+    }
+  }
+  else
+  {
+    Tcl_SetStringObj($target, "{0 0} {0 0} {0 0} {0 0} {0 0} {0 0} {0 0} {0 0} {0 0} {0 0} {0 0} {0 0} {0 0} {0 0} {0 0} {0 0} {0 0} {0 0} {0 0} {0 0} {0 0} {0 0} {0 0} {0 0} {0 0} {0 0} {0 0} {0 0} {0 0} {0 0} {0 0} {0 0}", -1);
+  }
+}
+
+/* break the list of sub lists into vl weight ... */
+%typemap(tcl8,in) ib_vl_arb_table_t* (ib_vl_arb_table_t tmp) {
+  int i;
+
+  int numEntries, numElements, code;
+  const char **subListStrings, **elements;
+
+  code = Tcl_SplitList(interp, Tcl_GetStringFromObj($source,NULL), 
+							  &numEntries, &subListStrings);
+  if (code != TCL_OK) {
+	 printf("Wrong format for vl_arb_table should be list of lists:%s\n", 
+			  Tcl_GetStringFromObj($source,NULL));
+	 return TCL_ERROR;
+  }
+  
+  memset(&tmp, 0, sizeof(ib_vl_arb_table_t));
+  for (i = 0; i < numEntries; i++) {
+	 code = Tcl_SplitList(interp, subListStrings[i], &numElements, &elements);
+	 if (code != TCL_OK) {
+		printf("Wrong format for vl_arb_table sublist:%s\n", subListStrings[i]);
+		Tcl_Free((char *) subListStrings);
+		return TCL_ERROR;
+	 }
+	 if (numElements != 2) {
+		printf("Wrong format for vl_arb_table sublist:%s num elements:%d != 2\n",
+				 subListStrings[i], numElements);
+		Tcl_Free((char *) elements);
+		Tcl_Free((char *) subListStrings);
+		return TCL_ERROR;
+	 }
+	 errno = 0;
+	 tmp.vl_entry[i].vl = strtoul(elements[0],NULL,0);
+	 if (errno) {
+		printf("Wrong format for vl_arb_table sublist %d vl:%s\n",
+				 i, elements[0]);
+		Tcl_Free((char *) elements);
+		Tcl_Free((char *) subListStrings);
+		return TCL_ERROR;
+	 }
+	 tmp.vl_entry[i].weight =  strtoul(elements[1],NULL,0);
+	 if (errno) {
+		 printf("Wrong format for vl_arb_table sublist %d weight:%s\n",
+				  i, elements[1]);
+		Tcl_Free((char *) elements);
+		Tcl_Free((char *) subListStrings);
+		return TCL_ERROR;
+	 }
+	 Tcl_Free((char *) elements);
+  }
+  Tcl_Free((char *) subListStrings);
+
+  $target = &tmp;
+}
+
+%typemap(tcl8,out) ib_slvl_table_t* {
+  char buff[64];
+  int i;
+  int entry;
+  if ($source != NULL) 
+  {
+    for (i = 0; i < 8; i++) 
+	 {
+		 entry = $source->raw_vl_by_sl[i];
+		 sprintf(buff, "0x%02x 0x%02x ", ((entry & 0xf0) >> 4), (entry & 0xf));
+		 Tcl_AppendToObj($target,buff,strlen(buff));
+	 }
+  }
+  else
+  {
+    Tcl_SetStringObj($target, "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 ", -1);
+  }
+}
+
+%typemap(tcl8,in) ib_slvl_table_t* (ib_slvl_table_t tmp) {
+  int i;
+  int entry, value;
+  int numEntries, code;
+  const char **subListStrings;
+
+  code = Tcl_SplitList(interp, Tcl_GetStringFromObj($source,NULL), 
+							  &numEntries, &subListStrings);
+  if (code != TCL_OK) {
+	 printf("Wrong format for ib_slvl_table_t should be list:%s\n", 
+			  Tcl_GetStringFromObj($source,NULL));
+	 return TCL_ERROR;
+  }
+  if (numEntries > 16) {
+	 printf("Maximal number of SL2VL entries is 16:%s\n", 
+			  Tcl_GetStringFromObj($source,NULL));
+	 Tcl_Free((char *) subListStrings);
+	 return TCL_ERROR;
+  }
+  memset(&tmp, 0, sizeof(ib_slvl_table_t));
+  for (i = 0; i < numEntries; i++) {
+	  errno = 0;
+	  value = strtoul(subListStrings[i],NULL,0);
+	  if (errno) {
+		  printf("Wrong format for vl_arb_table sublist %d vl:%s\n",
+					i, subListStrings[i]);
+		  Tcl_Free((char *) subListStrings);
+		  return TCL_ERROR;
+	  }
+	  if (value > 15) {
+		  printf("Given VL at index %d is %d > 15\n", i, value);
+		  Tcl_Free((char *) subListStrings);
+		  return TCL_ERROR;
+	  }
+	  entry = tmp.raw_vl_by_sl[i/2];
+	  if (i % 2) {
+		  entry = (value & 0xf) | (entry & 0xf0) ;
+	  } else {
+		  entry = ((value & 0xf) << 4) | (entry & 0xf);		
+	  }
+	  tmp.raw_vl_by_sl[i/2] = entry;
+  }
+  Tcl_Free((char *) subListStrings);
+
+  $target = &tmp;
+}
+
 %typemap(tcl8,out) ib_pkey_table_t* {
   char buff[36];
   int i;
@@ -149,6 +286,7 @@
   char *p_pkey;
   char *str_token;
   int i = 0;
+  memset(&tmp, 0, sizeof(ib_pkey_table_t));
 
   strncpy(buf, Tcl_GetStringFromObj($source,NULL), 255);
   buf[255] = '\0';

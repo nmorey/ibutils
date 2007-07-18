@@ -74,7 +74,7 @@ int GenServer::createServerSocket(unsigned short port_num)
   struct sockaddr_in servAddr; /* Local address */
   
   MSGREG(errMsg1, 'E', "Fail to open socket", "server");
-  MSGREG(errMsg2, 'W', "Fail to bind socket for port:$", "server");
+  MSGREG(errMsg2, 'V', "Fail to bind socket for port:$", "server");
   MSGREG(errMsg3, 'E', "Fail to listen to socket", "server");
   MSGREG(verbMsg1, 'V', "Server is listening on port:$ socket:$", "server");
   

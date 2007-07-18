@@ -454,6 +454,18 @@ class IBMSNode {
   int setPKeyTblBlock(uint8_t portNum, uint16_t blockNum, ib_pkey_table_t *tbl);
   /* set pkey table block */
 
+  ib_vl_arb_table_t * getVLArbLTable(uint8_t portNum, uint8_t blockIndex);
+  /* get a specific VLArb Table */
+
+  int setVLArbLTable(uint8_t portNum, uint8_t blockIndex, ib_vl_arb_table_t *tbl);
+  /* set a specific SL2VL Table */
+
+  ib_slvl_table_t * getSL2VLTable(uint8_t inPortNum, uint8_t outPortNum);
+  /* get a specific SL2VL Table */
+
+  int setSL2VLTable(uint8_t inPortNum, uint8_t outPortNum, ib_slvl_table_t *tbl);
+  /* set a specific SL2VL Table */
+
   int setCrSpace(uint32_t startAddr,uint32_t length,uint32_t data[] );
   /* set CR Space Value */
 
@@ -508,6 +520,15 @@ class IBMSNode {
 
     SWIG_AlternateObjMangling["_ib_pm_counters_t_p"] = &ibmsGetIBStructObjNameByPtr;
     SWIG_AlternateNameToObj  ["_ib_pm_counters_t_p"] = &ibmsGetIBStructObjPtrByTclName;
+
+    SWIG_AlternateObjMangling["_ib_vl_arb_table_t_p"] = &ibmsGetIBStructObjNameByPtr;
+    SWIG_AlternateNameToObj  ["_ib_vl_arb_table_t_p"] = &ibmsGetIBStructObjPtrByTclName;
+
+    SWIG_AlternateObjMangling["_ib_slvl_table_t_p"] = &ibmsGetIBStructObjNameByPtr;
+    SWIG_AlternateNameToObj  ["_ib_slvl_table_t_p"] = &ibmsGetIBStructObjPtrByTclName;
+
+    SWIG_AlternateObjMangling["_ib_pkey_table_t_p"] = &ibmsGetIBStructObjNameByPtr;
+    SWIG_AlternateNameToObj  ["_ib_pkey_table_t_p"] = &ibmsGetIBStructObjPtrByTclName;
 
     // declare the simulator object :
     Tcl_CreateObjCommand(interp,"IBMgtSimulator", 
