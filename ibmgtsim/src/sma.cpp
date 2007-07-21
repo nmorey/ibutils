@@ -233,8 +233,8 @@ void IBMSSma::initVlArbitTable()
     {
       for (k=0; k < IB_NUM_VL_ARB_ELEMENTS_IN_BLOCK ; k++)
       {
-        vlArbitEntry.vl_entry[k].vl = 0;
-        vlArbitEntry.vl_entry[k].weight = 0;
+        vlArbitEntry.vl_entry[k].vl = k % IB_MAX_NUM_VLS;
+        vlArbitEntry.vl_entry[k].weight = 1;
       }
       (pSimNode->vlArbPortEntry[i]).push_back( vlArbitEntry );
     }
@@ -386,12 +386,10 @@ void IBMSSma::initPortInfo()
     tmpPortInfo.mtu_smsl = 1;
     ib_port_info_set_neighbor_mtu( &tmpPortInfo, 4);
     ib_port_info_set_vl_cap(&tmpPortInfo, 4);
-    /*
-      vl_high_limit
-      vl_arb_high_cap
-      vl_arb_low_cap
-    */
-    tmpPortInfo.mtu_cap = 4;
+	 tmpPortInfo.vl_high_limit = 1;
+	 tmpPortInfo.vl_arb_high_cap = 8;
+	 tmpPortInfo.vl_arb_low_cap = 8;
+	 tmpPortInfo.mtu_cap = 4;
     tmpPortInfo.guid_cap = 32;
     tmpPortInfo.resp_time_value = 20;
            
@@ -560,13 +558,22 @@ int IBMSSma::vlArbMad(ibms_mad_msg_t &respMadMsg, ibms_mad_msg_t &reqMadMsg, uin
     portIndex = inPort;
   }
   priorityIndex = (cl_ntoh32(reqMadMsg.header.attr_mod) >> 16);
-
-  if (portIndex > pSimNode->nodeInfo.num_ports)
-  {
+  if (priorityIndex == 0) {
     MSGREG(err0, 'E',
-           "Req. port is $ while Node number of ports is $ !",
+           "Req.  blockIndex is $ legal values are 1..4 !",
            "vlArbMad");
     MSGSND(err0, portIndex, pSimNode->nodeInfo.num_ports);
+    status = IB_MAD_STATUS_INVALID_FIELD;
+
+    MSG_EXIT_FUNC;
+    return status;
+  }
+  if (portIndex > pSimNode->nodeInfo.num_ports)
+  {
+    MSGREG(err1, 'E',
+           "Req. port is $ while Node number of ports is $ !",
+           "vlArbMad");
+    MSGSND(err1, portIndex, pSimNode->nodeInfo.num_ports);
     status = IB_MAD_STATUS_INVALID_FIELD;
 
     MSG_EXIT_FUNC;
@@ -1049,7 +1056,7 @@ int IBMSSma::setPortInfoSwBasePort(ibms_mad_msg_t &respMadMsg,
 
   if ((pReqPortInfo->base_lid == 0) || (cl_ntoh16(pReqPortInfo->base_lid) >= 0xbfff))
   {
-    MSGREG(err6, 'E', "PortInfo Invalid Lid set for $ !", "setPortInfoSwBasePort");
+    MSGREG(err6, 'E', "PortInfo Invalid Lid set to $ on SW Base port!", "setPortInfoSwBasePort");
     MSGSND(err6, pReqPortInfo->base_lid);
     status = IB_MAD_STATUS_INVALID_FIELD;
 
@@ -1191,7 +1198,7 @@ int IBMSSma::setPortInfoHca(ibms_mad_msg_t &respMadMsg,
 
   if ((pReqPortInfo->base_lid == 0) || (cl_ntoh16(pReqPortInfo->base_lid) >= 0xbfff))
   {
-    MSGREG(err6, 'E', "PortInfo Invalid Lid set for $ !", "setPortInfoHca");
+    MSGREG(err6, 'E', "PortInfo Invalid Lid set to $ on HCA!", "setPortInfoHca");
     MSGSND(err6, pReqPortInfo->base_lid);
     status = IB_MAD_STATUS_INVALID_FIELD;
 
