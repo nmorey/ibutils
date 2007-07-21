@@ -613,6 +613,10 @@ static int  _wrap_const_FABU_LOG_ERROR = 0x1;
 static int  _wrap_const_FABU_LOG_INFO = 0x2;
 static int  _wrap_const_FABU_LOG_VERBOSE = 0x4;
 
+#define list_pnode_arg_name list_pnode
+
+#define unsigned_int_arg_name unsigned int
+
 #include "swig_alternate_mangling.cpp"
 
 
@@ -2853,12 +2857,12 @@ static int _wrap_ibdmTraceRouteByLFT(ClientData clientData, Tcl_Interp *interp, 
     IBFabric * _arg0;
     unsigned int  _arg1;
     unsigned int  _arg2;
-    unsigned int * _arg3;
-    list_pnode * _arg4;
+    unsigned_int_arg_name * _arg3;
+    list_pnode_arg_name * _arg4;
     Tcl_Obj * tcl_result;
     int tempint;
-    char * rettype;
-    list_pnode  tmpNodeList;
+    unsigned int  tmp;
+    list_pnode  tmp0;
 
     clientData = clientData; objv = objv;
     tcl_result = Tcl_GetObjResult(interp);
@@ -2939,54 +2943,11 @@ static int _wrap_ibdmTraceRouteByLFT(ClientData clientData, Tcl_Interp *interp, 
     _arg1 = (unsigned int ) tempint;
     if (Tcl_GetIntFromObj(interp,objv[3],&tempint) == TCL_ERROR) return TCL_ERROR;
     _arg2 = (unsigned int ) tempint;
-    if ((rettype = SWIG_GetPointerObj(interp,objv[4],(void **) &_arg3,"_unsigned_int_p"))) {
-        Tcl_SetStringObj(tcl_result, "Type error in argument 4 of ibdmTraceRouteByLFT. Expected _unsigned_int_p, received ", -1);
-        Tcl_AppendToObj(tcl_result, rettype, -1);
-        return TCL_ERROR;
-    }
 {
-#if TCL_MINOR_VERSION > 3
-  const char **sub_lists;
-#else
-  char **sub_lists;
-#endif
-  int num_sub_lists;
-  unsigned int idx;
-
-  /* we will use the TCL split list to split into elements */
-  if (Tcl_SplitList(interp, 
-                    Tcl_GetStringFromObj(objv[5],0), 
-                    &num_sub_lists, &sub_lists) != TCL_OK) {
-    printf("-E- Bad formatted list :%s\n",
-           Tcl_GetStringFromObj(objv[5],0));
-    return TCL_ERROR;
-  }
-
-  for (idx = 0; (idx < num_sub_lists); idx++) 
-  {
-    /* we need to double copy since TCL 8.4 requires split res to be const */
-    Tcl_Obj *p_tclObj;
-    void *ptr;
-    char buf[128];
-    strcpy(buf, sub_lists[idx]);
-
-    if (strncmp("node:", buf, 5)) {
-      printf("-E- Bad formatted node (%u) object:%s\n", idx, buf);
-      return TCL_ERROR;
-    }
-
-	 p_tclObj = Tcl_NewObj();
-    Tcl_SetStringObj(p_tclObj, buf, -1);
-    if (ibdmGetObjPtrByTclName(p_tclObj, &ptr) != TCL_OK) {
-      printf("-E- fail to find ibdm obj by id:%s", buf );
-      Tcl_DecrRefCount(p_tclObj);
-      return TCL_ERROR;	
-    }
-    Tcl_DecrRefCount(p_tclObj);
-    tmpNodeList.push_back((IBNode *)ptr);
-  }
-	 
-  _arg4 = &tmpNodeList;
+	_arg3 = &tmp;
+}
+{
+	_arg4 = &tmp0;
 }
 { 
   ibdm_tcl_error = 0;
@@ -2998,6 +2959,30 @@ static int _wrap_ibdmTraceRouteByLFT(ClientData clientData, Tcl_Interp *interp, 
   }
 }    tcl_result = Tcl_GetObjResult(interp);
     Tcl_SetIntObj(tcl_result,(long) _result);
+{
+   char buf[16];
+	sprintf(buf, "%u", tmp);
+   Tcl_SetVar(interp, Tcl_GetString(objv[4]), buf, 0);
+}
+{
+  // build a TCL list out of the Objec ID's of the ibdm objects in it.
+  list_pnode::const_iterator I = _arg4->begin();
+  Tcl_Obj *p_tclObj;
+  Tcl_SetVar(interp, Tcl_GetString(objv[5]),"",0);
+  while (I != _arg4->end()) {
+	 p_tclObj = Tcl_NewObj();
+	 if (ibdmGetObjTclNameByPtr(p_tclObj, (*I), "IBNode *") != TCL_OK) {
+		printf("-E- Fail to map Node Object (a guid map element)\n");
+	 } else {
+		char buf[128];
+		sprintf(buf, "%s", Tcl_GetString(p_tclObj));
+		Tcl_SetVar(interp, Tcl_GetString(objv[5]), buf, 
+					  TCL_LIST_ELEMENT|TCL_APPEND_VALUE);
+	 }
+	 Tcl_DecrRefCount(p_tclObj);
+	 I++;
+  }
+}
     return TCL_OK;
 }
 static int _wrap_ibdmMatchFabrics(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {

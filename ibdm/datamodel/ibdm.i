@@ -366,6 +366,7 @@
 //
 // TYPE MAPS:
 // 
+%include typemaps.i
 
 // Convert a TCL Object to C++ world.
 %typemap(tcl8,in) IBFabric *, IBNode *, IBSystem *, IBPort *, IBSysPort * {
@@ -1309,10 +1310,51 @@ int TraceRouteByMinHops (IBFabric *p_fabric,
   unsigned int slid , unsigned int dlid);
 // Trace a route from slid to dlid by Min Hop
 
+%typemap(tcl8,in) list_pnode_arg_name*(list_pnode tmp) {
+	$target = &tmp;
+}
+
+%typemap(tcl8,argout) list_pnode_arg_name* {
+  // build a TCL list out of the Objec ID's of the ibdm objects in it.
+  list_pnode::const_iterator I = $source->begin();
+  Tcl_Obj *p_tclObj;
+  Tcl_SetVar(interp, Tcl_GetString($arg),"",0);
+  while (I != $source->end()) {
+	 p_tclObj = Tcl_NewObj();
+	 if (ibdmGetObjTclNameByPtr(p_tclObj, (*I), "IBNode *") != TCL_OK) {
+		printf("-E- Fail to map Node Object (a guid map element)\n");
+	 } else {
+		char buf[128];
+		sprintf(buf, "%s", Tcl_GetString(p_tclObj));
+		Tcl_SetVar(interp, Tcl_GetString($arg), buf, 
+					  TCL_LIST_ELEMENT|TCL_APPEND_VALUE);
+	 }
+	 Tcl_DecrRefCount(p_tclObj);
+	 I++;
+  }
+}
+%{
+#define list_pnode_arg_name list_pnode
+%}
+
+%typemap(tcl8,in) unsigned_int_arg_name*(unsigned int tmp) {
+	$target = &tmp;
+}
+
+%typemap(tcl8,argout) unsigned_int_arg_name* {
+   char buf[16];
+	sprintf(buf, "%u", tmp);
+   Tcl_SetVar(interp, Tcl_GetString($arg), buf, 0);
+}
+%{
+#define unsigned_int_arg_name unsigned int
+%}
+
 %name(ibdmTraceRouteByLFT)
 int TraceRouteByLFT (IBFabric *p_fabric, 
 							unsigned int slid , unsigned int dlid,
-							unsigned int *hops, list_pnode *p_nodesList);
+							unsigned_int_arg_name *hops, 
+							list_pnode_arg_name *p_nodesList);
 // Trace a route from slid to dlid by LFT
 
 %subsection "Topology Matching Utilities",before,pre
