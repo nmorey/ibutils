@@ -1943,7 +1943,20 @@ SubnMgtCheckMCGrp(
         anyErr++;
         continue;
       }
-      
+     
+		// if the remote node does not point back to this one (i.e. the port is bit is not set in the 
+		// MFT do not go through ...
+		list_int remPortNums = pRemNode->getMFTPortsForMLid(mlid);
+		if (find(remPortNums.begin(), remPortNums.end(),pPort->p_remotePort->num) == remPortNums.end())
+		{
+			cout << "-W- Found a non symmetric MFT on MLID:" << mlidStr
+				  << " got to node:" << pRemNode->name
+				  << " through port:" << pPort->p_remotePort->num
+				  << " which does not point back to node:" << pPort->p_node->name
+				  << " port:" << pPort->num << endl;
+			continue;
+		}
+		
       // push the node into next steps:
       nextStep.pNode = pRemNode;
       nextStep.inPort = pPort->p_remotePort->num;
