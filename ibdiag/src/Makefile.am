@@ -32,11 +32,28 @@
 # $Id$
 #--
 
-bin_SCRIPTS = ibdiagnet ibdiagpath ibdiagui
+bin_SCRIPTS = ibdiagnet ibdiagpath ibdiagui git_version.tcl
 EXTRA_DIST = ibdebug_if.tcl ibdebug.tcl \
 	ibdiagnet.in ibdiagnet.pkg ibdiagnet.tcl \
 	ibdiagpath.in ibdiagpath.pkg ibdiagpath.tcl \
-	ibdiagui.in ibdiagui.pkg ibdiagui.tcl 
+	ibdiagui.in ibdiagui.pkg ibdiagui.tcl git_version.tcl
+
+git_version.tcl : @MAINTAINER_MODE_TRUE@ FORCE
+	gitver=`cd $(srcdir) ; git-log | head -1 | cut -f2 -d\  `; \
+	changes=`cd $(srcdir) ; git diff . | grep ^diff | wc -l`; \
+	if test $$changes != 0; then gitver="$$gitver with-local-mods"; fi; \
+	echo "set ibdiagSourceVersion \"$$gitver\"" > .git_version.tcl ;\
+	if test -f $(srcdir)/git_version.tcl ; then \
+		if test `diff .git_version.tcl $(srcdir)/git_version.tcl | wc -l` != 0; then \
+			mv -f .git_version.tcl $(srcdir)/git_version.tcl; \
+			echo "Updated code version to: $$gitver"; \
+		fi; \
+	else \
+		mv -f .git_version.tcl $(srcdir)/git_version.tcl; \
+		echo "Created code version file with version: $$gitver"; \
+	fi;
+
+FORCE:
 
 ibdiagnet: ibdiagnet.in
 	sed -e 's=%ibdiag_libdir%='$(DESTDIR)$(libdir)'=' \
@@ -45,8 +62,8 @@ ibdiagnet: ibdiagnet.in
 
 ibdiagpath: ibdiagpath.in
 	sed -e 's=%ibdiag_libdir%='$(DESTDIR)$(libdir)'=' \
-            -e 's=%with_ibdm_lib%='$(with_ibdm_lib)'=' \
-            -e 's=%with_ibis%='$(with_ibis)'=' $(srcdir)/ibdiagpath.in > ibdiagpath
+       -e 's=%with_ibdm_lib%='$(with_ibdm_lib)'=' \
+       -e 's=%with_ibis%='$(with_ibis)'=' $(srcdir)/ibdiagpath.in > ibdiagpath
 
 ibdiagui: ibdiagui.in
 	sed -e 's=%ibdiag_libdir%='$(DESTDIR)$(libdir)'=' \
@@ -67,13 +84,16 @@ install-exec-am: install-binSCRIPTS
 	cp $(srcdir)/ibdebug.tcl $(NET_LIB_DIR)/ibdebug.tcl
 	cp $(srcdir)/ibdebug_if.tcl $(NET_LIB_DIR)/ibdebug_if.tcl
 	cp $(srcdir)/ibdiagnet.tcl $(NET_LIB_DIR)/ibdiagnet.tcl
+	cp $(srcdir)/git_version.tcl $(NET_LIB_DIR)/git_version.tcl
 	mkdir -p $(PATH_LIB_DIR)
 	cp $(srcdir)/ibdiagpath.pkg $(PATH_LIB_DIR)/pkgIndex.tcl
 	cp $(srcdir)/ibdebug.tcl $(PATH_LIB_DIR)/ibdebug.tcl
 	cp $(srcdir)/ibdebug_if.tcl $(PATH_LIB_DIR)/ibdebug_if.tcl
 	cp $(srcdir)/ibdiagpath.tcl $(PATH_LIB_DIR)/ibdiagpath.tcl
+	cp $(srcdir)/git_version.tcl $(PATH_LIB_DIR)/git_version.tcl
 	mkdir -p $(UI_LIB_DIR)
 	cp $(srcdir)/ibdiagui.pkg $(UI_LIB_DIR)/pkgIndex.tcl
 	cp $(srcdir)/ibdebug.tcl $(UI_LIB_DIR)/ibdebug.tcl
 	cp $(srcdir)/ibdebug_if.tcl $(UI_LIB_DIR)/ibdebug_if.tcl
 	cp $(srcdir)/ibdiagui.tcl $(UI_LIB_DIR)/ibdiagui.tcl
+	cp $(srcdir)/git_version.tcl $(UI_LIB_DIR)/git_version.tcl

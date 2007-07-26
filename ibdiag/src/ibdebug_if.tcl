@@ -715,7 +715,7 @@ proc retriveEntryFromArray {_arrayName _entry {_defMsg "UNKNOWN"}} {
 
 ##############################
 proc inform { msgCode args } {
-   global G InfoArgv argv env
+   global G InfoArgv argv env ibdiagSourceVersion
    regexp {^(\-[A-Z]\-)?([^:]+).*$} $msgCode . msgType msgSource
 
    if { $msgType == "-V-" } {
@@ -744,7 +744,7 @@ proc inform { msgCode args } {
          "-H-help" {
             showHelpPage
          } "-H-version" {
-            append msgText "-I- $G(var:tool.name) version $G(var:version.num)"
+            append msgText "-I- $G(var:tool.name) version $G(var:version.num) source $ibdiagSourceVersion"
          } "-H-vars" {
             append msgText "-I- $G(var:tool.name) environment variabls:"
             foreach flag [GetToolsFlags envVars]  {

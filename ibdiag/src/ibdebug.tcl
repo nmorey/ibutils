@@ -179,6 +179,7 @@ proc InitializeIBDIAG {} {
    set MASK(CurrentMaskGuid) 1
 
    source [file join [file dirname [info script]] ibdebug_if.tcl]
+   uplevel \#0 source [file join [file dirname [info script]] git_version.tcl]
    fconfigure stdout -buffering none
    SetInfoArgv
    UpdateInfoArgv_Win
