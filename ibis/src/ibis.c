@@ -38,6 +38,7 @@
 #include <complib/cl_debug.h>
 #include "ibis.h"
 #include "ibis_api.h"
+#include "git_version.h"
 #include <opensm/osm_log.h>
 #include <opensm/osm_mad_pool.h>
 #include <opensm/osm_helper.h>
@@ -242,3 +243,8 @@ ibis_get_tid(void)
   return( cl_ntoh64(cl_atomic_inc(&IbisObj.trans_id)));
 }
 
+
+#ifndef IBIS_CODE_VERSION
+#define IBIS_CODE_VERSION "undefined"
+#endif
+const char * ibisSourceVersion = IBIS_CODE_VERSION ;

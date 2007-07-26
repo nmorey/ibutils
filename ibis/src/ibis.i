@@ -500,6 +500,8 @@ ibis_get_local_ports_info
    Return the list of available IB ports with GUID, LID and State.  
 %}
 
+extern char * ibisSourceVersion;
+
 //
 // INIT CODE
 //

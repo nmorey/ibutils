@@ -3138,6 +3138,7 @@ static int  _wrap_const_IBIS_LOG_VERBOSE = 0x04;
 static int  _wrap_const_IBIS_LOG_DEBUG = 0x08;
 static int  _wrap_const_IBIS_LOG_FUNCS = 0x10;
 static int  _wrap_const_IBIS_LOG_FRAMES = 0x20;
+extern char * ibisSourceVersion; 
 static int _wrap_crDestroy(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
 
     int  _result;
@@ -57591,6 +57592,7 @@ SWIGEXPORT(int,Ibis_Init)(Tcl_Interp *interp) {
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ibis_get_port", _wrap_ibis_get_port, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ibis_set_transaction_timeout", _wrap_ibis_set_transaction_timeout, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ibis_exit", _wrap_ibis_exit, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_LinkVar(interp, SWIG_prefix "ibisSourceVersion", (char *) &ibisSourceVersion, TCL_LINK_STRING);
 
 
   /* Make sure that the osmv, complib and ibisp use

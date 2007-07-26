@@ -89,6 +89,26 @@ SWIG_IFC_FILES= $(srcdir)/ibbbm.i \
 	$(srcdir)/ibsm.i \
 	$(srcdir)/ibvs.i
 
+$(srcdir)/ibis.c: $(srcdir)/git_version.h
+
+# track latest GIT version for this tree:
+$(srcdir)/git_version.h:  @MAINTAINER_MODE_TRUE@ FORCE
+	gitver=`cd $(srcdir) ; git-log | head -1 | cut -f2 -d\  `; \
+	changes=`cd $(srcdir) ; git diff . | grep ^diff | wc -l`; \
+	if test $$changes != 0; then gitver="$$gitver mods:$$changes"; fi; \
+	echo "#define IBIS_CODE_VERSION \"$$gitver\"" > .git_version.h ;\
+	if test -f $(srcdir)/git_version.h ; then \
+		if test `diff .git_version.h $(srcdir)/git_version.h | wc -l` != 0; then \
+			mv -f .git_version.h $(srcdir)/git_version.h; \
+			echo "Updated code version to: $$gitver"; \
+		fi; \
+	else \
+		mv -f .git_version.h $(srcdir)/git_version.h; \
+		echo "Created code version file with version: $$gitver"; \
+	fi;
+
+FORCE:
+
 # only generate the swig wrappers if they do not exist...
 # so we avoid un-needed swig dependency
 if HAS_SWIG
