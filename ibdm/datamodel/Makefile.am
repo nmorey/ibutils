@@ -33,7 +33,7 @@
 #--
 
 # we would like to export these headers during install
-pkginclude_HEADERS = Fabric.h \
+pkginclude_HEADERS = git_version.h Fabric.h \
 		 SubnMgt.h TraceRoute.h CredLoops.h Regexp.h \
 		 TopoMatch.h SysDef.h Congestion.h ibnl_parser.h ibdm.i
 
@@ -89,6 +89,26 @@ ibdmsh_SOURCES = ibdmsh_wrap.cpp
 ibdmsh_LDADD =  -libdmcom $(TCL_LIBS)
 ibdmsh_LDFLAGS = -static -Wl,-rpath -Wl,$(TCL_PREFIX)/lib
 
+$(srcdir)/Fabric.cpp: $(srcdir)/git_version.h
+
+# track latest GIT version for this tree:
+$(srcdir)/git_version.h:  @MAINTAINER_MODE_TRUE@ FORCE
+	gitver=`cd $(srcdir) ; git-log | head -1 | cut -f2 -d\  `; \
+	changes=`cd $(srcdir) ; git diff . | grep ^diff | wc -l`; \
+	if test $$changes != 0; then gitver="$$gitver mods:$$changes"; fi; \
+	echo "#define IBDM_CODE_VERSION \"$$gitver\"" > .git_version.h ;\
+	if test -f $(srcdir)/git_version.h ; then \
+		if test `diff .git_version.h $(srcdir)/git_version.h | wc -l` != 0; then \
+			mv -f .git_version.h $(srcdir)/git_version.h; \
+			echo "Updated code version to: $$gitver"; \
+		fi; \
+	else \
+		mv -f .git_version.h $(srcdir)/git_version.h; \
+		echo "Creates code version to: $$gitver"; \
+	fi;
+
+FORCE:
+
 # Workaound for libtool to use g++ for linking (verified as un-needed but JIC)
 # CXXLINK = $(LIBTOOL) --tag=CXX --mode=link \
 #           $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
@@ -124,7 +144,7 @@ ibnl_scanner.cc: @MAINTAINER_MODE_TRUE@ $(srcdir)/ibnl_scanner.ll
 	if test ! ibnl_scanner.cc -ef $(srcdir)/ibnl_scanner.cc ; then cp ibnl_scanner.cc $(srcdir)/ibnl_scanner.cc; fi
 
 # Don't distribute common.h, since it is build host dependent!
-dist-hook:
+dist-hook: git_version.h
 	rm -f $(distdir)/common.h
 
 # we need there extra in the distribution as their dependency is not defined
@@ -136,3 +156,4 @@ install-exec-am: install-binPROGRAMS
 	cp .libs/$(shell grep dlname libibdm.la | sed 's/.*=\(.*\)/\1/') \
 	   $(DESTDIR)$(libdir)/ibdm$(VERSION)/libibdm.so.$(VERSION)
 	sed 's/%VERSION%/'$(VERSION)'/g' $(srcdir)/pkgIndex.tcl > $(DESTDIR)$(libdir)/ibdm$(VERSION)/pkgIndex.tcl
+

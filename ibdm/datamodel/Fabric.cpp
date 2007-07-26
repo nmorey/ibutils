@@ -44,6 +44,7 @@ This file holds implementation of the data model classes and methods
 #include "SysDef.h"
 #include "Regexp.h"
 #include <iomanip>
+#include "git_version.h"
 
 // Track verbosity:
 uint8_t FabricUtilsVerboseLevel = 0x1;
@@ -1886,5 +1887,9 @@ IBFabric::dump(ostream &sout) {
       }
     }
   }
-
 }
+
+#ifndef IBDM_CODE_VERSION
+#define IBDM_CODE_VERSION "undefined"
+#endif
+const char * ibdmSourceVersion = IBDM_CODE_VERSION ;

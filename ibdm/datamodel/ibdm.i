@@ -1410,8 +1410,7 @@ int CongTrackPath(IBFabric *p_fabric, uint16_t srcLid, uint16_t dstLid);
 %}
 
 ///////////////////////////////////////////////////////////////////////////////
-
-
+extern char * ibdmSourceVersion;
 
 //
 // INIT CODE

@@ -618,6 +618,7 @@ static int  _wrap_const_FABU_LOG_VERBOSE = 0x4;
 #define unsigned_int_arg_name unsigned int
 
 #include "swig_alternate_mangling.cpp"
+extern char * ibdmSourceVersion; 
 static int _wrap_new_IBFabric(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
 
     IBFabric * _result;
@@ -17650,6 +17651,7 @@ SWIGEXPORT(int,Ibdm_Init)(Tcl_Interp *interp) {
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ibdmCongTrace", _wrap_ibdmCongTrace, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ibdmCongReport", _wrap_ibdmCongReport, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ibdmCongDump", _wrap_ibdmCongDump, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_LinkVar(interp, SWIG_prefix "ibdmSourceVersion", (char *) &ibdmSourceVersion, TCL_LINK_STRING);
 
 
   /* mixing declarations .... */
