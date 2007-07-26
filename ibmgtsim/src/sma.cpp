@@ -110,9 +110,6 @@ void IBMSSma::initSwitchInfo()
 
   MSGREG(inf1, 'V', "Initialization of node's SwitchInfo is Done !", "initSwitchInfo");
   MSGSND(inf1);
-
-  pSimNode->switchMftPortsEntry.resize(((pSimNode->nodeInfo.num_ports)/16) + 1);
-  initMftTable();
   pSimNode->sl2VlInPortEntry.resize((pSimNode->nodeInfo.num_ports) + 1);
   initSwitchSl2VlTable();
 }
@@ -196,28 +193,6 @@ void IBMSSma::initPKeyTables()
          }
       }
    }
-}
-
-void IBMSSma::initMftTable()
-{
-  uint8_t                     i,k;
-  uint16_t                    j;
-  ib_mft_table_t              mftEntry;
-
-  for (i=0; i <= ((pSimNode->nodeInfo.num_ports)/16) ; i++)
-  {
-    for (j=0; j <= IB_MCAST_MAX_BLOCK_ID ; j++)
-    {
-      for (k=0; k < IB_MCAST_BLOCK_SIZE ; k++)
-      {
-        mftEntry.mft_entry[k] = 0;
-      }
-      (pSimNode->switchMftPortsEntry[i]).push_back( mftEntry );
-    }
-  }
-
-  MSGREG(inf1, 'V', "Initialization of switch Multicast FDB is Done !", "initMftTable");
-  MSGSND(inf1);
 }
 
 void IBMSSma::initVlArbitTable()
@@ -678,7 +653,6 @@ int IBMSSma::mftMad(ibms_mad_msg_t &respMadMsg, ibms_mad_msg_t &reqMadMsg)
   ib_smp_t*           pReqMad;
   uint16_t            mftTableEntryIndex = (cl_ntoh32(reqMadMsg.header.attr_mod) & IB_MCAST_BLOCK_ID_MASK_HO);
   uint8_t             mftPortEntryIndex = (cl_ntoh32(reqMadMsg.header.attr_mod) >> IB_MCAST_POSITION_SHIFT);
-  ib_mft_table_t      mftEntryElm;
   ib_mft_table_t*     pMftEntryElm;
    
   pRespMad = (ib_smp_t*) &respMadMsg.header;
@@ -699,7 +673,7 @@ int IBMSSma::mftMad(ibms_mad_msg_t &respMadMsg, ibms_mad_msg_t &reqMadMsg)
     return status;
   }
   
-  if (mftPortEntryIndex > pSimNode->nodeInfo.num_ports)
+  if (mftPortEntryIndex * 16 > pSimNode->nodeInfo.num_ports)
   {
     MSGREG(err1, 'E',
            "Req. mft port block is $ while NodeInfo number of ports is $ !",
@@ -711,7 +685,7 @@ int IBMSSma::mftMad(ibms_mad_msg_t &respMadMsg, ibms_mad_msg_t &reqMadMsg)
     return status;
   }
 
-  MSGREG(inf3, 'V', "Multicast Forwarding entry handled is $ and port-block number is $ ", "mftMad");
+  MSGREG(inf3, 'E', "Multicast Forwarding entry handled portIdx $ blockIdx $ ", "mftMad");
   MSGSND(inf3, mftTableEntryIndex, mftPortEntryIndex);
 
   if (reqMadMsg.header.method == IB_MAD_METHOD_GET)
@@ -719,19 +693,43 @@ int IBMSSma::mftMad(ibms_mad_msg_t &respMadMsg, ibms_mad_msg_t &reqMadMsg)
     MSGREG(inf1, 'V', "MFT SubnGet !", "mftMad");
     MSGSND(inf1);
 
-    mftEntryElm = (pSimNode->switchMftPortsEntry[mftPortEntryIndex])[mftTableEntryIndex];
-    memcpy ((void*)(pRespMad->data), (void*)(&mftEntryElm), sizeof(ib_mft_table_t));
+	 if ( (mftPortEntryIndex >= pSimNode->switchMftPortsEntry.size()) ||
+			(mftTableEntryIndex >= pSimNode->switchMftPortsEntry[mftPortEntryIndex].size()))
+	 {
+		 MSGREG(warn1, 'W', "MFT SubnGet with uninitialized values at portIdx:$ blockIdx:$  !", "mftMad");
+		 MSGSND(warn1,mftPortEntryIndex, mftTableEntryIndex);
+		 memset ((void*)(pRespMad->data), 0, sizeof(ib_mft_table_t));
+		 MSG_EXIT_FUNC;
+		 return status;
+	 }
+		 
+    pMftEntryElm = &(pSimNode->switchMftPortsEntry[mftPortEntryIndex][mftTableEntryIndex]);
+    memcpy ((void*)(pRespMad->data), (void*)(pMftEntryElm), sizeof(ib_mft_table_t));
   }
   else
   {
+	  unsigned i;
     MSGREG(inf2, 'V', "MFT SubnSet !", "mftMad");
     MSGSND(inf2);
 
-	MSGREG(inf9, 'V', "MFT SubnSet $ base_port:$ block:$ entry 0 value:$", "mftMad");
+	 MSGREG(inf9, 'E', "MFT SubnSet $ base_port:$ block:$ entry 0 value:$", "mftMad");
 
-    pMftEntryElm = &(pSimNode->switchMftPortsEntry[mftPortEntryIndex])[mftTableEntryIndex];
+	 for (i = pSimNode->switchMftPortsEntry.size(); i <= mftPortEntryIndex; i++)
+	 {
+		 vector < ib_mft_table_t > tmpVec;
+		 pSimNode->switchMftPortsEntry.push_back(tmpVec);
+	 }
+	 
+	 for (i = pSimNode->switchMftPortsEntry[mftPortEntryIndex].size(); i <= mftTableEntryIndex; i++)
+	 {
+		 ib_mft_table_t tmp;
+		 memset(&tmp, 0, sizeof(ib_mft_table_t));
+		 pSimNode->switchMftPortsEntry[mftPortEntryIndex].push_back(tmp);
+	 }
+
+    pMftEntryElm = &(pSimNode->switchMftPortsEntry[mftPortEntryIndex][mftTableEntryIndex]);
     memcpy ((void*)(pMftEntryElm), (void*)(pReqMad->data), sizeof(ib_mft_table_t));
-char buff[16];
+	 char buff[16];
 	sprintf(buff,"0x%04x", cl_ntoh16(pMftEntryElm->mft_entry[0]));
 	MSGSND(inf9, pSimNode->getIBNode()->name, 
 			mftPortEntryIndex, mftTableEntryIndex, buff);
