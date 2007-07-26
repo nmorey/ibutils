@@ -375,11 +375,15 @@ int IBMSNode::getMFTBlock(uint16_t blockIdx, uint8_t portIdx, ib_mft_table_t *ou
   int res = 1;
   MSGREG(inf0, 'V', "getting MFT block: blockIdx $ portIdx $ ", "node");
   MSGSND(inf0, blockIdx, portIdx);
-  if ( (switchMftPortsEntry.size() > blockIdx) &&
-       (switchMftPortsEntry[blockIdx].size() > portIdx))
+  if ( (switchMftPortsEntry.size() > portIdx) &&
+       (switchMftPortsEntry[portIdx].size() > blockIdx ))
   {
     if (outMftBlock)
-      memcpy(outMftBlock, &(switchMftPortsEntry[blockIdx][portIdx]), sizeof(ib_mft_table_t));
+      memcpy(outMftBlock, &(switchMftPortsEntry[portIdx][blockIdx]), sizeof(ib_mft_table_t));
+    res = 0;
+  } else {
+    if (outMftBlock)
+      memset(outMftBlock, 0, sizeof(ib_mft_table_t));
     res = 0;
   }
   MSG_EXIT_FUNC;
@@ -392,11 +396,11 @@ int IBMSNode::setMFTBlock(uint16_t blockIdx, uint8_t portIdx, ib_mft_table_t *in
   int res = 1;
   MSGREG(inf0, 'V', "setting MFT block: blockIdx $ portIdx $ ", "node");
   MSGSND(inf0, blockIdx, portIdx);
-  if ( (switchMftPortsEntry.size() > blockIdx) &&
-       (switchMftPortsEntry[blockIdx].size() > portIdx))
+  if ( (switchMftPortsEntry.size() > portIdx) &&
+       (switchMftPortsEntry[portIdx].size() > blockIdx))
   {
     if (inMftBlock)
-      memcpy(&(switchMftPortsEntry[blockIdx][portIdx]), inMftBlock, sizeof(ib_mft_table_t));
+    memcpy(&(switchMftPortsEntry[portIdx][blockIdx]), inMftBlock, sizeof(ib_mft_table_t));
     res = 0;
   }
   MSG_EXIT_FUNC;
