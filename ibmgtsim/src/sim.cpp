@@ -32,6 +32,7 @@
  * $Id$
  */
 
+#include "git_version.h"
 #include "sim.h"
 #include "msgmgr.h"
 #include "sma.h"
@@ -227,6 +228,11 @@ void
 show_help() {
   cout << "HELP" << endl;
 }
+
+#ifndef IBMGTSIM_CODE_VERSION
+#define IBMGTSIM_CODE_VERSION "undefined"
+#endif
+const char * ibmsSourceVersion = IBMGTSIM_CODE_VERSION ;
 
 //////////////////////////////////////////////////////////////
 //

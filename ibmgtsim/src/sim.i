@@ -486,6 +486,9 @@ class IBMSNode {
 	  
   }
 %}
+
+extern char * ibmsSourceVersion;
+
 //
 // INIT CODE
 //
