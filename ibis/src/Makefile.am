@@ -89,7 +89,7 @@ SWIG_IFC_FILES= $(srcdir)/ibbbm.i \
 	$(srcdir)/ibsm.i \
 	$(srcdir)/ibvs.i
 
-$(srcdir)/ibis.c: $(srcdir)/git_version.h
+ibis.o: $(srcdir)/git_version.h
 
 # track latest GIT version for this tree:
 $(srcdir)/git_version.h:  @MAINTAINER_MODE_TRUE@ FORCE
@@ -143,7 +143,8 @@ EXTRA_DIST = swig_extended_obj.c fixSwigWrapper pkgIndex.tcl \
 	 ibsac.h \
 	 ibsm.h \
 	 ibvs_base.h \
-	 ibvs.h
+	 ibvs.h \
+	 git_version.h
 
 # we do not want the temporary and the archive libs installed:
 install-libLTLIBRARIES:
