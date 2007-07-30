@@ -114,7 +114,7 @@ IBMgtSim::allocateFabricNodeGuids()
     
     /* assign system guids by first one */
     IBSystem *pSystem = pNode->p_system;
-    if (pSystem && ! pSystem->guid_get()) 
+    if (pSystem && (pSystem->guid_get() == 0)) 
     {
       pSystem->guid_set(++curGuid);
       fprintf(dumpFile, "SYSTEM %s 0x%016" PRIx64 "\n",
