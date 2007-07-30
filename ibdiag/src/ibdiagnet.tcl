@@ -96,6 +96,7 @@ DumpBadLinksLogic
 CheckSM
 PMCounterQuery
 CheckAllinksSettings
+CheckPartitions
 
 ### Write the .fdbs, .mcfdbs, and .sm files
 writeFdbsFile

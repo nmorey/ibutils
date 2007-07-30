@@ -1694,8 +1694,46 @@ proc inform { msgCode args } {
       "-W-report:one.hca.in.fabric" {
          append msgText "The fabric has only one HCA. No fabric qualities report is issued."
       }
-
-
+      "-W-ibdiagnet:PKeys.noNodeInfo" {
+         append msgText "failed to get node info for node:[lindex $args 0]"
+      }
+      "-E-ibdiagnet:PKeys.getPkey" {
+         set drPath  [lindex $args 0]
+         set portNum [lindex $args 1]
+         set block   [lindex $args 2]
+         append msgText "failed to get PKeyTable for drPath:$drPath port:$portNum block:$block"
+      }
+      "-W-ibdiagnet:PKeys.in.out.not.same" {
+         set nodeName  [lindex $args 0]
+         set inb    [lindex $args 1]
+         set outb   [lindex $args 2]
+         append msgText "Missmatching In-Bound ($inb) and Out-Bound ($outb) PKey enforcement on switch $nodeName"
+      }
+      "-E-ibdiagnet:PKeys.noSwitchInfo" {
+         set guid    [lindex $args 0]
+         set drPath  [lindex $args 1]
+         append msgText "failed to get SwitchInfo from drPath:$drPath node:$guid"
+      }
+      "-W-ibdiagnet:PKeys.switch.missing.pkey" {
+         set name   [lindex $args 0]
+         set pkey   [lindex $args 1]
+         append msgText "Missing PKey:$pkey on remote switch of node:$name"
+      }
+      "-W-ibdiagnet:PKeys.switch.part.pkey" {
+         set name   [lindex $args 0]
+         set pkey   [lindex $args 1]
+         append msgText "Only partial PKey:$pkey allowed by remote switch of node:$name"
+      }
+      "-I-ibdiagnet:PKeys.report.header" {
+         append msgText "Fabric Partitions Report (see $G(var:tool.name).pkey for a full hosts list)"
+      }
+      "-I-ibdiagnet:PKeys.Group" {
+         set base [format 0x%04x [lindex $args 0]]
+         set hosts [lindex $args 1]
+         set full  [lindex $args 2]
+         set part  [lindex $args 3]
+         append msgText "   PKey:$base Hosts:$hosts full:$full partial:$part"
+      }
       "-I-exit:\\r" {
          set msgText ""
          # <- this means don't print the "-I-" prefix

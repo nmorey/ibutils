@@ -134,7 +134,7 @@ proc InitializeIBDIAG {} {
 
    ### InitializeIBDIAG - Configuration of constants
    ## Configuration of constants - Step1.0: Config lists of vars
-   set G(var:list.files.extention) "lst fdbs mcfdbs log neighbor masks sm pm mcgs"
+   set G(var:list.files.extention) "lst fdbs mcfdbs log neighbor masks sm pm mcgs pkey"
    set G(var:list.pm.counter)      "symbol_error_counter link_error_recovery_counter\
       link_down_counter port_rcv_errors port_xmit_discard vl15_dropped\
       port_rcv_constraint_errors local_link_integrity_errors\
@@ -996,7 +996,7 @@ proc GetPmList { _lidPort } {
 #       G(data:guid.by.dr.path.<DirectPath>)    : <PortGuid>
 #       G(data:dr.path.to.guid.<PortGuid>)      : <DirectPath>
 #       G(data:dr.path.to.node.<NodeGuid>)      : <DirectPath>
-#       G(data:PortInfo.<PortGuid>)          : <SmPortInfoMad>
+#       G(data:PortInfo.<NodeGuid>:<PN>)        : <SmPortInfoMad>
 #       G(data:NodeGuid.<PortGuid>)          : <NodeGuid>
 #       G(data:NodeInfo.<NodeGuid>):         : <smNodeInfoMad>
 #       G(data:NodeDesc.<NodeGuid>)          :
@@ -3029,6 +3029,161 @@ proc DumpSMReport { {_fileName stdout} }  {
    return 0
 }
 ##############################
+
+######################################################################
+### Partitions Checking and Reporting
+######################################################################
+# return the list of all pkeys from the given port
+proc GetPortPkeys {drPath portNum numPKeys} {
+   set numBlocks [expr ($numPKeys + 31) / 32]
+   set pkeys {}
+   # get the pkey table of the port
+   for {set block 0} {$block < $numBlocks} {incr block} {
+      if {[catch {
+         set pkeyTable [SmMadGetByDr PkeyTable dump "$drPath" $portNum $block]
+      } e]} {
+         inform "-E-ibdiagnet:PKeys.getPkey" $drPath $portNum $block
+         continue
+      }
+      foreach pkey $pkeyTable {
+         if {$pkey != 0} {
+            lappend pkeys $pkey
+         }
+      }
+   }
+   return $pkeys
+}
+
+proc CheckPartitions {} {
+   global G Neighbor
+   inform "-I-ibdiagnet:PKeys.report.header"
+
+   # go over all HCA ports and get their PKey tables
+   foreach nodeGuidPortNum [array names G data:PortGuid.*:*] {
+      regexp {PortGuid.([^:]+):([^:]+)} $nodeGuidPortNum d1 nodeGuid portNum
+      set portGuid $G($nodeGuidPortNum)
+      
+      # we need to examine the NodeInfo to see CA and how many PKey blocks
+      if {[catch {set nodeInfo $G(data:NodeInfo.$nodeGuid)}]} {
+         inform "-W-ibdiagnet:PKeys.noNodeInfo" $nodeGuid
+         continue
+      }
+
+      # ignore switches
+      set nodeType [GetWordAfterFlag $nodeInfo -node_type]
+      if {$nodeType == 2} {continue}
+
+      set drPath $G(data:dr.path.to.guid.$portGuid)
+
+      set numPKeys [GetWordAfterFlag $nodeInfo -partition_cap]
+      set pkeys [GetPortPkeys $drPath $portNum $numPKeys]
+      
+      # we might have direct enforcement by the neighbor switch
+      set neighNodeNPort $Neighbor($nodeGuid:$portNum)
+      set remPKeys {}
+
+      foreach {remNodeGuid remPortNum} [split $neighNodeNPort :] {break}
+      if {[catch {set remNodeInfo $G(data:NodeInfo.$remNodeGuid)}]} {
+         inform "-W-ibdiagnet:PKeys.noNodeInfo" $remNodeGuid
+      } else {
+         if {[GetWordAfterFlag $remNodeInfo -node_type] == 2} {
+            # is the remote PortInfo enforcing pkeys:
+            set portInfo $G(data:PortInfo.$remNodeGuid:$remPortNum)
+            set opvl_enforce [GetWordAfterFlag $portInfo -vl_enforce]
+            set outEnforce [expr $opvl_enforce & 0x4]
+            set inEnforce  [expr $opvl_enforce & 0x8]
+            
+            set remDrPath $G(data:dr.path.to.node.$remNodeGuid)
+            if {$outEnforce || $inEnforce} {
+               if {! ($outEnforce && $inEnforce)} {
+                  set swNodeName [DrPath2Name $remDrPath -port [GetEntryPort $remDrPath] -fullName]
+                  inform "-W-ibdiagnet:PKeys.in.out.not.same" $swNodeName $inEnforce $outEnforce
+               }
+               # the switch info to see how many pkeys:
+               if {[catch {set partcap [SmMadGetByDr SwitchInfo -enforce_cap "$remDrPath"]}]} {
+                  inform "-W-ibdiagnet:PKeys.noSwitchInfo" $remNodeGuid $remDrPath
+                  set remPKeys {}
+               } else {
+                  set remPKeys [GetPortPkeys $remDrPath $remPortNum $partcap]
+                  if {[llength $remPKeys] == 0} {
+                     set remPKeys 0x0
+                  }
+               }
+            }
+         }
+      }
+      
+      # filter pkeys by remote port if exist
+      if {[info exists REM_PKEY]} {unset REM_PKEY}
+      if {[llength $remPKeys]} {
+         foreach pkey $remPKeys {
+            set base [expr $pkey & 0x7fff]
+            set REM_PKEY($base) [expr $pkey & 0x8000]
+         }
+      }
+      
+      foreach pkey $pkeys {
+         set base [expr $pkey & 0x7fff]
+         
+         if {$pkey != 0} {
+            if {$base != $pkey} {
+               set isPartial 0
+            } else {
+               set isPartial 1
+            }
+            
+            # see that remote pkeys do not filter 
+            if {[llength $remPKeys]} {
+               if {![info exists REM_PKEY($base)]} {
+                  set nodeName [DrPath2Name $drPath -port [GetEntryPort $drPath] -fullName]
+                  inform "-W-ibdiagnet:PKeys.switch.missing.pkey" $nodeName $pkey
+                  continue
+               } else {
+                  if {!$REM_PKEY($base) && !$isPartial} {
+                     set nodeName [DrPath2Name $drPath -port [GetEntryPort $drPath] -fullName]
+                     inform "-W-ibdiagnet:PKeys.switch.part.pkey" $nodeName $pkey
+                     set isPartial 1
+                  }
+               }
+            }
+            if {![info exists PKEY_HOSTS($base)]} {
+               set PKEY_HOSTS($base) "{$portGuid $isPartial}"
+            } else {
+               lappend PKEY_HOSTS($base) "$portGuid $isPartial"
+            }
+         }
+      }
+      # If remote port is SW and PKey enforcement is ON on that port get it
+   }
+   
+   # report partitions:
+   set FileID [InitializeOutputFile $G(var:tool.name).pkey]
+   foreach pkey [lsort -integer [array names PKEY_HOSTS]] {
+      set full 0
+      set part 0
+      set num [llength $PKEY_HOSTS($pkey)]
+      puts $FileID "GROUP PKey:[format 0x%04x $pkey] Hosts:$num"
+      # report each host port of the group
+      foreach portGuidNPartial $PKEY_HOSTS($pkey) {
+         set portGuid [lindex $portGuidNPartial 0]
+         set isPartial [lindex $portGuidNPartial 1]
+         
+         set drPath $G(data:dr.path.to.guid.$portGuid)
+         set nodeName [DrPath2Name $drPath -port [GetEntryPort $drPath] -fullName]
+         if {$isPartial} {
+            incr part
+            puts $FileID "   Part $nodeName"
+         } else {
+            incr full
+            puts $FileID "   Full $nodeName"
+         }
+      }
+      inform "-I-ibdiagnet:PKeys.Group" $pkey $num $full $part
+      puts $FileID [Bar - 80]
+   }
+   close $FileID 
+   return 0
+}
 
 ######################################################################
 ### If a topology file is given
