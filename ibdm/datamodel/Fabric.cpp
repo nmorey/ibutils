@@ -466,7 +466,7 @@ IBSysPort::connect (IBSysPort *p_otherSysPort,
   if (p_remoteSysPort) {
     // we only do care if not the requested remote previously conn.
     if (p_remoteSysPort != p_otherSysPort) {
-      cout << "-W- Disconnecting: " << p_system->name << "-/" 
+      cout << "-W- Disconnecting system port: " << p_system->name << "-/" 
            << this->name << " previously connected to:"
            << p_remoteSysPort->p_system->name << "-/" 
            << p_remoteSysPort->name 
@@ -484,7 +484,7 @@ IBSysPort::connect (IBSysPort *p_otherSysPort,
   if (p_otherSysPort->p_remoteSysPort) {
     if (p_otherSysPort->p_remoteSysPort != this) {
       // it was connected to a wrong port so disconnect
-      cout << "-W- Disconnecting back: " 
+      cout << "-W- Disconnecting system port back: " 
            << p_otherSysPort->p_system->name << "-/" 
            << p_otherSysPort->name << " previously connected to:"
            << p_otherSysPort->p_remoteSysPort->p_system->name << "-/" 
@@ -756,6 +756,68 @@ IBSystem::removeBoard (string boardName) {
     lI = matchedNodes.begin();
   }
 
+  return 0;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
+// Write out teh system IBNL into the given directory 
+// and return the new system type 
+int 
+IBSystem::dumpIBNL(char *ibnlDir, string &sysType) {
+  char sysTypeStr[256];
+  // if we got just one node  it is simple - write a corresponding IBNL by the 
+  // device ID
+  if (NodeByName.size() == 1) {
+	 map_str_pnode::iterator nI = NodeByName.begin();
+	 IBNode *p_node = (*nI).second;
+	 sprintf(sysTypeStr, "DEV%u", p_node->devId);
+  } else {
+	 sprintf(sysTypeStr, "SYS%x", guid);
+  }
+  sysType = string(sysTypeStr);
+  string fileName = string(ibnlDir) + string("/") + sysType + string(".ibnl");
+  ofstream ibnl;
+  ibnl.open(fileName.c_str());
+
+  if (ibnl.fail()) {
+	 cout << "-E- Failed to write IBNL into file:" << fileName << endl;
+	 return 1;
+  }
+
+  ibnl << "TOPSYSTEM " << sysType << endl;
+  
+  // go over all nodes of the system:
+  for (map_str_pnode::iterator nI = NodeByName.begin();
+		 nI != NodeByName.end(); nI++) {
+	 IBNode *p_node = (*nI).second;
+	 if (p_node->type == IB_SW_NODE) {
+		ibnl << "\nNODE SW " << p_node->numPorts << " " 
+			  << "DEV" << p_node->devId << " " << p_node->name << endl;
+	 } else {
+		ibnl << "\nNODE CA " << p_node->numPorts << " " 
+			  << "DEV" << p_node->devId << " " << p_node->name << endl;
+	 }
+	 
+	 for (unsigned int pn = 1; pn <= p_node->numPorts; pn++) {
+		IBPort *p_port = p_node->getPort(pn);
+      
+		if (! p_port) continue;
+      
+		if (p_port->p_sysPort) {
+		  ibnl << "   " << pn << " -> " 
+				 << p_port->p_sysPort->name << endl;
+		} else if (p_port->p_remotePort) {
+		  ibnl << "   "  << pn << " -" 
+				 << width2char(p_port->width)
+				 << "-" << speed2char(p_port->speed) << "G-> "
+				 << p_port->p_remotePort->p_node->name << " " 
+				 << p_port->p_remotePort->num << endl;
+		}
+	 }
+  }
+  
+  ibnl.close();
   return 0;
 }
 
@@ -1303,9 +1365,9 @@ IBFabric::addLink(string type1, int numPorts1,
                   IBLinkWidth width, IBLinkSpeed speed
                   ) {
   
-  char buf[256];
   IBSystem *p_sys1, *p_sys2;
   IBNode *p_node1, *p_node2;
+  char buf[256];
     
   // make sure the system1 exists
   if (!desc1.size()) {
@@ -1328,10 +1390,12 @@ IBFabric::addLink(string type1, int numPorts1,
   p_node1 = getNodeByGuid(nodeGuid1);
   if (! p_node1) {
 	  // if we got a desc name 
-	  if ((type1 != "SW") && desc1.size())
-		  sprintf(buf,"%s/U%d", desc1.c_str(), hcaIdx1);
-	  else
-		  sprintf(buf,"U%d", NodeByGuid.size() + 1);
+	 if ((type1 != "SW") && desc1.size()) {
+		sprintf(buf,"%s/U%d", desc1.c_str(), hcaIdx1);
+	 } else {
+		sprintf(buf,"%s/U%d", p_sys1->name.c_str(), 
+					p_sys1->NodeByName.size() + 1);
+	 }
 	  if (type1 == "SW") {
 		  p_node1 = makeNode(buf, p_sys1, IB_SW_NODE, numPorts1);
 	  } else {
@@ -1346,7 +1410,8 @@ IBFabric::addLink(string type1, int numPorts1,
 	  if ((type2 != "SW") && desc2.size())
 		  sprintf(buf,"%s/U%d", desc2.c_str(), hcaIdx2);
 	  else
-		  sprintf(buf,"U%d", NodeByGuid.size() + 1);
+		 sprintf(buf,"%s/U%d", p_sys2->name.c_str(), 
+					p_sys1->NodeByName.size() + 1);
 	  if (type2 == "SW") {
 		  p_node2 = makeNode(buf, p_sys2, IB_SW_NODE, numPorts2);
 	  } else {
@@ -1367,7 +1432,15 @@ IBFabric::addLink(string type1, int numPorts1,
   // create system ports if required
   if (sysGuid1 != sysGuid2) {
     if (type1 == "SW" || desc1.size() == 0 || hcaIdx1 != 1) {
-		 sprintf(buf,"%s/P%u", p_node1->name.c_str(), portNum1);
+		 // avoid adding the sys name to the port...
+		 if (p_sys1->name == p_node1->name.substr(0, p_sys1->name.length())) {
+			 string noSys = p_node1->name.substr(p_sys1->name.length() + 1, 
+															 p_node1->name.length() -
+															 p_sys1->name.length() - 1);
+			 sprintf(buf,"%s/P%u", noSys.c_str(), portNum1);
+		 } else {
+			 sprintf(buf,"%s/P%u", p_node1->name.c_str(), portNum1);
+		 }
     } else {
       sprintf(buf,"P%u", portNum1);
     }
@@ -1376,7 +1449,14 @@ IBFabric::addLink(string type1, int numPorts1,
       p_sysPort1 = new IBSysPort(buf, p_sys1);
 
     if (type2 == "SW" || desc2.size() == 0 || hcaIdx2 != 1) {
-      sprintf(buf,"%s/P%u", p_node2->name.c_str(), portNum2);
+		 if (p_sys2->name == p_node2->name.substr(0, p_sys2->name.length())) {
+			 string noSys = p_node2->name.substr(p_sys2->name.length() + 1, 
+															 p_node2->name.length() -
+															 p_sys2->name.length() - 1);
+			 sprintf(buf,"%s/P%u", noSys.c_str(), portNum2);
+		 } else {
+			 sprintf(buf,"%s/P%u", p_node2->name.c_str(), portNum2);
+		 }
     } else {
       sprintf(buf,"P%u", portNum2);
     }
@@ -1887,6 +1967,64 @@ IBFabric::dump(ostream &sout) {
       }
     }
   }
+}
+
+///////////////////////////////////////////////////////////////////////////
+// dump out the contents of the entire fabric as a topology file with
+// required set of IBNL's if unknown
+int 
+IBFabric::dumpTopology(char *fileName, char * ibnlDir) {
+  ofstream sout;
+  sout.open(fileName);
+  if (sout.fail()) {
+    cout << "-E- failed to open:" << fileName << " for writing." << endl;
+    return 1;	 
+  }
+  sout << "# This topology file was automaticlly generated by IBDM" << endl;
+
+  // we start with all systems at top level:
+  for (map_str_psys::iterator sI = SystemByName.begin();
+       sI != SystemByName.end();
+       sI++) {
+    IBSystem *p_system = (*sI).second;
+
+	 string sysType;
+	 if (p_system->type == "Generic") {
+		p_system->dumpIBNL(ibnlDir, sysType);
+	 } else {
+		sysType = string(p_system->type);
+	 }
+    sout << "\n" << sysType << " " << p_system->name << endl;
+    for (map_str_psysport::iterator pI = p_system->PortByName.begin();
+         pI != p_system->PortByName.end();
+         pI++) {
+      IBSysPort *p_sysPort = (*pI).second;
+      IBLinkWidth width = IB_UNKNOWN_LINK_WIDTH;
+      IBLinkSpeed speed = IB_UNKNOWN_LINK_SPEED;
+      
+      if (! p_sysPort) continue;
+        
+      // remote sys port?
+      if ( p_sysPort->p_remoteSysPort) {
+		  width = p_sysPort->p_nodePort->width;
+		  speed = p_sysPort->p_nodePort->speed;
+		  
+		  if (p_sysPort->p_remoteSysPort->p_system->type == "Generic") {
+				p_sysPort->p_remoteSysPort->p_system->dumpIBNL(ibnlDir, sysType);
+		  } else {
+			 sysType = string(p_sysPort->p_remoteSysPort->p_system->type);
+		  }
+
+        sout << "   " << p_sysPort->name 
+				 << " -" << width2char(width) << "-" << speed2char(speed) << "G-> "
+             << sysType.c_str() << " " 
+             << p_sysPort->p_remoteSysPort->p_system->name << " "
+             << p_sysPort->p_remoteSysPort->name << endl;
+      }
+    }
+  }
+  sout.close();
+  return 0;
 }
 
 #ifndef IBDM_CODE_VERSION

@@ -1186,6 +1186,8 @@ class IBFabric {
   inline IBPort *getPortByLid (unsigned int lid);
   // get a port by lid
 
+  int dumpTopology(char *fileName, char *ibnlDir);
+  // write out a topology file and IBNLs into given directory
 };
 
 /* we use our own version of the constructor */

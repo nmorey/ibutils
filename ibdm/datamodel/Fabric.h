@@ -396,6 +396,9 @@ class IBSystem {
   void cfg2Vector(const string& cfg,
                   vector<string>& boardCfgs,
                   int numBoards);
+
+  // Write system IBNL into the given directory and return IBNL name
+  int dumpIBNL(char *ibnlDir, string &sysType);
 };
 
 // 
@@ -508,6 +511,9 @@ class IBFabric {
   // dump out the contents of the entire fabric
   void dump(ostream &sout);
 
+  // write out a topology file
+  int dumpTopology(char *fileName, char *ibnlDir);
+  
  private:
   int parseSubnetLine(char *line);
 };
