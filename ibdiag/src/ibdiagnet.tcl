@@ -108,6 +108,9 @@ DumpBadLinks
 ### report the results of topology matching (after bad links report)
 DumpTopologyMatching
 
+### Dump out Topology if requested
+writeTopologyFileAndIBNLs
+
 ### run packages provided procs
 catch {RunPkgProcs} e
 

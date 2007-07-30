@@ -52,6 +52,10 @@ proc SetInfoArgv {} {
       -pm,desc "Dumps all pmCounters values into .pm file"
       -pm,arglen  0
 
+      -wt,name    "write.topology"
+      -wt,desc "Write out the discovered topology into the given file name. Required IBNL files are created in the ibdiag_ibnl dir."
+      -wt,arglen  1
+
       -lw,name    "link.width"
       -lw,param   "1x|4x|12x"
       -lw,error   "-E-argv:not.legal.link.width"
@@ -196,6 +200,7 @@ proc SetInfoArgv {} {
             -c,desc     "The minimal number of packets to be sent across each link"
 
             -pm,desc "Dumps all pmCounters values into ibdiagnet.pm"
+				-wt,desc "Write out a topology file for the discovered topology"
          }
       }
       "ibdiagpath" {
@@ -307,7 +312,7 @@ proc SetToolsFlags {} {
       ibping      "(n|l|d) . c w v o     . t s i p "
       ibdiagpath "(n|l|d) . c   v o smp . t s i p . pm pc P . lw ls sl ."
       ibdiagui   "          c   v r o   . t s i p . pm pc P . lw ls ."
-      ibdiagnet  "          c   v r o   . t s i p . pm pc P . lw ls skip ."
+      ibdiagnet  "          c   v r o   . t s i p . wt . pm pc P . lw ls skip ."
       ibcfg    "(n|l|d) (c|q)       . t s i p o"
       ibmad    "(m) (a) (n|l|d)     . t s i p o ; (q) a"
       ibsac    "(m) (a) k           .t s i p o ; (q) a"
@@ -1138,6 +1143,9 @@ proc inform { msgCode args } {
          append msgText "The current Tcl version is: Tcl$msgF(version). "
          append msgText "$G(var:tool.name) requires Tcl8.4 or newer."
       }
+      "-E-parse.topology" {
+         append msgText "Failed to parse topology file $G(argv:topo.file)"
+      }
       "-E-loading:cannot.load.package.ibdm" {
          append msgText "Package Loading: Could not load the following package : ibdm.%n"
          append msgText "Error message: \"$msgF(errMsg)\""
@@ -1490,7 +1498,12 @@ proc inform { msgCode args } {
          }
       }
 
-
+      "-I-write.topology:writing" {
+         append msgText "Writing Topology File $G(argv:write.topology)"
+      }
+      "-E-write.topology:failed" {
+         append msgText "Failed to write Topology File $G(argv:write.topology)"
+      }
       "-I-topology:matching.header" {
          append msgText "Topology matching results"
       }
@@ -2080,7 +2093,9 @@ proc RequireIBDM {} {
       }
       if {[info exists G(argv:topo.file)] && (![BoolWordInList load_ibdm $G(argv:skip.checks)])} {
          set G(IBfabric:.topo) [new_IBFabric]
-         IBFabric_parseTopology $G(IBfabric:.topo) $G(argv:topo.file)
+         if {[IBFabric_parseTopology $G(IBfabric:.topo) $G(argv:topo.file)]} {
+            inform "-E-parse.topology"
+         }
       }
    } else {
       inform "-W-loading:cannot.load.package.ibdm"

@@ -115,6 +115,7 @@
 # writePMFile
 # writeFdbsFile
 # writeMcfdbsFile
+# writeTopologyFileAndIBNLs
 
 ######################################################################
 ### Initialize Databases
@@ -4023,6 +4024,38 @@ proc writePMFile {} {
 }
 
 ##############################
+
+##############################
+#  NAME         writeTopologyFileAndIBNLs
+#  SYNOPSIS     writeTopologyFileAndIBNLs
+#  FUNCTION     Write out teh topoly fiel if requested 
+#  INPUTS       NULL
+#  OUTPUT       NULL
+proc writeTopologyFileAndIBNLs {} {
+   global G
+	# we might be asked to dump out the topology
+   if {[info exists G(argv:write.topology)]} {
+      inform "-I-write.topology:writing"
+      set ibnlDir [file join $G(argv:out.dir) ibdiag_ibnl]
+      if {![file exists $ibnlDir]} {
+         file mkdir $ibnlDir
+      }
+      
+      # we might be teh only reason to get a topology ...
+      if {![info exists G(IBfabric:merged)] } {
+         set f [new_IBFabric]
+         if {[IBFabric_parseSubnetLinks $f  $G(outfiles,.lst)]} {
+            inform "-F-crash:failed.parse.lst"
+         }
+      } else {
+         set f $G(IBfabric:merged)
+      }
+      if {[IBFabric_dumpTopology $f $G(argv:write.topology) $ibnlDir]} {
+         inform "-E-write.topology:failed" 
+      }
+   }
+   return 0
+}
 
 ##############################
 #  SYNOPSIS write.fdbsFile
