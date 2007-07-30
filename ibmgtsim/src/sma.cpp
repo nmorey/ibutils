@@ -105,8 +105,8 @@ void IBMSSma::initSwitchInfo()
   pSimNode->switchInfo.def_mcast_not_port = 0;
   pSimNode->switchInfo.life_state = 0;
   pSimNode->switchInfo.lids_per_port = 0;
-  pSimNode->switchInfo.enforce_cap = CL_HTON16(1);
-  pSimNode->switchInfo.flags = 0;
+  pSimNode->switchInfo.enforce_cap = CL_HTON16(32);
+  pSimNode->switchInfo.flags = 0xA0; // capable partition enforce in/out
 
   MSGREG(inf1, 'V', "Initialization of node's SwitchInfo is Done !", "initSwitchInfo");
   MSGSND(inf1);
@@ -124,12 +124,12 @@ void IBMSSma::initNodeInfo()
   pSimNode->nodeInfo.num_ports = pNodeData->numPorts;
 
   // HACK: as the devId is not really meaningful due to IBDM limitation
-  // we only rely on the type of device. HCAs get 64 PKeys switches: 8.
+  // we only rely on the type of device. HCAs get 64 PKeys switches: 24.
   if (pNodeData->type == 1)
   {
     //Switch
     pSimNode->nodeInfo.node_type = IB_NODE_TYPE_SWITCH;
-    pSimNode->nodeInfo.partition_cap = CL_HTON16(8);
+    pSimNode->nodeInfo.partition_cap = CL_HTON16(24);
     initSwitchInfo();
   }
   else if (pNodeData->type == 2)
@@ -1174,6 +1174,10 @@ int IBMSSma::setPortInfoSwExtPort(ibms_mad_msg_t &respMadMsg,
     if (reqOpVl) ib_port_info_set_op_vls(pNodePortInfo, reqOpVl);
   }
 
+  // TODO check if legal
+  pNodePortInfo->vl_enforce = 
+	 pNodePortInfo->vl_enforce & 0xf0 | pReqPortInfo->vl_enforce & 0xf;
+  
   MSG_EXIT_FUNC;
   return status;
 }
