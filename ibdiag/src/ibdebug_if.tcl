@@ -200,7 +200,7 @@ proc SetInfoArgv {} {
             -c,desc     "The minimal number of packets to be sent across each link"
 
             -pm,desc "Dumps all pmCounters values into ibdiagnet.pm"
-				-wt,desc "Write out a topology file for the discovered topology"
+            -wt,desc "Write out a topology file for the discovered topology"
          }
       }
       "ibdiagpath" {
@@ -335,7 +335,7 @@ proc UpToolsFlags {_flag _tool} {
 proc GetToolsFlags { tool } {
    global TOOLS_FLAGS
    if {[info exists TOOLS_FLAGS($tool)]} {
-      return $TOOLS_FLAGS($tool)       
+      return $TOOLS_FLAGS($tool)      
    }
    return ""
 }
@@ -1052,7 +1052,7 @@ proc inform { msgCode args } {
       "-W-argv:no.topology.file" {
          append msgText "Topology file is not specified.%n"
          append msgText "Reports regarding cluster links will use direct routes."
-      } 
+      }
       "-E-argv:specified.port.not.connected" {
          append msgText "Topology parsing: Invalid value for $msgF(flag) : $msgF(value)%n"
          append msgText "The specified port is not connected to The IBFabric.%n"
@@ -1262,7 +1262,7 @@ proc inform { msgCode args } {
          append msgText "Discovery at local link failed: "
          if {![catch {set portState [GetParamValue LOG $msgF(DirectPath0) -port $NODE(0,EntryPort) -byDr]}]} {
             if {$portState == "DWN"} {
-               append msgText "[DrPath2Name "" -port $NODE(0,EntryPort)] is DOWN%n"  
+               append msgText "[DrPath2Name "" -port $NODE(0,EntryPort)] is DOWN%n" 
             }
          }
          append msgText "$msgF(command) - failed $numOfRetries consecutive times."
@@ -1276,7 +1276,7 @@ proc inform { msgCode args } {
       }
       "-E-localPort:enable.ibis.set.port" {
          append msgText "Failed running : \"ibis_set_port $G(data:root.port.guid)\""
-      }       
+      }      
 
       "-W-outfile:not.writable" {
          append msgText "Output file $msgF(file0) is write protected.\n"
@@ -1559,7 +1559,7 @@ proc inform { msgCode args } {
          set noExiting 1
       }
       "-I-ibdiagnet:SM.report.head" {
-         set msgText "  "   
+         set msgText "  "  
          set SMstate [lindex $args 0]
          append msgText "SM - $SMstate"
       }
@@ -1664,7 +1664,7 @@ proc inform { msgCode args } {
             append msgText %n
             regexp {([^ =]*)=(.*)} $err . pmCounter pmTrash
             append msgText "      $pmCounter"
-            append msgText "[string repeat " " [expr [GetLengthMaxWord $G(var:list.pm.counter)] - [string length $pmCounter]]] : "  
+            append msgText "[string repeat " " [expr [GetLengthMaxWord $G(var:list.pm.counter)] - [string length $pmCounter]]] : " 
             append msgText $pmTrash
          }
       }
@@ -1770,6 +1770,50 @@ proc inform { msgCode args } {
       }
       "-E-ibdiagpath:PKeys.path.noShared" {
          append msgText "No shared PKeys found on Path! Nodes can not communicate!"
+      }
+      "-I-ibdiagnet:ipoib.header" {
+         append msgText "IPoIB Subnets Check"
+      }
+      "-I-ipoib.subnet" {
+         foreach {IPV pkey gMtu gRate gSL gPKey gQKey} $args {break}
+         set pkey [format 0x%04x $pkey]
+         set mtu [string range "[PathRecMTUCodeText $gMtu]Byte" 1 end]
+         set rate [string range "[PathRecRateCodeText $gRate]Gbps" 1 end]
+         set qkey [format 0x%08x $gQKey]
+         set sl   [format 0x%02x $gSL]
+         append msgText "Subnet: IPv$IPV PKey:$pkey QKey:$qkey MTU:$mtu rate:$rate SL:$sl"
+      }
+      "-W-ipoib.bad.pkey" {
+         foreach {gPKey pkey} $args {break}
+         set pk1 [format 0x%04x $gPKey]
+         set pk2 [format 0x%04x $pKey]
+         append msgText "Missmatching Multicast Group PKey:$pk1 and MGID Pkey:$pk2"
+      }
+      "-W-ibdiagnet.ipoib.noMemers" {
+         append msgText "No members found for group"
+      }
+      "-E-ipoib.ilegalRate" {
+         set name [lindex $args 0]
+         append msgText "Illegal speed/width on port:$name"
+      }
+      "-W-ipoib.cantJoin" {
+         foreach {name rate gRate} $args {break}
+         set rateStr [string range [PathRecRateCodeText $rate] 1 end]
+         set gRateStr [string range [PathRecRateCodeText $gRate] 1 end]
+         append msgText "Port $name can not join due to rate:${rateStr}Gbps < group:${gRateStr}Gbps"
+      }
+      "-W-ibdiagnet.ipoib.rateToLow" {
+         foreach {minRate gRate} $args {break}
+         set minRateStr [string range [PathRecRateCodeText $minRate] 1 end]
+         set gRateStr [string range [PathRecRateCodeText $gRate] 1 end]
+         append msgText "Suboptimal rate for group. Lowest member rate:${minRateStr}Gbps > group-rate:${gRateStr}Gbps"
+      }
+      "-I-ibdiagpath:ipoib.header" {
+         append msgText "IPoIB Path Check"
+      }
+      "-E-ibdiagpath.ipoib.noGroups" {
+         set noExiting 1
+         append msgText "No IPoIB Subnets found on Path! Nodes can not communicate via IPoIB!"
       }
       "-I-exit:\\r" {
          set msgText ""
@@ -1911,7 +1955,7 @@ proc inform { msgCode args } {
       }
    }
 
-   ### Writing out the message 
+   ### Writing out the message
    set msgText [split $msgText \n]
    if {[regexp ".header" $msgCode]} {
       set msgText [concat [list ""] [list $bar] [linsert $msgText 1 $bar]]
@@ -1984,7 +2028,7 @@ proc inform { msgCode args } {
 ##############################
 
 ##############################
-#  NAME         RequirePackage       
+#  NAME         RequirePackage      
 #  FUNCTION require the available packages for device specific crRead/crWrite
 #  RESULT       ammm... the available packages are required
 proc RequirePackage {} {
@@ -2281,7 +2325,7 @@ proc showHelpPage { args } {
          otherwise (lid or name addressing) they will be sent by LID route.
             The total number of packets sent is defined by the -c option (100 by default).
             After sending the desired number of packets ibping reports back
-            the accumulated number of failures and successful responses. 
+            the accumulated number of failures and successful responses.
             If the -v option is defined a verbose line is printed for each packet sent,
          containing the time sent, and the trip total time or failure.
 
@@ -2350,7 +2394,7 @@ proc showHelpPage { args } {
       "DESCRIPTION
             ibsac sends SA queries.
             The supported attributes and their fields
-            are provided in the \"query\" mode (-q).  
+            are provided in the \"query\" mode (-q). 
 
             ERROR CODES
             -1 - Fail to find target device
@@ -2420,7 +2464,7 @@ proc showHelpPage { args } {
       }
       if { ! $mandatory } {
          append SYNOPSYS " \[[join $synopsysFlags]\]"
-      } elseif { [llength $synopsysFlags] == 1 } { 
+      } elseif { [llength $synopsysFlags] == 1 } {
          append SYNOPSYS " [join $synopsysFlags |]"
       } else {
          append SYNOPSYS " \{[join $synopsysFlags |]\}"

@@ -1,7 +1,7 @@
 ##############################
 ### Initialize Databases
 ##############################
-# InitializeIBDIAG                                  
+# InitializeIBDIAG                                 
 # InitializeINFO_LST
 # InitializeOutputFile
 # ParseOptionsList
@@ -554,13 +554,13 @@ proc SetPortNDevice {_ibisInfo} {
          switch $toolName {
             "ibdiagpath" {
                inform "-E-localPort:local.port.not.active" \
-                  -port $argv_portNum -state $saveState  
+                  -port $argv_portNum -state $saveState 
             }
             "ibcfg" {
                set argv_devIdx 1
             }
             default {
-               inform "-E-localPort:local.port.down" -port $argv_portNum 
+               inform "-E-localPort:local.port.down" -port $argv_portNum
             }
          }
       }
@@ -602,7 +602,7 @@ proc SetPortNDevice {_ibisInfo} {
          }
          switch $toolName {
             "ibdiagpath" {
-               inform $informMsg  
+               inform $informMsg 
             }
             "ibcfg" {
                set argv_devIdx 1
@@ -740,7 +740,7 @@ proc SetTopologyNSysName {} {
 ##############################
 
 ##############################
-#  NAME         DeleteOldFiles      
+#  NAME         DeleteOldFiles     
 #  FUNCTION Delete the old ibdiag files
 #  INPUTS       NULL
 #  OUTPUT   NULL
@@ -1003,7 +1003,7 @@ proc GetPmList { _lidPort } {
 #       G(data:PortGuid.<NodeGuid>:<PN>)     : <PortGuid>
 #
 #       Neighbor(<NodeGuid>:<PN>)       : <NodeGuid>:<PN>
-#     
+#    
 #       MASK(CurrentMaskGuid)           : <MaskGuid>
 #       MASK(PortMask,<PortGuid>)       : <PortMask>
 #       MASK(NodeMask,<NodeGuid>)       : <NodeMask>
@@ -1015,7 +1015,7 @@ proc GetPmList { _lidPort } {
 #       DUPandZERO(<value>,<ID>)        : <DirectPath>
 #
 #       SM(<SMstate>                    : <DirectPath>,SMpriority
-#     
+#    
 #       G(data:list.bad.paths) - list of second paths
 #
 #  INPUTS
@@ -1103,7 +1103,7 @@ proc DiscoverFabric { _pathLimit {startIndex 0}} {
             if {[catch {set tmp_type_2 [GetParamValue Type $DirectPath]}]} {
                set bool_badPathFound 1
                continue;
-            }                                                                 
+            }                                                                
             ## Known Guids - Case2.1: Duplicate node GUID Found!
             # previous and current port has diffrent types
             if {$tmp_type_1 != $tmp_type_2} {
@@ -1205,7 +1205,7 @@ proc DiscoverFabric { _pathLimit {startIndex 0}} {
                # if it's not the same node as before assume both are duplicate
                # possible that only one is dup (ask DZ)
                if {[Bool_DuplicateGuids $nodeGuid $DirectPath $prev_drPath2]} {
-                  set bool_duplicatePortGuid 1  
+                  set bool_duplicatePortGuid 1 
                   set bool_duplicateNodeGuid 1
                }
             }
@@ -1391,7 +1391,7 @@ proc DiscoverFabric { _pathLimit {startIndex 0}} {
             continue;
          }
          if { ($nodeType == "CA") || (($nodeType == "SW") && ($port == 0) )} {
-            set tmp_capabilityMask [GetWordAfterFlag $tmp_PortInfo -capability_mask]  
+            set tmp_capabilityMask [GetWordAfterFlag $tmp_PortInfo -capability_mask] 
             if {[expr 2 & $tmp_capabilityMask]} {
                if {[catch {set tmp_LID [GetParamValue LID $DirectPath -port $port]}]} {
                   set bool_badPathFound 1
@@ -1465,7 +1465,7 @@ proc DiscoverFabric { _pathLimit {startIndex 0}} {
       if {$tmp_HiddenFabric != 0} {
          inform "-I-discover:discovery.status" -log
          inform "-I-exit:\\r"
-         inform "-V-discover:end.discovery.header"  
+         inform "-V-discover:end.discovery.header" 
       }
    }
    return 0
@@ -1723,7 +1723,7 @@ proc DiscoverPath { _path2Start node } {
    if {([PathIsBad $DirectPath] > 1) || $bool_badPathFound} {
       DumpBadLinks
       catch { close $G(logFileID) }
-      inform "-E-ibdiagpath:route.failed" -DirectPath $tmp_drPath -port $tmp_port  
+      inform "-E-ibdiagpath:route.failed" -DirectPath $tmp_drPath -port $tmp_port 
    }
    return [list $DirectPath]
 }
@@ -1782,8 +1782,8 @@ proc PrintPath {_Path2Start args} {
 ##############################
 
 ##############################
-#  SYNOPSIS  DiscoverHiddenFabric 
-#  FUNCTION  Call the second run of discovery, this time for all the bad links 
+#  SYNOPSIS  DiscoverHiddenFabric
+#  FUNCTION  Call the second run of discovery, this time for all the bad links
 #  INPUTS    NULL
 #  OUTPUT    0 if the DiscoverFabric method wasn't called, 1 if it did
 proc DiscoverHiddenFabric {} {
@@ -1929,7 +1929,7 @@ proc Bool_DuplicateGuids { _NodeGuid _DirectPath _prev_drPath {_checks 1}} {
 }
 
 ##############################
-#  SYNOPSIS     DumpBadLidsGuids  
+#  SYNOPSIS     DumpBadLidsGuids 
 #  FUNCTION Dump the retrived info during discovery, regarding
 #               Duplicate Guids and lids, and zero values
 proc DumpBadLidsGuids { args } {
@@ -2054,7 +2054,7 @@ proc DumpBadLinksLogic {} {
          lappend listOfNames \"[DrPath2Name $link nameOnly ]\"
       }
 
-      foreach link $G(data:list.links.not.active.logical.state) {                                                      
+      foreach link $G(data:list.links.not.active.logical.state) {                                                     
          if {[PathIsBad $link] > 1} {continue;}
          set paramlist "-DirectPath0 \{[lrange $link 0 end-1]\} -DirectPath1 \{$link\}"
          eval inform "-W-ibdiagnet:report.links.init.state" $paramlist -maxName [GetLengthMaxWord $listOfNames]
@@ -2470,9 +2470,9 @@ proc Hex2Bin { hex_list } {
 
 ##############################
 #  SYNOPSIS  GetLengthMaxWord _list
-#  FUNCTION  return the char length of the maximum word from the list 
-#  INPUTS    a list of words 
-#  OUTPUT    the length of te longest word 
+#  FUNCTION  return the char length of the maximum word from the list
+#  INPUTS    a list of words
+#  OUTPUT    the length of te longest word
 proc GetLengthMaxWord {_list} {
    set maxLength 0
    foreach field $_list {
@@ -2486,9 +2486,9 @@ proc GetLengthMaxWord {_list} {
 
 ##############################
 #  SYNOPSIS AddSpaces _word  _desiredLength
-#  FUNCTION addind requierd amount of spaces  
-#  INPUTS   the original word, and the amount of spaces to append to it  
-#  OUTPUT   word + spaces  
+#  FUNCTION addind requierd amount of spaces 
+#  INPUTS   the original word, and the amount of spaces to append to it 
+#  OUTPUT   word + spaces 
 proc AddSpaces {_word _desiredLength} {
    set wordLength [string length $_word]
    if {$wordLength >= $_desiredLength } {
@@ -2612,10 +2612,10 @@ proc compressNames {words} {
 ### Handling Duplicated Guids
 ######################################################################
 ##############################
-#  SYNOPSIS  AdvncedMaskGuid  
-#  FUNCTION  advenced current mask guid by _increment(default set to 1) 
-#  INPUTS    _increment(default set to 1) 
-#  OUTPUT   0 when  _increment is not an integer, otherwise return 1  
+#  SYNOPSIS  AdvncedMaskGuid 
+#  FUNCTION  advenced current mask guid by _increment(default set to 1)
+#  INPUTS    _increment(default set to 1)
+#  OUTPUT   0 when  _increment is not an integer, otherwise return 1 
 proc AdvncedMaskGuid { {_increment 1}} {
    #ASSUME MASK GUID FORMAT IS HARD CODED
    global MASK
@@ -2628,10 +2628,10 @@ proc AdvncedMaskGuid { {_increment 1}} {
 ##############################
 
 ##############################
-#  SYNOPSIS GetCurrentMaskGuid  
-#  FUNCTION return the current mask guid  
-#  INPUTS   NULL  
-#  OUTPUT   mask guid  
+#  SYNOPSIS GetCurrentMaskGuid 
+#  FUNCTION return the current mask guid 
+#  INPUTS   NULL 
+#  OUTPUT   mask guid 
 proc GetCurrentMaskGuid {} {
    global MASK
    set tmp $MASK(CurrentMaskGuid)
@@ -2643,9 +2643,9 @@ proc GetCurrentMaskGuid {} {
 
 
 ##############################
-#  SYNOPSIS  BoolIsMaked { _currentMaskGuid} 
-#  FUNCTION  checks if a guid is masked 
-#  INPUTS    GUID 
+#  SYNOPSIS  BoolIsMaked { _currentMaskGuid}
+#  FUNCTION  checks if a guid is masked
+#  INPUTS    GUID
 #  OUTPUT    0 or 1
 proc BoolIsMaked { _currentMaskGuid} {
    return [string equal 0xffffffff [string range $_currentMaskGuid 0 9]]
@@ -2653,10 +2653,10 @@ proc BoolIsMaked { _currentMaskGuid} {
 ##############################
 
 ##############################
-#  SYNOPSIS  GetRealPort { _currentMaskGuid} 
-#  FUNCTION  return the masked guid 
-#  INPUTS    mask guid 
-#  OUTPUT    real guid 
+#  SYNOPSIS  GetRealPort { _currentMaskGuid}
+#  FUNCTION  return the masked guid
+#  INPUTS    mask guid
+#  OUTPUT    real guid
 proc GetRealPort { _currentMaskGuid} {
    global MASK
    set tmpGuid $_currentMaskGuid
@@ -2955,7 +2955,7 @@ proc DumpBadLinks {} {
 }
 
 ##############################
-#  SYNOPSIS     RemoveDirectPath 
+#  SYNOPSIS     RemoveDirectPath
 #  FUNCTION Removes a direct path from $G(data:list.direct.path)
 #               - when we in a loop
 #               - when we enter an allready known switch
@@ -3053,6 +3053,9 @@ proc GetPortPkeys {drPath portNum numPKeys} {
    return $pkeys
 }
 
+# check the rules of partition enforcement on the fabric and report
+# Define the G(data:CAPortPKeys:<nodeGuid>:<PN>)
+# and G(data:PKeyNodePorts:<pkey-base>) {{<nodeGuid> <PN>} ....}
 proc CheckPartitions {} {
    global G Neighbor
    inform "-I-ibdiagnet:PKeys.report.header"
@@ -3061,7 +3064,7 @@ proc CheckPartitions {} {
    foreach nodeGuidPortNum [array names G data:PortGuid.*:*] {
       regexp {PortGuid.([^:]+):([^:]+)} $nodeGuidPortNum d1 nodeGuid portNum
       set portGuid $G($nodeGuidPortNum)
-     
+   
       # we need to examine the NodeInfo to see CA and how many PKey blocks
       if {[catch {set nodeInfo $G(data:NodeInfo.$nodeGuid)}]} {
          inform "-W-ibdiagnet:PKeys.noNodeInfo" $nodeGuid
@@ -3076,7 +3079,8 @@ proc CheckPartitions {} {
 
       set numPKeys [GetWordAfterFlag $nodeInfo -partition_cap]
       set pkeys [GetPortPkeys $drPath $portNum $numPKeys]
-     
+      set G(data:CAPortPKeys:$nodeGuid:$portNum) $pkeys
+   
       # we might have direct enforcement by the neighbor switch
       set neighNodeNPort $Neighbor($nodeGuid:$portNum)
       set remPKeys {}
@@ -3091,7 +3095,7 @@ proc CheckPartitions {} {
             set opvl_enforce [GetWordAfterFlag $portInfo -vl_enforce]
             set outEnforce [expr $opvl_enforce & 0x4]
             set inEnforce  [expr $opvl_enforce & 0x8]
-           
+         
             set remDrPath $G(data:dr.path.to.node.$remNodeGuid)
             if {$outEnforce || $inEnforce} {
                if {! ($outEnforce && $inEnforce)} {
@@ -3111,7 +3115,7 @@ proc CheckPartitions {} {
             }
          }
       }
-     
+   
       # filter pkeys by remote port if exist
       if {[info exists REM_PKEY]} {unset REM_PKEY}
       if {[llength $remPKeys]} {
@@ -3120,17 +3124,17 @@ proc CheckPartitions {} {
             set REM_PKEY($base) [expr $pkey & 0x8000]
          }
       }
-     
+   
       foreach pkey $pkeys {
          set base [expr $pkey & 0x7fff]
-        
+      
          if {$pkey != 0} {
             if {$base != $pkey} {
                set isPartial 0
             } else {
                set isPartial 1
             }
-           
+         
             # see that remote pkeys do not filter
             if {[llength $remPKeys]} {
                if {![info exists REM_PKEY($base)]} {
@@ -3150,11 +3154,16 @@ proc CheckPartitions {} {
             } else {
                lappend PKEY_HOSTS($base) "$portGuid $isPartial"
             }
+            if {![info exists G(data:PKeyNodePorts:$base)]} {
+               set G(data:PKeyNodePorts:$base) [list [list $nodeGuid $portNum]]
+            } else {
+               lappend G(data:PKeyNodePorts:$base) [list $nodeGuid $portNum]
+            }
          }
       }
       # If remote port is SW and PKey enforcement is ON on that port get it
    }
-  
+
    # report partitions:
    set FileID [InitializeOutputFile $G(var:tool.name).pkey]
    foreach pkey [lsort -integer [array names PKEY_HOSTS]] {
@@ -3166,7 +3175,7 @@ proc CheckPartitions {} {
       foreach portGuidNPartial $PKEY_HOSTS($pkey) {
          set portGuid [lindex $portGuidNPartial 0]
          set isPartial [lindex $portGuidNPartial 1]
-        
+      
          set drPath $G(data:dr.path.to.guid.$portGuid)
          set nodeName [DrPath2Name $drPath -port [GetEntryPort $drPath] -fullName]
          if {$isPartial} {
@@ -3187,7 +3196,7 @@ proc CheckPartitions {} {
 # return the list of all pkeys from the given port
 # return "Not-Enforced" if no enforcement on switch port
 proc GetPortPkeysByDRPortNumAndDirection {drPath portNum dir} {
-  
+
    # we need to examine the NodeInfo to see CA and how many PKey blocks
    if {[catch {set nodeInfo [SmMadGetByDr NodeInfo dump "$drPath"]}]} {
       puts "-E- failed to get src port guid for path:$drPath"
@@ -3219,7 +3228,7 @@ proc GetPortPkeysByDRPortNumAndDirection {drPath portNum dir} {
       } else {
          return "Not-Enforced"
       }
-     
+   
       # the switch info to see how many pkeys:
       if {[catch {set numPKeys [SmMadGetByDr SwitchInfo -enforce_cap "$drPath"]}]} {
          inform "-W-ibdiagnet:PKeys.noSwitchInfo" $nodeGuid $drPath
@@ -3233,6 +3242,7 @@ proc GetPortPkeysByDRPortNumAndDirection {drPath portNum dir} {
 }
 
 # Perform partition analysis of the path
+# store the final path partitions in G(data:path.partitions)
 proc AnalyzePathPartitions {paths} {
    global G Neighbor
 
@@ -3245,7 +3255,7 @@ proc AnalyzePathPartitions {paths} {
       set srcPath ""
    }
    set dstPath [lindex $paths end]
-  
+
    if {[catch {set NodeInfo [SmMadGetByDr NodeInfo dump "$srcPath"]}]} {
       "-E-ibdiagpath:PKeys.FailNodeInfo" $srcPath
       return 1
@@ -3253,7 +3263,7 @@ proc AnalyzePathPartitions {paths} {
    set srcNodeGuid [GetWordAfterFlag $NodeInfo "-node_guid"]
    set srcPortGuid [GetWordAfterFlag $NodeInfo "-port_guid"]
    set srcPortNum  [GetEntryPort $srcPath -byNodeInfo $NodeInfo]
-  
+
    set pkeys [GetPortPkeysByDRPortNumAndDirection $srcPath $srcPortNum "out"]
    foreach pkey $pkeys {
       if {$pkey == "Not-Enforced"} {continue}
@@ -3266,7 +3276,7 @@ proc AnalyzePathPartitions {paths} {
    # get the remote port of the SRC
    set neighNodeNPort $Neighbor($srcNodeGuid:$srcPortNum)
    foreach {remNodeGuid remPortNum} [split $neighNodeNPort :] {break}
-  
+
    # Now go over the rest of the path:
    if {[llength $srcPath]} {
       set startIdx [expr [llength $srcPath] - 2]
@@ -3325,7 +3335,7 @@ proc AnalyzePathPartitions {paths} {
       }
    }
    inform "-I-ibdiagpath:PKeys.dst.pkeys" $nodeName $pkeys
-  
+
    # make sure we have some shared PKeys left:
    set shared {}
    foreach base [array names SRC_PKEYS] {
@@ -3337,10 +3347,278 @@ proc AnalyzePathPartitions {paths} {
          }
       }
    }
+
+   set G(data:path.partitions) $shared
    if {[llength $shared]} {
       inform "-I-ibdiagpath:PKeys.path.shared" $shared
    } else {
       inform "-E-ibdiagpath:PKeys.path.noShared"
+   }
+   return 0
+}
+##############################
+
+######################################################################
+### IPoIB Checking and Reporting
+######################################################################
+
+# obtain the rate (code and Gbps) of the given portInfo
+proc GetPortInfoRateCodeAndGbps {portInfo} {
+   set width [GetWordAfterFlag $portInfo -link_width_active]
+   set speed [expr ([GetWordAfterFlag $portInfo -link_speed] & 0xf0) >> 4]
+
+   if {[lsearch -exact {1 2 4 8} $width] < 0} {
+      puts "Error: unrecognized link width code:$width"
+      return ""
+   }
+
+   # coding
+   # speed 1=2.5G 2=5G 4=10G
+   # width 1=1X 2=4X 4=8X 8=12X
+   switch $speed {
+      1 {
+         switch $width {
+            1 {set rate 2; set gbps 2.5}
+            2 {set rate 3; set gbps 10 }
+            4 {set rate 6; set gbps 20 }
+            8 {set rate 4; set gbps 30 }
+         }
+      }
+      2 {
+         switch $width {
+            1 {set rate 5; set gbps 5}
+            2 {set rate 6; set gbps 20 }
+            4 {set rate 7; set gbps 40 }
+            8 {set rate 8; set gbps 60 }
+         }
+      }
+      4 {
+         switch $width {
+            1 {set rate 3; set gbps 10 }
+            2 {set rate 7; set gbps 40 }
+            4 {set rate 9; set gbps 80 }
+            8 {set rate 10; set gbps 120 }
+         }
+      }
+      default {
+         puts "Error: unrecognized link speed code:$speed"
+         return ""
+      }
+   }
+   return [list $rate $gbps]
+}
+
+proc GetRateGbps {rate} {
+   switch $rate {
+      2 {set gbps 2.5}
+      3 {set gbps 10}
+      4 {set gbps 30}
+      5 {set gbps 5}
+      6 {set gbps 20}
+      7 {set gbps 40}
+      8 {set gbps 60}
+      9 {set gbps 80}
+      10 {set gbps 120}
+      default {set gbps 0}
+   }
+   return $gbps
+}
+
+proc GetGbpsRate {gbps} {
+   switch $gbps {
+      2.5 {set rate 2}
+      5   {set rate 5}
+      10  {set rate 3}
+      20  {set rate 6}
+      30  {set rate 4}
+      40  {set rate 7}
+      60  {set rate 8}
+      80  {set rate 9}
+      120 {set rate 10}
+      default {set rate 0}
+   }
+   return $rate
+}
+
+# perform a subnet global check of IPoIB subnets
+proc CheckIPoIB {} {
+   global G
+
+   inform "-I-ibdiagnet:ipoib.header"
+
+   # obtain the list of IPoIB MCGs from the SA
+   set pKeyRex {[0-9a-fA-F]:4}
+   foreach mcg [sacMCMQuery getTable 0] {
+      set mgid [sacMCMRec_mgid_get $mcg]
+      # check to see if IPoIB mcg
+      if {[regexp {0xff12401b([0-9a-fA-F]{4})0000:0x00000000ffffffff} $mgid d1 p]} {
+         set pkey [expr 0x$p & 0x7fff]
+         set IPoIB_MCGS($mcg) "$pkey 4"
+         set IPV4_MCGS($pkey) $mcg
+      } elseif {[regexp {0xff12601b([0-9a-fA-F]{4})0000:0x00000000ffffffff} $mgid d1 p]} {
+         set pkey [expr 0x$p & 0x7fff]
+         set IPoIB_MCGS($mcg) "$pkey 6"
+         set IPV6_MCGS($pkey) $mcg
+      }
+   }
+
+   # no go over all subnets and check their rules:
+   foreach mcg [array names IPoIB_MCGS] {
+      set gMtu  [expr [sacMCMRec_mtu_get $mcg]& 0x3f]
+      set gRate [expr [sacMCMRec_rate_get $mcg]& 0x3f]
+      set gSL   [expr ([sacMCMRec_sl_flow_hop_get $mcg] & 0xf000) >> 24]
+      set gPKey [sacMCMRec_pkey_get $mcg]
+      set gQKey [sacMCMRec_qkey_get $mcg]
+      foreach {pkey IPVersion} $IPoIB_MCGS($mcg) {break}
+
+      inform "-I-ipoib.subnet" $IPVersion $pkey $gMtu $gRate $gSL $gPKey $gQKey
+   
+      if {[expr 0x7fff & $gPKey] != $pkey} {
+         inform "-W-ipoib.bad.pkey" $gPKey $pkey
+      }
+
+      # go over all the members of the partition and see if they can join
+      # collecting their minimal rate
+      if {[catch {set pkeyMembers $G(data:PKeyNodePorts:$pkey)}]} {
+         inform "-W-ibdiagnet.ipoib.noMemers"
+         continue
+      }
+
+      # obtain the rate of the port and track min rate
+      set gGbps [GetRateGbps $gRate]
+      set minGbps 120
+      foreach nodeNPort $pkeyMembers {
+         foreach {nodeGuid portNum} $nodeNPort {break}
+         set portInfo $G(data:PortInfo.$nodeGuid:$portNum)
+      
+         set rateNGbps [GetPortInfoRateCodeAndGbps $portInfo]
+         if {[llength $rateNGbps] != 2} {
+            set drPath $G(data:dr.path.to.node.$nodeGuid)
+            set name [DrPath2Name $drPath -port [GetEntryPort $drPath] -fullName]
+            inform "-E-ipoib.ilegalRate" $name
+         }
+         foreach {rate gbps} $rateNGbps {break}
+         if {$gbps < $gGbps} {
+            set drPath $G(data:dr.path.to.node.$nodeGuid)
+            set name [DrPath2Name $drPath -port [GetEntryPort $drPath] -fullName]
+            inform "-W-ipoib.cantJoin" $name $rate $gRate
+         } else {
+            if {$minGbps > $gbps} {
+               set minGbps $gbps
+            }
+         }
+      }
+      if {$minGbps > $gGbps} {
+         set minRate [GetGbpsRate $minGbps]
+         inform "-W-ibdiagnet.ipoib.rateToLow" $minRate $gRate
+      }
+   }
+}
+
+# perform a path based check of IPoIB subnets
+proc CheckPathIPoIB {paths} {
+   global G
+
+   inform "-I-ibdiagpath:ipoib.header"
+
+   # find the source port
+   if {[llength $paths] > 1} {
+      set srcPath [lindex $paths 0]
+   } else {
+      set srcPath ""
+   }
+   if {[catch {set srcNodeInfo [SmMadGetByDr NodeInfo dump "$srcPath"]}]} {
+      "-E-ibdiagpath:PKeys.FailNodeInfo" $srcPath
+      return 1
+   }
+   set srcNodeGuid [GetWordAfterFlag $srcNodeInfo "-node_guid"]
+   set srcPortGuid [GetWordAfterFlag $srcNodeInfo "-port_guid"]
+   set srcPortNum  [GetEntryPort $srcPath -byNodeInfo $srcNodeInfo]
+
+   set dstPath [lindex $paths end]
+   if {[catch {set dstNodeInfo [SmMadGetByDr NodeInfo dump "$dstPath"]}]} {
+      "-E-ibdiagpath:PKeys.FailNodeInfo" $dstPath
+      return 1
+   }
+   set dstNodeGuid [GetWordAfterFlag $dstNodeInfo "-node_guid"]
+   set dstPortGuid [GetWordAfterFlag $dstNodeInfo "-port_guid"]
+   set dstPortNum  [GetEntryPort $dstPath -byNodeInfo $dstNodeInfo]
+
+   set pkeyMembers [list \
+                       [list $srcNodeGuid $srcPath $srcPortNum] \
+                       [list $dstNodeGuid $dstPath $dstPortNum]]
+
+   # provied by AnalyzePathPartitions
+   set pathBasePkeys {}
+   foreach pkey $G(data:path.partitions) {
+      lappend pathBasePkeys [expr $pkey & 0x7fff]
+   }
+
+   # obtain the list of IPoIB MCGs from the SA
+   set pKeyRex {[0-9a-fA-F]:4}
+   foreach mcg [sacMCMQuery getTable 0] {
+      set mgid [sacMCMRec_mgid_get $mcg]
+      # check to see if IPoIB mcg
+      if {[regexp {0xff12401b([0-9a-fA-F]{4})0000:0x00000000ffffffff} $mgid d1 p]} {
+         set pkey [expr 0x$p & 0x7fff]
+         set IPoIB_MCGS($mcg) "$pkey 4"
+         set IPV4_MCGS($pkey) $mcg
+      } elseif {[regexp {0xff12601b([0-9a-fA-F]{4})0000:0x00000000ffffffff} $mgid d1 p]} {
+         set pkey [expr 0x$p & 0x7fff]
+         set IPoIB_MCGS($mcg) "$pkey 6"
+         set IPV6_MCGS($pkey) $mcg
+      }
+   }
+
+   # no go over all subnets and check their rules:
+   set anyGroup 0
+   foreach mcg [array names IPoIB_MCGS] {
+      foreach {pkey IPVersion} $IPoIB_MCGS($mcg) {break}
+
+      if {[lsearch -exact $pathBasePkeys $pkey] < 0} {continue}
+
+      set gMtu  [expr [sacMCMRec_mtu_get $mcg]& 0x3f]
+      set gRate [expr [sacMCMRec_rate_get $mcg]& 0x3f]
+      set gSL   [expr ([sacMCMRec_sl_flow_hop_get $mcg] & 0xf000) >> 24]
+      set gPKey [sacMCMRec_pkey_get $mcg]
+      set gQKey [sacMCMRec_qkey_get $mcg]
+
+      inform "-I-ipoib.subnet" $IPVersion $pkey $gMtu $gRate $gSL $gPKey $gQKey
+
+      if {[expr 0x7fff & $gPKey] != $pkey} {
+         inform "-W-ipoib.bad.pkey" $gPKey $pkey
+      }
+
+      # go over all the members of the partition and see if they can join
+
+      # obtain the rate of the port and track min rate
+      set gGbps [GetRateGbps $gRate]
+      set anyFail 0
+      foreach nodeGuidPortGuidNPort $pkeyMembers {
+         foreach {nodeGuid drPath portNum} $nodeGuidPortGuidNPort {break}
+         if {[catch {set portInfo [SmMadGetByDr PortInfo dump "$drPath" 1]}]} {
+            inform "-E-ibdiagpath:PKeys.FailPortInfo" $drPath
+            return 1
+         }
+
+         set rateNGbps [GetPortInfoRateCodeAndGbps $portInfo]
+         if {[llength $rateNGbps] != 2} {
+            set name [DrPath2Name $drPath -port [GetEntryPort $drPath] -fullName]
+            inform "-E-ipoib.ilegalRate" $name
+         }
+         foreach {rate gbps} $rateNGbps {break}
+         if {$gbps < $gGbps} {
+            set name [DrPath2Name $drPath -port [GetEntryPort $drPath] -fullName]
+            inform "-W-ipoib.cantJoin" $name $rate $gRate
+            incr anyFail
+         }
+      }
+      if {$anyFail == 0} {
+         incr anyGroup
+      }
+   }
+   if {$anyGroup == 0} {
+      inform "-E-ibdiagpath.ipoib.noGroups"
    }
    return 0
 }
@@ -3738,7 +4016,7 @@ proc Name2Lid {localPortPtr destPortPtr exitPort} {
       if {(($localNodetype == 1) && ($localNodePtr == $destNodePtr))|| ($index == 1) } {
          # in the current switch check if it's any of the switch ports
          for {set i 1} {$i <= [IBNode_numPorts_get $localNodePtr]} {incr i} {
-            set tmpPort [IBNode_getPort $localNodePtr $i]  
+            set tmpPort [IBNode_getPort $localNodePtr $i] 
 
             if {$tmpPort == $destPortPtr} {
                return "$DirectPath 0"
@@ -3935,7 +4213,7 @@ proc GetEntryPort { _directPath args} {
       if {[lsearch -exac $args "-byNodeInfo"]!=-1} {
          set nodeInfo [GetWordAfterFlag $args "-byNodeInfo"]
       } else {
-         set nodeInfo [SmMadGetByDr NodeInfo dump ""]  
+         set nodeInfo [SmMadGetByDr NodeInfo dump ""] 
       }
       set _port_num_vendor_id [GetWordAfterFlag $nodeInfo "-port_num_vendor_id"]
       return [format %d [FormatInfo $_port_num_vendor_id PortNum NONE]]
@@ -3976,7 +4254,7 @@ proc GetParamValue { parameter DirectPath args } {
    global G INFO_LST
    set DirectPath "[join $DirectPath]"
    # noread - if info doesn't exists don't try to get it by dr
-   set byDr 0     
+   set byDr 0    
    set noread 0
    if {[lsearch -exac $args "-byDr"] != -1} { set byDr 1 }
    if {[lsearch -exac $args "-noread"] != -1} { set noread 1}
@@ -4071,7 +4349,7 @@ proc GetParamValue { parameter DirectPath args } {
                if {$parameter == "NodeDesc"} {
                   return [FormatInfo $G(data:NodeDesc.$NodeGuid) NodeDesc $DirectPath]
                }
-               return [FormatInfo [GetWordAfterFlag $G($InfoSource) -$cfg(flag)] $parameter $DirectPath]  
+               return [FormatInfo [GetWordAfterFlag $G($InfoSource) -$cfg(flag)] $parameter $DirectPath] 
             } else {
                if { [PathIsBad $DirectPath] > 1 } {
                   return -code 1 -errorinfo "3.Direct Path \"$DirectPath\" is bad"
@@ -4355,7 +4633,7 @@ proc writeTopologyFileAndIBNLs {} {
       if {![file exists $ibnlDir]} {
          file mkdir $ibnlDir
       }
-     
+   
       # we might be teh only reason to get a topology ...
       if {![info exists G(IBfabric:merged)] } {
          set f [new_IBFabric]
@@ -4578,7 +4856,7 @@ proc CheckAllinksSettings {} {
    if {[lsearch $checkList "PHY"] != -1} {
       inform "-I-ibdiagnet:bad.link.width.header"
       if {[llength [array names LINK_PHY]]} {
-         foreach link [lsort [array names LINK_PHY]] {                                                      
+         foreach link [lsort [array names LINK_PHY]] {                                                     
             if {[PathIsBad $link] > 1} {continue;}
             set paramlist "-DirectPath0 \{[lrange $link 0 end-1]\} -DirectPath1 \{$link\}"
             eval inform "-W-ibdiagnet:report.links.width.state" -phy $LINK_PHY($link) $paramlist
@@ -4591,7 +4869,7 @@ proc CheckAllinksSettings {} {
    if {[lsearch $checkList "SPD"] != -1} {
       inform "-I-ibdiagnet:bad.link.speed.header"
       if {[llength [array names LINK_SPD]]} {
-         foreach link [lsort [array names LINK_SPD]] {                                                      
+         foreach link [lsort [array names LINK_SPD]] {                                                     
             if {[PathIsBad $link] > 1} {continue;}
             set paramlist "-DirectPath0 \{[lrange $link 0 end-1]\} -DirectPath1 \{$link\}"
             eval inform "-W-ibdiagnet:report.links.speed.state" -spd $LINK_SPD($link) $paramlist
@@ -4636,7 +4914,7 @@ proc SL_2_VL {_paths _targets} {
    for {set i 0} {$i < 16} {incr i} {
       if {$SL_VL($i,VL) == -1} {
          lappend suitableSl $i
-      } 
+      }
    }
 
    set directPath ""
@@ -4651,7 +4929,7 @@ proc SL_2_VL {_paths _targets} {
          set route "path From lid: [lindex $lidRoute 0] To lid: [lindex $lidRoute 1]"
       } else {
          set route "path From lid: $G(data:root.port.lid) To lid: [lindex $lidRoute 0]"
-      } 
+      }
    }
    if {[info exists G(argv:by-name.route)]} {
       set nameRoute [split $G(argv:by-name.route) ,]
