@@ -35,6 +35,7 @@
 #include "Fabric.h" 
 #include "SubnMgt.h"
 #include "CredLoops.h"
+#include <unistd.h>
 #include <getopt.h>
 #include <fstream>
 
