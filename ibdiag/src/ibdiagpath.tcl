@@ -183,6 +183,7 @@ proc ibdiagpathMain {} {
    set maxLen [lindex [lsort -integer $llen] end]
    # preparing the list of lid-s and ports for reading the PM counters
    PMCounterQuery
+   AnalyzePathPartitions $paths
    SL_2_VL $paths $targets
    #foreach path $paths {
    #    puts DZ:[join $path ,]

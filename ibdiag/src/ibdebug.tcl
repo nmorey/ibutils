@@ -3185,6 +3185,162 @@ proc CheckPartitions {} {
    return 0
 }
 
+# return the list of all pkeys from the given port
+# return "Not-Enforced" if no enforcement on switch port
+proc GetPortPkeysByDRPortNumAndDirection {drPath portNum dir} {
+   
+   # we need to examine the NodeInfo to see CA and how many PKey blocks
+   if {[catch {set nodeInfo [SmMadGetByDr NodeInfo dump "$drPath"]}]} {
+      puts "-E- failed to get src port guid for path:$drPath"
+      return {}
+   }
+
+   set nodeType [GetWordAfterFlag $nodeInfo -node_type]
+   if {$nodeType == 2} {
+
+      # check it has partition enforcement on this port
+      set nodeGuid [GetWordAfterFlag $nodeInfo -node_guid]
+      # is a switch - use switch info ...
+      if {[catch {set portInfo [SmMadGetByDr PortInfo dump "$drPath" $portNum]}]} {
+         inform "EZ -W-ibdiagnet:PKeys.noPortInfo" $drPath $portNum
+         return {}
+      }
+      set opvl_enforce [GetWordAfterFlag $portInfo -vl_enforce]
+      set outEnforce [expr $opvl_enforce & 0x4]
+      set inEnforce  [expr $opvl_enforce & 0x8]
+            
+      if {$outEnforce || $inEnforce} {
+         if {! ($outEnforce && $inEnforce)} {
+            set nodeName [DrPath2Name $drPath -port [GetEntryPort $drPath] -fullName]
+            inform "-W-ibdiagnet:PKeys.in.out.not.same" $nodeName $inEnforce $outEnforce
+         }
+         if {($dir == "in" && !$inEnforce) || ($dir == "out" && !$outEnforce)} {
+            return "Not-Enforced"
+         }
+      } else {
+         return "Not-Enforced"
+      }
+      
+      # the switch info to see how many pkeys:
+      if {[catch {set numPKeys [SmMadGetByDr SwitchInfo -enforce_cap "$drPath"]}]} {
+         inform "-W-ibdiagnet:PKeys.noSwitchInfo" $nodeGuid $drPath
+         return {}
+      }
+   } else {
+      set numPKeys [GetWordAfterFlag $nodeInfo -partition_cap]
+   }
+
+   return [GetPortPkeys $drPath $portNum $numPKeys]
+}
+
+# Perform partition analysis of the path
+proc AnalyzePathPartitions {paths} {
+   global G Neighbor
+
+   inform "-I-ibdiagpath:PKeys.report.header"
+
+   # find the source port
+   if {[llength $paths] > 1} {
+      set srcPath [lindex $paths 0]
+   } else {
+      set srcPath ""
+   }
+   set dstPath [lindex $paths end]
+   
+   if {[catch {set NodeInfo [SmMadGetByDr NodeInfo dump "$srcPath"]}]} {
+      "-E-ibdiagpath:PKeys.FailNodeInfo" $srcPath
+      return 1
+   }
+   set srcNodeGuid [GetWordAfterFlag $NodeInfo "-node_guid"]
+   set srcPortGuid [GetWordAfterFlag $NodeInfo "-port_guid"]
+   set srcPortNum  [GetEntryPort $srcPath -byNodeInfo $NodeInfo]
+   
+   set pkeys [GetPortPkeysByDRPortNumAndDirection $srcPath $srcPortNum "out"]
+   foreach pkey $pkeys {
+      if {$pkey == "Not-Enforced"} {continue}
+      set base [expr $pkey & 0x7fff]
+      set SRC_PKEYS($base) $pkey
+   }
+   set nodeName [DrPath2Name $srcPath -port [GetEntryPort $srcPath] -fullName]
+   inform "-I-ibdiagpath:PKeys.src.pkeys" $nodeName $srcPortNum $pkeys
+
+   # get the remote port of the SRC
+   set neighNodeNPort $Neighbor($srcNodeGuid:$srcPortNum)
+   foreach {remNodeGuid remPortNum} [split $neighNodeNPort :] {break}
+   
+   # Now go over the rest of the path:
+   for {set idx [expr [llength $srcPath] - 2]} {$idx < [llength $dstPath]} {incr idx} {
+      set drPath [lrange $dstPath 0 $idx]
+      if {$idx + 1 < [llength $dstPath]} {
+      } else {
+         set nextPortNum 0
+      }
+
+      set stagePaths "in $remPortNum "
+      if {$idx + 1 < [llength $dstPath]} {
+         set    nextPortNum [lindex  $dstPath [expr $idx + 1]]
+         append stagePaths "out $nextPortNum"
+      }
+
+      # loop on in/out
+      foreach {dir portNum} $stagePaths {
+         if {$portNum == 0} {continue}
+
+         if {[catch {set NodeInfo [SmMadGetByDr NodeInfo dump "$drPath"]}]} {
+            inform "-E-ibdiagpath:PKeys.FailNodeInfo" $drPath
+            return 1
+         }
+         set nodeGuid [GetWordAfterFlag $NodeInfo "-node_guid"]
+         set portGuid [GetWordAfterFlag $NodeInfo "-port_guid"]
+         set pkeys [GetPortPkeysByDRPortNumAndDirection $drPath $portNum $dir]
+         set nodeName [DrPath2Name $drPath -fullName]
+         inform "-V-ibdiagpath:PKeys.portPkeys" $nodeName $portNum $dir $pkeys
+         # must get some pkeys and make sure not to filter if not enforced
+         if {[llength $pkeys] && ([lindex $pkeys 0] != "Not-Enforced")} {
+            if {[info exist PKEYS]} {unset PKEYS}
+            foreach pkey $pkeys {
+               set base [expr $pkey & 0x7fff]
+               set PKEYS($base) $pkey
+            }
+            foreach base [array names SRC_PKEYS] {
+               if {![info exists PKEYS($base)]} { 
+                  inform "-W-ibdiagpath:PKeys.blockOnPath" $nodeName $dir $SRC_PKEYS($base)
+                  unset SRC_PKEYS($base)
+               }
+            }
+         }
+      }
+
+      if {$dir == "out"} {
+         # get the remote node info by DR and extract input port
+         lappend drPath $portNum
+         if {[catch {set remPortNum [SmMadGetByDr PortInfo -local_port_num "$drPath" 1]}]} {
+            inform "-E-ibdiagpath:PKeys.FailPortInfo" $drPath
+            return {}
+         }
+      }
+   }
+   inform "-I-ibdiagpath:PKeys.dst.pkeys" $nodeName $pkeys
+   
+   # make sure we have some shared PKeys left:
+   set shared {}
+   foreach base [array names SRC_PKEYS] {
+      if {[info exists PKEYS($base)]} {
+         set isSrcFull [expr 0x8000 & $SRC_PKEYS($base)]
+         set isPathFull [expr 0x8000 & $PKEYS($base)]
+         if { $isSrcFull || $isPathFull} {
+            lappend shared $SRC_PKEYS($base)
+         }
+      }
+   }
+   if {[llength $shared]} {
+      inform "-I-ibdiagpath:PKeys.path.shared" $shared
+   } else {
+      inform "-E-ibdiagpath:PKeys.path.noShared"
+   }
+   return 0
+}
+
 ######################################################################
 ### If a topology file is given
 ######################################################################

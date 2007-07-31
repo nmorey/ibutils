@@ -1717,12 +1717,12 @@ proc inform { msgCode args } {
       "-W-ibdiagnet:PKeys.switch.missing.pkey" {
          set name   [lindex $args 0]
          set pkey   [lindex $args 1]
-         append msgText "Missing PKey:$pkey on remote switch of node:$name"
+         append msgText "Missing PKey:[format 0x%04x $pkey] on remote switch of node:$name"
       }
       "-W-ibdiagnet:PKeys.switch.part.pkey" {
          set name   [lindex $args 0]
          set pkey   [lindex $args 1]
-         append msgText "Only partial PKey:$pkey allowed by remote switch of node:$name"
+         append msgText "Only partial PKey:[format 0x%04x $pkey] allowed by remote switch of node:$name"
       }
       "-I-ibdiagnet:PKeys.report.header" {
          append msgText "Fabric Partitions Report (see $G(var:tool.name).pkey for a full hosts list)"
@@ -1733,6 +1733,43 @@ proc inform { msgCode args } {
          set full  [lindex $args 2]
          set part  [lindex $args 3]
          append msgText "   PKey:$base Hosts:$hosts full:$full partial:$part"
+      }
+      "-I-ibdiagpath:PKeys.report.header" {
+         append msgText "Path Partitions Report"
+      }
+      "-I-ibdiagpath:PKeys.src.pkeys" {
+         foreach {nodeName portNum pkeys} $args {break}
+         append msgText "Source $nodeName Port $portNum PKeys:$pkeys"
+      }
+      "-I-ibdiagpath:PKeys.dst.pkeys" {
+         set node [lindex $args 0]
+         set pkeys [lindex $args 1]
+         append msgText "Destination $node PKeys:$pkeys"
+      }
+      "-E-ibdiagpath:PKeys.FailNodeInfo" {
+         append msgText "Failed to obtain NodeInfo for directed route:[lindex $args 0]. Abortig PKeys Check."
+      }
+      "-E-ibdiagpath:PKeys.FailPortInfo" {
+         append msgText "Failed to obtain PortInfo for directed route:[lindex $args 0]. Abortig PKeys Check."
+      }
+      "-V-ibdiagpath:PKeys.portPkeys" {
+         foreach {nodeName portNum dir pkeys} $args {break}
+         if {$dir == "in"} {
+            set x "to"
+         } else {
+            set x "from"
+         }
+         append msgText "going:$dir $x node:$nodeName port:$portNum PKeys:$pkeys"
+      }
+      "-W-ibdiagpath:PKeys.blockOnPath" {
+         foreach {nodeName dir pkey} $args {break}
+         append msgText "PKey:[format 0x%04x $pkey] was blocked on $dir pin of $nodeName"
+      }
+      "-I-ibdiagpath:PKeys.path.shared" {
+         append msgText "Path shared PKeys: [lindex $args 0]"
+      }
+      "-E-ibdiagpath:PKeys.path.noShared" {
+         append msgText "No shared PKeys found on Path! Nodes can not communicate!"
       }
       "-I-exit:\\r" {
          set msgText ""
