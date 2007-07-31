@@ -3192,7 +3192,7 @@ proc GetPortPkeysByDRPortNumAndDirection {drPath portNum dir} {
    # we need to examine the NodeInfo to see CA and how many PKey blocks
    if {[catch {set nodeInfo [SmMadGetByDr NodeInfo dump "$drPath"]}]} {
       puts "-E- failed to get src port guid for path:$drPath"
-      return {}
+      return ""
    }
 
    set nodeType [GetWordAfterFlag $nodeInfo -node_type]
@@ -3202,8 +3202,8 @@ proc GetPortPkeysByDRPortNumAndDirection {drPath portNum dir} {
       set nodeGuid [GetWordAfterFlag $nodeInfo -node_guid]
       # is a switch - use switch info ...
       if {[catch {set portInfo [SmMadGetByDr PortInfo dump "$drPath" $portNum]}]} {
-         inform "EZ -W-ibdiagnet:PKeys.noPortInfo" $drPath $portNum
-         return {}
+         inform "-W-ibdiagnet:PKeys.noPortInfo" $drPath $portNum
+         return ""
       }
       set opvl_enforce [GetWordAfterFlag $portInfo -vl_enforce]
       set outEnforce [expr $opvl_enforce & 0x4]
@@ -3224,7 +3224,7 @@ proc GetPortPkeysByDRPortNumAndDirection {drPath portNum dir} {
       # the switch info to see how many pkeys:
       if {[catch {set numPKeys [SmMadGetByDr SwitchInfo -enforce_cap "$drPath"]}]} {
          inform "-W-ibdiagnet:PKeys.noSwitchInfo" $nodeGuid $drPath
-         return {}
+         return ""
       }
    } else {
       set numPKeys [GetWordAfterFlag $nodeInfo -partition_cap]
@@ -3269,7 +3269,12 @@ proc AnalyzePathPartitions {paths} {
    foreach {remNodeGuid remPortNum} [split $neighNodeNPort :] {break}
    
    # Now go over the rest of the path:
-   for {set idx [expr [llength $srcPath] - 2]} {$idx < [llength $dstPath]} {incr idx} {
+	if {[llength $srcPath]} {
+		set startIdx [expr [llength $srcPath] - 2]
+	} else {
+		set startIdx 0
+	}
+   for {set idx $startIdx} {$idx < [llength $dstPath]} {incr idx} {
       set drPath [lrange $dstPath 0 $idx]
       if {$idx + 1 < [llength $dstPath]} {
       } else {
@@ -3316,7 +3321,7 @@ proc AnalyzePathPartitions {paths} {
          lappend drPath $portNum
          if {[catch {set remPortNum [SmMadGetByDr PortInfo -local_port_num "$drPath" 1]}]} {
             inform "-E-ibdiagpath:PKeys.FailPortInfo" $drPath
-            return {}
+            return 1
          }
       }
    }
