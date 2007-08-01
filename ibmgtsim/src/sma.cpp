@@ -600,8 +600,8 @@ int IBMSSma::sl2VlMad(ibms_mad_msg_t &respMadMsg, ibms_mad_msg_t &reqMadMsg, uin
   }
   else
   {
-    inputPortIndex = inPort;
-    outputPortIndex = 0;
+    inputPortIndex = 0;
+    outputPortIndex = inPort;
   }
 
   if ((inputPortIndex > pSimNode->nodeInfo.num_ports) ||
