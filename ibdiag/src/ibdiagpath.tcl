@@ -185,7 +185,8 @@ proc ibdiagpathMain {} {
    PMCounterQuery
    AnalyzePathPartitions $paths
    CheckPathIPoIB $paths
-   SL_2_VL $paths $targets
+   CheckPathQoS $paths
+   #SL_2_VL $paths $targets
    #foreach path $paths {
    #    puts DZ:[join $path ,]
    #}

@@ -1,7 +1,7 @@
 ##############################
 ### Initialize Databases
 ##############################
-# InitializeIBDIAG                                 
+# InitializeIBDIAG                                
 # InitializeINFO_LST
 # InitializeOutputFile
 # ParseOptionsList
@@ -554,7 +554,7 @@ proc SetPortNDevice {_ibisInfo} {
          switch $toolName {
             "ibdiagpath" {
                inform "-E-localPort:local.port.not.active" \
-                  -port $argv_portNum -state $saveState 
+                  -port $argv_portNum -state $saveState
             }
             "ibcfg" {
                set argv_devIdx 1
@@ -602,7 +602,7 @@ proc SetPortNDevice {_ibisInfo} {
          }
          switch $toolName {
             "ibdiagpath" {
-               inform $informMsg 
+               inform $informMsg
             }
             "ibcfg" {
                set argv_devIdx 1
@@ -740,7 +740,7 @@ proc SetTopologyNSysName {} {
 ##############################
 
 ##############################
-#  NAME         DeleteOldFiles     
+#  NAME         DeleteOldFiles    
 #  FUNCTION Delete the old ibdiag files
 #  INPUTS       NULL
 #  OUTPUT   NULL
@@ -884,7 +884,6 @@ proc SmMadGetByDr { mad cget args } {
       }
    }
    inform "-V-mad:received" -status $status -attempts $retry
-
    ### SmMadGetByDr - Handle the results
    if { $G(bool:bad.links.detected) && ( $status != 0 ) } {
       set res [DetectBadLinks $status "$cgetCmd" $mad $args]
@@ -1003,7 +1002,7 @@ proc GetPmList { _lidPort } {
 #       G(data:PortGuid.<NodeGuid>:<PN>)     : <PortGuid>
 #
 #       Neighbor(<NodeGuid>:<PN>)       : <NodeGuid>:<PN>
-#    
+#   
 #       MASK(CurrentMaskGuid)           : <MaskGuid>
 #       MASK(PortMask,<PortGuid>)       : <PortMask>
 #       MASK(NodeMask,<NodeGuid>)       : <NodeMask>
@@ -1015,7 +1014,7 @@ proc GetPmList { _lidPort } {
 #       DUPandZERO(<value>,<ID>)        : <DirectPath>
 #
 #       SM(<SMstate>                    : <DirectPath>,SMpriority
-#    
+#   
 #       G(data:list.bad.paths) - list of second paths
 #
 #  INPUTS
@@ -1103,7 +1102,7 @@ proc DiscoverFabric { _pathLimit {startIndex 0}} {
             if {[catch {set tmp_type_2 [GetParamValue Type $DirectPath]}]} {
                set bool_badPathFound 1
                continue;
-            }                                                                
+            }                                                               
             ## Known Guids - Case2.1: Duplicate node GUID Found!
             # previous and current port has diffrent types
             if {$tmp_type_1 != $tmp_type_2} {
@@ -1205,7 +1204,7 @@ proc DiscoverFabric { _pathLimit {startIndex 0}} {
                # if it's not the same node as before assume both are duplicate
                # possible that only one is dup (ask DZ)
                if {[Bool_DuplicateGuids $nodeGuid $DirectPath $prev_drPath2]} {
-                  set bool_duplicatePortGuid 1 
+                  set bool_duplicatePortGuid 1
                   set bool_duplicateNodeGuid 1
                }
             }
@@ -1391,7 +1390,7 @@ proc DiscoverFabric { _pathLimit {startIndex 0}} {
             continue;
          }
          if { ($nodeType == "CA") || (($nodeType == "SW") && ($port == 0) )} {
-            set tmp_capabilityMask [GetWordAfterFlag $tmp_PortInfo -capability_mask] 
+            set tmp_capabilityMask [GetWordAfterFlag $tmp_PortInfo -capability_mask]
             if {[expr 2 & $tmp_capabilityMask]} {
                if {[catch {set tmp_LID [GetParamValue LID $DirectPath -port $port]}]} {
                   set bool_badPathFound 1
@@ -1465,7 +1464,7 @@ proc DiscoverFabric { _pathLimit {startIndex 0}} {
       if {$tmp_HiddenFabric != 0} {
          inform "-I-discover:discovery.status" -log
          inform "-I-exit:\\r"
-         inform "-V-discover:end.discovery.header" 
+         inform "-V-discover:end.discovery.header"
       }
    }
    return 0
@@ -1723,7 +1722,7 @@ proc DiscoverPath { _path2Start node } {
    if {([PathIsBad $DirectPath] > 1) || $bool_badPathFound} {
       DumpBadLinks
       catch { close $G(logFileID) }
-      inform "-E-ibdiagpath:route.failed" -DirectPath $tmp_drPath -port $tmp_port 
+      inform "-E-ibdiagpath:route.failed" -DirectPath $tmp_drPath -port $tmp_port
    }
    return [list $DirectPath]
 }
@@ -1929,7 +1928,7 @@ proc Bool_DuplicateGuids { _NodeGuid _DirectPath _prev_drPath {_checks 1}} {
 }
 
 ##############################
-#  SYNOPSIS     DumpBadLidsGuids 
+#  SYNOPSIS     DumpBadLidsGuids
 #  FUNCTION Dump the retrived info during discovery, regarding
 #               Duplicate Guids and lids, and zero values
 proc DumpBadLidsGuids { args } {
@@ -2054,7 +2053,7 @@ proc DumpBadLinksLogic {} {
          lappend listOfNames \"[DrPath2Name $link nameOnly ]\"
       }
 
-      foreach link $G(data:list.links.not.active.logical.state) {                                                     
+      foreach link $G(data:list.links.not.active.logical.state) {                                                    
          if {[PathIsBad $link] > 1} {continue;}
          set paramlist "-DirectPath0 \{[lrange $link 0 end-1]\} -DirectPath1 \{$link\}"
          eval inform "-W-ibdiagnet:report.links.init.state" $paramlist -maxName [GetLengthMaxWord $listOfNames]
@@ -2486,9 +2485,9 @@ proc GetLengthMaxWord {_list} {
 
 ##############################
 #  SYNOPSIS AddSpaces _word  _desiredLength
-#  FUNCTION addind requierd amount of spaces 
-#  INPUTS   the original word, and the amount of spaces to append to it 
-#  OUTPUT   word + spaces 
+#  FUNCTION addind requierd amount of spaces
+#  INPUTS   the original word, and the amount of spaces to append to it
+#  OUTPUT   word + spaces
 proc AddSpaces {_word _desiredLength} {
    set wordLength [string length $_word]
    if {$wordLength >= $_desiredLength } {
@@ -2612,10 +2611,10 @@ proc compressNames {words} {
 ### Handling Duplicated Guids
 ######################################################################
 ##############################
-#  SYNOPSIS  AdvncedMaskGuid 
+#  SYNOPSIS  AdvncedMaskGuid
 #  FUNCTION  advenced current mask guid by _increment(default set to 1)
 #  INPUTS    _increment(default set to 1)
-#  OUTPUT   0 when  _increment is not an integer, otherwise return 1 
+#  OUTPUT   0 when  _increment is not an integer, otherwise return 1
 proc AdvncedMaskGuid { {_increment 1}} {
    #ASSUME MASK GUID FORMAT IS HARD CODED
    global MASK
@@ -2628,10 +2627,10 @@ proc AdvncedMaskGuid { {_increment 1}} {
 ##############################
 
 ##############################
-#  SYNOPSIS GetCurrentMaskGuid 
-#  FUNCTION return the current mask guid 
-#  INPUTS   NULL 
-#  OUTPUT   mask guid 
+#  SYNOPSIS GetCurrentMaskGuid
+#  FUNCTION return the current mask guid
+#  INPUTS   NULL
+#  OUTPUT   mask guid
 proc GetCurrentMaskGuid {} {
    global MASK
    set tmp $MASK(CurrentMaskGuid)
@@ -3622,6 +3621,196 @@ proc CheckPathIPoIB {paths} {
    }
    return 0
 }
+######################################################################
+
+######################################################################
+### QoS Checking and Reporting
+######################################################################
+
+# perform the QoS check over a path
+proc CheckPathQoS {paths} {
+   global G Neighbor
+
+   inform "-I-ibdiagpath:qos.report.header"
+
+   # we track SLs that are OK in this array:
+   for {set sl 0} {$sl < 16} {incr sl} {
+      set BLOCKED_SL($sl) 0
+   }
+
+   # find the source port
+   if {[llength $paths] > 1} {
+      set srcPath [lindex $paths 0]
+   } else {
+      set srcPath ""
+   }
+   set dstPath [lindex $paths end]
+
+   if {[catch {set NodeInfo [SmMadGetByDr NodeInfo dump "$srcPath"]}]} {
+      "-E-ibdiagpath:Qos.FailNodeInfo" $srcPath
+      return 1
+   }
+   set nodeGuid [GetWordAfterFlag $NodeInfo "-node_guid"]
+   set portGuid [GetWordAfterFlag $NodeInfo "-port_guid"]
+   set outPortNum [GetEntryPort $srcPath -byNodeInfo $NodeInfo]
+   # don't care for CA and assume path from a switch starts at port 0
+   set inPortNum 0
+   set drPath $srcPath
+
+   # Now go over the rest of the path:
+   if {[llength $srcPath]} {
+      set idx [expr [llength $srcPath] - 2]
+   } else {
+      set idx 0
+   }
+
+   set done 0
+
+   while {!$done} {
+   
+      # report stage
+      set name [DrPath2Name $drPath -fullName]
+      inform "-V-ibdiagpath.qos.atNode" $name $inPortNum $outPortNum
+
+      # obtain OPVLs and VLA Cap from PortInfo for the outPort
+      if {[catch {set portInfo [SmMadGetByDr PortInfo dump "$drPath" $outPortNum]}]} {
+         inform "-E-ibdiagpath:qos.FailPortInfoOpVLs" $drPath
+         return 1
+      }
+      set vlEnforce [GetWordAfterFlag $portInfo "-vl_enforce"]
+      set opVLs [expr ($vlEnforce & 0xf0) >> 4 - 1]
+      set vlaHighCap [GetWordAfterFlag $portInfo "-vl_arb_high_cap"]
+      set vlaLowCap  [GetWordAfterFlag $portInfo "-vl_arb_high_cap"]
+
+      # get the SL2VL (inPort,outPort)
+      if {[catch {set SL2VL [SmMadGetByDr SlVlTable dump "$drPath" $inPortNum $outPortNum]}]} {
+         inform "-E-ibdiagpath:qos.FailSL2VL" $drPath
+         return 1
+      }
+      # get VLA(outPort) both High and Low
+      set VLArbLow {}
+      for {set i 0} {$i < ($vlaLowCap + 31)/32} {incr i} {
+         if {[catch {set vlaBlock [SmMadGetByDr VlArbTable dump "$drPath" $outPortNum [expr $i + 1]]} e]} {
+            inform "-E-ibdiagpath:qos.FailVLArb" $drPath
+            return 1
+         }
+         foreach entry $vlaBlock {
+            lappend VLArbLow $entry
+         }
+      }
+      set VLArbHigh {}
+      for {set i 0} {$i < ($vlaLowCap + 31)/32} {incr i} {
+         if {[catch {set vlaBlock [SmMadGetByDr VlArbTable dump "$drPath" $outPortNum [expr $i + 3]]}]} {
+            inform "-E-ibdiagpath:qos.FailVLArb" $drPath
+            return 1
+         }
+         foreach entry $vlaBlock {
+            lappend VLArbHigh $entry
+         }
+      }
+      # report VLA VLs > OPVLs
+      # report and track blocked VLs in VLA
+      set lowHighCtrl [list Low $vlaLowCap $VLArbLow High $vlaHighCap $VLArbHigh]
+      if {[info exist VL_WEIGHT]} {unset VL_WEIGHT}
+      foreach {tbl numEntries values} $lowHighCtrl {
+         set overRangeVLs {}
+         for {set i 0} {$i < $numEntries} {incr i} {
+            set entry [lindex $values $i]
+            set vl [expr [lindex $entry 0]]
+            set weight [lindex $entry 1]
+            if {$vl >= $opVLs} {
+               lappend overRangeVLs $i
+            } else {
+               if {$weight > 0} {
+                  set VL_WEIGHT($vl) $weight
+               }
+            }
+         }
+         if {[llength $overRangeVLs]} {
+            inform "-W-ibdiagpath:qos.vlaOverOpVLs" $name $outPortNum $overRangeVLs $opVLs $tbl
+         }
+      }
+
+      set blockedVLs {}
+      for {set vl 0} {$vl < $opVLs} {incr vl} {
+         if {![info exists VL_WEIGHT($vl)]} {
+            lappend blockedVLs $vl
+         }
+      }
+      if {[llength $blockedVLs]} {
+         inform "-W-ibdiagpath:qos.blockedVLs" $name $outPortNum $blockedVLs
+      }
+
+      # report SLs that map to VL > OPVL
+      # report and track SLs that blocked by blocked VLs
+      set outOfRangeVLsSLs {}
+      set blockedSLs {}
+      for {set i 0} {$i < 8} {incr i} {
+         set sl0 [expr 2*$i]
+         set sl1 [expr 2*$i + 1]
+         set vl0 [expr ([lindex $SL2VL $i] & 0xf0) >> 4]
+         set vl1 [expr [lindex $SL2VL $i] & 0xf]
+         if {($vl0 >= $opVLs) || ($vl0 == 15)} {
+            set BLOCKED_SL($sl0) 1
+            lappend outOfRangeVLsSLs $sl0
+         }
+         if {($vl1 >= $opVLs) || ($vl1 == 15)} {
+            set BLOCKED_SL($sl1) 1
+            lappend outOfRangeVLsSLs $sl1
+         }
+      
+         if {[lsearch -exact $blockedVLs $vl0] >= 0} {
+            set BLOCKED_SL($sl0) 1
+            lappend blockedSLs $sl0
+         }
+         if {[lsearch -exact $blockedVLs $vl1] >= 0} {
+            set BLOCKED_SL($sl1) 1
+            lappend blockedSLs $sl1
+         }
+      }
+      if {[llength $outOfRangeVLsSLs]} {
+         inform "-W-ibdiagpath:qos.sl2vlOORange" $name $inPortNum $outPortNum $opVLs \
+            [lsort -integer $outOfRangeVLsSLs]
+      }
+      if {[llength $blockedSLs]} {
+         inform "-W-ibdiagpath:qos.blockedSL" $name $inPortNum $outPortNum \
+            [lsort -integer $blockedSLs]
+      }
+
+      # obtain next path
+      set drPath [lrange $dstPath 0 $idx]
+   
+      if {$idx + 1 == [llength $dstPath]} {
+         set done 1
+         continue
+      }
+
+      # get the next nodeGuid
+      if {[catch {set NodeInfo [SmMadGetByDr NodeInfo dump "$drPath"]}]} {
+         "-E-ibdiagpath:Qos.FailNodeInfo" $drPath
+         return 1
+      }
+      set nodeGuid [GetWordAfterFlag $NodeInfo "-node_guid"]
+      set portGuid [GetWordAfterFlag $NodeInfo "-port_guid"]
+      set inPortNum [GetEntryPort $drPath -byNodeInfo $NodeInfo]
+      set outPortNum [lindex $dstPath [expr $idx + 1]]
+      incr idx
+   }
+
+   set pathSLs {}
+   foreach sl [lsort -integer [array names BLOCKED_SL]] {
+      if {$BLOCKED_SL($sl) == 0} {
+         lappend pathSLs $sl
+      }
+   }
+   if {[llength $pathSLs]} {
+      inform "-I-ibdiagpath:qos.pathSLs" $pathSLs
+   } else {
+      inform "-E-ibdiagpath:qos.noPathSLs"
+   }
+   return 0
+}
+######################################################################
 
 ######################################################################
 ### If a topology file is given
@@ -4016,7 +4205,7 @@ proc Name2Lid {localPortPtr destPortPtr exitPort} {
       if {(($localNodetype == 1) && ($localNodePtr == $destNodePtr))|| ($index == 1) } {
          # in the current switch check if it's any of the switch ports
          for {set i 1} {$i <= [IBNode_numPorts_get $localNodePtr]} {incr i} {
-            set tmpPort [IBNode_getPort $localNodePtr $i] 
+            set tmpPort [IBNode_getPort $localNodePtr $i]
 
             if {$tmpPort == $destPortPtr} {
                return "$DirectPath 0"
@@ -4213,7 +4402,7 @@ proc GetEntryPort { _directPath args} {
       if {[lsearch -exac $args "-byNodeInfo"]!=-1} {
          set nodeInfo [GetWordAfterFlag $args "-byNodeInfo"]
       } else {
-         set nodeInfo [SmMadGetByDr NodeInfo dump ""] 
+         set nodeInfo [SmMadGetByDr NodeInfo dump ""]
       }
       set _port_num_vendor_id [GetWordAfterFlag $nodeInfo "-port_num_vendor_id"]
       return [format %d [FormatInfo $_port_num_vendor_id PortNum NONE]]
@@ -4254,7 +4443,7 @@ proc GetParamValue { parameter DirectPath args } {
    global G INFO_LST
    set DirectPath "[join $DirectPath]"
    # noread - if info doesn't exists don't try to get it by dr
-   set byDr 0    
+   set byDr 0   
    set noread 0
    if {[lsearch -exac $args "-byDr"] != -1} { set byDr 1 }
    if {[lsearch -exac $args "-noread"] != -1} { set noread 1}
@@ -4349,7 +4538,7 @@ proc GetParamValue { parameter DirectPath args } {
                if {$parameter == "NodeDesc"} {
                   return [FormatInfo $G(data:NodeDesc.$NodeGuid) NodeDesc $DirectPath]
                }
-               return [FormatInfo [GetWordAfterFlag $G($InfoSource) -$cfg(flag)] $parameter $DirectPath] 
+               return [FormatInfo [GetWordAfterFlag $G($InfoSource) -$cfg(flag)] $parameter $DirectPath]
             } else {
                if { [PathIsBad $DirectPath] > 1 } {
                   return -code 1 -errorinfo "3.Direct Path \"$DirectPath\" is bad"
@@ -4856,7 +5045,7 @@ proc CheckAllinksSettings {} {
    if {[lsearch $checkList "PHY"] != -1} {
       inform "-I-ibdiagnet:bad.link.width.header"
       if {[llength [array names LINK_PHY]]} {
-         foreach link [lsort [array names LINK_PHY]] {                                                     
+         foreach link [lsort [array names LINK_PHY]] {                                                    
             if {[PathIsBad $link] > 1} {continue;}
             set paramlist "-DirectPath0 \{[lrange $link 0 end-1]\} -DirectPath1 \{$link\}"
             eval inform "-W-ibdiagnet:report.links.width.state" -phy $LINK_PHY($link) $paramlist
@@ -4869,7 +5058,7 @@ proc CheckAllinksSettings {} {
    if {[lsearch $checkList "SPD"] != -1} {
       inform "-I-ibdiagnet:bad.link.speed.header"
       if {[llength [array names LINK_SPD]]} {
-         foreach link [lsort [array names LINK_SPD]] {                                                     
+         foreach link [lsort [array names LINK_SPD]] {                                                    
             if {[PathIsBad $link] > 1} {continue;}
             set paramlist "-DirectPath0 \{[lrange $link 0 end-1]\} -DirectPath1 \{$link\}"
             eval inform "-W-ibdiagnet:report.links.speed.state" -spd $LINK_SPD($link) $paramlist

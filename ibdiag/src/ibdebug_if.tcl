@@ -335,7 +335,7 @@ proc UpToolsFlags {_flag _tool} {
 proc GetToolsFlags { tool } {
    global TOOLS_FLAGS
    if {[info exists TOOLS_FLAGS($tool)]} {
-      return $TOOLS_FLAGS($tool)      
+      return $TOOLS_FLAGS($tool)     
    }
    return ""
 }
@@ -1262,7 +1262,7 @@ proc inform { msgCode args } {
          append msgText "Discovery at local link failed: "
          if {![catch {set portState [GetParamValue LOG $msgF(DirectPath0) -port $NODE(0,EntryPort) -byDr]}]} {
             if {$portState == "DWN"} {
-               append msgText "[DrPath2Name "" -port $NODE(0,EntryPort)] is DOWN%n" 
+               append msgText "[DrPath2Name "" -port $NODE(0,EntryPort)] is DOWN%n"
             }
          }
          append msgText "$msgF(command) - failed $numOfRetries consecutive times."
@@ -1276,7 +1276,7 @@ proc inform { msgCode args } {
       }
       "-E-localPort:enable.ibis.set.port" {
          append msgText "Failed running : \"ibis_set_port $G(data:root.port.guid)\""
-      }      
+      }     
 
       "-W-outfile:not.writable" {
          append msgText "Output file $msgF(file0) is write protected.\n"
@@ -1559,7 +1559,7 @@ proc inform { msgCode args } {
          set noExiting 1
       }
       "-I-ibdiagnet:SM.report.head" {
-         set msgText "  "  
+         set msgText "  " 
          set SMstate [lindex $args 0]
          append msgText "SM - $SMstate"
       }
@@ -1664,7 +1664,7 @@ proc inform { msgCode args } {
             append msgText %n
             regexp {([^ =]*)=(.*)} $err . pmCounter pmTrash
             append msgText "      $pmCounter"
-            append msgText "[string repeat " " [expr [GetLengthMaxWord $G(var:list.pm.counter)] - [string length $pmCounter]]] : " 
+            append msgText "[string repeat " " [expr [GetLengthMaxWord $G(var:list.pm.counter)] - [string length $pmCounter]]] : "
             append msgText $pmTrash
          }
       }
@@ -1814,6 +1814,48 @@ proc inform { msgCode args } {
       "-E-ibdiagpath.ipoib.noGroups" {
          set noExiting 1
          append msgText "No IPoIB Subnets found on Path! Nodes can not communicate via IPoIB!"
+      }
+      "-I-ibdiagpath:qos.report.header" {
+         append msgText "QoS on Path Check"     
+      }
+      "-V-ibdiagpath.qos.atNode" {
+         foreach {name inPort outPort} $args {break}
+         append msgText "At node:$name from-port:$inPort out-port:$outPort"
+      }
+      "-E-ibdiagpath:qos.FailPortInfoOpVLs" {
+         append msgText "Failed to get PortInfo for path:$args"
+      }
+      "-E-ibdiagpath:qos.FailSL2VL" {
+         append msgText "Failed to get SL2VLTable for path:$args"
+      }
+      "-E-ibdiagpath:qos.FailVLArb" {
+         append msgText "Failed to get VLArbTable for path:$args"
+      }
+      "-W-ibdiagpath:qos.vlaOverOpVLs" {
+         foreach {name port entries opVLs HL} $args {break}
+         set lastVL [expr $opVLs - 1]
+         if {$lastVL == 15} {set lastVL 14}
+         append msgText "VLArbTable$HL Entries:$entries VL > $lastVL at node:$name port:$port"
+      }
+      "-W-ibdiagpath:qos.blockedVLs" {
+         foreach {name outPort blocked} $args {break}
+         append msgText "Blocked VLs:$blocked at node:$name port:$outPort"
+      }
+      "-W-ibdiagpath:qos.sl2vlOORange" {
+         foreach {name inPort outPort opVLs sls} $args {break}
+         set lastVL [expr $opVLs - 1]
+         if {$lastVL == 15} {set lastVL 14}
+         append msgText "SLs:$sls mapped to VL > $lastVL at node:$name in-port:$inPort out-port:$outPort"
+      }
+      "-W-ibdiagpath:qos.blockedSL" {
+         foreach {name inPort outPort sls} $args {break}
+         append msgText "SLs:$sls are blocked due to VLArb node:$name in-port:$inPort out-port:$outPort"
+      }
+      "-I-ibdiagpath:qos.pathSLs" {
+         append msgText "The following SLs can be used:[lindex $args 0]"
+      }
+      "-E-ibdiagpath:qos.noPathSLs" {
+         append msgText "No SLs can be used. No communication from source to destination possible !"
       }
       "-I-exit:\\r" {
          set msgText ""
@@ -2028,7 +2070,7 @@ proc inform { msgCode args } {
 ##############################
 
 ##############################
-#  NAME         RequirePackage      
+#  NAME         RequirePackage     
 #  FUNCTION require the available packages for device specific crRead/crWrite
 #  RESULT       ammm... the available packages are required
 proc RequirePackage {} {
@@ -2394,7 +2436,7 @@ proc showHelpPage { args } {
       "DESCRIPTION
             ibsac sends SA queries.
             The supported attributes and their fields
-            are provided in the \"query\" mode (-q). 
+            are provided in the \"query\" mode (-q).
 
             ERROR CODES
             -1 - Fail to find target device
