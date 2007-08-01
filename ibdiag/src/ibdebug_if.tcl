@@ -335,7 +335,7 @@ proc UpToolsFlags {_flag _tool} {
 proc GetToolsFlags { tool } {
    global TOOLS_FLAGS
    if {[info exists TOOLS_FLAGS($tool)]} {
-      return $TOOLS_FLAGS($tool)     
+      return $TOOLS_FLAGS($tool)    
    }
    return ""
 }
@@ -653,6 +653,25 @@ proc ParseArgv {} {
 ### User messages
 ######################################################################
 
+proc SummaryMessage {} {
+   global G
+   if {$G(status:summary.headr) != 0} {
+      set prevHeadr $G(status:summary.headr)
+      set warns $G(status:summary.warn)
+      set errs  $G(status:summary.errs)
+      append G(status:summary.text) \
+         [format "    %-40s %-6d %-6d\n" $prevHeadr $errs $warns]
+      set G(status:summary.errs) 0
+      set G(status:summary.warn) 0
+   }
+   puts "----------------------------------------------------------------"
+   puts "-I- Stages Status Report:"
+   puts [format "    %-40s %-6s %-6s" STAGE Errors Warnings]
+   puts $G(status:summary.text)
+   puts "Please see $G(outfiles,.log) for complete log"
+   puts "----------------------------------------------------------------"
+}
+
 ##############################
 proc PutsIn80Chars { string args } {
    global G
@@ -732,15 +751,23 @@ proc inform { msgCode args } {
              && ( \"$G(var:tool.name)\" != \"ibdiagnet\" ) \
              && ( ![info exists G(argv:verbose)] ) ]
    }
-   ### Setting Error Codes
-   set G(status:high.priorty)    0
-   set G(status:discovery.failed)   1
-   set G(status:illegal.flag.value) 2
-   set G(status:ibis.init)    3
-   set G(status:root.port.get)      4
-   set G(status:topology.failed)       5
-   set G(status:loading)               6
-   set G(status:crash)                 7
+
+   if {! [info exist G(status:high.priorty)]} {
+      ### Setting Error Codes
+      set G(status:high.priorty)       0
+      set G(status:discovery.failed)   1
+      set G(status:illegal.flag.value) 2
+      set G(status:ibis.init)          3
+      set G(status:root.port.get)      4
+      set G(status:topology.failed)    5
+      set G(status:loading)            6
+      set G(status:crash)              7
+      # Summary generation
+      set G(status:summary.text) ""
+      set G(status:summary.errs) 0
+      set G(status:summary.warn) 0
+      set G(status:summary.headr) 0
+   }
 
    ##################################################
    ### When general tool's info is requested (help page, version num etc.)
@@ -897,6 +924,7 @@ proc inform { msgCode args } {
    set bar "${msgType}[Bar - 50]"
    set putsFlags ""
    set msgText "$msgType "
+   set headerText ""
 
    ### Decoding msgCode
    switch -exact -- $msgCode {
@@ -1276,7 +1304,7 @@ proc inform { msgCode args } {
       }
       "-E-localPort:enable.ibis.set.port" {
          append msgText "Failed running : \"ibis_set_port $G(data:root.port.guid)\""
-      }     
+      }    
 
       "-W-outfile:not.writable" {
          append msgText "Output file $msgF(file0) is write protected.\n"
@@ -1456,6 +1484,7 @@ proc inform { msgCode args } {
          set from [lindex $args 0]
          set to   [lindex $args 1]
          append msgText "Traversing the path from $from to $to"
+         set headerText "LFT Traversal: $from to $to"
       }
       "-I-ibdiagpath:obtain.src.and.dst.lids" {
          append msgText "Obtaining source and destination LIDs:\n"
@@ -1470,12 +1499,14 @@ proc inform { msgCode args } {
       }
       "-I-ibdiagpath:read.pm.header" {
          append msgText "Validating path health"
+         set headerText "Path Health Check"
       }
       "-W-ibdiagpath:ardessing.local.node" {
          append msgText "Addressing local node. Only local port will be checked."
       }
       "-I-ibdiagpath:service.level.header" {
          append msgText "Service Level check"
+         set headerText "Service Level Check"
       }
       "-I-ibdiagpath:service.level.report" {
          if {[info exists G(argv:service.level)]} {
@@ -1506,6 +1537,7 @@ proc inform { msgCode args } {
       }
       "-I-topology:matching.header" {
          append msgText "Topology matching results"
+         set headerText "Topology Matching Check"
       }
       "-E-topology:localDevice.Duplicated" {
          append msgText "Local Device Guid was duplicated. "
@@ -1539,12 +1571,14 @@ proc inform { msgCode args } {
 
       "-I-ibdiagnet:report.fab.qualities.header" {
          append msgText "Fabric qualities report"
+         set headerText "Fabric Qualities Report"
       }
       "-I-ibdiagnet:Checking.bad.guids.lids" {
          append msgText "Checking bad guids"
       }
       "-I-ibdiagnet:SM.header" {
          append msgText "Summary Fabric SM-state-priority"
+         set headerText "Subnet Manager Check"
       }
       "-E-ibdiagnet:no.lst.file" {
          set noExiting 1
@@ -1559,7 +1593,7 @@ proc inform { msgCode args } {
          set noExiting 1
       }
       "-I-ibdiagnet:SM.report.head" {
-         set msgText "  " 
+         set msgText "  "
          set SMstate [lindex $args 0]
          append msgText "SM - $SMstate"
       }
@@ -1571,23 +1605,28 @@ proc inform { msgCode args } {
       }
       "-I-ibdiagnet:check.credit.loops.header" {
          append msgText "Checking credit loops"
+         set headerText "Credit Loops Check"
       }
       "-I-ibdiagnet:mgid.mlid.hca.header" {
          append msgText "mgid-mlid-HCAs matching table"
+         set headerText "Multicast Groups Matching"      
       }
       "-I-ibdiagnet:bad.guids.header" {
          append msgText "Bad Guids Info"
+         set headerText "Bad GUIDs Check"
       }
       "-I-ibdiagnet:no.bad.guids" {
          append msgText "No bad Guids were found"
       }
       "-I-ibdiagnet:bad.sm.header" {
          append msgText "Bad Fabric SM Info"
+         set headerText "SM Info Check"      
       }
       "-I-ibdiagnet:bad.links.header" {
          append msgText "Bad Links Info\n"
          append msgText "-I- Errors have occurred on the following links%n"
          append msgText "(for errors details, look in log file $G(outfiles,.log)):"
+         set headerText "Link Errors Check"
       }
       "-I-ibdiagnet:no.bad.paths.header" {
          append msgText "Bad Links Info\n"
@@ -1616,6 +1655,7 @@ proc inform { msgCode args } {
       }
       "-I-ibdiagnet:bad.link.width.header" {
          append msgText "Links With links width != $G(argv:link.width) (as set by -lw option)"
+         set headerText "Specific Link Width Check"
       }
       "-I-ibdiagnet:no.bad.link.width" {
          append msgText "No unmatched Links (with width != $G(argv:link.width)) were found"
@@ -1630,6 +1670,7 @@ proc inform { msgCode args } {
       }
       "-I-ibdiagnet:bad.link.speed.header" {
          append msgText "Links With links speed != $G(argv:link.speed) (as set by -ls option)"
+         set headerText "Specific Link Speed Check"
       }
       "-I-ibdiagnet:no.bad.link.speed" {
          append msgText "No unmatched Links (with speed != $G(argv:link.speed)) were found"
@@ -1644,12 +1685,14 @@ proc inform { msgCode args } {
       }
       "-I-ibdiagnet:bad.link.logic.header" {
          append msgText "Links With Logical State = INIT"
+         set headerText "Link State Active Check"
       }
       "-I-ibdiagnet:no.bad.link.logic" {
          append msgText "No bad Links (with logical state = INIT) were found"
       }
       "-I-ibdiagnet:pm.counter.report.header" {
          append msgText "PM Counters Info"
+         set headerText "Performance Counters Report"
       }
       "-I-ibdiagnet:no.pm.counter.report" {
          append msgText "No illegal PM counters values were found"
@@ -1670,6 +1713,7 @@ proc inform { msgCode args } {
       }
       "-I-ibdiagnet:external.flag.execute.header" {
          append msgText "Executing external option: $msgF(flag)"
+         set headerText "External Options"
       }
       "-I-ibdiagnet:external.flag.execute.node.report" {
          append msgText "$NODE(0,FullName_Last)%n"
@@ -1726,6 +1770,7 @@ proc inform { msgCode args } {
       }
       "-I-ibdiagnet:PKeys.report.header" {
          append msgText "Fabric Partitions Report (see $G(var:tool.name).pkey for a full hosts list)"
+         set headerText "Partitions Check"
       }
       "-I-ibdiagnet:PKeys.Group" {
          set base [format 0x%04x [lindex $args 0]]
@@ -1736,6 +1781,7 @@ proc inform { msgCode args } {
       }
       "-I-ibdiagpath:PKeys.report.header" {
          append msgText "Path Partitions Report"
+         set headerText "Path Partitions Check"
       }
       "-I-ibdiagpath:PKeys.src.pkeys" {
          foreach {nodeName portNum pkeys} $args {break}
@@ -1773,6 +1819,7 @@ proc inform { msgCode args } {
       }
       "-I-ibdiagnet:ipoib.header" {
          append msgText "IPoIB Subnets Check"
+         set headerText "IPoIB Subnets Check"
       }
       "-I-ipoib.subnet" {
          foreach {IPV pkey gMtu gRate gSL gPKey gQKey} $args {break}
@@ -1810,13 +1857,15 @@ proc inform { msgCode args } {
       }
       "-I-ibdiagpath:ipoib.header" {
          append msgText "IPoIB Path Check"
+         set headerText "Path IPoIB Check"
       }
       "-E-ibdiagpath.ipoib.noGroups" {
          set noExiting 1
          append msgText "No IPoIB Subnets found on Path! Nodes can not communicate via IPoIB!"
       }
       "-I-ibdiagpath:qos.report.header" {
-         append msgText "QoS on Path Check"     
+         append msgText "QoS on Path Check"
+         set headerText "QoS on Path Check"
       }
       "-V-ibdiagpath.qos.atNode" {
          foreach {name inPort outPort} $args {break}
@@ -1862,9 +1911,8 @@ proc inform { msgCode args } {
          # <- this means don't print the "-I-" prefix
          append msgText "%n"
       }
-
-
       "-I-done" {
+         SummaryMessage
          PutsIn80Chars " "
          append msgText "Done. Run time was [expr [clock seconds] - $args] seconds."
       }
@@ -1997,6 +2045,27 @@ proc inform { msgCode args } {
       }
    }
 
+   ##################################################
+   ## Summary generation
+   if {$msgType == "-E-"} {
+      incr G(status:summary.errs)
+   } elseif {$msgType == "-W-"} {
+      incr G(status:summary.warn)
+   }
+
+   if {[regexp ".header" $msgCode] && $headerText != ""} {
+      if {$G(status:summary.headr) != 0} {
+         set prevHeadr $G(status:summary.headr)
+         set warns $G(status:summary.warn)
+         set errs  $G(status:summary.errs)
+         append G(status:summary.text) \
+            [format "    %-40s %-6d %-6d\n" $prevHeadr $errs $warns]
+      }
+      set G(status:summary.errs) 0
+      set G(status:summary.warn) 0
+      set G(status:summary.headr) $headerText
+   }
+
    ### Writing out the message
    set msgText [split $msgText \n]
    if {[regexp ".header" $msgCode]} {
@@ -2070,7 +2139,7 @@ proc inform { msgCode args } {
 ##############################
 
 ##############################
-#  NAME         RequirePackage     
+#  NAME         RequirePackage    
 #  FUNCTION require the available packages for device specific crRead/crWrite
 #  RESULT       ammm... the available packages are required
 proc RequirePackage {} {
