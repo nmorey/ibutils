@@ -1089,6 +1089,77 @@ int main(int argc, char **argv) {
 extern int main();
 #endif
 
+static int _wrap_ibdmUseInternalLog(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    int  _result;
+    Tcl_Obj * tcl_result;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 1) || (objc > 1)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ibdmUseInternalLog ",-1);
+        return TCL_ERROR;
+    }
+{ 
+  ibdm_tcl_error = 0;
+      _result = (int )ibdmUseInternalLog();
+; 
+  if (ibdm_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+    Tcl_SetIntObj(tcl_result,(long) _result);
+    return TCL_OK;
+}
+static int _wrap_ibdmUseCoutLog(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    int  _result;
+    Tcl_Obj * tcl_result;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 1) || (objc > 1)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ibdmUseCoutLog ",-1);
+        return TCL_ERROR;
+    }
+{ 
+  ibdm_tcl_error = 0;
+      _result = (int )ibdmUseCoutLog();
+; 
+  if (ibdm_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+    Tcl_SetIntObj(tcl_result,(long) _result);
+    return TCL_OK;
+}
+static int _wrap_ibdmGetAndClearInternalLog(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    char * _result;
+    Tcl_Obj * tcl_result;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 1) || (objc > 1)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ibdmGetAndClearInternalLog ",-1);
+        return TCL_ERROR;
+    }
+{ 
+  ibdm_tcl_error = 0;
+      _result = (char *)ibdmGetAndClearInternalLog();
+; 
+  if (ibdm_tcl_error) { 
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
+ 	 return TCL_ERROR; 
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+    Tcl_SetStringObj(tcl_result,_result,-1);
+delete [] _result;
+
+    return TCL_OK;
+}
 static int _wrap_new_IBFabric(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
 
     IBFabric * _result;
@@ -39229,6 +39300,9 @@ SWIGEXPORT(int,Ibdm_Init)(Tcl_Interp *interp) {
 	 Tcl_LinkVar(interp, SWIG_prefix "FABU_LOG_INFO", (char *) &_wrap_const_FABU_LOG_INFO, TCL_LINK_INT | TCL_LINK_READ_ONLY);
 	 Tcl_LinkVar(interp, SWIG_prefix "FABU_LOG_VERBOSE", (char *) &_wrap_const_FABU_LOG_VERBOSE, TCL_LINK_INT | TCL_LINK_READ_ONLY);
 	 Tcl_LinkVar(interp, SWIG_prefix "FabricUtilsVerboseLevel", (char *) &FabricUtilsVerboseLevel, TCL_LINK_INT);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ibdmUseInternalLog", _wrap_ibdmUseInternalLog, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ibdmUseCoutLog", _wrap_ibdmUseCoutLog, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ibdmGetAndClearInternalLog", _wrap_ibdmGetAndClearInternalLog, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "new_IBFabric", _wrap_new_IBFabric, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "delete_IBFabric", _wrap_delete_IBFabric, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ibdmAssignLids", _wrap_ibdmAssignLids, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
