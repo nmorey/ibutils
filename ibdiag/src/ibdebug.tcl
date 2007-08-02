@@ -1,7 +1,7 @@
 ##############################
 ### Initialize Databases
 ##############################
-# InitializeIBDIAG                                
+# InitializeIBDIAG                               
 # InitializeINFO_LST
 # InitializeOutputFile
 # ParseOptionsList
@@ -740,7 +740,7 @@ proc SetTopologyNSysName {} {
 ##############################
 
 ##############################
-#  NAME         DeleteOldFiles    
+#  NAME         DeleteOldFiles   
 #  FUNCTION Delete the old ibdiag files
 #  INPUTS       NULL
 #  OUTPUT   NULL
@@ -1002,7 +1002,7 @@ proc GetPmList { _lidPort } {
 #       G(data:PortGuid.<NodeGuid>:<PN>)     : <PortGuid>
 #
 #       Neighbor(<NodeGuid>:<PN>)       : <NodeGuid>:<PN>
-#   
+#  
 #       MASK(CurrentMaskGuid)           : <MaskGuid>
 #       MASK(PortMask,<PortGuid>)       : <PortMask>
 #       MASK(NodeMask,<NodeGuid>)       : <NodeMask>
@@ -1014,7 +1014,7 @@ proc GetPmList { _lidPort } {
 #       DUPandZERO(<value>,<ID>)        : <DirectPath>
 #
 #       SM(<SMstate>                    : <DirectPath>,SMpriority
-#   
+#  
 #       G(data:list.bad.paths) - list of second paths
 #
 #  INPUTS
@@ -1102,7 +1102,7 @@ proc DiscoverFabric { _pathLimit {startIndex 0}} {
             if {[catch {set tmp_type_2 [GetParamValue Type $DirectPath]}]} {
                set bool_badPathFound 1
                continue;
-            }                                                               
+            }                                                              
             ## Known Guids - Case2.1: Duplicate node GUID Found!
             # previous and current port has diffrent types
             if {$tmp_type_1 != $tmp_type_2} {
@@ -2053,7 +2053,7 @@ proc DumpBadLinksLogic {} {
          lappend listOfNames \"[DrPath2Name $link nameOnly ]\"
       }
 
-      foreach link $G(data:list.links.not.active.logical.state) {                                                    
+      foreach link $G(data:list.links.not.active.logical.state) {                                                   
          if {[PathIsBad $link] > 1} {continue;}
          set paramlist "-DirectPath0 \{[lrange $link 0 end-1]\} -DirectPath1 \{$link\}"
          eval inform "-W-ibdiagnet:report.links.init.state" $paramlist -maxName [GetLengthMaxWord $listOfNames]
@@ -4323,20 +4323,47 @@ proc DumpFabQualities {} {
    }
 
    # verifying CA to CA routes
-   set report [ibdmVerifyCAtoCARoutes $fabric]
-   append report [ibdmCheckMulticastGroups $fabric]
+   ibdmUseInternalLog
+   ibdmVerifyCAtoCARoutes $fabric
+   ibdmCheckMulticastGroups $fabric
+   set report [ibdmGetAndClearInternalLog]
+   inform "-I-ibdiagnet:report.fab.qualities.report" $report
+   set nErrs [regexp -all -- {-E-} $report]
+   if {$nErrs} {
+      inform "-E-ibdiagnet:report.fab.qualities.errors" $nErrs
+   }
+   set nWarns [regexp -all -- {-W-} $report]
+   if {$nWarns} {
+      inform "-W-ibdiagnet:report.fab.qualities.warnings" $nWarns
+   }
 
    inform "-I-ibdiagnet:check.credit.loops.header"
 
    # report credit loops
    ibdmCalcMinHopTables $fabric
    set roots [ibdmFindRootNodesByMinHop $fabric]
+   # just flush out any logs
+   set report [ibdmGetAndClearInternalLog]
    if {[llength $roots]} {
       inform "-I-reporting:found.roots" $roots
       ibdmReportNonUpDownCa2CaPaths $fabric $roots
    } else {
       ibdmAnalyzeLoops $fabric
    }
+   set report [ibdmGetAndClearInternalLog]
+   inform "-I-ibdiagnet:report.fab.credit.loop.report" $report
+
+   set nErrs [regexp -all -- {-E-} $report]
+   if {$nErrs} {
+      inform "-E-ibdiagnet:report.fab.credit.loop.errors" $nErrs
+   }
+   set nWarns [regexp -all -- {-W-} $report]
+   if {$nWarns} {
+      inform "-W-ibdiagnet:report.fab.credit.loop.warnings" $nWarns
+   }
+
+   # back to send ibdm messages to cout
+   ibdmUseCoutLog
 
    # Multicast mlid-guid-hcas report
    set mcPtrList [sacMCMQuery getTable 0]
@@ -4443,7 +4470,7 @@ proc GetParamValue { parameter DirectPath args } {
    global G INFO_LST
    set DirectPath "[join $DirectPath]"
    # noread - if info doesn't exists don't try to get it by dr
-   set byDr 0   
+   set byDr 0  
    set noread 0
    if {[lsearch -exac $args "-byDr"] != -1} { set byDr 1 }
    if {[lsearch -exac $args "-noread"] != -1} { set noread 1}
@@ -5045,7 +5072,7 @@ proc CheckAllinksSettings {} {
    if {[lsearch $checkList "PHY"] != -1} {
       inform "-I-ibdiagnet:bad.link.width.header"
       if {[llength [array names LINK_PHY]]} {
-         foreach link [lsort [array names LINK_PHY]] {                                                    
+         foreach link [lsort [array names LINK_PHY]] {                                                   
             if {[PathIsBad $link] > 1} {continue;}
             set paramlist "-DirectPath0 \{[lrange $link 0 end-1]\} -DirectPath1 \{$link\}"
             eval inform "-W-ibdiagnet:report.links.width.state" -phy $LINK_PHY($link) $paramlist
@@ -5058,7 +5085,7 @@ proc CheckAllinksSettings {} {
    if {[lsearch $checkList "SPD"] != -1} {
       inform "-I-ibdiagnet:bad.link.speed.header"
       if {[llength [array names LINK_SPD]]} {
-         foreach link [lsort [array names LINK_SPD]] {                                                    
+         foreach link [lsort [array names LINK_SPD]] {                                                   
             if {[PathIsBad $link] > 1} {continue;}
             set paramlist "-DirectPath0 \{[lrange $link 0 end-1]\} -DirectPath1 \{$link\}"
             eval inform "-W-ibdiagnet:report.links.speed.state" -spd $LINK_SPD($link) $paramlist

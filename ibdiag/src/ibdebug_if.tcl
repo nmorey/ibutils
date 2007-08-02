@@ -335,7 +335,7 @@ proc UpToolsFlags {_flag _tool} {
 proc GetToolsFlags { tool } {
    global TOOLS_FLAGS
    if {[info exists TOOLS_FLAGS($tool)]} {
-      return $TOOLS_FLAGS($tool)    
+      return $TOOLS_FLAGS($tool)   
    }
    return ""
 }
@@ -1304,7 +1304,7 @@ proc inform { msgCode args } {
       }
       "-E-localPort:enable.ibis.set.port" {
          append msgText "Failed running : \"ibis_set_port $G(data:root.port.guid)\""
-      }    
+      }   
 
       "-W-outfile:not.writable" {
          append msgText "Output file $msgF(file0) is write protected.\n"
@@ -1573,6 +1573,20 @@ proc inform { msgCode args } {
          append msgText "Fabric qualities report"
          set headerText "Fabric Qualities Report"
       }
+      "-I-ibdiagnet:report.fab.qualities.report" {
+         append msgText "\n[lindex $args 0]"
+      }
+      "-E-ibdiagnet:report.fab.qualities.errors" {
+         set noExiting 1
+         set errs [lindex $args 0]
+         incr G(status:summary.errs) [expr $errs -1]
+         append msgText "Total Qualities Check Errors:$errs"
+      }
+      "-W-ibdiagnet:report.fab.qualities.warnings" {
+         set warns [lindex $args 0]
+         incr G(status:summary.warn) [expr $warns -1]
+         append msgText "Total Qualities Check Warnings:$warns"
+      }
       "-I-ibdiagnet:Checking.bad.guids.lids" {
          append msgText "Checking bad guids"
       }
@@ -1607,9 +1621,23 @@ proc inform { msgCode args } {
          append msgText "Checking credit loops"
          set headerText "Credit Loops Check"
       }
+      "-I-ibdiagnet:report.fab.credit.loop.report" {
+         append msgText "\n[lindex $args 0]"
+      }
+      "-E-ibdiagnet:report.fab.credit.loop.errors" {
+         set noExiting 1
+         set errs [lindex $args 0]
+         incr G(status:summary.errs) [expr $errs -1]
+         append msgText "Total Credit Loop Check Errors:$errs"
+      }
+      "-W-ibdiagnet:report.fab.credit.loop.warnings" {
+         set warns [lindex $args 0]
+         incr G(status:summary.warn) [expr $warns -1]
+         append msgText "Total Credit Loop Check Warnings:$warns"
+      }
       "-I-ibdiagnet:mgid.mlid.hca.header" {
          append msgText "mgid-mlid-HCAs matching table"
-         set headerText "Multicast Groups Matching"      
+         set headerText "Multicast Groups Matching"     
       }
       "-I-ibdiagnet:bad.guids.header" {
          append msgText "Bad Guids Info"
@@ -1620,7 +1648,7 @@ proc inform { msgCode args } {
       }
       "-I-ibdiagnet:bad.sm.header" {
          append msgText "Bad Fabric SM Info"
-         set headerText "SM Info Check"      
+         set headerText "SM Info Check"     
       }
       "-I-ibdiagnet:bad.links.header" {
          append msgText "Bad Links Info\n"
@@ -2139,7 +2167,7 @@ proc inform { msgCode args } {
 ##############################
 
 ##############################
-#  NAME         RequirePackage    
+#  NAME         RequirePackage   
 #  FUNCTION require the available packages for device specific crRead/crWrite
 #  RESULT       ammm... the available packages are required
 proc RequirePackage {} {
@@ -2321,6 +2349,11 @@ proc RequireIBDM {} {
       if {[info commands ibdmFindRootNodesByMinHop] == ""} {
          inform "-E-loading:cannot.use.current.ibdm.package" -version [package provide ibdm]
       }
+
+      if {[info commands ibdmUseInternalLog] == ""} {
+         inform "-E-loading:cannot.use.current.ibdm.package" -version [package provide ibdm]
+      }
+   
       if {[info exists G(argv:topo.file)] && (![BoolWordInList load_ibdm $G(argv:skip.checks)])} {
          set G(IBfabric:.topo) [new_IBFabric]
          if {[IBFabric_parseTopology $G(IBfabric:.topo) $G(argv:topo.file)]} {
