@@ -7,6 +7,7 @@ B<ibdiagnet - IB diagnostic net>
 ibdiagnet [-c <count>] [-v] [-r] [-t <topo-file>] [-s <sys-name>]
   [-i <dev-index>] [-p <port-num>] [-o <out-dir>] [-lw <1x|4x|12x>]
   [-ls <2.5|5|10>] [-pm] [-pc] [-P <<PM counter>=<Trash Limit>>]
+  [-wt <file-name>]
 
 =head1 DESCRIPTION
 
@@ -45,6 +46,15 @@ List of all the SM (state and priority) in the fabric
 
 A dump of the pm Counters values, of the fabric links
 
+=item F<ibdiagnet.pkey> -
+
+A dump of the the existing partitions and their member host ports
+
+=item F<ibdiagnet.mcg> -
+
+A dump of the multicast groups, their properties and member host ports
+
+
 =back
 
 In addition to generating the files above, the discovery phase also checks for duplicate node/port GUIDs in the IB fabric. If such an error is detected, it is displayed on the standard output. After the discovery phase is completed, directed route packets are sent multiple times (according to the -c option) to detect possible problematic paths on which packets may be lost. Such paths are explored, and a report of the suspected bad links is displayed on the standard output.
@@ -77,7 +87,13 @@ B<All CA-to-CA paths traced>
 B<Credit loop report>
 
 =item *
-B<mgid-mlid-HCAs matching table>
+B<mgid-mlid-HCAs multicast group and report>
+
+=item *
+B<Partitions report>
+
+=item *
+B<IPoIB report>
 
 =back
 
@@ -202,6 +218,16 @@ Reset all the fabric links pmCounters
 
 =item
 If any of the provided pm is greater then its provided value, print it to screen
+
+=back
+
+=item B<-wt> <file-name>> :
+
+=over
+
+=item
+Write out the discovered topology into the given file. This flag is useful if you later want to check for changes from the current state of the fabric.
+A directory named ibdiag_ibnl is also created by this option, and holds the IBNL files required to load this topology. To use these files you will need to set the environment variable named IBDM_IBNL_PATH to that directory. The directory is located in /tmp or in the output directory provided by the -o flag.
 
 =back
 

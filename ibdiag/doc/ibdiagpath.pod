@@ -31,6 +31,7 @@ Note: When ibdiagpath queries for the performance counters along the path betwee
 the source and destination ports, it always traverses the LID route, even if a
 directed route is specified. If along the LID route one or more links are not
 in the ACTIVE state, ibdiagpath reports an error.
+Checks for path validity from partitions, IPoIB and QoS perspectives are also provided.
 
 =over
 
