@@ -1636,8 +1636,8 @@ proc inform { msgCode args } {
          append msgText "Total Credit Loop Check Warnings:$warns"
       }
       "-I-ibdiagnet:mgid.mlid.hca.header" {
-         append msgText "mgid-mlid-HCAs matching table"
-         set headerText "Multicast Groups Matching"     
+         append msgText "mgid-mlid-HCAs table"
+         set headerText "Multicast Groups Report"     
       }
       "-I-ibdiagnet:bad.guids.header" {
          append msgText "Bad Guids Info"
