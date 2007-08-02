@@ -892,6 +892,13 @@ typedef enum {IB_UNKNOWN_NODE_TYPE, IB_SW_NODE, IB_CA_NODE} IBNodeType;
 int FabricUtilsVerboseLevel;
 /* Log level: set to FABU_LOG* values  */
 
+int ibdmUseInternalLog();
+/* instruct ibdm to use intrernal buffer for log */
+int ibdmUseCoutLog();
+/* use stdout for log */
+%new char *ibdmGetAndClearInternalLog();
+/* obtain log messages from internal log and clear it */
+
 %section "IBDM Objects",pre
 /* This section decribes the various object types exposed by IBDM. */
 %text %{

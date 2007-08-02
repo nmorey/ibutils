@@ -125,6 +125,9 @@ typedef set< uint16_t, less< uint16_t > > set_uint16;
 
 // Log level shold be part of the "main" module
 extern uint8_t FabricUtilsVerboseLevel;
+int ibdmUseInternalLog();
+int ibdmUseCoutLog();
+char *ibdmGetAndClearInternalLog();
 
 ///////////////////////////////////////////////////////////////////////////////
 
