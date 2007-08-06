@@ -1707,6 +1707,7 @@ proc DiscoverPath { _path2Start node } {
             -DirectPath "$DirectPath" -port $exitPort
       }
       set DirectPath [join "$DirectPath $exitPort"]
+
       # Note that lidGuidDev are corresponding to the "old" DirectPath
       # replace here the port number of the current device
       set tmp_drPath [lrange $DirectPath 0 end-1]
@@ -3645,7 +3646,6 @@ proc CheckPathQoS {paths} {
       set srcPath ""
    }
    set dstPath [lindex $paths end]
-
    if {[catch {set NodeInfo [SmMadGetByDr NodeInfo dump "$srcPath"]}]} {
       "-E-ibdiagpath:Qos.FailNodeInfo" $srcPath
       return 1
@@ -3667,7 +3667,6 @@ proc CheckPathQoS {paths} {
    set done 0
 
    while {!$done} {
-   
       # report stage
       set name [DrPath2Name $drPath -fullName]
       inform "-V-ibdiagpath.qos.atNode" $name $inPortNum $outPortNum
