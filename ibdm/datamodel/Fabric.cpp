@@ -890,15 +890,16 @@ IBSystem::dumpIBNL(char *ibnlDir, string &sysType) {
    for (map_str_pnode::iterator nI = NodeByName.begin();
         nI != NodeByName.end(); nI++) {
       IBNode *p_node = (*nI).second;
+		string nameWithoutSysName = p_node->name.substr(name.length()+1, p_node->name.length() - name.length() - 1);
       if (p_node->type == IB_SW_NODE)
       {
          ibnl << "\nNODE SW " << p_node->numPorts << " "
-              << "DEV" << p_node->devId << " " << p_node->name << endl;
+              << "DEV" << p_node->devId << " " << nameWithoutSysName.c_str() << endl;
       }
       else
       {
          ibnl << "\nNODE CA " << p_node->numPorts << " "
-              << "DEV" << p_node->devId << " " << p_node->name << endl;
+              << "DEV" << p_node->devId << " " << nameWithoutSysName.c_str() << endl;
       }
  
       for (unsigned int pn = 1; pn <= p_node->numPorts; pn++) {
@@ -1580,7 +1581,7 @@ IBFabric::addLink(string type1, int numPorts1,
          sprintf(buf,"%s/U%d", desc2.c_str(), hcaIdx2);
       else
          sprintf(buf,"%s/U%d", p_sys2->name.c_str(),
-                 p_sys1->NodeByName.size() + 1);
+                 p_sys2->NodeByName.size() + 1);
       if (type2 == "SW")
       {
          p_node2 = makeNode(buf, p_sys2, IB_SW_NODE, numPorts2);
