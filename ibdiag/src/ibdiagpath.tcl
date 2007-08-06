@@ -88,6 +88,13 @@ proc ibdiagpathMain {} {
          set addressingLocalPort 1
       }
    }
+
+   ## for the special case when addressing the local node
+   if $addressingLocalPort {
+      inform "-W-ibdiagpath:ardessing.local.node"
+      set paths $G(argv:port.num)
+   }
+
    # CHECK some Where that the names are legal
    if [info exists G(argv:by-name.route)] {
       array set mergedNodesArray [join [IBFabric_NodeByName_get $G(IBfabric:.topo)]]
@@ -158,11 +165,6 @@ proc ibdiagpathMain {} {
    }
 
    set G(bool:bad.links.detected) 0
-   ## for the special case when addressing the local node
-   if $addressingLocalPort {
-      inform "-W-ibdiagpath:ardessing.local.node"
-      set paths $G(argv:port.num)
-   }
 
    # Translating $src2trgtPath (starting at node at index $startIndex) into a list of LIDs and ports
    set local2srcPath   [lindex [lreplace $paths end end] end]
