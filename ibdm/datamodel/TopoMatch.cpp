@@ -98,6 +98,10 @@ TopoMatchPorts(
   int doDiag, 
   stringstream &diag)
 { 
+
+  if (!p_sPort || !p_dPort) {
+    return 0;
+  }
   if (p_sPort->num != p_dPort->num) {
     if (doDiag)
       diag << "Port number missmatch found. The port:" << p_sPort->getName()
@@ -398,7 +402,7 @@ TopoBFSAndMatchFromPorts(
       {
         IBPort *p_dPort = p_node1->getPort(pn);
         IBPort *p_sPort = p_node2->getPort(pn);
-        
+		  
         if (! TopoMatchPorts(p_sPort, p_dPort, 1, diag))
         {
           anyMissmatch++;
