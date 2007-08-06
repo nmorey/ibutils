@@ -2340,7 +2340,7 @@ proc RequirePackage {} {
 }
 
 proc RequireIBDM {} {
-   global G
+   global G env
    if {![BoolWordInList load_ibdm $G(argv:skip.checks)]} {
       if {[catch { package require ibdm } errMsg]} {
          inform "-E-loading:cannot.load.package.ibdm" -errMsg $errMsg
@@ -2353,7 +2353,9 @@ proc RequireIBDM {} {
       if {[info commands ibdmUseInternalLog] == ""} {
          inform "-E-loading:cannot.use.current.ibdm.package" -version [package provide ibdm]
       }
-   
+
+		set env(IBDM_IBNL_PATH) [file join $G(argv:out.dir) ibdiag_ibnl]
+
       if {[info exists G(argv:topo.file)] && (![BoolWordInList load_ibdm $G(argv:skip.checks)])} {
          set G(IBfabric:.topo) [new_IBFabric]
          if {[IBFabric_parseTopology $G(IBfabric:.topo) $G(argv:topo.file)]} {
