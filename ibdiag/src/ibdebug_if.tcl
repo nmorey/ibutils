@@ -1472,8 +1472,7 @@ proc inform { msgCode args } {
          append msgText "terminated with errorcode $msgF(errorcode)."
       }
       "-E-ibdiagpath:fdb.bad.value" {
-         append msgText "Lid $msgF(lid) unreachable: \"$msgF(command)\" "
-         append msgText "(ran over ibis) returned $msgF(value) at entry $msgF(entry)."
+         append msgText "Dead-end trying to reach Lid $msgF(lid)"
       }
       "-E-ibdiagpath:pmGet.failed" {
          set noExiting 1
@@ -1640,8 +1639,8 @@ proc inform { msgCode args } {
          set headerText "Multicast Groups Report"     
       }
       "-I-ibdiagnet:bad.guids.header" {
-         append msgText "Bad Guids Info"
-         set headerText "Bad GUIDs Check"
+         append msgText "Bad Guids/LIDs Info"
+         set headerText "Bad GUIDs/LIDs Check"
       }
       "-I-ibdiagnet:no.bad.guids" {
          append msgText "No bad Guids were found"
