@@ -124,9 +124,9 @@ proc setAllHcaPortsPKeyTable {fabric} {
    set pkey2 [getFullMemberPkey]
    set pkey3 [getPartialMemberPkey]
 
-   set G1 [list 0x7fff $pkey1 $pkey3]
-   set G2 [list 0x7fff $pkey2 $pkey3]
-   set G3 [list 0x7fff $pkey1 $pkey2 $pkey3]
+   set G1 [list $pkey1 $pkey3]
+   set G2 [list $pkey2 $pkey3]
+   set G3 [list $pkey1 $pkey2 $pkey3]
    
    set GROUP_PKEY(1) $pkey1
    set GROUP_PKEY(2) $pkey2
@@ -339,12 +339,20 @@ proc setOneSwitchChangeBit {fabric} {
       set node [lindex $nameNNode 1]
       #if Switch
       if {[IBNode_type_get $node] == 1} {
+			set numPorts [IBNode_numPorts_get $node]
+			for {set pn 1} {$pn <= $numPorts} {incr pn} {
+				set pi [IBMSNode_getPortInfo sim$node $pn]
+				set old [ib_port_info_t_state_info1_get $pi]
+				set new [expr ($old & 0xf0) | 0x2]
+				ib_port_info_t_state_info1_set $pi $new
+			}
+			
          set swi [IBMSNode_getSwitchInfo sim$node]
          set lifeState [ib_switch_info_t_life_state_get $swi]
          set lifeState [expr ($lifeState & 0xf8) | 4 ]
          ib_switch_info_t_life_state_set $swi $lifeState
          puts "-I- Set change bit on switch:$node"
-         return "-I- Set change bit on switch:$node"
+         return "-I- Set change bit and INIT all ports on switch:$node"
       }
    }
    return "-E- Fail to set any change bit. Could not find a switch"

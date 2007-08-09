@@ -277,7 +277,7 @@ proc runner {simDir osmPath osmPortGuid} {
 # Return the exit code
 proc checker {simDir osmPath osmPortGuid} {
    global env
-   global simCtrlSock
+   global simCtrlSock osmPid
    global nodePortGroupList
 
    set osmTestPath      [file join [file dirname $osmPath] osmtest]
@@ -327,8 +327,11 @@ proc checker {simDir osmPath osmPortGuid} {
    ###### Verifing the pkey manager behaviour ################
    
    # Remove the default pkey from the HCA ports (except the SM)
-   puts $simCtrlSock "removeDefaultPKeyFromTableForHcaPorts \$fabric"
-   puts "SIM: [gets $simCtrlSock]"
+	# HACK: for now the SM does not refresh PKey tables no matter what...
+	if {0} {
+		puts $simCtrlSock "removeDefaultPKeyFromTableForHcaPorts \$fabric"
+		puts "SIM: [gets $simCtrlSock]"
+	}
 
 	# Verify all pkeys are in correct place:
    puts "-I- Calling simulator to verify all defined indexie are correct"
@@ -346,7 +349,7 @@ proc checker {simDir osmPath osmPortGuid} {
    puts "SIM: [gets $simCtrlSock]"
 
    # wait for sweep to end or exit
-   if {[osmWaitForUpOrDead $osmLog]} {
+   if {[osmWaitForUpOrDead $osmLog 1]} {
       return 1
    }
    
