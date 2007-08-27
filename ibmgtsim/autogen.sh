@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # get two strings of version numbers
 # parse the two strings and compare
