@@ -30839,64 +30839,34 @@ static int _wrap_delete_madPathRec(ClientData clientData, Tcl_Interp *interp, in
 }    tcl_result = Tcl_GetObjResult(interp);
     return TCL_OK;
 }
-static uint8_array_t * madPathRec_resv0_set(madPathRec *obj, uint8_array_t val[8]) {
-{
-	int i;
-	for (i=0; i <8 ; i++) {
-		obj->resv0[i] = *(val+i);
-	}
-}
-    return (uint8_array_t *) val;
-}
-static int _wrap_madPathRec_resv0_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+#define madPathRec_service_id_set(_swigobj,_swigval) (_swigobj->service_id = *(_swigval),_swigval)
+static int _wrap_madPathRec_service_id_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
 
-    uint8_array_t * _result;
+    ib_net64_t * _result;
     madPathRec * _arg0;
-    uint8_array_t * _arg1;
+    ib_net64_t * _arg1;
     Tcl_Obj * tcl_result;
     char * rettype;
-    uint8_t  entrys[8];
+    uint64_t  temp;
 
     clientData = clientData; objv = objv;
     tcl_result = Tcl_GetObjResult(interp);
     if ((objc < 3) || (objc > 3)) {
-        Tcl_SetStringObj(tcl_result,"Wrong # args. madPathRec_resv0_set { madPathRec * } { uint8_array_t * } ",-1);
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madPathRec_service_id_set { madPathRec * } { ib_net64_t * } ",-1);
         return TCL_ERROR;
     }
     if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madPathRec_p"))) {
-        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madPathRec_resv0_set. Expected _madPathRec_p, received ", -1);
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madPathRec_service_id_set. Expected _madPathRec_p, received ", -1);
         Tcl_AppendToObj(tcl_result, rettype, -1);
         return TCL_ERROR;
     }
 {
-  char *buff;
-  char *p_ch;
-  char *last;
-  long int entry;
-
-  int i = 0;
-  buff = (char *)malloc((strlen(Tcl_GetStringFromObj(objv[2],NULL))+1)*sizeof(char));
-  strcpy(buff, Tcl_GetStringFromObj(objv[2],NULL));
-  p_ch = strtok_r(buff, " \t",&last);
-  while (p_ch && (i < 8)) 
-  {    
-    entry = strtol(p_ch, NULL, 0);
-    if (entry > 0xff)
-    {
-      printf("Error: wrong format or out of range value for expected uint8_t entry: %s\n", p_ch);
-      return TCL_ERROR;
-    }
-    entrys[i++] = entry;
-    p_ch = strtok_r(NULL, " \t", &last);
-  }
-  for (; i < 8; i++) entrys[i] = 0;
-
-  free(buff);
-  _arg1 = entrys;
+  temp = cl_hton64(strtoull(Tcl_GetStringFromObj(objv[2],NULL), NULL, 16));
+  _arg1 = &temp;
 }
 { 
   ibms_tcl_error = 0;
-      _result = (uint8_array_t *)madPathRec_resv0_set(_arg0,_arg1);
+      _result = (ib_net64_t *)madPathRec_service_id_set(_arg0,_arg1);
 ; 
   if (ibms_tcl_error) { 
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
@@ -30904,19 +30874,16 @@ static int _wrap_madPathRec_resv0_set(ClientData clientData, Tcl_Interp *interp,
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
-  int i;
-  char buff[8];
-  for (i=0; i <8 ; i++) {
-    sprintf(buff, "0x%02x ", *(_result+i));
-    Tcl_AppendResult(interp, buff, NULL);
-  }
+  char buff[20];
+  sprintf(buff, "0x%016" PRIx64, cl_ntoh64(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
 }
     return TCL_OK;
 }
-#define madPathRec_resv0_get(_swigobj) ((uint8_array_t *) _swigobj->resv0)
-static int _wrap_madPathRec_resv0_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+#define madPathRec_service_id_get(_swigobj) (&_swigobj->service_id)
+static int _wrap_madPathRec_service_id_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
 
-    uint8_array_t * _result;
+    ib_net64_t * _result;
     madPathRec * _arg0;
     Tcl_Obj * tcl_result;
     char * rettype;
@@ -30924,17 +30891,17 @@ static int _wrap_madPathRec_resv0_get(ClientData clientData, Tcl_Interp *interp,
     clientData = clientData; objv = objv;
     tcl_result = Tcl_GetObjResult(interp);
     if ((objc < 2) || (objc > 2)) {
-        Tcl_SetStringObj(tcl_result,"Wrong # args. madPathRec_resv0_get { madPathRec * } ",-1);
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madPathRec_service_id_get { madPathRec * } ",-1);
         return TCL_ERROR;
     }
     if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madPathRec_p"))) {
-        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madPathRec_resv0_get. Expected _madPathRec_p, received ", -1);
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madPathRec_service_id_get. Expected _madPathRec_p, received ", -1);
         Tcl_AppendToObj(tcl_result, rettype, -1);
         return TCL_ERROR;
     }
 { 
   ibms_tcl_error = 0;
-      _result = (uint8_array_t *)madPathRec_resv0_get(_arg0);
+      _result = (ib_net64_t *)madPathRec_service_id_get(_arg0);
 ; 
   if (ibms_tcl_error) { 
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
@@ -30942,12 +30909,9 @@ static int _wrap_madPathRec_resv0_get(ClientData clientData, Tcl_Interp *interp,
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
-  int i;
-  char buff[8];
-  for (i=0; i <8 ; i++) {
-    sprintf(buff, "0x%02x ", *(_result+i));
-    Tcl_AppendResult(interp, buff, NULL);
-  }
+  char buff[20];
+  sprintf(buff, "0x%016" PRIx64, cl_ntoh64(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
 }
     return TCL_OK;
 }
@@ -31609,8 +31573,8 @@ static int _wrap_madPathRec_pkey_get(ClientData clientData, Tcl_Interp *interp, 
 }
     return TCL_OK;
 }
-#define madPathRec_sl_set(_swigobj,_swigval) (_swigobj->sl = *(_swigval),_swigval)
-static int _wrap_madPathRec_sl_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+#define madPathRec_qos_class_sl_set(_swigobj,_swigval) (_swigobj->qos_class_sl = *(_swigval),_swigval)
+static int _wrap_madPathRec_qos_class_sl_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
 
     ib_net16_t * _result;
     madPathRec * _arg0;
@@ -31622,11 +31586,11 @@ static int _wrap_madPathRec_sl_set(ClientData clientData, Tcl_Interp *interp, in
     clientData = clientData; objv = objv;
     tcl_result = Tcl_GetObjResult(interp);
     if ((objc < 3) || (objc > 3)) {
-        Tcl_SetStringObj(tcl_result,"Wrong # args. madPathRec_sl_set { madPathRec * } { ib_net16_t * } ",-1);
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madPathRec_qos_class_sl_set { madPathRec * } { ib_net16_t * } ",-1);
         return TCL_ERROR;
     }
     if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madPathRec_p"))) {
-        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madPathRec_sl_set. Expected _madPathRec_p, received ", -1);
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madPathRec_qos_class_sl_set. Expected _madPathRec_p, received ", -1);
         Tcl_AppendToObj(tcl_result, rettype, -1);
         return TCL_ERROR;
     }
@@ -31636,7 +31600,7 @@ static int _wrap_madPathRec_sl_set(ClientData clientData, Tcl_Interp *interp, in
 }
 { 
   ibms_tcl_error = 0;
-      _result = (ib_net16_t *)madPathRec_sl_set(_arg0,_arg1);
+      _result = (ib_net16_t *)madPathRec_qos_class_sl_set(_arg0,_arg1);
 ; 
   if (ibms_tcl_error) { 
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
@@ -31650,8 +31614,8 @@ static int _wrap_madPathRec_sl_set(ClientData clientData, Tcl_Interp *interp, in
 }
     return TCL_OK;
 }
-#define madPathRec_sl_get(_swigobj) (&_swigobj->sl)
-static int _wrap_madPathRec_sl_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+#define madPathRec_qos_class_sl_get(_swigobj) (&_swigobj->qos_class_sl)
+static int _wrap_madPathRec_qos_class_sl_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
 
     ib_net16_t * _result;
     madPathRec * _arg0;
@@ -31661,17 +31625,17 @@ static int _wrap_madPathRec_sl_get(ClientData clientData, Tcl_Interp *interp, in
     clientData = clientData; objv = objv;
     tcl_result = Tcl_GetObjResult(interp);
     if ((objc < 2) || (objc > 2)) {
-        Tcl_SetStringObj(tcl_result,"Wrong # args. madPathRec_sl_get { madPathRec * } ",-1);
+        Tcl_SetStringObj(tcl_result,"Wrong # args. madPathRec_qos_class_sl_get { madPathRec * } ",-1);
         return TCL_ERROR;
     }
     if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_madPathRec_p"))) {
-        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madPathRec_sl_get. Expected _madPathRec_p, received ", -1);
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of madPathRec_qos_class_sl_get. Expected _madPathRec_p, received ", -1);
         Tcl_AppendToObj(tcl_result, rettype, -1);
         return TCL_ERROR;
     }
 { 
   ibms_tcl_error = 0;
-      _result = (ib_net16_t *)madPathRec_sl_get(_arg0);
+      _result = (ib_net16_t *)madPathRec_qos_class_sl_get(_arg0);
 ; 
   if (ibms_tcl_error) { 
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
@@ -32241,8 +32205,8 @@ static int TclmadPathRecMethodCmd(ClientData clientData, Tcl_Interp *interp, int
       cmd = 0;
       while (i+1 < objc) {
         _str = Tcl_GetStringFromObj(objv[i],&length);
-                        if (strcmp(_str,"-resv0") == 0) {
-                    cmd = _wrap_madPathRec_resv0_set;
+                        if (strcmp(_str,"-service_id") == 0) {
+                    cmd = _wrap_madPathRec_service_id_set;
                 }  else if (strcmp(_str,"-dgid") == 0) {
                     cmd = _wrap_madPathRec_dgid_set;
                 }  else if (strcmp(_str,"-sgid") == 0) {
@@ -32259,8 +32223,8 @@ static int TclmadPathRecMethodCmd(ClientData clientData, Tcl_Interp *interp, int
                     cmd = _wrap_madPathRec_num_path_set;
                 }  else if (strcmp(_str,"-pkey") == 0) {
                     cmd = _wrap_madPathRec_pkey_set;
-                }  else if (strcmp(_str,"-sl") == 0) {
-                    cmd = _wrap_madPathRec_sl_set;
+                }  else if (strcmp(_str,"-qos_class_sl") == 0) {
+                    cmd = _wrap_madPathRec_qos_class_sl_set;
                 }  else if (strcmp(_str,"-mtu") == 0) {
                     cmd = _wrap_madPathRec_mtu_set;
                 }  else if (strcmp(_str,"-rate") == 0) {
@@ -32280,13 +32244,13 @@ static int TclmadPathRecMethodCmd(ClientData clientData, Tcl_Interp *interp, int
             if (rcode == TCL_ERROR) return rcode;
             cmd = 0;
           } else {
-            Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be { -resv0 -dgid -sgid -dlid -slid -hop_flow_raw -tclass -num_path -pkey -sl -mtu -rate -pkt_life -preference -resv2  }",-1);
+            Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be { -service_id -dgid -sgid -dlid -slid -hop_flow_raw -tclass -num_path -pkey -qos_class_sl -mtu -rate -pkt_life -preference -resv2  }",-1);
             return TCL_ERROR;
           }
         i+=2;
       }
       if ((i < objc) || (i == 2)) {
-        Tcl_SetStringObj(tcl_result,"{ -resv0 -dgid -sgid -dlid -slid -hop_flow_raw -tclass -num_path -pkey -sl -mtu -rate -pkt_life -preference -resv2  }",-1);
+        Tcl_SetStringObj(tcl_result,"{ -service_id -dgid -sgid -dlid -slid -hop_flow_raw -tclass -num_path -pkey -qos_class_sl -mtu -rate -pkt_life -preference -resv2  }",-1);
         return TCL_ERROR;
       }
       return TCL_OK;
@@ -32294,8 +32258,8 @@ static int TclmadPathRecMethodCmd(ClientData clientData, Tcl_Interp *interp, int
       if (objc == 3) {
         _str = Tcl_GetStringFromObj(objv[2],&length);
         if (0) {}
-                        if (strcmp(_str,"-resv0") == 0) {
-                    cmd = _wrap_madPathRec_resv0_get;
+                        if (strcmp(_str,"-service_id") == 0) {
+                    cmd = _wrap_madPathRec_service_id_get;
                 }  else if (strcmp(_str,"-dgid") == 0) {
                     cmd = _wrap_madPathRec_dgid_get;
                 }  else if (strcmp(_str,"-sgid") == 0) {
@@ -32312,8 +32276,8 @@ static int TclmadPathRecMethodCmd(ClientData clientData, Tcl_Interp *interp, int
                     cmd = _wrap_madPathRec_num_path_get;
                 }  else if (strcmp(_str,"-pkey") == 0) {
                     cmd = _wrap_madPathRec_pkey_get;
-                }  else if (strcmp(_str,"-sl") == 0) {
-                    cmd = _wrap_madPathRec_sl_get;
+                }  else if (strcmp(_str,"-qos_class_sl") == 0) {
+                    cmd = _wrap_madPathRec_qos_class_sl_get;
                 }  else if (strcmp(_str,"-mtu") == 0) {
                     cmd = _wrap_madPathRec_mtu_get;
                 }  else if (strcmp(_str,"-rate") == 0) {
@@ -32336,11 +32300,11 @@ static int TclmadPathRecMethodCmd(ClientData clientData, Tcl_Interp *interp, int
           objv[2] = oldarg;
           return rcode;
         } else {
-          Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this -resv0 -dgid -sgid -dlid -slid -hop_flow_raw -tclass -num_path -pkey -sl -mtu -rate -pkt_life -preference -resv2  }",-1);
+          Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this -service_id -dgid -sgid -dlid -slid -hop_flow_raw -tclass -num_path -pkey -qos_class_sl -mtu -rate -pkt_life -preference -resv2  }",-1);
           return TCL_ERROR;
         }
       } else {
-        Tcl_SetStringObj(tcl_result,"{ -this -resv0 -dgid -sgid -dlid -slid -hop_flow_raw -tclass -num_path -pkey -sl -mtu -rate -pkt_life -preference -resv2  }", -1);
+        Tcl_SetStringObj(tcl_result,"{ -this -service_id -dgid -sgid -dlid -slid -hop_flow_raw -tclass -num_path -pkey -qos_class_sl -mtu -rate -pkt_life -preference -resv2  }", -1);
         return TCL_ERROR;
       }
     } else if ((c == 'd') && (strncmp(_str,"dump",length) == 0) && (length >= 2)) {
@@ -32348,12 +32312,12 @@ static int TclmadPathRecMethodCmd(ClientData clientData, Tcl_Interp *interp, int
         Tcl_Obj *pDumpObj;
         pDumpObj = Tcl_NewStringObj("",-1);
         Tcl_IncrRefCount(pDumpObj);
-                cmd = _wrap_madPathRec_resv0_get;
+                cmd = _wrap_madPathRec_service_id_get;
         oldarg = objv[2];
         objv[2] = obj;
         rcode = (*cmd)(clientData,interp,objc,&objv[1]);
         objv[2] = oldarg;
-        Tcl_AppendStringsToObj(pDumpObj, "-resv0 ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_AppendStringsToObj(pDumpObj, "-service_id ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
         Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
         cmd = _wrap_madPathRec_dgid_get;
         oldarg = objv[2];
@@ -32411,12 +32375,12 @@ static int TclmadPathRecMethodCmd(ClientData clientData, Tcl_Interp *interp, int
         objv[2] = oldarg;
         Tcl_AppendStringsToObj(pDumpObj, "-pkey ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
         Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
-        cmd = _wrap_madPathRec_sl_get;
+        cmd = _wrap_madPathRec_qos_class_sl_get;
         oldarg = objv[2];
         objv[2] = obj;
         rcode = (*cmd)(clientData,interp,objc,&objv[1]);
         objv[2] = oldarg;
-        Tcl_AppendStringsToObj(pDumpObj, "-sl ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_AppendStringsToObj(pDumpObj, "-qos_class_sl ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
         Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
         cmd = _wrap_madPathRec_mtu_get;
         oldarg = objv[2];
@@ -39781,8 +39745,8 @@ SWIGEXPORT(int,Ibdm_Init)(Tcl_Interp *interp) {
 	 Tcl_CreateObjCommand(interp,SWIG_prefix "madMcMemberRec",TclmadMcMemberRecCmd, (ClientData) NULL, NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "new_madPathRec", _wrap_new_madPathRec, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "delete_madPathRec", _wrap_delete_madPathRec, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
-	 Tcl_CreateObjCommand(interp, SWIG_prefix "madPathRec_resv0_set", _wrap_madPathRec_resv0_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
-	 Tcl_CreateObjCommand(interp, SWIG_prefix "madPathRec_resv0_get", _wrap_madPathRec_resv0_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madPathRec_service_id_set", _wrap_madPathRec_service_id_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madPathRec_service_id_get", _wrap_madPathRec_service_id_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "madPathRec_dgid_set", _wrap_madPathRec_dgid_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "madPathRec_dgid_get", _wrap_madPathRec_dgid_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "madPathRec_sgid_set", _wrap_madPathRec_sgid_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
@@ -39799,8 +39763,8 @@ SWIGEXPORT(int,Ibdm_Init)(Tcl_Interp *interp) {
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "madPathRec_num_path_get", _wrap_madPathRec_num_path_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "madPathRec_pkey_set", _wrap_madPathRec_pkey_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "madPathRec_pkey_get", _wrap_madPathRec_pkey_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
-	 Tcl_CreateObjCommand(interp, SWIG_prefix "madPathRec_sl_set", _wrap_madPathRec_sl_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
-	 Tcl_CreateObjCommand(interp, SWIG_prefix "madPathRec_sl_get", _wrap_madPathRec_sl_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madPathRec_qos_class_sl_set", _wrap_madPathRec_qos_class_sl_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "madPathRec_qos_class_sl_get", _wrap_madPathRec_qos_class_sl_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "madPathRec_mtu_set", _wrap_madPathRec_mtu_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "madPathRec_mtu_get", _wrap_madPathRec_mtu_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "madPathRec_rate_set", _wrap_madPathRec_rate_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
