@@ -1390,19 +1390,20 @@ typedef struct _ib_link_record
 
 typedef struct _ib_path_rec			  
 {												  
-	ib_gid_t				  dgid;
-	ib_gid_t				  sgid;
-	ib_net16_t			  dlid;
-	ib_net16_t			  slid;
-	ib_net32_t			  hop_flow_raw;
-	uint8_t				  tclass;
-	uint8_t				  num_path;
-	ib_net16_t			  pkey;
-	ib_net16_t			  sl;
-	uint8_t				  mtu;
-	uint8_t				  rate;
-	uint8_t				  pkt_life;
-	uint8_t				  preference;
+        ib_net64_t service_id;
+        ib_gid_t dgid;
+        ib_gid_t sgid;
+        ib_net16_t dlid;
+        ib_net16_t slid;
+        ib_net32_t hop_flow_raw;
+        uint8_t tclass;
+        uint8_t num_path;
+        ib_net16_t pkey;
+        ib_net16_t qos_class_sl;
+        uint8_t mtu;
+        uint8_t rate;
+        uint8_t pkt_life;
+        uint8_t preference;
 } sacPathRec;
 
 %addmethods sacPathRec {
