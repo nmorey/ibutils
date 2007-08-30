@@ -1,36 +1,5 @@
 #!/bin/sh -f
 
-# we need to use the corrrect libraries based on the machine
-# use 64 bit libs if needed
-if test -d /lib/tls || test -d /lib64/tls ; then
-
-   ptl_path=`gcc -print-file-name=libpthread.so|sed s=[^/]*$==`
-   if test 0 = `file $ptl_path/libpthread.so|grep "text"|wc -l`; then
-       ptl_file=`cd $ptl_path;pwd`/libpthread.so
-   else
-       ptl_file=`awk '/GROUP/{print $3}' $ptl_path/libpthread.so`
-   fi
-   glibc_path=`gcc -print-file-name=libc.so|sed s=[^/]*$==`
-   if test 0 = `file $glibc_path/libc.so|grep "text"|wc -l`; then
-      glibc_file=`cd $glibc_path;pwd`/libc.so
-   else                               
-      glibc_file=`awk '/GROUP/{print $3}' $glibc_path/libc.so`
-   fi
-   libm_path=`gcc -print-file-name=libm.so|sed s=[^/]*$==`
-   if test 0 = `file $libm_path/libm.so|grep "text"|wc -l`; then
-      libm_file=`cd $libm_path;pwd`/libm.so
-   else
-      libm_file=`awk '/GROUP/{print $3}' $libm_path/libm.so`
-   fi
-   librt_path=`gcc -print-file-name=librt.so|sed s=[^/]*$==`
-   if test 0 = `file $librt_path/librt.so|grep "text"|wc -l`; then
-      librt_file=`cd $librt_path;pwd`/librt.so
-   else
-      librt_file=`awk '/GROUP/{print $3}' $librt_path/librt.so`
-   fi
-   export LD_PRELOAD="$glibc_file:$ptl_file:$libm_file:$librt_file"
-fi
-
 export TCLLIBPATH="%with_ibdm_lib% %ibdiag_libdir% %with_tk_lib% %with_graphviz_lib%"; \
 export TK_LIBRARY="%with_tk_lib%"; \
 export PATH="%with_ibis%":$PATH; \
