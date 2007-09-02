@@ -91,9 +91,15 @@ SWIG_IFC_FILES= $(srcdir)/sim.i $(srcdir)/ib_types.i $(IBDM_IFC) \
 sim.o: $(srcdir)/git_version.h
 
 # track latest GIT version for this tree:
+GIT=$(shell which git)
+
 $(srcdir)/git_version.h:  @MAINTAINER_MODE_TRUE@ FORCE
-	gitver=`cd $(srcdir) ; git-log | head -1 | cut -f2 -d\  `; \
-	changes=`cd $(srcdir) ; git diff . | grep ^diff | wc -l`; \
+	if test x$(GIT) != x ; then \
+	   gitver=`cd $(srcdir) ; git-log | head -1 | cut -f2 -d\  `; \
+	   changes=`cd $(srcdir) ; git diff . | grep ^diff | wc -l`; \
+	else \
+	   gitver=undefined; changes=0; \
+	fi ; \
 	if test $$changes != 0; then gitver="$$gitver with-local-mods"; fi; \
 	echo "#define IBMGTSIM_CODE_VERSION \"$$gitver\"" > .git_version.h ;\
 	if test -f $(srcdir)/git_version.h ; then \

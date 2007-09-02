@@ -38,9 +38,15 @@ EXTRA_DIST = ibdebug_if.tcl ibdebug.tcl \
 	ibdiagpath.in ibdiagpath.pkg ibdiagpath.tcl \
 	ibdiagui.in ibdiagui.pkg ibdiagui.tcl git_version.tcl
 
+GIT=$(shell which git)
+
 git_version.tcl : @MAINTAINER_MODE_TRUE@ FORCE
-	gitver=`cd $(srcdir) ; git-log | head -1 | cut -f2 -d\  `; \
-	changes=`cd $(srcdir) ; git diff . | grep ^diff | wc -l`; \
+	if test x$(GIT) != x ; then \
+	   gitver=`cd $(srcdir) ; git-log | head -1 | cut -f2 -d\  `; \
+	   changes=`cd $(srcdir) ; git diff . | grep ^diff | wc -l`; \
+	else \
+	   gitver=undefined; changes=0; \
+	fi ; \
 	if test $$changes != 0; then gitver="$$gitver with-local-mods"; fi; \
 	echo "set ibdiagSourceVersion \"$$gitver\"" > .git_version.tcl ;\
 	if test -f $(srcdir)/git_version.tcl ; then \
