@@ -814,7 +814,7 @@ proc sendPathRecordRequest {fabric port1 port2 port3} {
    madPathRec_sgid_set $pam \
       "0xfe80000000000000:[string range [IBPort_guid_get $port2] 2 end]"
    madPathRec_num_path_set $pam 1
-   madPathRec_sl_set $pam 0x8
+   madPathRec_qos_class_sl_set $pam 0x8
    madPathRec_mtu_set $pam 4
    madPathRec_rate_set $pam 2
 
