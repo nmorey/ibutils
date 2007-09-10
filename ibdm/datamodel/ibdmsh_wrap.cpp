@@ -1433,7 +1433,7 @@ static int _wrap_ibdmFatTreeRoute(ClientData clientData, Tcl_Interp *interp, int
   char **sub_lists;
 #endif
   int num_sub_lists;
-  unsigned int idx;
+  int idx;
 
   /* we will use the TCL split list to split into elements */
   if (Tcl_SplitList(interp, 
@@ -2164,7 +2164,7 @@ static int _wrap_ibdmRankFabricByRoots(ClientData clientData, Tcl_Interp *interp
   char **sub_lists;
 #endif
   int num_sub_lists;
-  unsigned int idx;
+  int idx;
 
   /* we will use the TCL split list to split into elements */
   if (Tcl_SplitList(interp, 
@@ -2303,7 +2303,7 @@ static int _wrap_ibdmReportNonUpDownCa2CaPaths(ClientData clientData, Tcl_Interp
   char **sub_lists;
 #endif
   int num_sub_lists;
-  unsigned int idx;
+  int idx;
 
   /* we will use the TCL split list to split into elements */
   if (Tcl_SplitList(interp, 
@@ -2535,7 +2535,7 @@ static int _wrap_ibdmCheckFabricMCGrpsForCreditLoopPotential(ClientData clientDa
   char **sub_lists;
 #endif
   int num_sub_lists;
-  unsigned int idx;
+  int idx;
 
   /* we will use the TCL split list to split into elements */
   if (Tcl_SplitList(interp, 
@@ -2674,7 +2674,7 @@ static int _wrap_ibdmLinkCoverageAnalysis(ClientData clientData, Tcl_Interp *int
   char **sub_lists;
 #endif
   int num_sub_lists;
-  unsigned int idx;
+  int idx;
 
   /* we will use the TCL split list to split into elements */
   if (Tcl_SplitList(interp, 

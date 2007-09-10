@@ -831,7 +831,7 @@
   char **sub_lists;
 #endif
   int num_sub_lists;
-  unsigned int idx;
+  int idx;
 
   /* we will use the TCL split list to split into elements */
   if (Tcl_SplitList(interp, 
