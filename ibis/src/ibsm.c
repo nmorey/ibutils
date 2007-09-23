@@ -258,6 +258,7 @@ ibsm_send_mad_by_lid (
   ((ib_mad_t *)p_madw->p_mad)->class_ver = 1;
   ((ib_mad_t *)p_madw->p_mad)->mgmt_class = IB_MCLASS_SUBN_LID;
   ((ib_mad_t *)p_madw->p_mad)->base_ver = 1;
+  ((ib_smp_t *)p_madw->p_mad)->m_key = cl_hton64(IbisObj.p_opt->m_key);
   ((ib_mad_t *)p_madw->p_mad)->attr_id = cl_hton16(attr);
   ((ib_mad_t *)p_madw->p_mad)->attr_mod = cl_hton32(mod);
   ((ib_mad_t *)p_madw->p_mad)->trans_id = ibis_get_tid();
