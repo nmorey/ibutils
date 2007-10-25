@@ -1531,7 +1531,7 @@ typedef struct _ibsac_class_port_info
 	uint8_t					base_ver;
 	uint8_t					class_ver;
 	ib_net16_t				cap_mask;
-	ib_net32_t				resp_time_val;
+	ib_net32_t				cap_mask2_resp_time;
 	ib_gid_t				redir_gid;
 	ib_net32_t				redir_tc_sl_fl;
 	ib_net16_t				redir_lid;

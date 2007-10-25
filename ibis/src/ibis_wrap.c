@@ -22444,8 +22444,8 @@ static int _wrap_sacClassPortInfo_cap_mask_get(ClientData clientData, Tcl_Interp
 }
     return TCL_OK;
 }
-#define _ibsac_class_port_info_resp_time_val_set(_swigobj,_swigval) (_swigobj->resp_time_val = *(_swigval),_swigval)
-static int _wrap_sacClassPortInfo_resp_time_val_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+#define _ibsac_class_port_info_cap_mask2_resp_time_set(_swigobj,_swigval) (_swigobj->cap_mask2_resp_time = *(_swigval),_swigval)
+static int _wrap_sacClassPortInfo_cap_mask2_resp_time_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
 
     ib_net32_t * _result;
     sacClassPortInfo * _arg0;
@@ -22457,11 +22457,11 @@ static int _wrap_sacClassPortInfo_resp_time_val_set(ClientData clientData, Tcl_I
     clientData = clientData; objv = objv;
     tcl_result = Tcl_GetObjResult(interp);
     if ((objc < 3) || (objc > 3)) {
-        Tcl_SetStringObj(tcl_result,"Wrong # args. sacClassPortInfo_resp_time_val_set { sacClassPortInfo * } { ib_net32_t * } ",-1);
+        Tcl_SetStringObj(tcl_result,"Wrong # args. sacClassPortInfo_cap_mask2_resp_time_set { sacClassPortInfo * } { ib_net32_t * } ",-1);
         return TCL_ERROR;
     }
     if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_sacClassPortInfo_p"))) {
-        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of sacClassPortInfo_resp_time_val_set. Expected _sacClassPortInfo_p, received ", -1);
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of sacClassPortInfo_cap_mask2_resp_time_set. Expected _sacClassPortInfo_p, received ", -1);
         Tcl_AppendToObj(tcl_result, rettype, -1);
         return TCL_ERROR;
     }
@@ -22488,7 +22488,7 @@ static int _wrap_sacClassPortInfo_resp_time_val_set(ClientData clientData, Tcl_I
   }
 
   ibis_tcl_error = 0;
-      _result = (ib_net32_t *)_ibsac_class_port_info_resp_time_val_set(_arg0,_arg1);
+      _result = (ib_net32_t *)_ibsac_class_port_info_cap_mask2_resp_time_set(_arg0,_arg1);
 ;
   if (ibis_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
@@ -22502,8 +22502,8 @@ static int _wrap_sacClassPortInfo_resp_time_val_set(ClientData clientData, Tcl_I
 }
     return TCL_OK;
 }
-#define _ibsac_class_port_info_resp_time_val_get(_swigobj) (&_swigobj->resp_time_val)
-static int _wrap_sacClassPortInfo_resp_time_val_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+#define _ibsac_class_port_info_cap_mask2_resp_time_get(_swigobj) (&_swigobj->cap_mask2_resp_time)
+static int _wrap_sacClassPortInfo_cap_mask2_resp_time_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
 
     ib_net32_t * _result;
     sacClassPortInfo * _arg0;
@@ -22513,11 +22513,11 @@ static int _wrap_sacClassPortInfo_resp_time_val_get(ClientData clientData, Tcl_I
     clientData = clientData; objv = objv;
     tcl_result = Tcl_GetObjResult(interp);
     if ((objc < 2) || (objc > 2)) {
-        Tcl_SetStringObj(tcl_result,"Wrong # args. sacClassPortInfo_resp_time_val_get { sacClassPortInfo * } ",-1);
+        Tcl_SetStringObj(tcl_result,"Wrong # args. sacClassPortInfo_cap_mask2_resp_time_get { sacClassPortInfo * } ",-1);
         return TCL_ERROR;
     }
     if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_sacClassPortInfo_p"))) {
-        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of sacClassPortInfo_resp_time_val_get. Expected _sacClassPortInfo_p, received ", -1);
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of sacClassPortInfo_cap_mask2_resp_time_get. Expected _sacClassPortInfo_p, received ", -1);
         Tcl_AppendToObj(tcl_result, rettype, -1);
         return TCL_ERROR;
     }
@@ -22540,7 +22540,7 @@ static int _wrap_sacClassPortInfo_resp_time_val_get(ClientData clientData, Tcl_I
   }
 
   ibis_tcl_error = 0;
-      _result = (ib_net32_t *)_ibsac_class_port_info_resp_time_val_get(_arg0);
+      _result = (ib_net32_t *)_ibsac_class_port_info_cap_mask2_resp_time_get(_arg0);
 ;
   if (ibis_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
@@ -24085,8 +24085,8 @@ static int TclsacClassPortInfoMethodCmd(ClientData clientData, Tcl_Interp *inter
                     cmd = _wrap_sacClassPortInfo_class_ver_set;
                 }  else if (strcmp(_str,"-cap_mask") == 0) {
                     cmd = _wrap_sacClassPortInfo_cap_mask_set;
-                }  else if (strcmp(_str,"-resp_time_val") == 0) {
-                    cmd = _wrap_sacClassPortInfo_resp_time_val_set;
+                }  else if (strcmp(_str,"-cap_mask2_resp_time") == 0) {
+                    cmd = _wrap_sacClassPortInfo_cap_mask2_resp_time_set;
                 }  else if (strcmp(_str,"-redir_gid") == 0) {
                     cmd = _wrap_sacClassPortInfo_redir_gid_set;
                 }  else if (strcmp(_str,"-redir_tc_sl_fl") == 0) {
@@ -24120,13 +24120,13 @@ static int TclsacClassPortInfoMethodCmd(ClientData clientData, Tcl_Interp *inter
             if (rcode == TCL_ERROR) return rcode;
             cmd = 0;
           } else {
-            Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be { -base_ver -class_ver -cap_mask -resp_time_val -redir_gid -redir_tc_sl_fl -redir_lid -redir_pkey -redir_qp -redir_qkey -trap_gid -trap_tc_sl_fl -trap_lid -trap_pkey -trap_hop_qp -trap_qkey  }",-1);
+            Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be { -base_ver -class_ver -cap_mask -cap_mask2_resp_time -redir_gid -redir_tc_sl_fl -redir_lid -redir_pkey -redir_qp -redir_qkey -trap_gid -trap_tc_sl_fl -trap_lid -trap_pkey -trap_hop_qp -trap_qkey  }",-1);
             return TCL_ERROR;
           }
         i+=2;
       }
       if ((i < objc) || (i == 2)) {
-        Tcl_SetStringObj(tcl_result,"{ -base_ver -class_ver -cap_mask -resp_time_val -redir_gid -redir_tc_sl_fl -redir_lid -redir_pkey -redir_qp -redir_qkey -trap_gid -trap_tc_sl_fl -trap_lid -trap_pkey -trap_hop_qp -trap_qkey  }",-1);
+        Tcl_SetStringObj(tcl_result,"{ -base_ver -class_ver -cap_mask -cap_mask2_resp_time -redir_gid -redir_tc_sl_fl -redir_lid -redir_pkey -redir_qp -redir_qkey -trap_gid -trap_tc_sl_fl -trap_lid -trap_pkey -trap_hop_qp -trap_qkey  }",-1);
         return TCL_ERROR;
       }
       return TCL_OK;
@@ -24140,8 +24140,8 @@ static int TclsacClassPortInfoMethodCmd(ClientData clientData, Tcl_Interp *inter
                     cmd = _wrap_sacClassPortInfo_class_ver_get;
                 }  else if (strcmp(_str,"-cap_mask") == 0) {
                     cmd = _wrap_sacClassPortInfo_cap_mask_get;
-                }  else if (strcmp(_str,"-resp_time_val") == 0) {
-                    cmd = _wrap_sacClassPortInfo_resp_time_val_get;
+                }  else if (strcmp(_str,"-cap_mask2_resp_time") == 0) {
+                    cmd = _wrap_sacClassPortInfo_cap_mask2_resp_time_get;
                 }  else if (strcmp(_str,"-redir_gid") == 0) {
                     cmd = _wrap_sacClassPortInfo_redir_gid_get;
                 }  else if (strcmp(_str,"-redir_tc_sl_fl") == 0) {
@@ -24178,11 +24178,11 @@ static int TclsacClassPortInfoMethodCmd(ClientData clientData, Tcl_Interp *inter
           objv[2] = oldarg;
           return rcode;
         } else {
-          Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this -base_ver -class_ver -cap_mask -resp_time_val -redir_gid -redir_tc_sl_fl -redir_lid -redir_pkey -redir_qp -redir_qkey -trap_gid -trap_tc_sl_fl -trap_lid -trap_pkey -trap_hop_qp -trap_qkey  }",-1);
+          Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this -base_ver -class_ver -cap_mask -cap_mask2_resp_time -redir_gid -redir_tc_sl_fl -redir_lid -redir_pkey -redir_qp -redir_qkey -trap_gid -trap_tc_sl_fl -trap_lid -trap_pkey -trap_hop_qp -trap_qkey  }",-1);
           return TCL_ERROR;
         }
       } else {
-        Tcl_SetStringObj(tcl_result,"{ -this -base_ver -class_ver -cap_mask -resp_time_val -redir_gid -redir_tc_sl_fl -redir_lid -redir_pkey -redir_qp -redir_qkey -trap_gid -trap_tc_sl_fl -trap_lid -trap_pkey -trap_hop_qp -trap_qkey  }", -1);
+        Tcl_SetStringObj(tcl_result,"{ -this -base_ver -class_ver -cap_mask -cap_mask2_resp_time -redir_gid -redir_tc_sl_fl -redir_lid -redir_pkey -redir_qp -redir_qkey -trap_gid -trap_tc_sl_fl -trap_lid -trap_pkey -trap_hop_qp -trap_qkey  }", -1);
         return TCL_ERROR;
       }
     } else if ((c == 'd') && (strncmp(_str,"dump",length) == 0) && (length >= 2)) {
@@ -24211,12 +24211,12 @@ static int TclsacClassPortInfoMethodCmd(ClientData clientData, Tcl_Interp *inter
         objv[2] = oldarg;
         Tcl_AppendStringsToObj(pDumpObj, "-cap_mask ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
         Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
-        cmd = _wrap_sacClassPortInfo_resp_time_val_get;
+        cmd = _wrap_sacClassPortInfo_cap_mask2_resp_time_get;
         oldarg = objv[2];
         objv[2] = obj;
         rcode = (*cmd)(clientData,interp,objc,&objv[1]);
         objv[2] = oldarg;
-        Tcl_AppendStringsToObj(pDumpObj, "-resp_time_val ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_AppendStringsToObj(pDumpObj, "-cap_mask2_resp_time ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
         Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
         cmd = _wrap_sacClassPortInfo_redir_gid_get;
         oldarg = objv[2];
@@ -58289,8 +58289,8 @@ SWIGEXPORT(int,Ibis_Init)(Tcl_Interp *interp) {
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "sacClassPortInfo_class_ver_get", _wrap_sacClassPortInfo_class_ver_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "sacClassPortInfo_cap_mask_set", _wrap_sacClassPortInfo_cap_mask_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "sacClassPortInfo_cap_mask_get", _wrap_sacClassPortInfo_cap_mask_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
-	 Tcl_CreateObjCommand(interp, SWIG_prefix "sacClassPortInfo_resp_time_val_set", _wrap_sacClassPortInfo_resp_time_val_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
-	 Tcl_CreateObjCommand(interp, SWIG_prefix "sacClassPortInfo_resp_time_val_get", _wrap_sacClassPortInfo_resp_time_val_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "sacClassPortInfo_cap_mask2_resp_time_set", _wrap_sacClassPortInfo_cap_mask2_resp_time_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "sacClassPortInfo_cap_mask2_resp_time_get", _wrap_sacClassPortInfo_cap_mask2_resp_time_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "sacClassPortInfo_redir_gid_set", _wrap_sacClassPortInfo_redir_gid_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "sacClassPortInfo_redir_gid_get", _wrap_sacClassPortInfo_redir_gid_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "sacClassPortInfo_redir_tc_sl_fl_set", _wrap_sacClassPortInfo_redir_tc_sl_fl_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
