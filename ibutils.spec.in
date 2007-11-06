@@ -24,40 +24,18 @@
 # notice, one of the license notices in the documentation
 # and/or other materials provided with the distribution.
 #
-#
-#  $Id$
-#
 
-# Disable debugging
-%define debug_package %{nil}
-%define __check_files %{nil}
-
-# Disable brp-lib64-linux
-%ifarch x86_64 ia64
-%define __arch_install_post %{nil}
-%endif
-
-# Add ppc64 64 bit compile flages
-%ifarch ppc64
-%define ppc64_configure_options CFLAGS='-m64 -g -O2' CPPFLAGS='-m64 -g -O2' LDFLAGS='-m64 -g -O2 -L/usr/lib64/'
-%else
-%define ppc64_configure_options  %{nil} 
-%endif
-
-%{!?_prefix: %define _prefix /usr/local}
-
-%{!?configure_options: %define configure_options %{nil}}
-%define build_ibmgtsim %(if ( echo %{configure_options} | grep "enable-ibmgtsim" > /dev/null ); then echo -n '1'; else echo -n '0'; fi)
+%{?build_ibmgtsim: %define ibmgtsim --enable-ibmgtsim}
 
 Summary: OpenIB Mellanox InfiniBand Diagnostic Tools
-Name: %{?_name:%{_name}}%{!?_name:ibutils}
+Name: ibutils
 Version: @VERSION@
-Release: 0
+Release: 1%{?dist}
 License: GPL/BSD
 Url: http://openib.org/downloads/%{name}-%{version}.tar.gz
 Group: System Environment/Libraries
 Source: %{name}-%{version}.tar.gz
-BuildRoot: %{?build_root:%{build_root}}%{!?build_root:/var/tmp/OFED}
+BuildRoot: %{?build_root:%{build_root}}%{!?build_root:%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)}
 # Requires: opensm
 Vendor: Mellanox Technologies Ltd.
 %description 
@@ -67,30 +45,15 @@ ibutils provides IB network and path diagnostics.
 %prep
 %setup -n %{name}-%{version}
 
-
-###
-### install
-###
-%install
-%configure %{configure_options} %{ppc64_configure_options}
-# W/A for libtool issue: change libdir in all *.la files to point to ${RPM_BUILD_ROOT}/${libdir}
-# This W/A should be removed in post install section
-if [ -d ${RPM_BUILD_ROOT}/%{_prefix} ]; then
-  LA_FILES=$(find ${RPM_BUILD_ROOT}/%{_prefix} -type f -name '*.la')
-  for la_file in ${LA_FILES}
-  do
-      case ${la_file##*/} in
-          libibumad.la|libosmcomp.la|libopensm.la|libosmvendor.la)
-          perl -ni -e "s@(libdir=).*@\$1'${RPM_BUILD_ROOT}%{_libdir}'@; print" ${la_file}
-          perl -ni -e "s@ %{_libdir}@\ ${RPM_BUILD_ROOT}%{_libdir}@g; print" ${la_file}
-          ;;
-      esac
-  done
-fi
-
+%build
+%configure %{?configure_options} %{?ibmgtsim}
 %{__make} %{?mflags}
+
+%install
 %{__make} install DESTDIR=$RPM_BUILD_ROOT %{?mflags_install}
-	
+/bin/rm -f $RPM_BUILD_ROOT/%{_libdir}/*.la
+/bin/rm -f $RPM_BUILD_ROOT/%{_prefix}/bin/git_version.tcl
+
 install -d $RPM_BUILD_ROOT/etc/profile.d
 cat > $RPM_BUILD_ROOT/etc/profile.d/ibutils.sh << EOF
 if ! echo \${PATH} | grep -q %{_prefix}/bin ; then
@@ -117,37 +80,12 @@ esac
 
 %clean
 #Remove installed driver after rpm build finished
-# Leave $RPM_BUILD_ROOT in order to build dependent packages
 rm -rf $RPM_BUILD_DIR/%{name}-%{version}
-# But remove man pages to avoid issues in later rebuilds
-rm -rf $RPM_BUILD_ROOT/%{_mandir}/man1
+rm -rf $RPM_BUILD_ROOT
 
-###
-### pre section
-###
-%pre
-###
-### post section
-###
 %post
-if [ $1 = 1 ]; then # 1 : This package is being installed for the first time
-    /sbin/ldconfig
-fi
-###
-### preun section
-###
-%preun
-# if [ $1 = 0 ]; then  # 1 : Erase, not upgrade
-# fi
+/sbin/ldconfig
  
-###
-### post uninstall section
-###
-%postun
-#if [ $1 = 0 ]; then  # 1 : Erase, not upgrade
-#    echo
-#fi
-
 ###
 ### Files
 ###
@@ -163,7 +101,7 @@ fi
 %{_prefix}/bin/ibdiagnet
 %{_prefix}/bin/ibdiagpath
 %{_libdir}/libibdmcom.so*
-# %{_libdir}/ibibdmcom.a
+%{_libdir}/libibdmcom.a
 %{_libdir}/libibdm.so*
 %{_libdir}/libibdm.a
 %{_libdir}/ibis1.2
@@ -184,7 +122,6 @@ fi
 %{_mandir}/man1/ibdm-ibnl-file.1*
 /etc/profile.d/ibutils.sh
 /etc/profile.d/ibutils.csh
-%if %{build_ibmgtsim}
 %{_prefix}/bin/mkSimNodeDir
 %{_prefix}/bin/ibmssh
 %{_prefix}/bin/ibmsquit
@@ -199,10 +136,11 @@ fi
 %{_mandir}/man1/mkSimNodeDir.1*
 %{_mandir}/man1/RunSimTest.1*
 %{_mandir}/man1/IBMgtSim.1*
-%endif
 # END Files
 
 %changelog
+* Tue Aug 21 2006 Vladimir Sokolovsky <vlad@mellanox.co.il>
+- Added ibmgtsim to the rpm
 * Sun Jul 30 2006 Vladimir Sokolovsky <vlad@mellanox.co.il>
 - Added man pages and share/ibmgtsim
 * Tue May 16 2006 Vladimir Sokolovsky <vlad@mellanox.co.il>
