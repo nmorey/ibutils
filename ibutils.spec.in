@@ -50,6 +50,7 @@ ibutils provides IB network and path diagnostics.
 %{__make} %{?mflags}
 
 %install
+rm -rf $RPM_BUILD_ROOT
 %{__make} install DESTDIR=$RPM_BUILD_ROOT %{?mflags_install}
 /bin/rm -f $RPM_BUILD_ROOT/%{_libdir}/*.la
 /bin/rm -f $RPM_BUILD_ROOT/%{_prefix}/bin/git_version.tcl
@@ -67,12 +68,12 @@ endif
 EOF
 
 touch ibutils-files
-install -d $RPM_BUILD_ROOT/etc/ld.so.conf.d
-echo "%{_libdir}" >> $RPM_BUILD_ROOT/etc/ld.so.conf.d/ibutils.conf
 case %{_prefix} in
         /usr | /usr/)
         ;;
         *)
+        install -d $RPM_BUILD_ROOT/etc/ld.so.conf.d
+        echo "%{_libdir}" >> $RPM_BUILD_ROOT/etc/ld.so.conf.d/ibutils.conf
         echo "/etc/ld.so.conf.d/ibutils.conf" >> ibutils-files
         ;;
 esac
