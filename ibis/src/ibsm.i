@@ -119,7 +119,7 @@
 // 
 
 %typemap(tcl8,in) ib_gid_t*(ib_gid_t temp) {
-  char buf[36];
+  char buf[38];
   char *p_prefix, *p_guid;
   char *str_token;
 

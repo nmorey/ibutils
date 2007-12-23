@@ -161,7 +161,7 @@
 }
 
 %typemap(tcl8,out) ib_gid_t* {
-  char buff[36];
+  char buff[38];
   sprintf(buff, "0x%016" PRIx64 ":0x%016" PRIx64, 
           cl_ntoh64($source->unicast.prefix), 
           cl_ntoh64($source->unicast.interface_id) 
