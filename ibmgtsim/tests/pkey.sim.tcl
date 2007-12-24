@@ -4,12 +4,12 @@ puts "Running Simulation flow for PKey test"
 # Group 1 : .. 0x81
 # Group 2 : ........ 0x82 ...
 # Group 3 : ... 0x82 ... 0x81 ...
-# 
+#
 # So osmtest run from nodes of group1 should only see group1
 # Group2 should only see group 2 and group 3 should see all.
 
-# to prevent the case where randomized pkeys match (on ports 
-# from different group we only randomize partial membership 
+# to prevent the case where randomized pkeys match (on ports
+# from different group we only randomize partial membership
 # pkeys (while the group pkeys are full)
 
 # In order to prevent cases where partial Pkey matches Full Pkey
@@ -32,10 +32,10 @@ proc getPartialMemberPkeysWithGivenPkey {numPkeys pkeys} {
    # also select an index for each of the given pkeys and
    # replace the random pkey with the given one
 
-   
+
    # flat pkey list (no blocks)
    set res {}
-   
+
    # init both lists
    for {set i 0} {$i < $numPkeys - [llength $pkeys] } {incr i} {
       lappend res [getPartialMemberPkey]
@@ -74,7 +74,7 @@ proc getPartialMemberPkeysWithGivenPkey {numPkeys pkeys} {
 proc getPkeyBlocks {pkeys} {
    set blocks {}
    set extra {0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0}
-   
+
    set nKeys [llength $pkeys]
    while {$nKeys} {
       if {$nKeys < 32} {
@@ -94,7 +94,7 @@ proc getAllActiveHCAPorts {fabric} {
    # go over all nodes:
    foreach nodeNameId [IBFabric_NodeByName_get $fabric] {
       set node [lindex $nodeNameId 1]
-      
+
       # we do care about non switches only
       if {[IBNode_type_get $node] != 1} {
          # go over all ports:
@@ -113,7 +113,7 @@ proc getAllActiveHCAPorts {fabric} {
 # then randomly set the active HCA ports PKey tables
 # Note that the H-1/P1 has to have a slightly different PKey table
 # with 0xffff such that all nodes can query the SA:
-# we track the assignments in the arrays: 
+# we track the assignments in the arrays:
 # PORT_PKEY_GROUP(port) -> group
 # PORT_GROUP_PKEY_IDX(port) -> index of pkey (if set or -1)
 proc setAllHcaPortsPKeyTable {fabric} {
@@ -127,7 +127,7 @@ proc setAllHcaPortsPKeyTable {fabric} {
    set G1 [list $pkey1 $pkey3]
    set G2 [list $pkey2 $pkey3]
    set G3 [list $pkey1 $pkey2 $pkey3]
-   
+
    set GROUP_PKEY(1) $pkey1
    set GROUP_PKEY(2) $pkey2
    set GROUP_PKEY(3) $pkey3
@@ -185,7 +185,7 @@ proc setAllHcaPortsPKeyTable {fabric} {
 
       set pkeys [getPartialMemberPkeysWithGivenPkey $nPkeys $group]
       set blocks [getPkeyBlocks $pkeys]
-      
+
 		# we track the pkey index of the assigned pkey (or -1)
 		set PORT_GROUP_PKEY_IDX($port) [lsearch $pkeys $pkey]
 		
@@ -196,7 +196,7 @@ proc setAllHcaPortsPKeyTable {fabric} {
          IBMSNode_setPKeyTblBlock sim$node $portNum $blockNum $block
          incr blockNum
       }
-   } 
+   }
    # all HCA active ports
    return "Set PKeys on [array size PORT_PKEY_GROUP] ports"
 }
@@ -234,10 +234,10 @@ proc removeDefaultPKeyFromTableForHcaPorts {fabric} {
    return "Remove Default PKey from HCA ports"
 }
 
-# Verify correct PKey index is used 
+# Verify correct PKey index is used
 proc verifyCorrectPKeyIndexForAllHcaPorts {fabric} {
    global PORT_PKEY_GROUP PORT_GROUP_PKEY_IDX GROUP_PKEY
-   set hcaPorts [getAllActiveHCAPorts $fabric]   
+   set hcaPorts [getAllActiveHCAPorts $fabric]
 	set anyErr 0
 
 
@@ -280,7 +280,7 @@ proc verifyCorrectPKeyIndexForAllHcaPorts {fabric} {
 # Verify that 0x7fff or 0xffff is in the PKey table for all HCA ports
 proc verifyDefaultPKeyForAllHcaPorts {fabric} {
    global PORT_PKEY_GROUP
-   set hcaPorts [getAllActiveHCAPorts $fabric]   
+   set hcaPorts [getAllActiveHCAPorts $fabric]
    foreach port $hcaPorts {
       set portNum [IBPort_num_get $port]
       set node [IBPort_p_node_get $port]
@@ -305,7 +305,7 @@ proc verifyDefaultPKeyForAllHcaPorts {fabric} {
       if {$hasDefaultPKey == 0} {
          puts "-E- Default PKey not found for $node port:$portNum"
          return 1
-      }        
+      }
    }
    # all HCA active ports
    return 0
@@ -314,7 +314,7 @@ proc verifyDefaultPKeyForAllHcaPorts {fabric} {
 # dump out the current set of pkey tables:
 proc dumpPKeyTables {fabric} {
 	set f [open "pkeys.txt" w]
-   set hcaPorts [getAllActiveHCAPorts $fabric] 
+   set hcaPorts [getAllActiveHCAPorts $fabric]
    foreach port $hcaPorts {
       set portNum [IBPort_num_get $port]
       set node [IBPort_p_node_get $port]

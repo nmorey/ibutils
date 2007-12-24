@@ -11,8 +11,8 @@ proc parseNodePortGroup {simDir} {
    return $res
 }
 
-# given the node port group defined by the sim flow 
-# setup the partitions policy file for the SM 
+# given the node port group defined by the sim flow
+# setup the partitions policy file for the SM
 proc setupPartitionPolicyFile {fileName} {
    global nodePortGroupList
 	for {set g 1} {$g <= 3} {incr g} {
@@ -34,7 +34,7 @@ proc setupPartitionPolicyFile {fileName} {
             set GROUP_PKEYS($grp) [lindex $png 4]
          } elseif {$grp == 3} {
             # group 3 ports are members of both other groups
-            lappend guids [lindex $png 3]            
+            lappend guids [lindex $png 3]
          }
       }
 
@@ -58,8 +58,8 @@ proc setupPartitionPolicyFile {fileName} {
    close $f
 }
 
-# validate osmtest.dat versus the list of node port group 
-# group 1 must only have info regarding nodes of group1 
+# validate osmtest.dat versus the list of node port group
+# group 1 must only have info regarding nodes of group1
 # group 2 is similar
 # group 3 see all others
 #
@@ -71,7 +71,7 @@ proc validateInventoryVsGroup {simDir group nodePortGroupList} {
    set GUIDS(1) {}
    set GUIDS(2) {}
    set GUIDS(3) {}
-   
+
    foreach npg $nodePortGroupList {
       set g [lindex $npg 2]
       set guid [lindex $npg 3]
@@ -120,9 +120,9 @@ proc validateInventoryVsGroup {simDir group nodePortGroupList} {
          if {[lindex $sLine 0] == "DEFINE_NODE"} {
             set state node
          } elseif {[lindex $sLine 0] == "DEFINE_PORT"} {
-            set state port            
+            set state port
          } elseif {[lindex $sLine 0] == "DEFINE_PATH"} {
-            set state path            
+            set state path
          }
       } elseif {$state == "node"} {
          set field [lindex $sLine 0]
@@ -132,7 +132,7 @@ proc validateInventoryVsGroup {simDir group nodePortGroupList} {
             set GUID_BY_LID($lid) $guid
 
             # now we can check if the guid is expected or not
-            if {[info exist DISALLOWED($guid)]} {  
+            if {[info exist DISALLOWED($guid)]} {
                puts "-E- Got disallowed guid:$guid of group $DISALLOWED($guid)"
                incr errCnt
             } else {
@@ -147,16 +147,16 @@ proc validateInventoryVsGroup {simDir group nodePortGroupList} {
             set state none
          }
       } elseif {$state == "port"} {
-         # we only care about lid line 
+         # we only care about lid line
          set field [lindex $sLine 0]
          if {$field == "base_lid"} {
             set lid [lindex $sLine 1]
             # ignore lid 0x0 on physp of switches...
             if {$lid != "0x0"} {
                set guid $GUID_BY_LID($lid)
-               
+
                # now we can check if the guid is expected or not
-               if {[info exist DISALLOWED($guid)]} {  
+               if {[info exist DISALLOWED($guid)]} {
                   puts "-E- Got disallowed guid:$guid of group $DISALLOWED($guid)"
                   incr errCnt
                } else {
@@ -174,14 +174,14 @@ proc validateInventoryVsGroup {simDir group nodePortGroupList} {
          set field [lindex $sLine 0]
          if {$field == "sgid"} {
             set sguid [lindex $sLine 2]
-            if {[info exist DISALLOWED($sguid)]} {  
+            if {[info exist DISALLOWED($sguid)]} {
                puts "-E- Got disallowed path from guid:$sguid of group $DISALLOWED($sguid)"
                incr errCnt
             } else {
 
                # the path is allowed only if the ends are allowed to
                # see wach other - catch cases where they are not:
-               if {[info exist GUID_GRP($sguid)] && 
+               if {[info exist GUID_GRP($sguid)] &&
                    [info exist GUID_GRP($dguid)] &&
                    ((($GUID_GRP($sguid) == 1) && ($GUID_GRP($dguid) == 2)) ||
                     (($GUID_GRP($sguid) == 2) && ($GUID_GRP($dguid) == 1)))} {
@@ -196,10 +196,10 @@ proc validateInventoryVsGroup {simDir group nodePortGroupList} {
             }
          } elseif {$field == "dgid"} {
             set dguid [lindex $sLine 2]
-            if {[info exist DISALLOWED($dguid)]} {  
+            if {[info exist DISALLOWED($dguid)]} {
                puts "-E- Got disallowed path to guid:$dguid of group $DISALLOWED($dguid)"
                incr errCnt
-            } 
+            }
          } elseif {$field == "END"} {
             set state none
          }
@@ -209,7 +209,7 @@ proc validateInventoryVsGroup {simDir group nodePortGroupList} {
    foreach sguid [array names REQUIRED] {
       if {$REQUIRED($sguid) != 2} {
          puts "-E- Missing port or node for guid $sguid"
-         incr errCnt         
+         incr errCnt
       }
 
       foreach dguid [array names REQUIRED] {
@@ -231,12 +231,12 @@ proc validateInventoryVsGroup {simDir group nodePortGroupList} {
 }
 
 ##############################################################################
-# 
+#
 # Start up the test applications
 # This is the default flow that will start OpenSM only in 0x43 verbosity
 # Return a list of process ids it started (to be killed on exit)
 #
-proc runner {simDir osmPath osmPortGuid} { 
+proc runner {simDir osmPath osmPortGuid} {
    global simCtrlSock
    global env
    global nodePortGroupList
@@ -251,7 +251,7 @@ proc runner {simDir osmPath osmPortGuid} {
    puts "SIM: [gets $simCtrlSock]"
    puts $simCtrlSock "dumpHcaPKeyGroupFile $simDir"
    puts "SIM: [gets $simCtrlSock]"
-   
+
    # parse the node/port/pkey_group file from the sim dir:
    set nodePortGroupList [parseNodePortGroup $simDir]
 
@@ -264,10 +264,10 @@ proc runner {simDir osmPath osmPortGuid} {
    set osmCmd "$osmPath -P$partitionPolicyFile -D 0x3 -d2 -t 8000 -f $osmLog -g $osmPortGuid"
    puts "-I- Starting: $osmCmd"
    set osmPid [eval "exec $osmCmd > $osmStdOutLog &"]
-   
+
    # start a tracker on the log file and process:
    startOsmLogAnalyzer $osmLog
-   
+
    return $osmPid
 }
 
@@ -292,10 +292,10 @@ proc checker {simDir osmPath osmPortGuid} {
    }
 
    # randomly sellect several nodes and create inventory by running osmtest
-   # on them - then check only valid entries were reported 
+   # on them - then check only valid entries were reported
    for {set i 0 } {$i < 5} {incr i} {
-      
-      # decide which will be the node name we will use 
+
+      # decide which will be the node name we will use
       set r [expr int([rmRand]*[llength $nodePortGroupList])]
       set nodeNPortNGroup [lindex $nodePortGroupList $r]
       set nodeName [lindex $nodeNPortNGroup 0]
@@ -308,10 +308,10 @@ proc checker {simDir osmPath osmPortGuid} {
 
       set osmTestCmd1 "$osmTestPath -t 8000 -g $portGuid -l $osmTestLog -f c -i $osmTestInventory"
       puts "-I- Invoking: $osmTestCmd1 ..."
-      
+
       # HACK: we currently ignore osmtest craches on exit flow:
       catch {set res [eval "exec $osmTestCmd1 >& $osmTestStdOutLog"]}
-      
+
       if {[catch {exec grep "OSMTEST: TEST \"Create Inventory\" PASS" $osmTestStdOutLog}]} {
          puts "-E- osmtest Create Inventory failed"
          return 1
@@ -325,7 +325,7 @@ proc checker {simDir osmPath osmPortGuid} {
    }
 
    ###### Verifing the pkey manager behaviour ################
-   
+
    # Remove the default pkey from the HCA ports (except the SM)
 	# HACK: for now the SM does not refresh PKey tables no matter what...
 	if {0} {
@@ -338,7 +338,7 @@ proc checker {simDir osmPath osmPortGuid} {
    puts $simCtrlSock "verifyCorrectPKeyIndexForAllHcaPorts \$fabric"
    set res [gets $simCtrlSock]
    puts "SIM: $res"
-   
+
    if {$res != 0} {
       puts "-E- $res ports have miss-placed pkeys"
 		return 1
@@ -352,16 +352,16 @@ proc checker {simDir osmPath osmPortGuid} {
    if {[osmWaitForUpOrDead $osmLog 1]} {
       return 1
    }
-   
+
    # wait 3 seconds
-   after 1000 
+   after 1000
 
    #Verify that the default port is in the PKey table of all ports
    puts "-I- Calling simulator to verify all HCA ports have either 0x7fff or 0xffff"
    puts $simCtrlSock "verifyDefaultPKeyForAllHcaPorts \$fabric"
    set res [gets $simCtrlSock]
    puts "SIM: $res"
-   
+
    if {$res == 0} {
       puts "-I- Pkey check flow completed successfuly"
    } else {
