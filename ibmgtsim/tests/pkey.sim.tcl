@@ -120,8 +120,12 @@ proc setAllHcaPortsPKeyTable {fabric} {
    global PORT_PKEY_GROUP PORT_GROUP_PKEY_IDX
    global GROUP_PKEY
 
+   # while setting pkeys, make sure that they are not equal
    set pkey1 [getFullMemberPkey]
-   set pkey2 [getFullMemberPkey]
+   set pkey2 $pkey1
+   while {$pkey2 == $pkey1} {
+      set pkey2 [getFullMemberPkey]
+   }
    set pkey3 [getPartialMemberPkey]
 
    set G1 [list $pkey1 $pkey3]
