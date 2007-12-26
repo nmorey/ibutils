@@ -1322,7 +1322,7 @@ ibvs_general_info_get_global(
    ib_api_status_t status;
    ib_vs_t         vs_mads[1];
 	char *          buff;
-	char            psid[13];
+	char            psid[17];
 	ib_vs_gen_info_t *p_info = (ib_vs_gen_info_t *)&vs_mads[0];
    status = ibvs_general_info_get(p_ibvs_global,lid,vs_mads);
    if (status) {
@@ -1331,8 +1331,8 @@ ibvs_general_info_get_global(
    } else {
 		buff = (char *)malloc(1024);
 		*pp_gen_info_str = buff;
-		strncpy(psid, (char *)p_info->fw_psid, 12);
-		psid[12] = '\0';
+		strncpy(psid, (char *)p_info->fw_psid, 16);
+		psid[16] = '\0';
 		sprintf(buff,
 				  "{hw_rev 0x%x} "
 				  "{hw_devid 0x%x} "
