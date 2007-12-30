@@ -201,10 +201,10 @@ typedef struct _ib_vs_gen_info
 	uint16_t hw_devid;
 	uint8_t  hw_reserved[24];
 	uint32_t hw_uptime;
+        uint8_t  reserved0;
 	uint8_t  fw_major;
 	uint8_t  fw_minor;
 	uint8_t  fw_sub_minor;
-        uint8_t  reserved0;
 	uint32_t fw_build_id;
 	uint8_t  fw_month;
 	uint8_t  fw_day;
