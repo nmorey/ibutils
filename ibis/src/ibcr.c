@@ -185,7 +185,7 @@ __ibcr_prep_cr_mad(
   mad_addr.static_rate = 0;
   mad_addr.addr_type.gsi.remote_qp=cl_hton32(1);
   mad_addr.addr_type.gsi.remote_qkey = cl_hton32(0x80010000);
-  mad_addr.addr_type.gsi.pkey = cl_hton16(0xffff);
+  mad_addr.addr_type.gsi.pkey = 0;
   mad_addr.addr_type.gsi.service_level = 0;
   mad_addr.addr_type.gsi.global_route = FALSE;
 
