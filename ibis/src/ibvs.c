@@ -242,7 +242,7 @@ __ibvs_init_mad_addr(
   p_mad_addr->static_rate = 0;
   p_mad_addr->addr_type.gsi.remote_qp=cl_hton32(1);
   p_mad_addr->addr_type.gsi.remote_qkey = cl_hton32(0x80010000);
-  p_mad_addr->addr_type.gsi.pkey = 0;
+  p_mad_addr->addr_type.gsi.pkey_ix = 0;
   p_mad_addr->addr_type.gsi.service_level = 0;
   p_mad_addr->addr_type.gsi.global_route = FALSE;
 }
@@ -1360,7 +1360,7 @@ ibvs_plft_map_get(
   mad_addr.static_rate = 0;
   mad_addr.addr_type.gsi.remote_qp=cl_hton32(0);
   mad_addr.addr_type.gsi.remote_qkey = 0;
-  mad_addr.addr_type.gsi.pkey = 0;
+  mad_addr.addr_type.gsi.pkey_ix = 0;
   mad_addr.addr_type.gsi.service_level = 0;
   mad_addr.addr_type.gsi.global_route = FALSE;
 
