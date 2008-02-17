@@ -200,7 +200,7 @@ ibis_get_ports_status(
   ib_api_status_t status;
   ib_port_attr_t attr_array[GUID_ARRAY_SIZE];
 
-  OSM_LOG_ENTER( &(IbisObj.log),  ibis_get_ports_status);
+  OSM_LOG_ENTER(&(IbisObj.log));
 
   *num_ports = GUID_ARRAY_SIZE;
   status = osm_vendor_get_all_port_attr(

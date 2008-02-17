@@ -147,7 +147,7 @@ __ibis_gsi_mad_ctrl_disp_done_callback(
 {
   osm_madw_t* const p_madw = (osm_madw_t*)p_data;
 
-  OSM_LOG_ENTER( &(IbisObj.log), __ibis_gsi_mad_ctrl_disp_done_callback );
+  OSM_LOG_ENTER(&(IbisObj.log));
 
   CL_ASSERT( p_madw );
   /*
@@ -180,7 +180,7 @@ __ibis_gsi_mad_ctrl_process(
   cl_disp_reg_handle_t      h_disp = CL_DISP_INVALID_HANDLE;
   uint8_t                   mgmt_class;
 
-  OSM_LOG_ENTER( &(IbisObj.log), __ibis_gsi_mad_ctrl_process );
+  OSM_LOG_ENTER(&(IbisObj.log));
 
   p_mad = osm_madw_get_mad_ptr( p_madw );
 
@@ -286,7 +286,7 @@ __ibis_gsi_mad_ctrl_rcv_callback(
   ibis_gsi_mad_ctrl_t* p_ctrl = (ibis_gsi_mad_ctrl_t*)bind_context;
   ib_mad_t* p_mad;
 
-  OSM_LOG_ENTER( p_ctrl->p_log, __ibis_gsi_mad_ctrl_rcv_callback );
+  OSM_LOG_ENTER(p_ctrl->p_log);
 
   CL_ASSERT( p_madw );
 
@@ -330,7 +330,7 @@ __ibis_gsi_mad_ctrl_send_err_callback(
   ib_mad_t* p_mad;
   ibis_gsi_mad_ctrl_t* p_ctrl = (ibis_gsi_mad_ctrl_t*)bind_context;
 
-  OSM_LOG_ENTER( p_ctrl->p_log, __ibis_gsi_mad_ctrl_send_err_callback );
+  OSM_LOG_ENTER(p_ctrl->p_log);
 
   // TODO . General call_back for errors.
 
@@ -640,7 +640,7 @@ ibis_gsi_mad_ctrl_bind(
   osm_bind_info_t bind_info;
   ib_api_status_t status = IB_SUCCESS;
 
-  OSM_LOG_ENTER( p_ctrl->p_log, ibis_gsi_mad_ctrl_bind );
+  OSM_LOG_ENTER(p_ctrl->p_log);
 
   if( *p_h_bind != OSM_BIND_INVALID_HANDLE )
   {
@@ -707,7 +707,7 @@ ibis_gsi_mad_ctrl_set_class_attr_cb(
   ibis_gsi_cb_msg_pair_t *p_cb_msg_pair;
   cl_disp_reg_handle_t    disp_reg_hdl;
 
-  OSM_LOG_ENTER( p_ctrl->p_log, ibis_gsi_mad_ctrl_set_class_attr_cb );
+  OSM_LOG_ENTER(p_ctrl->p_log);
 
   mid = (cl_disp_msgid_t)cl_atomic_inc( &p_ctrl->msg_id);
 
@@ -840,7 +840,7 @@ ibis_gsi_sync_mad_batch_callback(
     ibis_gsi_mad_ctrl_t* const p_ctrl = p_batch_ctx->p_ctrl;
     uint8_t  *p_result;
     ib_mad_t *p_mad;
-    OSM_LOG_ENTER( p_ctrl->p_log, ibis_gsi_sync_mad_batch_callback);
+    OSM_LOG_ENTER(p_ctrl->p_log);
   
     /* obtain the lock */
     cl_spinlock_acquire(&p_batch_ctx->lock);
@@ -937,7 +937,7 @@ ibis_gsi_send_sync_mad_batch(
   cl_status_t                        wait_status;
   ib_api_status_t                    status;
 
-  OSM_LOG_ENTER( p_ctrl->p_log, ibis_gsi_send_sync_mad_batch);
+  OSM_LOG_ENTER(p_ctrl->p_log);
 
   /* initialize the batch context */
   p_batch_ctx = __gsi_new_mad_batch_context();

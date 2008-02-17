@@ -63,7 +63,7 @@ ibvs_construct()
 {
   ibvs_t* p_ibvs;
 
-  OSM_LOG_ENTER( &(IbisObj.log), ibvs_construct );
+  OSM_LOG_ENTER(&(IbisObj.log));
 
   p_ibvs = malloc(sizeof(ibvs_t));
   if (p_ibvs == NULL)
@@ -85,7 +85,7 @@ void
 ibvs_destroy(
   IN ibvs_t* const p_ibvs )
 {
-  OSM_LOG_ENTER( &(IbisObj.log), ibvs_destroy );
+  OSM_LOG_ENTER(&(IbisObj.log));
 
   p_ibvs->state = IBVS_STATE_INIT;
 
@@ -100,7 +100,7 @@ ibvs_init(
 {
   ib_api_status_t status = IB_SUCCESS;
 
-  OSM_LOG_ENTER( &(IbisObj.log), ibvs_init );
+  OSM_LOG_ENTER(&(IbisObj.log));
 
   p_ibvs->state = IBVS_STATE_READY;
 
@@ -117,7 +117,7 @@ ibvs_bind(
 {
   ib_api_status_t status;
 
-  OSM_LOG_ENTER( &(IbisObj.log), ibvs_bind);
+  OSM_LOG_ENTER(&(IbisObj.log));
 
   status = ibis_gsi_mad_ctrl_bind(
     &(IbisObj.mad_ctrl),
@@ -291,7 +291,7 @@ __ibvs_prep_ext_port_access_mad(
   osm_madw_t            *p_madw;
   uint8_t               i,dword_size;
 
-  OSM_LOG_ENTER( &(IbisObj.log),__ibvs_prep_ext_port_access_mad);
+  OSM_LOG_ENTER(&(IbisObj.log));
 
   osm_log(&(IbisObj.log), OSM_LOG_DEBUG,
           "__ibvs_prep_ext_port_access_mad: "
@@ -362,7 +362,7 @@ ibvs_cpu_read(
   osm_madw_t          *p_madw_arr[1];
   ib_api_status_t status;
 
-  OSM_LOG_ENTER( &(IbisObj.log), ibvs_cpu_read);
+  OSM_LOG_ENTER(&(IbisObj.log));
 
   __ibvs_prep_ext_port_access_mad(
     p_ibvs,
@@ -405,7 +405,7 @@ ibvs_cpu_write(
   osm_madw_t     *p_madw_arr[1];
   ib_vs_t         res_mad;
 
-  OSM_LOG_ENTER( &(IbisObj.log),ibvs_cpu_write );
+  OSM_LOG_ENTER(&(IbisObj.log));
 
   __ibvs_prep_ext_port_access_mad(
     p_ibvs,
@@ -452,7 +452,7 @@ ibvs_i2c_read(
   ib_api_status_t status;
   osm_madw_t          *p_madw_arr[1];
 
-  OSM_LOG_ENTER( &(IbisObj.log), ibvs_i2c_read );
+  OSM_LOG_ENTER(&(IbisObj.log));
 
   osm_log(&(IbisObj.log), OSM_LOG_DEBUG,
           "ibvs_i2c_read: "
@@ -505,7 +505,7 @@ ibvs_multi_i2c_read(
   osm_madw_t     *p_madw_arr[IBVS_MULTI_MAX];
   uint16_t        i;
 
-  OSM_LOG_ENTER( &(IbisObj.log), ibvs_multi_i2c_read );
+  OSM_LOG_ENTER(&(IbisObj.log));
 
   if (num > IBVS_MULTI_MAX)
   {
@@ -567,7 +567,7 @@ ibvs_i2c_write(
   osm_madw_t     *p_madw_arr[1];
   ib_vs_t         res_mad;
 
-  OSM_LOG_ENTER( &(IbisObj.log),ibvs_i2c_write );
+  OSM_LOG_ENTER(&(IbisObj.log));
 
   __ibvs_prep_ext_port_access_mad(
     p_ibvs,
@@ -613,7 +613,7 @@ ibvs_multi_i2c_write(
   uint8_t         i;
   osm_madw_t     *p_madw_arr[IBVS_MULTI_MAX];
 
-  OSM_LOG_ENTER( &(IbisObj.log),ibvs_multi_i2c_write );
+  OSM_LOG_ENTER(&(IbisObj.log));
 
   if (num > IBVS_MULTI_MAX)
   {
@@ -684,7 +684,7 @@ ibvs_gpio_read(
   ib_api_status_t status;
   osm_madw_t     *p_madw_arr[1];
 
-  OSM_LOG_ENTER( &(IbisObj.log), ibvs_gpio_read );
+  OSM_LOG_ENTER(&(IbisObj.log));
 
   __ibvs_prep_ext_port_access_mad(
     p_ibvs,
@@ -728,7 +728,7 @@ ibvs_gpio_write(
   osm_madw_t     *p_madw_arr[1];
   ib_vs_t        res_mad;
 
-  OSM_LOG_ENTER( &(IbisObj.log), ibvs_gpio_write );
+  OSM_LOG_ENTER(&(IbisObj.log));
 
   __ibvs_prep_ext_port_access_mad(
     p_ibvs,
@@ -772,7 +772,7 @@ __ibvs_prep_sw_reset_mad(
   osm_mad_addr_t        mad_addr;
   osm_madw_t            *p_madw;
 
-  OSM_LOG_ENTER( &(IbisObj.log),__ibvs_prep_sw_reset_mad);
+  OSM_LOG_ENTER(&(IbisObj.log));
 
   osm_log(&(IbisObj.log), OSM_LOG_DEBUG,
           "__ibvs_prep_sw_reset_mad: "
@@ -806,7 +806,7 @@ ibvs_multi_sw_reset(
   osm_madw_t     *p_madw_arr[IBVS_MULTI_MAX];
   ib_vs_t         res_mads[IBVS_MULTI_MAX];
     
-  OSM_LOG_ENTER( &(IbisObj.log),ibvs_multi_sw_reset );
+  OSM_LOG_ENTER(&(IbisObj.log));
 
   if (num > IBVS_MULTI_MAX)
   {
@@ -869,7 +869,7 @@ __ibvs_prep_flash_access_mad(
   osm_madw_t            *p_madw;
   uint8_t               i,dword_size;
 
-  OSM_LOG_ENTER( &(IbisObj.log),__ibvs_prep_flash_access_mad);
+  OSM_LOG_ENTER(&(IbisObj.log));
 
   osm_log(&(IbisObj.log), OSM_LOG_DEBUG,
           "__ibvs_prep_flash_access_mad: "
@@ -920,7 +920,7 @@ ibvs_multi_flash_open(
   osm_madw_t     *p_madw_arr[IBVS_MULTI_MAX];
   uint8_t         i;
 
-  OSM_LOG_ENTER( &(IbisObj.log), ibvs_multi_flash_read );
+  OSM_LOG_ENTER(&(IbisObj.log));
 
   if (num > IBVS_MULTI_MAX)
   {
@@ -972,7 +972,7 @@ ibvs_multi_flash_close(
   osm_madw_t     *p_madw_arr[IBVS_MULTI_MAX];
   uint8_t         i;
 
-  OSM_LOG_ENTER( &(IbisObj.log), ibvs_multi_flash_read );
+  OSM_LOG_ENTER(&(IbisObj.log));
 
   if (num > IBVS_MULTI_MAX)
   {
@@ -1025,7 +1025,7 @@ ibvs_multi_flash_set_bank(
   osm_madw_t     *p_madw_arr[IBVS_MULTI_MAX];
   uint8_t         i;
 
-  OSM_LOG_ENTER( &(IbisObj.log), ibvs_multi_flash_read );
+  OSM_LOG_ENTER(&(IbisObj.log));
 
   if (num > IBVS_MULTI_MAX)
   {
@@ -1077,7 +1077,7 @@ ibvs_multi_flash_erase(
   osm_madw_t     *p_madw_arr[IBVS_MULTI_MAX];
   uint8_t         i;
 
-  OSM_LOG_ENTER( &(IbisObj.log), ibvs_multi_flash_read );
+  OSM_LOG_ENTER(&(IbisObj.log));
 
   if (num > IBVS_MULTI_MAX)
   {
@@ -1129,7 +1129,7 @@ ibvs_multi_flash_read(
   osm_madw_t     *p_madw_arr[IBVS_MULTI_MAX];
   uint8_t         i;
 
-  OSM_LOG_ENTER( &(IbisObj.log), ibvs_multi_flash_read );
+  OSM_LOG_ENTER(&(IbisObj.log));
 
   if (num > IBVS_MULTI_MAX)
   {
@@ -1182,7 +1182,7 @@ ibvs_multi_flash_write(
   osm_madw_t     *p_madw_arr[IBVS_MULTI_MAX];
   ib_vs_t         res_mads[IBVS_MULTI_MAX];
 
-  OSM_LOG_ENTER( &(IbisObj.log),ibvs_multi_flash_write );
+  OSM_LOG_ENTER(&(IbisObj.log));
 
   if (num > IBVS_MULTI_MAX)
   {
@@ -1246,7 +1246,7 @@ ibvs_mirror_read(
   ib_api_status_t status;
   osm_madw_t     *p_madw_arr[1];
 
-  OSM_LOG_ENTER( &(IbisObj.log), ibvs_mirror_read );
+  OSM_LOG_ENTER(&(IbisObj.log));
 
   osm_log(&(IbisObj.log), OSM_LOG_DEBUG,
           "ibvs_mirror_read: "
@@ -1296,7 +1296,7 @@ ibvs_mirror_write(
   osm_madw_t     *p_madw_arr[1];
   ib_vs_t        res_mad;
 
-  OSM_LOG_ENTER( &(IbisObj.log), ibvs_mirror_write );
+  OSM_LOG_ENTER(&(IbisObj.log));
 
   osm_log(&(IbisObj.log), OSM_LOG_DEBUG,
           "ibvs_mirror_write: "
@@ -1348,7 +1348,7 @@ ibvs_plft_map_get(
   osm_madw_t      *p_madw_arr[1];
   uint32_t         attr_mod = 0;
 
-  OSM_LOG_ENTER( &(IbisObj.log), ibvs_plft_map_get );
+  OSM_LOG_ENTER(&(IbisObj.log));
 
   osm_log(&(IbisObj.log), OSM_LOG_DEBUG,
           "ibvs_plft_map_get: "
@@ -1405,7 +1405,7 @@ ibvs_general_info_get(
   ib_api_status_t status;
   osm_madw_t     *p_madw_arr[1];
 
-  OSM_LOG_ENTER( &(IbisObj.log), ibvs_general_info_get );
+  OSM_LOG_ENTER(&(IbisObj.log));
 
   osm_log(&(IbisObj.log), OSM_LOG_DEBUG,
           "ibvs_general_info_get: "

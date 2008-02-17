@@ -63,7 +63,7 @@ ibpm_construct()
 {
   ibpm_t* p_ibpm;
 
-  OSM_LOG_ENTER( &(IbisObj.log), ibpm_construct );
+  OSM_LOG_ENTER(&(IbisObj.log));
 
   p_ibpm = malloc(sizeof(ibpm_t));
   if (p_ibpm == NULL)
@@ -83,7 +83,7 @@ void
 ibpm_destroy(
   IN ibpm_t* const p_ibpm )
 {
-  OSM_LOG_ENTER( &(IbisObj.log), ibpm_destroy );
+  OSM_LOG_ENTER(&(IbisObj.log));
 
   p_ibpm->state = IBPM_STATE_INIT;
   OSM_LOG_EXIT( &(IbisObj.log) );
@@ -97,7 +97,7 @@ ibpm_init(
 {
   ib_api_status_t status = IB_SUCCESS;
 
-  OSM_LOG_ENTER( &(IbisObj.log), ibpm_init );
+  OSM_LOG_ENTER(&(IbisObj.log));
   p_ibpm->state = IBPM_STATE_INIT;
 
   OSM_LOG_EXIT( &(IbisObj.log) );
@@ -113,7 +113,7 @@ ibpm_bind(
 {
   ib_api_status_t status;
 
-  OSM_LOG_ENTER( &(IbisObj.log), ibpm_bind);
+  OSM_LOG_ENTER(&(IbisObj.log));
 
   status = ibis_gsi_mad_ctrl_bind(
     &(IbisObj.mad_ctrl),
@@ -163,7 +163,7 @@ __ibpm_prep_port_counter_mad(
   osm_mad_addr_t        mad_addr;
   osm_madw_t            *p_madw;
 
-  OSM_LOG_ENTER( &(IbisObj.log), __ibpm_prep_port_counter_mad  );
+  OSM_LOG_ENTER(&(IbisObj.log));
 
   osm_log(&(IbisObj.log), OSM_LOG_DEBUG,
           "__ibpm_prep_port_counter_mad: "
@@ -212,7 +212,7 @@ ibpm_get_counters(
 
   osm_madw_t          *p_madw_arr[1];
   ib_api_status_t      status;
-  OSM_LOG_ENTER( &(IbisObj.log), ibpm_get_counters );
+  OSM_LOG_ENTER(&(IbisObj.log));
 
   /* prepare the mad */
   __ibpm_prep_port_counter_mad(
@@ -252,7 +252,7 @@ ibpm_get_multi_counters(
   unsigned int          i;
   ib_api_status_t       status;
 
-  OSM_LOG_ENTER( &(IbisObj.log), ibpm_get_multi_counters );
+  OSM_LOG_ENTER(&(IbisObj.log));
 
   if (num > IBPM_MULTI_MAX)
   {
@@ -303,7 +303,7 @@ ibpm_get_multi_counters_extended(
   unsigned int          i;
   ib_api_status_t       status;
 
-  OSM_LOG_ENTER( &(IbisObj.log), ibpm_get_multi_counters );
+  OSM_LOG_ENTER(&(IbisObj.log));
 
   if (num > IBPM_MULTI_MAX)
   {
@@ -352,7 +352,7 @@ ibpm_clr_all_counters(
   osm_madw_t          *p_madw_arr[1];
   ib_api_status_t      status;
 
-  OSM_LOG_ENTER( &(IbisObj.log),ibpm_clr_all_counters );
+  OSM_LOG_ENTER(&(IbisObj.log));
 
   /* prepare the mad */
   __ibpm_prep_port_counter_mad(
@@ -398,7 +398,7 @@ ibpm_clr_all_multi_counters(
   ib_api_status_t      status;
   uint8_t              i;
 
-  OSM_LOG_ENTER( &(IbisObj.log),ibpm_clr_all_multi_counters );
+  OSM_LOG_ENTER(&(IbisObj.log));
 
   if (num > IBPM_MULTI_MAX)
   {

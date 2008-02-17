@@ -255,7 +255,7 @@ ibsac_query_res_cb( IN osmv_query_res_t * p_rec )
     ( ibsac_req_context_t * ) p_rec->query_context;
   ibis_t *const p_ibis = p_ctxt->p_ibis;
 
-  OSM_LOG_ENTER( &p_ibis->log, ibsac_query_res_cb );
+  OSM_LOG_ENTER(&p_ibis->log);
 
   p_ctxt->result = *p_rec;
 
@@ -290,7 +290,7 @@ ibsac_query( IN ibis_t *   const p_ibis,
   ibsac_req_context_t context;
   ibsac_req_context_t *p_context = &context;
 
-  OSM_LOG_ENTER( &p_ibis->log, ibsac_query );
+  OSM_LOG_ENTER(&p_ibis->log);
 
   if( osm_log_is_active( &p_ibis->log, OSM_LOG_DEBUG ) )
   {

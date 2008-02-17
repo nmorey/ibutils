@@ -63,7 +63,7 @@ ibcr_construct()
 {
   ibcr_t* p_ibcr;
 
-  OSM_LOG_ENTER( &(IbisObj.log), ibcr_construct );
+  OSM_LOG_ENTER(&(IbisObj.log));
 
   p_ibcr = malloc(sizeof(ibcr_t));
   if (p_ibcr == NULL)
@@ -85,7 +85,7 @@ void
 ibcr_destroy(
   IN ibcr_t* const p_ibcr )
 {
-  OSM_LOG_ENTER( &(IbisObj.log), ibcr_destroy );
+  OSM_LOG_ENTER(&(IbisObj.log));
 
   p_ibcr->state = IBCR_STATE_INIT;
 
@@ -100,7 +100,7 @@ ibcr_init(
 {
   ib_api_status_t status = IB_SUCCESS;
 
-  OSM_LOG_ENTER( &(IbisObj.log), ibcr_init );
+  OSM_LOG_ENTER(&(IbisObj.log));
 
   p_ibcr->state = IBCR_STATE_READY;
 
@@ -117,7 +117,7 @@ ibcr_bind(
 {
   ib_api_status_t status;
 
-  OSM_LOG_ENTER( &(IbisObj.log), ibcr_bind);
+  OSM_LOG_ENTER(&(IbisObj.log));
 
   status = ibis_gsi_mad_ctrl_bind(
     &(IbisObj.mad_ctrl),
@@ -174,7 +174,7 @@ __ibcr_prep_cr_mad(
   uint32_t              attr_mod=0;
   uint16_t              attr_id=0;
 
-  OSM_LOG_ENTER( &(IbisObj.log),__ibcr_prep_cr_mad  );
+  OSM_LOG_ENTER(&(IbisObj.log));
 
   attr_mod = (((address & 0x00ff0000) << 8) | (0x01 << 16) | (address & 0xffff));
 
@@ -222,7 +222,7 @@ ibcr_read(
   ib_api_status_t status;
   osm_madw_t     *p_madw_arr[1];
 
-  OSM_LOG_ENTER( &(IbisObj.log), ibcr_read );
+  OSM_LOG_ENTER(&(IbisObj.log));
 
   /* prepare the mad */
   __ibcr_prep_cr_mad(
@@ -259,7 +259,7 @@ ibcr_write(
   ib_cr_space_t res_mad;
   osm_madw_t   *p_madw_arr[1];
 
-  OSM_LOG_ENTER( &(IbisObj.log),ibcr_write );
+  OSM_LOG_ENTER(&(IbisObj.log));
 
   __ibcr_prep_cr_mad(
     p_ibcr,
@@ -302,7 +302,7 @@ ibcr_multi_read(
   uint8_t i;
   osm_madw_t          *p_madw_arr[IBCR_MULTI_MAX];
 
-  OSM_LOG_ENTER( &(IbisObj.log), ibcr_multi_read );
+  OSM_LOG_ENTER(&(IbisObj.log));
 
   if (num > IBCR_MULTI_MAX)
   {
@@ -348,7 +348,7 @@ ibcr_multi_write(
   osm_madw_t     *p_madw_arr[IBCR_MULTI_MAX];
   ib_cr_space_t   res_mads[IBCR_MULTI_MAX];
 
-  OSM_LOG_ENTER( &(IbisObj.log),ibcr_multi_write );
+  OSM_LOG_ENTER(&(IbisObj.log));
 
   if (num > IBCR_MULTI_MAX)
   {

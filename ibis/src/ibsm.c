@@ -63,7 +63,7 @@ ibsm_construct()
 {
   ibsm_t* p_ibsm;
 
-  OSM_LOG_ENTER( &(IbisObj.log), ibsm_construct );
+  OSM_LOG_ENTER(&(IbisObj.log));
 
   p_ibsm = malloc(sizeof(ibsm_t));
   if (p_ibsm == NULL)
@@ -83,7 +83,7 @@ void
 ibsm_destroy(
   IN ibsm_t* const p_ibsm )
 {
-  OSM_LOG_ENTER( &(IbisObj.log), ibsm_destroy );
+  OSM_LOG_ENTER(&(IbisObj.log));
 
   p_ibsm->state = IBSM_STATE_INIT;
   OSM_LOG_EXIT( &(IbisObj.log) );
@@ -97,7 +97,7 @@ ibsm_init(
 {
   ib_api_status_t status = IB_SUCCESS;
 
-  OSM_LOG_ENTER( &(IbisObj.log), ibsm_init );
+  OSM_LOG_ENTER(&(IbisObj.log));
   p_ibsm->state = IBSM_STATE_INIT;
 
   OSM_LOG_EXIT( &(IbisObj.log) );
@@ -113,7 +113,7 @@ ibsm_bind(
 {
   ib_api_status_t status = IB_SUCCESS;
 
-  OSM_LOG_ENTER( &(IbisObj.log), ibsm_bind);
+  OSM_LOG_ENTER(&(IbisObj.log));
 
   /* no need to bind the Directed Route class as it will automatically
      be handled by the osm_vendor_bind if asked for LID route */
@@ -238,7 +238,7 @@ ibsm_send_mad_by_lid (
   ib_smp_t              response_mad = {0};
   ib_api_status_t       status;
 
-  OSM_LOG_ENTER( &(IbisObj.log), ibsm_send_mad_by_lid );
+  OSM_LOG_ENTER(&(IbisObj.log));
 
   osm_log(&(IbisObj.log), OSM_LOG_DEBUG,
           "ibsm_send_mad_by_lid: "
@@ -312,7 +312,7 @@ ibsm_send_mad_by_dr(
   ib_smp_t             *p_smp;
   ib_api_status_t       status;
 
-  OSM_LOG_ENTER( &(IbisObj.log), ibsm_send_mad_by_dr );
+  OSM_LOG_ENTER(&(IbisObj.log));
 
   osm_log(&(IbisObj.log), OSM_LOG_DEBUG,
           "ibsm_send_mad_by_dr: "

@@ -81,7 +81,7 @@ ibbbm_construct()
 {
   ibbbm_t* p_ibbbm;
 
-  OSM_LOG_ENTER( &(IbisObj.log), ibbbm_construct );
+  OSM_LOG_ENTER(&(IbisObj.log));
  
   p_ibbbm = malloc(sizeof(ibbbm_t));
   if (p_ibbbm == NULL)
@@ -105,7 +105,7 @@ void
 ibbbm_destroy(
   IN ibbbm_t* const p_ibbbm )
 {
-  OSM_LOG_ENTER( &(IbisObj.log), ibbbm_destroy );
+  OSM_LOG_ENTER(&(IbisObj.log));
 
   p_ibbbm->state = IBBBM_STATE_INIT;
   cl_event_destroy(&p_ibbbm->wait_for_resp);
@@ -121,7 +121,7 @@ ibbbm_init(
 {
   ib_api_status_t status = IB_SUCCESS;
  
-  OSM_LOG_ENTER( &(IbisObj.log), ibbbm_init );
+  OSM_LOG_ENTER(&(IbisObj.log));
  
   cl_event_init(&p_ibbbm->wait_for_resp, FALSE); // FALSE: auto reset
   p_ibbbm->state = IBBBM_STATE_READY;
@@ -141,7 +141,7 @@ __ibbbm_space_rcv_callback(
   /* HACK : how do we get the context from the mad itself ??? */
   ibbbm_t* p_ibbbm = (ibbbm_t*)context;
 
-  OSM_LOG_ENTER( &(IbisObj.log), __ibbbm_space_rcv_callback);
+  OSM_LOG_ENTER(&(IbisObj.log));
 
   memcpy(&ibbbm_vpd_mad,p_madw->p_mad,sizeof(ib_bbm_vpd_t));
 
@@ -163,7 +163,7 @@ ibbbm_bind(
 {
   ib_api_status_t status;
  
-  OSM_LOG_ENTER( &(IbisObj.log), ibbbm_bind);
+  OSM_LOG_ENTER(&(IbisObj.log));
  
   status = ibis_gsi_mad_ctrl_bind(
     &(IbisObj.mad_ctrl),
@@ -213,7 +213,7 @@ __ibbbm_vpd(
   uint64_t              trans_id;
   uint16_t              bm_sequence;
 
-  OSM_LOG_ENTER( &(IbisObj.log),__ibbbm_vpd  );
+  OSM_LOG_ENTER(&(IbisObj.log));
 
   trans_id = ibis_get_tid();
   bm_sequence =(uint16_t)cl_atomic_inc(&p_ibbbm->bm_sequence);
@@ -289,7 +289,7 @@ ibbbm_read_vpd(
   uint64_t        trans_id;
   cl_status_t     wait_status;
 
-  OSM_LOG_ENTER( &(IbisObj.log), ibbbm_read_vpd );
+  OSM_LOG_ENTER(&(IbisObj.log));
  
   status = __ibbbm_vpd(p_ibbbm,lid,BBM_ATTR_READVPD,&trans_id,vpd_device_selector,bytes_num,offset,NULL);
  
@@ -336,7 +336,7 @@ ibbbm_write_vpd(
   uint64_t        trans_id;
   cl_status_t     wait_status;
 
-  OSM_LOG_ENTER( &(IbisObj.log),ibbbm_write_vpd );
+  OSM_LOG_ENTER(&(IbisObj.log));
 
   status = __ibbbm_vpd(p_ibbbm,lid,BBM_ATTR_WRITEVPD,&trans_id,vpd_device_selector,bytes_num,offset,p_data);
 
