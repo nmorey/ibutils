@@ -84,6 +84,7 @@ if {[catch {DiscoverFabric 0} e]} {
    }
 }
 
+writeDBFile
 
 ### Write the .lst and .mask files
 writeMasksFile

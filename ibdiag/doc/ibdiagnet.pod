@@ -4,11 +4,12 @@ B<ibdiagnet - IB diagnostic net>
 
 =head1 SYNOPSYS
 
-ibdiagnet [-c <count>] [-v] [-r] [-t <topo-file>] [-s <sys-name>]
-  [-i <dev-index>] [-p <port-num>] [-o <out-dir>] [-lw <1x|4x|12x>]
-  [-ls <2.5|5|10>] [-pm] [-pc] [-P <<PM counter>=<Trash Limit>>]
-  [-wt <file-name>]
-
+ibdiagnet [-c <count>] [-v] [-r] [-o <out-dir>]
+  [-t <topo-file>] [-s <sys-name>] [-i <dev-index>] [-p <port-num>] [-wt]
+  [-pm] [-pc] [-P <<PM>=<Value>>]
+  [-lw <1x|4x|12x>] [-ls <2.5|5|10>]
+  [-skip <ibdiag_check/s>] [-load_db <db_file>]
+  
 =head1 DESCRIPTION
 
 ibdiagnet scans the fabric using directed route packets and extracts all the available information regarding its connectivity and devices.
@@ -54,6 +55,9 @@ A dump of the the existing partitions and their member host ports
 
 A dump of the multicast groups, their properties and member host ports
 
+=item F<ibdiagnet.db> -
+
+A dump of the internal subnet database. This file can be loaded in later runs using the -load_db option
 
 =back
 
@@ -221,6 +225,16 @@ If any of the provided pm is greater then its provided value, print it to screen
 
 =back
 
+=item B<-skip <skip-option(s)>> :
+
+=over
+
+=item
+Skip the executions of the selected checks.
+Skip options (one or more can be specified) : dup_guids  zero_guids pm logical_state part ipoib all
+
+=back
+
 =item B<-wt> <file-name>> :
 
 =over
@@ -228,6 +242,15 @@ If any of the provided pm is greater then its provided value, print it to screen
 =item
 Write out the discovered topology into the given file. This flag is useful if you later want to check for changes from the current state of the fabric.
 A directory named ibdiag_ibnl is also created by this option, and holds the IBNL files required to load this topology. To use these files you will need to set the environment variable named IBDM_IBNL_PATH to that directory. The directory is located in /tmp or in the output directory provided by the -o flag.
+
+=back
+
+=item B<-load_db> <file-name>> :
+
+=over
+
+=item
+Load subnet data from the given .db file. Skip subnet discovery stage
 
 =back
 

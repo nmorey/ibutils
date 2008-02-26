@@ -19,6 +19,12 @@
 proc SetInfoArgv {} {
    global InfoArgv G
    array set InfoArgv {
+      -load_db,name     "ibdiag.db"
+      -load_db,desc     "Load subnet data from the given .db file. Skip subnet discovery stage"
+      -load_db,param    "db_file"
+      -load_db,arglen   "1"
+      -load_db,regexp   "file.exists.readable"
+
       -skip,name     "skip.checks"
       -skip,desc     "Skip the executions of part of the application"
       -skip,param    "ibdiag_check/s"
@@ -309,15 +315,15 @@ proc SetToolsFlags {} {
    # If a few flags are thus encompassed, then they are mutex
    global TOOLS_FLAGS
    array set TOOLS_FLAGS {
-      ibping      "(n|l|d) . c w v o     . t s i p "
-      ibdiagpath "(n|l|d) . c   v o smp . t s i p . pm pc P . lw ls sl ."
-      ibdiagui   "          c   v r o   . t s i p . pm pc P . lw ls ."
-      ibdiagnet  "          c   v r o   . t s i p . wt . pm pc P . lw ls skip ."
+      ibping     "(n|l|d) . c w v o     . t s i p "
+      ibdiagpath "(n|l|d) . c   v o smp . t s i p    . pm pc P . lw ls sl ."
+      ibdiagui   "          c   v r o   . t s i p    . pm pc P . lw ls ."
+      ibdiagnet  "          c   v r o   . t s i p wt . pm pc P . lw ls    . skip load_db"
       ibcfg    "(n|l|d) (c|q)       . t s i p o"
       ibmad    "(m) (a) (n|l|d)     . t s i p o ; (q) a"
-      ibsac    "(m) (a) k           .t s i p o ; (q) a"
+      ibsac    "(m) (a) k           . t s i p o ; (q) a"
 
-      envVars     "t s i p o"
+      envVars     "t s i p o load_db"
       general     "h V -vars"
    }
 }
@@ -1070,7 +1076,7 @@ proc inform { msgCode args } {
       }
       "-E-argv:not.legal.skip" {
          append msgText "Illegal argument: I${llegalValMsg}: $msgF(value)%n"
-         append msgText "(Legal value: dup_guids | zero_guids | pm | logical_state)."
+         append msgText "(Legal value: dup_guids | zero_guids | pm | logical_state | part | ipoib | all)."
       }
 
       "-W-argv:-s.without.-t" {
@@ -1196,6 +1202,14 @@ proc inform { msgCode args } {
       "-W-loading:old.ibis.version" {
          append msgText "IBIS: The current IBIS version is not up-to-date"
       }
+      "-E-loading:old.ibdiag.db" {
+          append msgText "Failed to load ibdiag external DB from: $msgF(fn)%n"
+          append msgText "Error message: \"$msgF(errMsg)\""
+      }
+      "-W-loading:external.ibdiag.db" {
+          append msgText "Loading external ibdiag DB from: $msgF(fn)"
+      }
+
 
       "-E-localPort:all.ports.down" {
          if { $G(var:tool.name) == "ibdiagpath" } {
@@ -2382,16 +2396,18 @@ proc showHelpPage { args } {
       available information regarding its connectivity and devices.
       It then produces the following files in the output directory defined by the
       -o option (see below):
-         ibdiagnet.lst    - List of all the nodes, ports and links in the fabric
+            ibdiagnet.lst    - List of all the nodes, ports and links in the fabric
             ibdiagnet.fdbs   - A dump of the unicast forwarding tables of the fabric
-            switches
+                               switches
             ibdiagnet.mcfdbs - A dump of the multicast forwarding tables of the fabric
-            switches
+                               switches
             ibdiagnet.masks  - In case of duplicate port/node Guids, these file include
-            the map between masked Guid and real Guids
+                               the map between masked Guid and real Guids
             ibdiagnet.sm     - A dump of all the SM (state and priority) in the fabric
             ibdiagnet.pm     - In case -pm option was provided, this file contain a dump
-            of all the nodes PM counters
+                               of all the nodes PM counters
+            ibdiagnet.db     - A dump of the internal subnet database. This file can be loaded
+                               in later runs using the -load_db option
             In addition to generating the files above, the discovery phase also checks for
             duplicate node/port GUIDs in the IB fabric. If such an error is detected, it
             is displayed on the standard output.
