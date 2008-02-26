@@ -250,7 +250,9 @@ A directory named ibdiag_ibnl is also created by this option, and holds the IBNL
 =over
 
 =item
-Load subnet data from the given .db file. Skip subnet discovery stage
+Load subnet data from the given .db file, and skip subnet discovery stage.
+Note: Some of the checks require actual subnet discovery, and therefore would not run when load_db is specified. These checks are
+: Duplicated/zero guids, link state, SMs status.
 
 =back
 
