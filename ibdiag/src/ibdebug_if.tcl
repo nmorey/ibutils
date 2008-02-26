@@ -1383,7 +1383,7 @@ proc inform { msgCode args } {
          }
          if { [info exists G(argv:verbose)] } { return }
          set nodesNum [expr $G(data:counter.SW) + $G(data:counter.CA)]
-         append msgText "Discovering the subnet ... $nodesNum nodes "
+         append msgText "Discovering ... $nodesNum nodes "
          append msgText "($G(data:counter.SW) Switches & $G(data:counter.CA) CA-s) "
          append msgText "discovered.\r"
 
