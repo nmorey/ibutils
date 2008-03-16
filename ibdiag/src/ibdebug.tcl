@@ -139,7 +139,8 @@ proc InitializeIBDIAG {} {
     set G(var:list.pm.counter)      "symbol_error_counter link_error_recovery_counter\
       link_down_counter port_rcv_errors port_xmit_discard vl15_dropped\
       port_rcv_constraint_errors local_link_integrity_errors\
-      port_xmit_constraint_errors excesive_buffer_errors all"
+      port_xmit_constraint_errors excesive_buffer_errors port_xmit_data\
+	  port_rcv_data port_xmit_pkts port_rcv_pkts all"
     set G(var:list.skip.steps) "dup_guids zero_guids pm logical_state load_ibdm ipoib part all"
 
     ## Configuration of constants - Step2.0: Config badpath vars
