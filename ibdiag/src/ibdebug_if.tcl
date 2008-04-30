@@ -19,7 +19,11 @@
 proc SetInfoArgv {} {
     global InfoArgv G
     array set InfoArgv {
-	-load_db,name     "ibdiag.db"
+        -csv,name     "csv.dump"
+        -csv,desc     "Create an additional, csv based, reports"
+        -csv,arglen   "0"
+
+        -load_db,name     "ibdiag.db"
 	-load_db,desc     "Load subnet data from the given .db file. Skip subnet discovery stage"
 	-load_db,param    "db_file"
 	-load_db,arglen   "1"
@@ -745,8 +749,8 @@ proc retriveEntryFromArray {_arrayName _entry {_defMsg "UNKNOWN"}} {
 
 ##############################
 proc inform { msgCode args } {
-    global G InfoArgv argv env ibdiagSourceVersion
-    regexp {^(\-[A-Z]\-)?([^:]+).*$} $msgCode . msgType msgSource
+    global G InfoArgv argv env ibdiagSourceVersion CSV_ERRORS
+    regexp {^(\-[A-Z]\-)?([^:]+):?(.+)?$} $msgCode . msgType msgSource msgDesc
 
     if { $msgType == "-V-" } {
 	if { ![info exists G(argv:verbose)] } {
@@ -757,6 +761,9 @@ proc inform { msgCode args } {
 		 && ( \"$G(var:tool.name)\" != \"ibdiagnet\" ) \
 		 && ( ![info exists G(argv:verbose)] ) ]
     }
+
+    catch {unset CSV_scope}
+    catch {unset CSV_severity}
 
     if {! [info exist G(status:high.priorty)]} {
 	### Setting Error Codes
@@ -1008,7 +1015,7 @@ proc inform { msgCode args } {
 	    append msgText "Illegal argument: I${llegalValMsg}: $msgF(value)%n"
 	    append msgText "Directory is write protected."
 	    if { $llegalValMsg == "" } {
-		append msgText "\n(Use the -o option to use a different directory"
+		append msgText "%n(Use the -o option to use a different directory"
 		append msgText " for the output files)"
 	    }
 	}
@@ -1062,7 +1069,7 @@ proc inform { msgCode args } {
 	    append msgText "(Legal value: 2.5 | 5 | 10)."
 	}
 	"-E-argv:not.legal.PM" {
-	    set pmCounterList "\t[join $G(var:list.pm.counter) \n\t]"
+	    set pmCounterList "\t[join $G(var:list.pm.counter) %n\t]"
 
 	    append msgText "Illegal argument: I${llegalValMsg}: $msgF(value)%n"
 	    if {[info exists msgF(duplicatePM)]} {
@@ -1088,7 +1095,7 @@ proc inform { msgCode args } {
 	    append msgText "is connected to The IBFabric.%n(described in : $G(argv:topo.file))"
 	}
         "-E-argv:bad.port.name" {
-	    append msgText "$msgF(value) - no such port. I${llegalValMsg}.\n"
+	    append msgText "$msgF(value) - no such port. I${llegalValMsg}.%n"
 	    append msgText "[format $validNames port]"
 	}
 	"-E-argv:no.such.command" {
@@ -1253,12 +1260,12 @@ proc inform { msgCode args } {
 	}
 	"-E-localPort:local.port.not.active" {
 	    append msgText "Local link (port $msgF(port) of local device) is "
-	    append msgText "in $msgF(state) state.\n"
+	    append msgText "in $msgF(state) state.%n"
 	    append msgText "(PortCounters may be queried only over ACTIVE links)."
 	}
 	"-E-localPort:local.port.of.device.not.active" {
 	    append msgText "Local link (port $msgF(port) of device $msgF(device)) is "
-	    append msgText "in $msgF(state) state.\n"
+	    append msgText "in $msgF(state) state.%n"
 	    append msgText "(PortCounters may be queried only over ACTIVE links)."
 	}
         "-E-localPort:illegal.dr.path.out.port" {
@@ -1286,15 +1293,15 @@ proc inform { msgCode args } {
 	    append msgText "Failed running : \"ibis_set_port $G(data:root.port.guid)\""
 	}   
         "-W-localPort:few.ports.up" {
-	    append msgText "A few ports of local device are up.\n"
+	    append msgText "A few ports of local device are up.%n"
 	    append msgText "Since port-num was not specified (-p option), "
 	    #append msgText "port $G(argv:port.num) of device $G(argv:dev.idx) "
 	    append msgText "port $msgF(port) of device $msgF(device) "
 	    append msgText "will be used as the local port."
 	}
 	"-W-localPort:few.devices.up" {
-	    append msgText "A few devices on the local machine have an active port $msgF(port).\n"
-	    #append msgText "A few devices on the local machine have an active port $G(argv:port.num).\n"
+	    append msgText "A few devices on the local machine have an active port $msgF(port).%n"
+	    #append msgText "A few devices on the local machine have an active port $G(argv:port.num).%n"
 	    append msgText "Since device-index was not specified (-i option), "
 	    #append msgText "port $G(argv:port.num) of device $G(argv:dev.idx) "
 	    append msgText "port $msgF(port) of device $msgF(device) "
@@ -1318,10 +1325,10 @@ proc inform { msgCode args } {
 
 
         "-E-outfile:not.valid" {
-            append msgText "Output file $msgF(file0) is illegal value for $G(var:tool.name).\n"
+            append msgText "Output file $msgF(file0) is illegal value for $G(var:tool.name).%n"
         }
         "-W-outfile:not.writable" {
-	    append msgText "Output file $msgF(file0) is write protected.\n"
+	    append msgText "Output file $msgF(file0) is write protected.%n"
 	    append msgText "Writing info into $msgF(file1)."
 	}
 	
@@ -1333,7 +1340,8 @@ proc inform { msgCode args } {
 	}
 	"-E-discover:zero/duplicate.IDs.found" {
 	    if {($msgF(ID) == "SystemGUID") && ($msgF(value) == 0)} {
-		set msgText "-W- "
+                set CSV_severity 4
+                set msgText "-W- "
 	    }
 	    append msgText "Found "
 	    set dontTrimLine 1
@@ -1343,8 +1351,11 @@ proc inform { msgCode args } {
 	    } else {
 		append msgText "Device with "
 	    }
-	    if { $msgF(value) != 0 } { 
-		append msgText "identical "
+            if { $msgF(value) != 0 } {
+                append msgText "identical "
+                set CSV_scope "subnet"
+            } else {
+                set CSV_scope "port"
             }
 	    append msgText "$msgF(ID)=$msgF(value):"
 
@@ -1387,9 +1398,9 @@ proc inform { msgCode args } {
 	}
 	"-I-reporting:found.roots" {
 	    set roots [lindex $args 0]
-	    append msgText "Found [llength $roots] Roots:\n"
+	    append msgText "Found [llength $roots] Roots:%n"
 	    foreach r $roots {
-		append msgText "[IBNode_name_get $r]\n"
+		append msgText "[IBNode_name_get $r]%n"
 	    }
 	}
 	"-I-reporting:skip.set.no.report" {
@@ -1426,12 +1437,12 @@ proc inform { msgCode args } {
 	}
         "-W-topology:matching.bad" {
 	    append msgText "Many mismatches between the topology defined in "
-	    append msgText "$G(argv:topo.file) and the discovered fabric:\n"
+	    append msgText "$G(argv:topo.file) and the discovered fabric:%n"
 	}
 	"-W-topology:Critical.mismatch" {
 	    append msgText "Critical mismatch. between the topology defined in "
-	    append msgText "$G(argv:topo.file) and the discovered fabric:\n"
-	    append msgText "Topology file names will not be used.\n"
+	    append msgText "$G(argv:topo.file) and the discovered fabric:%n"
+	    append msgText "Topology file names will not be used.%n"
 	    append msgText "\"$msgF(massage)\""
 	}
         "-I-topology:matching.note" {
@@ -1459,7 +1470,7 @@ proc inform { msgCode args } {
 
         "-E-ibdiagpath:direct.route.deadend" {
 	    ### TODO: check the phrasing ...
-	    append msgText "Illegal direct route was issued.\n"
+	    append msgText "Illegal direct route was issued.%n"
 	    append msgText "The provided direct route passes through a HCA:%n"
 	    append msgText "$NODE(0,FullName)%n"
 	    append msgText "(which cannot forward direct route mads)."
@@ -1483,20 +1494,20 @@ proc inform { msgCode args } {
 	}
 	"-E-ibdiagpath:reached.lid.0" {
 	    #set noExiting 1
-	    append msgText "Bad LID: the following device has LID = 0x0000.\n"
+	    append msgText "Bad LID: the following device has LID = 0x0000.%n"
 	    append msgText "$NODE(0,FullName)%n"
 	    if {[BoolWordInList "+cannotRdPM" $args]} {
-		append msgText "Cannot send pmGetPortCounters mads.\n"
+		append msgText "Cannot send pmGetPortCounters mads.%n"
 	    }
 	    append msgText "$rumSMmsg."
 	}
 	"-E-ibdiagpath:lid.route.deadend" {
 	    set port $msgF(port)
 	    set switchname $NODE(0,FullName)
-	    append msgText "LID-route deadend was detected.\n"
-	    append msgText "Entry $msgF(lid) of LFT of the following switch\n"
-	    append msgText "$switchname\n"
-	    append msgText "is $port, but port $port leads to\n"
+	    append msgText "LID-route deadend was detected.%n"
+	    append msgText "Entry $msgF(lid) of LFT of the following switch%n"
+	    append msgText "$switchname%n"
+	    append msgText "is $port, but port $port leads to%n"
 	    append msgText "HCA $NODE(0,FullName)."
 	}
 	"-E-ibdiagpath:lid.route.loop" {
@@ -1522,7 +1533,7 @@ proc inform { msgCode args } {
 	}
 	"-E-ibdiagpath:pmGet.failed" {
 	    set noExiting 1
-	    append msgText "Could not get PM info:\n"
+	    append msgText "Could not get PM info:%n"
 	    append msgText "\"pmGetPortCounters [join $args]\" failed $numOfRetries consecutive times."
 	}
         "-E-ibdiagpath:PKeys.path.noShared" {
@@ -1584,15 +1595,15 @@ proc inform { msgCode args } {
 	    set headerText "LFT Traversal: $from to $to"
 	}
 	"-I-ibdiagpath:obtain.src.and.dst.lids" {
-	    append msgText "Obtaining source and destination LIDs:\n"
-	    append msgText "$msgF(name0) \tLID=$msgF(lid0)\n"
+	    append msgText "Obtaining source and destination LIDs:%n"
+	    append msgText "$msgF(name0) \tLID=$msgF(lid0)%n"
 	    append msgText "$msgF(name1) \tLID=$msgF(lid1)"
 	}
 	"-I-ibdiagpath:read.lft.from" {
 	    append msgText "From: [join $args]"
 	}
 	"-I-ibdiagpath:read.lft.to" {
-	    append msgText "To:   [join $args]\n"
+	    append msgText "To:   [join $args]%n"
 	}
 	"-I-ibdiagpath:read.pm.header" {
 	    append msgText "Validating path health"
@@ -1700,14 +1711,14 @@ proc inform { msgCode args } {
 	    append msgText "Total Qualities Check Warnings:$warns"
 	}
         "-I-ibdiagnet:report.fab.credit.loop.report" {
-            append msgText "\n[lindex $args 0]"
+            append msgText "%n[lindex $args 0]"
         }
 	"-I-ibdiagnet:report.fab.qualities.header" {
 	    append msgText "Fabric qualities report"
 	    set headerText "Fabric Qualities Report"
 	}
 	"-I-ibdiagnet:report.fab.qualities.report" {
-	    append msgText "\n[lindex $args 0]"
+	    append msgText "%n[lindex $args 0]"
 	}
         "-I-ibdiagnet:check.credit.loops.header" {
 	    append msgText "Checking credit loops"
@@ -1719,11 +1730,11 @@ proc inform { msgCode args } {
 	}
 
 
-        "-E-ibdiagnet:no.SM" {
+        "-E-ibdiagnet:SM.none" {
             append msgText "Missing master SM in the discover fabric"
 	    set noExiting 1
 	}
-	"-E-ibdiagnet:many.SM.master" {
+	"-E-ibdiagnet:SM.multiple.master" {
             append msgText "Found more then one master SM in the discover fabric"
 	    set noExiting 1
 	}
@@ -1760,13 +1771,13 @@ proc inform { msgCode args } {
 	    set headerText "SM Info Check"     
 	}
 	"-I-ibdiagnet:bad.links.header" {
-	    append msgText "Bad Links Info\n"
+	    append msgText "Bad Links Info%n"
 	    append msgText "-I- Errors have occurred on the following links%n"
 	    append msgText "(for errors details, look in log file $G(outfiles,.log)):"
 	    set headerText "Link Errors Check"
 	}
 	"-I-ibdiagnet:no.bad.paths.header" {
-	    append msgText "Bad Links Info\n"
+	    append msgText "Bad Links Info%n"
 	    append msgText "-I- No bad link were found"
 	}
 	"-I-ibdiagnet:bad.link" {
@@ -1782,20 +1793,22 @@ proc inform { msgCode args } {
 	"-I-ibdiagnet:bad.links.err.types" {
 	    append putsFlags " -NoStdout -chars \": \""
 	    set msgText ""
-	    append msgText "\n Errors types explanation:\n"
+	    append msgText "%n Errors types explanation:%n"
 	    append msgText "   \"noInfo\"  : the link was ACTIVE during discovery "
-	    append msgText "but, sending MADs across it failed $numOfRetries consecutive times\n"
+	    append msgText "but, sending MADs across it failed $numOfRetries consecutive times%n"
 	    append msgText "   \"badPMs\"  : one of the Error Counters of the link "
-	    append msgText "has values higher than predefined thresholds.\n"
+	    append msgText "has values higher than predefined thresholds.%n"
 	    append msgText "   \"madsLost\": $G(var:badpath.maxnErrors) MADs were "
-	    append msgText "dropped on the link (drop ratio is given).\n"
+	    append msgText "dropped on the link (drop ratio is given).%n"
 	}
 
         "-W-ibdiagnet:report.links.width.state" {
-	    set dontTrimLine 1
-	    append msgText "link with PHY=$msgF(phy) found at direct path \"$PATH(1)\"\n"
+            set CSV_scope "port"
+            set CSV_severity 3
+            set dontTrimLine 1
+	    append msgText "link with PHY=$msgF(phy) found at direct path \"$PATH(1)\"%n"
 	    append msgText "From: a $NODE(0,FullType,Spaces) $NODE(0,Name,Spaces)"
-	    append msgText " PortGUID=$NODE(0,PortGUID) Port=[lindex [split $PATH(1) ,] end]\n"
+	    append msgText " PortGUID=$NODE(0,PortGUID) Port=[lindex [split $PATH(1) ,] end]%n"
 	    append msgText "To:   a $NODE(1,FullType,Spaces) $NODE(1,Name,Spaces)"
 	    append msgText " PortGUID=$NODE(1,PortGUID) Port=$NODE(1,EntryPort)"
 	}
@@ -1808,10 +1821,12 @@ proc inform { msgCode args } {
 	}
         
         "-W-ibdiagnet:report.links.speed.state" {
-	    set dontTrimLine 1
-	    append msgText "link with SPD=$msgF(spd) found at direct path \"$PATH(1)\"\n"
+            set CSV_scope "port"
+            set CSV_severity 3
+            set dontTrimLine 1
+	    append msgText "link with SPD=$msgF(spd) found at direct path \"$PATH(1)\"%n"
 	    append msgText "From: a $NODE(0,FullType,Spaces) $NODE(0,Name,Spaces)"
-	    append msgText " PortGUID=$NODE(0,PortGUID) Port=[lindex [split $PATH(1) ,] end]\n"
+	    append msgText " PortGUID=$NODE(0,PortGUID) Port=[lindex [split $PATH(1) ,] end]%n"
 	    append msgText "To:   a $NODE(1,FullType,Spaces) $NODE(1,Name,Spaces)"
 	    append msgText " PortGUID=$NODE(1,PortGUID) Port=$NODE(1,EntryPort)"
 	}
@@ -1865,13 +1880,17 @@ proc inform { msgCode args } {
 	    append msgText "Nothing to report"
 	}
         "-W-ibdiagnet:local.link.in.init.state" {
-	    append msgText "The local link is in INIT state, no PM counter reading could take place"
+            set CSV_scope "port"
+            set CSV_severity 5
+            append msgText "The local link is in INIT state, no PM counter reading could take place"
 	}
 	"-W-ibdiagnet:report.links.init.state" {
-	    set dontTrimLine 1
-	    append msgText "link with LOG=INI found at direct path \"$PATH(1)\"\n"
+            set CSV_scope "port"
+            set CSV_severity 5
+            set dontTrimLine 1
+	    append msgText "link with LOG=INI found at direct path \"$PATH(1)\"%n"
 	    append msgText "From: a $NODE(0,FullType,Spaces) $NODE(0,Name,Spaces)"
-	    append msgText " PortGUID=$NODE(0,PortGUID) Port=[lindex [split $PATH(1) ,] end]\n"
+	    append msgText " PortGUID=$NODE(0,PortGUID) Port=[lindex [split $PATH(1) ,] end]%n"
 	    append msgText "To:   a $NODE(1,FullType,Spaces) $NODE(1,Name,Spaces)"
 	    append msgText " PortGUID=$NODE(1,PortGUID) Port=$NODE(1,EntryPort)"
 	}
@@ -1959,11 +1978,11 @@ proc inform { msgCode args } {
 	}
         "-V-ibdiagnet:bad.links.info" {
 	    foreach entry [array names G bad,paths,*] {
-		append msgText "\nFailure(s) for direct route [lindex [split $entry ,] end] : "
+		append msgText "%nFailure(s) for direct route [lindex [split $entry ,] end] : "
 		if { [llength $G($entry)] == 1 } {
 		    append msgText "[join $G($entry)]"
 		} else {
-		    append msgText "\n      [join $G($entry) "\n      "]"
+		    append msgText "%n      [join $G($entry) "%n      "]"
 		}
 	    }
 	}
@@ -2055,7 +2074,7 @@ proc inform { msgCode args } {
 	    catch { set address "direct_route=\"[split $G(argv:direct.route) ,]\"" }
 
 	    set seqLen [string length $G(argv:count)]
-	    if { $msgF(retry) == 1 } { puts "\n$bar\n-V- ibping pinging details\n$bar" }
+	    if { $msgF(retry) == 1 } { puts "%n$bar%n-V- ibping pinging details%n$bar" }
 	    set seq [string range "$msgF(retry)[Bar " " $seqLen]" 0 [expr $seqLen -1] ]
 
 	    if { $msgF(time) == "failed" } {
@@ -2173,7 +2192,65 @@ proc inform { msgCode args } {
 	    }
 	}
     }
+
+    if { ($msgType == "-E-") || ($msgType == "-F-") } {
+        switch -exact -- $msgSource {
+            "ibis" -
+            "argv" -
+            "loading" -
+            "crash" -
+            "discover" {
+                set tmp_CSV_scope "general"
+                set tmp_CSV_severity 5
+            }
+            "localPort" {
+                set tmp_CSV_scope "port"
+                set tmp_CSV_severity 5
+            }
+            "topology" {
+                set tmp_CSV_scope "subnet"
+                set tmp_CSV_severity 5
+            }
+            default {
+                set tmp_CSV_scope "general"
+                set tmp_CSV_severity 3
+	    }
+        }
+        if {![info exists CSV_scope]} {
+            set CSV_scope $tmp_CSV_scope
+        }
+        if {![info exists CSV_severity]} {
+            set CSV_severity $tmp_CSV_severity
+        }
+    }
+
+    if {[info exists CSV_scope]} {
+        set desc ""
+        foreach word [split $msgDesc ./] {
+            append desc [string totitle $word 0 0]
+        }
+        set portGuid ""
+        set portNum ""
+        set msgBody ""
+        set exid ""
+        set err_type 1
+        regsub -all {%n} $msgText " " msgBody
+        regsub -all {,} $msgBody " " msgBody
+        for {set h 0} {$h < 3} {incr h} {
+            set msgBody [join $msgBody]
+        }
+        set msgBody [string range $msgBody 4 end]
+        if {[info exists NODE]} {
+            for {set i 0} {$i < [llength [array names NODE *,PortGUID]]} {incr i} {
+                set portGuid $NODE($i,PortGUID)
+                set portNum $NODE($i,EntryPort)
+            }
+        }
+        lappend CSV_ERRORS $CSV_scope,$portGuid,$portNum,$desc,$msgBody,$CSV_severity,$exid,$err_type
+    }
+
     regsub -all {%n} "[join $msgText \n]" "\n" msgText
+    
     ### DontTrimLine
     if {[info exists dontTrimLine]} {
 	PutsIn80Chars $msgText $putsFlags -length 160

@@ -135,7 +135,7 @@ proc InitializeIBDIAG {} {
 
     ### InitializeIBDIAG - Configuration of constants
     ## Configuration of constants - Step1.0: Config lists of vars
-    set G(var:list.files.extention) "lst fdbs mcfdbs log neighbor masks sm pm mcgs pkey db"
+    set G(var:list.files.extention) "lst fdbs mcfdbs log neighbor masks sm pm mcgs pkey db pm_csv links_csv inv_csv err_csv"
     set G(var:list.pm.counter)      "symbol_error_counter link_error_recovery_counter\
       link_down_counter port_rcv_errors port_xmit_discard vl15_dropped\
       port_rcv_constraint_errors local_link_integrity_errors\
@@ -232,8 +232,9 @@ proc InitializeOutputFile {_fileName} {
 
     ## Initialize file - Test1.0: Check if the extension is legit
     set ext [file extension $_fileName]
+
     if {![info exists G(outfiles,$ext)]} {
-	inform "-E-outfile:not.valid" -file0 $outfile
+	inform "-E-outfile:not.valid" -file0 $_fileName
     }
 
     ## Initialize file - Test2.0: Check if the file is writable
@@ -1213,7 +1214,7 @@ proc DiscoverFabric { _pathLimit {startIndex 0}} {
 		} else {
 		    ## Known Guids - Case3.3: The current device is a switch
 		    # if it's not the same node as before assume both are duplicate
-		    # possible that only one is dup (ask DZ)
+		    # possible that only one is dup (ask DZ-"there was a very very unlikly scenrio" )
 		    if {[Bool_DuplicateGuids $nodeGuid $DirectPath $prev_drPath2]} {
 			set bool_duplicatePortGuid 1
 			set bool_duplicateNodeGuid 1
@@ -1420,17 +1421,10 @@ proc DiscoverFabric { _pathLimit {startIndex 0}} {
 	    # The loop for non-switch devices ends here.
 	    # This is also an optimization for switches ..
 	    if { ( ($index_dr != 1) && ($port == $entryPort) ) || ($port == 0) } {
-		continue;
+                continue;
 	    }
-
-	    if {[llength $DirectPath] > 1} {
-		set tmp_revDrPath $G(data:rev.dr.path.[lrange $DirectPath 0 end-1])
-		set G(data:rev.dr.path.$DirectPath) "$entryPort $tmp_revDrPath"
-	    } else {
-		set G(data:rev.dr.path.$DirectPath) $entryPort
-	    }
-
-	    # Check again that the local port is not down / ignore all other
+            
+            # Check again that the local port is not down / ignore all other
 	    # down ports
 	    if {[catch {set tmp_log [GetParamValue LOG $DirectPath -port $port]}]} {
 		set bool_badPathFound 1
@@ -1445,10 +1439,17 @@ proc DiscoverFabric { _pathLimit {startIndex 0}} {
 		    continue;
 		}
 		"INI" {
-		    lappend G(data:list.logical.state) [join "$DirectPath $port"]
+                    lappend G(data:list.links.not.active.logical.state) [join "$DirectPath $port"]
 		}
 	    }
 
+            if {[llength $DirectPath] > 1} {
+                set tmp_revDrPath $G(data:rev.dr.path.[lrange $DirectPath 0 end-1])
+                set G(data:rev.dr.path.$DirectPath) "$entryPort $tmp_revDrPath"
+            } else {
+                set G(data:rev.dr.path.$DirectPath) $entryPort
+            }
+            
 	    ### DiscoverFabric - Add new dr path
 	    # "$DirectPath $port" is added to the DirectPath list only if the
 	    # device is a switch (or the root HCA), the link at $port is not
@@ -1944,7 +1945,7 @@ proc Bool_DuplicateGuids { _NodeGuid _DirectPath _prev_drPath {_checks 1}} {
 #  FUNCTION Dump the retrived info during discovery, regarding
 #               Duplicate Guids and lids, and zero values
 proc DumpBadLidsGuids { args } {
-    global G DUPandZERO errorInfo
+    global G DUPandZERO errorInfo CSV_ERRORS
     set bool_informBadGuidsReport 1
     set bool_skipZeroGuids [CheckSkipStatus zero_guids]
     set bool_skipDupGuids [CheckSkipStatus dup_guids]
@@ -2055,6 +2056,7 @@ proc DumpBadLinksLogic {} {
     }
 
     set bool_informBadLogicLinksReport 1
+    
     if {[info exists G(data:list.links.not.active.logical.state)]} {
 	foreach link $G(data:list.links.not.active.logical.state) {
 	    if {[lrange $link 0 end-1] == ""} {
@@ -2199,7 +2201,6 @@ proc PMCounterQuery {} {
 	set entryPort [lindex [split $lidPort :] 1]
 	set directPath $LidPort($lidPort)
 	set name [DrPath2Name $directPath -fullName -port $entryPort]
-
 	# Final reading of Performance Counters
 	if [catch { set NewValues($lidPort) [join [GetPmList $lidPort]] }] {
 	    inform "-E-ibdiagpath:pmGet.failed" [split $lidPort :]
@@ -2249,9 +2250,10 @@ proc PMCounterQuery {} {
 	}
 
 	if {[info exists G(argv:performance.monitors)]} {
-	    lappend PM_DUMP(nodeNames) $name
-	    set PM_DUMP($name,pmCounterList) $pmCounterList
-	    set PM_DUMP($name,pmCounterValue) $NewValues($lidPort)
+	    set dr_port $directPath:$entryPort
+	    lappend PM_DUMP(list_dr_port) $dr_port
+	    set PM_DUMP($dr_port,pmCounterList) $pmCounterList
+	    set PM_DUMP($dr_port,pmCounterValue) $NewValues($lidPort)
 	}
     }
     if {$bool_informPMcounterReport} {
@@ -2990,11 +2992,11 @@ proc CheckSM {} {
     set master 3
     if {![info exists SM($master)]} {
 	inform "-I-ibdiagnet:bad.sm.header"
-	inform "-E-ibdiagnet:no.SM"
+	inform "-E-ibdiagnet:SM.none"
     } else {
 	if {[llength $SM($master)] != 1} {
 	    inform "-I-ibdiagnet:bad.sm.header"
-	    inform "-E-ibdiagnet:many.SM.master"
+            inform "-E-ibdiagnet:SM.multiple.master"
 	    foreach element $SM($master) {
 		set tmpDirectPath [lindex $element 0]
 		set nodeName [DrPath2Name $tmpDirectPath -port [GetEntryPort $tmpDirectPath]]
@@ -3074,7 +3076,7 @@ proc CheckPartitions {} {
         inform "-I-reporting:skip.set.no.report"
         return 1
     }
-	
+    
     # go over all HCA ports and get their PKey tables
     foreach nodeGuidPortNum [array names G data:PortGuid.*:*] {
 	regexp {PortGuid.([^:]+):([^:]+)} $nodeGuidPortNum d1 nodeGuid portNum
@@ -3465,7 +3467,7 @@ proc CheckIPoIB {} {
         inform "-I-reporting:skip.set.no.report"
         return 1
     }
-	
+    
     # obtain the list of IPoIB MCGs from the SA
     set pKeyRex {[0-9a-fA-F]:4}
     foreach mcg [sacMCMQuery getTable 0] {
@@ -3491,10 +3493,10 @@ proc CheckIPoIB {} {
 	set gQKey [sacMCMRec_qkey_get $mcg]
 	foreach {pkey IPVersion} $IPoIB_MCGS($mcg) {break}
 
-	inform "-I-ipoib.subnet" $IPVersion $pkey $gMtu $gRate $gSL $gPKey $gQKey
+	inform "-I-ibdiagnet:ipoib.subnet" $IPVersion $pkey $gMtu $gRate $gSL $gPKey $gQKey
 	
 	if {[expr 0x7fff & $gPKey] != $pkey} {
-	    inform "-W-ipoib.bad.pkey" $gPKey $pkey
+	    inform "-W-ibdiagnet:ipoib.bad.pkey" $gPKey $pkey
 	}
 
 	# go over all the members of the partition and see if they can join
@@ -3515,13 +3517,13 @@ proc CheckIPoIB {} {
 	    if {[llength $rateNGbps] != 2} {
 		set drPath $G(data:dr.path.to.node.$nodeGuid)
 		set name [DrPath2Name $drPath -port [GetEntryPort $drPath] -fullName]
-		inform "-E-ipoib.ilegalRate" $name
+		inform "-E-ibdiagnet:ipoib.ilegalRate" $name
 	    }
 	    foreach {rate gbps} $rateNGbps {break}
 	    if {$gbps < $gGbps} {
 		set drPath $G(data:dr.path.to.node.$nodeGuid)
 		set name [DrPath2Name $drPath -port [GetEntryPort $drPath] -fullName]
-		inform "-W-ipoib.cantJoin" $name $rate $gRate
+		inform "-W-ibdiagnet:ipoib.cantJoin" $name $rate $gRate
 	    } else {
 		if {$minGbps > $gbps} {
 		    set minGbps $gbps
@@ -3603,10 +3605,10 @@ proc CheckPathIPoIB {paths} {
 	set gPKey [sacMCMRec_pkey_get $mcg]
 	set gQKey [sacMCMRec_qkey_get $mcg]
 
-	inform "-I-ipoib.subnet" $IPVersion $pkey $gMtu $gRate $gSL $gPKey $gQKey
+	inform "-I-ibdiagnet:ipoib.subnet" $IPVersion $pkey $gMtu $gRate $gSL $gPKey $gQKey
 
 	if {[expr 0x7fff & $gPKey] != $pkey} {
-	    inform "-W-ipoib.bad.pkey" $gPKey $pkey
+	    inform "-W-ibdiagnet:ipoib.bad.pkey" $gPKey $pkey
 	}
 
 	# go over all the members of the partition and see if they can join
@@ -3624,12 +3626,12 @@ proc CheckPathIPoIB {paths} {
 	    set rateNGbps [GetPortInfoRateCodeAndGbps $portInfo]
 	    if {[llength $rateNGbps] != 2} {
 		set name [DrPath2Name $drPath -port [GetEntryPort $drPath] -fullName]
-		inform "-E-ipoib.ilegalRate" $name
+		inform "-E-ibdiagnet:ipoib.ilegalRate" $name
 	    }
 	    foreach {rate gbps} $rateNGbps {break}
 	    if {$gbps < $gGbps} {
 		set name [DrPath2Name $drPath -port [GetEntryPort $drPath] -fullName]
-		inform "-W-ipoib.cantJoin" $name $rate $gRate
+		inform "-W-ibdiagnet:ipoib.cantJoin" $name $rate $gRate
 		incr anyFail
 	    }
 	}
@@ -3638,7 +3640,7 @@ proc CheckPathIPoIB {paths} {
 	}
     }
     if {$anyGroup == 0} {
-	inform "-E-ibdiagpath.ipoib.noGroups"
+	inform "-E-ibdiagpath:ipoib.noGroups"
     }
     return 0
 }
@@ -3689,7 +3691,7 @@ proc CheckPathQoS {paths} {
     while {!$done} {
 	# report stage
 	set name [DrPath2Name $drPath -fullName]
-	inform "-V-ibdiagpath.qos.atNode" $name $inPortNum $outPortNum
+	inform "-V-ibdiagpath:qos.atNode" $name $inPortNum $outPortNum
 
 	# obtain OPVLs and VLA Cap from PortInfo for the outPort
 	if {[catch {set portInfo [SmMadGetByDr PortInfo dump "$drPath" $outPortNum]}]} {
@@ -4309,7 +4311,7 @@ proc DumpFabQualities {} {
     set nodesNum [llength [array names G "data:NodeInfo.*"]]
     set swNum [llength [array names G "data:PortInfo.*:0"]]
     if { [set hcaNum [expr $nodesNum - $swNum]] == 1 } {
-	inform "-W-report:one.hca.in.fabric"
+	inform "-W-reporting:one.hca.in.fabric"
 	return 1
     }
     if {$G(bool:topology.matched)==1} {
@@ -4663,13 +4665,22 @@ proc lstInfo { type DirectPath port } {
     global G MASK SM
     set DirectPath [join $DirectPath]
     set Info ""
+    set Vals ""	
     ## The lists of parameters
     switch -exact -- $type {
+	"csv_mode" {
+	    set sep ,
+	    append lstItems "PortGUID PN NodeGUID SystemGUID"
+            append lstItems " systemType systemName systemPortName boardName"
+            append lstItems " NodeDesc Type DevID VenID LID PHY SPD"
+
+	}
 	"port" {
 	    set sep ":"
 	    append lstItems "Type Ports SystemGUID NodeGUID PortGUID VenID"
 	    append lstItems " DevID Rev NodeDesc LID PN"
-	} "link" {
+	} 
+        "link" {
 	    set sep "="
 	    append lstItems "PHY LOG SPD"
 	}
@@ -4678,15 +4689,45 @@ proc lstInfo { type DirectPath port } {
     foreach parameter $lstItems {
 	# The following may fail - then the procedure will return with error
 	# Known Issue - GetParamValue will return
-	regsub {^0x} [GetParamValue $parameter $DirectPath -port $port] {} value
-	# .lst formatting of parameters and their values
-	if {[BoolWordInList $parameter "VenID DevID Rev LID PN"]} {
-	    set value [string toupper $value]
-	}
+
+        if {$type == "csv_mode"} {
+            if {![BoolWordInList $parameter "systemType systemName systemPortName boardName"]} {
+                set value [GetParamValue $parameter $DirectPath -port $port]
+            }
+        } else {
+            regsub {^0x} [GetParamValue $parameter $DirectPath -port $port] {} value
+            # .lst formatting of parameters and their values
+            if {[BoolWordInList $parameter "VenID DevID Rev LID PN"]} {
+	       set value [string toupper $value]
+	    }
+        }
+
 	switch -exact -- $parameter {
 	    "Ports"     { set tmpPorts  $value }
 	    "PN"        { set tmpPN     $value }
+            "NodeGUID"  { set tmpNG     $value }
 	}
+	switch -exact -- $type {
+	    "csv_mode" {
+                switch -exact -- $parameter {
+                    "PN" -
+                    "DevID" {
+                        set value [expr $value]
+                    }
+                    "systemType" -
+                    "systemName" -
+                    "systemPortName" -
+                    "boardName" {
+                        set value [returnCVS_params $tmpNG $tmpPN $parameter] 
+                    }
+                }
+                append Info "$value,"
+                continue;
+	    } 
+	    default {
+	    }
+	}
+
 	switch -exact -- $parameter {
 	    "Type"   {
 		# Replace CA with CA-SM
@@ -4774,6 +4815,7 @@ proc writeLstFile {} {
 	if {[PathIsBad $DirectPath] > 1 } {continue; }
 	if {[catch {linkAtPathEnd $DirectPath}] } {continue; }
 	set lstLine ""
+
 	append lstLine "\{ [lstInfo port $path0 $port0] \} "
 	append lstLine "\{ [lstInfo port $path1 $port1] \} "
 	append lstLine "[lstInfo link $path0 $port0]"
@@ -4786,6 +4828,86 @@ proc writeLstFile {} {
     close $FileID
     return 0
 }
+
+proc writeCSVInventoryFile {} {
+    global G
+
+    if {![info exists G(argv:csv.dump)]} {
+        return 0
+    }
+    
+    set FileID [InitializeOutputFile $G(var:tool.name).inv_csv]
+    set header_line "PortGUID PN NodeGUID SystemGUID systemType systemName systemPortName boardName NodeDesc Type DevID VenID LID PHY SPD"
+    puts $FileID [join $header_line ,]
+    foreach DirectPath $G(data:list.direct.path) {
+	# seperate the next 3 logical expr to avoid extra work
+	if {![llength $DirectPath]  } {continue; }
+	if {[PathIsBad $DirectPath] > 1 } {continue; }
+	if {[catch {linkAtPathEnd $DirectPath}] } {continue; }
+	set lstLine ""
+
+        puts $FileID [string range [lstInfo csv_mode $path0 $port0] 0 end-1]
+        puts $FileID [string range [lstInfo csv_mode $path1 $port1] 0 end-1]
+	unset path0
+	unset path1
+	unset port0
+	unset port1
+    }
+    close $FileID
+    return 0
+}
+
+
+##############################
+#  NAME         writeLinksCSVFile
+#  SYNOPSIS     writeLinksCSVFile
+#  FUNCTION     
+#  INPUTS       NULL
+#  OUTPUT       NULL
+proc writeCSVLinksFile {} {
+    global G
+
+    if {![info exists G(argv:csv.dump)]} {
+        return 0
+    }
+    
+    set FileID [InitializeOutputFile $G(var:tool.name).links_csv]
+    set header_line "PortGUID1 PortNum1 PortGUID2 PortNum2"
+    puts $FileID [join $header_line ,]
+    foreach DirectPath $G(data:list.direct.path) {
+	if {$DirectPath == ""} {continue;}
+	set dr_0 [lreplace $DirectPath end end ]
+	set pn_0 [lindex $DirectPath end]
+	set dr_1 $DirectPath
+        set pn_1 [GetEntryPort $DirectPath]
+	set guid_0 [GetParamValue PortGUID $dr_0 -port $pn_0]
+	set guid_1 [GetParamValue PortGUID $dr_1 -port $pn_1]
+
+        puts $FileID $guid_0,$pn_0,$guid_1,$pn_1
+    }
+    close $FileID
+    return 0
+}
+
+proc writeCSVErrorsFile {} {
+    global CSV_ERRORS G
+
+    if {![info exists G(argv:csv.dump)]} {
+        return 0
+    }
+
+    set FileID [InitializeOutputFile $G(var:tool.name).err_csv]
+    set header_line "Scope PortGUID PortNumber EventName Summary Severity exid type"
+    puts $FileID [join $header_line ,]
+
+    foreach line $CSV_ERRORS {
+        puts $FileID $line
+    }
+    close $FileID
+    return 0
+}
+
+
 ##############################
 
 ##############################
@@ -4864,22 +4986,50 @@ proc writeSMFile {} {
 #  OUTPUT       NULL
 proc writePMFile {} {
     global G PM_DUMP
+
     if {![info exists PM_DUMP]} {return 0}
-    set FileID [InitializeOutputFile $G(var:tool.name).pm]
-    foreach name $PM_DUMP(nodeNames) {
-	puts $FileID [string repeat "-" 80]
-	puts $FileID $name
-	puts $FileID [string repeat "-" 80]
-	set tmpPmCounterList $PM_DUMP($name,pmCounterList)
-	set listOfPMValues $PM_DUMP($name,pmCounterValue)
-	foreach pmCounter $tmpPmCounterList {
-	    set pmCounterValue "0x[format %lx [GetWordAfterFlag $listOfPMValues $pmCounter]]"
-	    puts $FileID "$pmCounter = $pmCounterValue"
-	}
+
+    set FileID_0 [InitializeOutputFile $G(var:tool.name).pm]
+
+    set header 1
+    if {[info exists G(argv:csv.dump)]} {
+        set header 0
+        set FileID_1 [InitializeOutputFile $G(var:tool.name).pm_csv]
     }
 
-    close $FileID
-    return 0
+    foreach pair $PM_DUMP(list_dr_port) {
+	regexp {^([^:]+):([^:]+)$} $pair . dr pn
+	set name [DrPath2Name "$dr" -fullName -port $pn]
+	set tmpPmCounterList $PM_DUMP($pair,pmCounterList)
+        set listOfPMValues $PM_DUMP($pair,pmCounterValue)
+        
+	puts $FileID_0 [string repeat "-" 80]
+        puts $FileID_0 $name
+        puts $FileID_0 [string repeat "-" 80]
+
+	if {!$header} {
+	    puts $FileID_1 PortGUID,PortNumber,[join $tmpPmCounterList ,]
+  	    incr header
+	}
+	set portGuid $G(data:guid.by.dr.path.$dr)
+
+        set tmp_csv_line $portGuid,$pn
+	foreach pmCounter $tmpPmCounterList {
+            set pmCounterValue "0x[format %lx [GetWordAfterFlag $listOfPMValues $pmCounter]]"
+            puts $FileID_0 "$pmCounter = $pmCounterValue"
+	    append tmp_csv_line ",$pmCounterValue"
+	}
+
+        if {[info exists G(argv:csv.dump)]} {
+            puts $FileID_1 $tmp_csv_line 
+        }
+    }
+
+    close $FileID_0
+    if {[info exists G(argv:csv.dump)]} {
+        close $FileID_1
+    }
+    return 0	
 }
 
 ##############################
@@ -5240,4 +5390,44 @@ proc CheckSkipStatus {_step} {
         return 1
     }
     return 0
+}
+  
+proc returnCVS_params {_nodeGuid _pn _reg} {
+    global G TopoGUIDtoNode
+    
+    if { ![info exists G(argv:topo.file)] || [CheckSkipStatus load_ibdm] || ![info exists G(IBfabric:merged)]} {
+	return 0
+    }
+
+    if {![info exists TopoGUIDtoNode]} {
+        array set TopoGUIDtoNode [join [IBFabric_NodeByGuid_get $G(IBfabric:merged)]]
+    }
+
+    if {![info exists TopoGUIDtoNode($_nodeGuid)]} {
+        return ""
+    }
+    set nodePtr $TopoGUIDtoNode($_nodeGuid)
+    set sysPtr [IBNode_p_system_get $nodePtr]
+    if {$sysPtr == ""} {
+        return ""
+    }
+    set systemName [IBSystem_name_get $sysPtr]
+    set systemType [IBSystem_type_get $sysPtr]
+    ### query if not ""
+    set port [IBNode_getPort $nodePtr $_pn]
+    set systemPortName ""
+    if {$port != ""} {
+        set sysPort  [IBPort_p_sysPort_get $port]
+        if {$sysPort != ""} {
+            set systemPortName [IBSysPort_name_get $sysPort]
+        }
+    }
+    set boardName ""
+
+    if {[info exists $_reg]} {
+        return [subst $$_reg]
+    } else {
+        return ""
+    }
+    return "$systemType,$systemName,$systemPortName,$BoardName"
 }

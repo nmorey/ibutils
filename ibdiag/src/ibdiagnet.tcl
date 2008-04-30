@@ -80,18 +80,23 @@ if {[catch {DiscoverFabric 0} e]} {
       inform "-I-discover:discovery.status"
       inform "-I-exit:\\r"
       inform "-V-discover:end.discovery.header"
+      writeCSVErrorsFile
       inform "-E-discover:broken.func" $errorInfo $e
    }
 }
 
 writeDBFile
-
+            
 ### Write the .lst and .mask files
 writeMasksFile
 writeLstFile
 
+writeCSVLinksFile
+
 ### match topology (if topology was given)
 set G(bool:topology.matched) [expr ([MatchTopology $G(outfiles,.lst)] == 0)]
+writeCSVInventoryFile
+
 DumpBadLidsGuids
 DumpBadLinksLogic
 CheckSM
@@ -119,6 +124,9 @@ catch {RunPkgProcs} e
 
 ### report fabric qualities
 if {[catch {DumpFabQualities} e]} { puts "\n\nERROR $errorInfo $e" ; exit 1}
+
+### Report CSV errors
+writeCSVErrorsFile
 
 ### Finishing
 FinishIBDIAG
