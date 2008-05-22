@@ -731,7 +731,7 @@ ibis_gsi_mad_ctrl_set_class_attr_cb(
   size = cl_vector_get_size(&p_ctrl->class_vector);
   if (size <= mad_class)
   {
-    cl_status = cl_vector_set_size(&p_ctrl->class_vector,mad_class);
+    cl_status = cl_vector_set_size(&p_ctrl->class_vector,mad_class+1);
 
     if( cl_status != CL_SUCCESS)
     {
