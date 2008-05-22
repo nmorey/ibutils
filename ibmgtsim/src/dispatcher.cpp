@@ -309,12 +309,12 @@ IBMSDispatcher::routeMadToDestByLid(
   int hops = 0;
 
   MSGREG(inf0, 'I', "Routing MAD mgmt_class:$ method:$ tid:$ to lid:$ from:$ port:$", "dispatcher");
-  MSGREG(inf1, 'I', "Got to dead-end routing to lid:$ at node:$",
+  MSGREG(inf1, 'E', "Got to dead-end routing to lid:$ at node:$ (fdb)",
          "dispatcher");
   MSGREG(inf2, 'I', "Arrived at lid $ = node $ after $ hops", "dispatcher");
-  MSGREG(inf3, 'I', "Got to dead-end routing to lid:$ at node:$ port:$",
+  MSGREG(inf3, 'E', "Got to dead-end routing to lid:$ at node:$ port:$",
          "dispatcher");
-  MSGREG(inf4, 'I', "Got to dead-end routing to lid:$ at HCA node:$ port:$ lid:$",
+  MSGREG(inf4, 'E', "Got to dead-end routing to lid:$ at HCA node:$ port:$ lid:$",
          "dispatcher");
   MSGREG(inf5, 'V', "Got node:$ through port:$", "dispatcher");
 
