@@ -120,9 +120,7 @@ ibis_init(
 
   IbisObj.p_opt = p_opt;
 
-  status = osm_mad_pool_init(
-    &(IbisObj.mad_pool),
-    &(IbisObj.log) );
+  status = osm_mad_pool_init( &(IbisObj.mad_pool) );
   if( status != IB_SUCCESS )
   {
     osm_log( &IbisObj.log, OSM_LOG_ERROR,
