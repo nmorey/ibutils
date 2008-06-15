@@ -1,16 +1,16 @@
 #---------------------------------------------------------------------
 #                     Mellanox Technologies LTD
-#                  Fat Tree Topology File Generator 
+#                  Fat Tree Topology File Generator
 # Version: IBADM 1.6.1 , BUILD 20041223-1701 , CVS 1.1
-# 
+#
 # Fat Tree Specification:
-# Bandwidth Ratio ........ 3         
-# Number of Hosts ........ 1100      
-# Number of Levels ....... 2         
-# Number of Ports/Level .. 24 144   
-#                        
+# Bandwidth Ratio ........ 3
+# Number of Hosts ........ 1100
+# Number of Levels ....... 2
+# Number of Ports/Level .. 24 144
+#
 # Rack Config File ....... UNDEFINED
-#                        
+#
 #---------------------------------------------------------------------
 
 MTS2400 SL1-1

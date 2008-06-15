@@ -35,18 +35,18 @@
 /*
 
 Fabric Topology Matcher Test Program
-  
+
 Reads a Topology file and OpenSM subnet file, try to match and report errors.
 
 */
 
-#include <Fabric.h> 
+#include <Fabric.h>
 #include <SubnMgt.h>
 #include <CredLoops.h>
 #include <TopoMatch.h>
 #include <getopt.h>
 
-static char TopoMatchTestUsage[] = 
+static char TopoMatchTestUsage[] =
 "Usage: ibtopodiff [-v][-h] -t <topo file> -d <subnet file> -s <start node name> -p <start port num> -g <start port guid>";
 
 void
@@ -54,7 +54,7 @@ show_usage() {
   cout << TopoMatchTestUsage << endl;
 }
 
-void 
+void
 show_help() {
   cout << "\n"
        << " Fabric Topology Matcher\n"
@@ -83,7 +83,7 @@ show_help() {
 
 int main (int argc, char **argv) {
   /*
-   * Parseing of Command Line 
+   * Parseing of Command Line
    */
 
   char * startSystemName = "H-1";
@@ -114,7 +114,7 @@ int main (int argc, char **argv) {
 		{	"topology",	     1,	NULL,	't'},
 		{	NULL,		0,	NULL,	 0 }	/* Required at the end of the array */
 	 };
-  
+
   printf("-------------------------------------------------\n");
   do
   {
@@ -142,7 +142,7 @@ int main (int argc, char **argv) {
 		*/
 		subnetFileName = optarg;
 		break;
-      
+
 	 case 'p':
 		/*
 		  Specifies Start Port Num
@@ -156,7 +156,7 @@ int main (int argc, char **argv) {
 		*/
 		startPortGuid = strtoull(optarg, NULL, 16);
 		break;
-      
+
 	 case 't':
 		/*
 		  Specifies Subnet Cabling file
@@ -168,7 +168,7 @@ int main (int argc, char **argv) {
 		show_help();
 		return 0;
 		break;
-      
+
 	 case -1:
 		break; /* done with option */
 	 default: /* something wrong */
@@ -177,7 +177,7 @@ int main (int argc, char **argv) {
 	 }
   }
   while(next_option != -1);
-  
+
   if (!startPortGuid) {
 	 printf("-E- Missing -g/--port-guid mandatory argument.\n");
 	 show_usage();
@@ -191,30 +191,30 @@ int main (int argc, char **argv) {
   printf(" Start Port ..... %u\n", startPortNum);
   printf(" Start Guid ..... 0x%016Lx\n", startPortGuid);
   printf("-------------------------------------------------\n");
-  
-  IBFabric *p_dFabric, *p_sFabric; 
+
+  IBFabric *p_dFabric, *p_sFabric;
   IBFabric *p_mFabric;
 
   p_dFabric = new IBFabric();
   p_sFabric = new IBFabric();
   p_mFabric = new IBFabric();
-  
+
   if (p_sFabric->parseTopology(topoFileName)) {
     cout << "-E- Fail to parse topology file:" << topoFileName << endl;
     exit(1);
   }
   //s_fabric.dump(cout);
-  
+
   if (p_dFabric->parseSubnetLinks(subnetFileName)) {
     cout << "-E- Fail to parse subnet file:" << subnetFileName << endl;
     exit(1);
   }
 
-  noMatch = 
-    TopoMatchFabrics(p_sFabric, p_dFabric, startSystemName, startPortNum, 
+  noMatch =
+    TopoMatchFabrics(p_sFabric, p_dFabric, startSystemName, startPortNum,
                      startPortGuid, &p_diagnostics);
 
-  TopoMatchFabrics(p_sFabric, p_dFabric, startSystemName, startPortNum, 
+  TopoMatchFabrics(p_sFabric, p_dFabric, startSystemName, startPortNum,
                    startPortGuid, &p_diagnostics);
   if (p_diagnostics)
   {
@@ -225,12 +225,12 @@ int main (int argc, char **argv) {
   } else {
     printf("---- Fabrics Topologies Match ----\n");
   }
-  
+
   if (TopoMergeDiscAndSpecFabrics( p_sFabric, p_dFabric, p_mFabric)) {
     printf("-E- Fail to merge fabrics.\n");
     exit(1);
   }
-  
+
   if ( FabricUtilsVerboseLevel & FABU_LOG_VERBOSE)
     p_mFabric->dump(cout);
 

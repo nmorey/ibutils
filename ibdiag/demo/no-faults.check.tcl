@@ -1,7 +1,7 @@
 # This is the checker for SM LFT/MFT assignment checks
 
-# given the node port group defined by the sim flow 
-# setup the partitions policy file for the SM 
+# given the node port group defined by the sim flow
+# setup the partitions policy file for the SM
 proc setupPartitionPolicyFile {fileName} {
    set f [open $fileName w]
 
@@ -16,12 +16,12 @@ proc setupPartitionPolicyFile {fileName} {
 
 
 ##############################################################################
-# 
+#
 # Start up the test applications
 # This is the default flow that will start OpenSM only in 0x43 verbosity
 # Return a list of process ids it started (to be killed on exit)
 #
-proc runner {simDir osmPath osmPortGuid} { 
+proc runner {simDir osmPath osmPortGuid} {
    global simCtrlSock osmPid
    global env
 
@@ -40,10 +40,10 @@ proc runner {simDir osmPath osmPortGuid} {
    set osmCmd "$osmPath -P$partitionPolicyFile -d2 -f $osmLog -g $osmPortGuid"
 	puts "-I- Starting: $osmCmd"
    set osmPid [eval "exec $osmCmd > $osmStdOutLog &"]
-   
+
    # start a tracker on the log file and process:
    startOsmLogAnalyzer $osmLog
-   
+
    return $osmPid
 }
 
@@ -75,7 +75,7 @@ proc checker {simDir osmPath osmPortGuid} {
 	after 10000
 	puts "---------------------------------------------------------------------"
 	puts " SUBNET READY FOR DIAGNOSTICS"
-	puts "\nCut and paste the following in a new window then run ibdiagnet:" 
+	puts "\nCut and paste the following in a new window then run ibdiagnet:"
 	puts "cd $simDir"
 	puts "setenv IBMGTSIM_DIR  $simDir"
 	puts "setenv OSM_CACHE_DIR $simDir"

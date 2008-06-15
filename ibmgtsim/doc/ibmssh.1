@@ -135,13 +135,13 @@
 .SH "DESCRIPTION"
 .IX Header "DESCRIPTION"
 \&\fBibmssh\fR is a \s-1TCL\s0 shell extended with interface for the \s-1IB\s0 Management Simulator facilities.
-Normally you will not run this shell directly \- but instead it will be invoked by the \fBIBMgtSim\fR utility. 
-However, in order to write simulation flows that interacts closely with the simulated model, a simulation flow should be provided. This flow is loaded by IBMgtSim and excersize the \s-1API\s0 provided by this shell. 
+Normally you will not run this shell directly \- but instead it will be invoked by the \fBIBMgtSim\fR utility.
+However, in order to write simulation flows that interacts closely with the simulated model, a simulation flow should be provided. This flow is loaded by IBMgtSim and excersize the \s-1API\s0 provided by this shell.
 .PP
 The following sub sections provide detailed definition for those objects and \s-1API\s0.
 .SH "IBMgtSim Constants"
 .IX Header "IBMgtSim Constants"
-These constants are provided by IBMgtSim 
+These constants are provided by IBMgtSim
 .Sh "Massage Manager Log Verbosity Flags"
 .IX Subsection "Massage Manager Log Verbosity Flags"
 .ie n .IP "[ Constant : int  ] $MsgShowFatal = 0x01" 4
@@ -190,7 +190,7 @@ These constants are provided by IBMgtSim
 .Sh "class msgManager"
 .IX Subsection "class msgManager"
 .RS 4
-This is the Message Manager class   
+This is the Message Manager class
 .RE
 .IP "[ Member : returns int  ] getVerbLevel ?module?" 4
 .IX Item "[ Member : returns int  ] getVerbLevel ?module?"
@@ -215,11 +215,11 @@ This is the Message Manager class
 .RE
 .IP "[ returns float  ] rmRand"
 .IX Item "[ returns float  ] rmRand"
-obtain a random number in the range 0.0 \- 1.0   
+obtain a random number in the range 0.0 \- 1.0
 .RE
 .IP "[ returns int  ] rmSeed seed"
 .IX Item "[ returns int  ] rmSeed seed"
-initialize the seed for the random manager   
+initialize the seed for the random manager
 .Sh "class ib_node_info_t"
 .IX Subsection "class ib_node_info_t"
 .IP "[ Member data: returns uint8_t * ] \-base_version" 4
@@ -350,7 +350,7 @@ VlCap and InitType
 .IX Subsection "class ib_node_desc_t"
 .IP "[ Member data: returns uint8_array_t * ] \-description" 4
 .IX Item "[ Member data: returns uint8_array_t * ] -description"
-Node String is an array of \s-1UTF\-8\s0 character that describes the node in text format 
+Node String is an array of \s-1UTF\-8\s0 character that describes the node in text format
 Note that this string is \s-1NOT\s0 \s-1NULL\s0 \s-1TERMINATED\s0!
 .Sh "class ib_lft_record_t"
 .IX Subsection "class ib_lft_record_t"
@@ -432,53 +432,53 @@ Note that this string is \s-1NOT\s0 \s-1NULL\s0 \s-1TERMINATED\s0!
 .IX Subsection "class IBMSNode"
 .IP "[ Member : returns IBNode * ] getIBNode" 4
 .IX Item "[ Member : returns IBNode * ] getIBNode"
-get the IBNode of the IBMSNode   
+get the IBNode of the IBMSNode
 .IP "[ Member : returns int  ] getLinkStatus outPortNum" 4
 .IX Item "[ Member : returns int  ] getLinkStatus outPortNum"
-get the link status of the given port   
+get the link status of the given port
 .IP "[ Member : returns int  ] setPhyPortErrProfile portNum errProfileIn" 4
 .IX Item "[ Member : returns int  ] setPhyPortErrProfile portNum errProfileIn"
-set a particular port err profile   
+set a particular port err profile
 .IP "[ Member : returns int  ] getPhyPortErrProfile portNum" 4
 .IX Item "[ Member : returns int  ] getPhyPortErrProfile portNum"
-get a particular port err profile   
+get a particular port err profile
 .IP "[ Member : returns int  ] setPhyPortPMCounter portNum counterSelect countersVal" 4
 .IX Item "[ Member : returns int  ] setPhyPortPMCounter portNum counterSelect countersVal"
-set a specific port counter   
+set a specific port counter
 .IP "[ Member : returns ib_pm_counters_t * ] getPhyPortPMCounter portNum counterSelect get a specific port counter" 4
 .IX Item "[ Member : returns ib_pm_counters_t * ] getPhyPortPMCounter portNum counterSelect get a specific port counter"
 .PD 0
 .IP "[ Member : returns ib_port_info_t * ] getPortInfo portNum" 4
 .IX Item "[ Member : returns ib_port_info_t * ] getPortInfo portNum"
 .PD
-get a specific port info   
+get a specific port info
 .IP "[ Member : returns int  ] setLinkStatus portNum newState" 4
 .IX Item "[ Member : returns int  ] setLinkStatus portNum newState"
-set the Link status including sending trap128   
+set the Link status including sending trap128
 .IP "[ Member : returns ib_node_info_t * ] getNodeInfo" 4
 .IX Item "[ Member : returns ib_node_info_t * ] getNodeInfo"
-get the node info   
+get the node info
 .IP "[ Member : returns ib_switch_info_t * ] getSwitchInfo" 4
 .IX Item "[ Member : returns ib_switch_info_t * ] getSwitchInfo"
-get the switch info   
+get the switch info
 .IP "[ Member : returns ib_pkey_table_t * ] getPKeyTblBlock portNum blockNum" 4
 .IX Item "[ Member : returns ib_pkey_table_t * ] getPKeyTblBlock portNum blockNum"
-get pkey table block   
+get pkey table block
 .IP "[ Member : returns int  ] setPKeyTblBlock portNum blockNum tbl" 4
 .IX Item "[ Member : returns int  ] setPKeyTblBlock portNum blockNum tbl"
-set pkey table block   
+set pkey table block
 .IP "[ Member : returns int  ] setCrSpace startAddr length data" 4
 .IX Item "[ Member : returns int  ] setCrSpace startAddr length data"
-set \s-1CR\s0 Space Value   
+set \s-1CR\s0 Space Value
 .IP "[ Member : returns int  ] getCrSpace startAddr length data" 4
 .IX Item "[ Member : returns int  ] getCrSpace startAddr length data"
-get \s-1CR\s0 Space Value   
+get \s-1CR\s0 Space Value
 .IP "[ Member : returns int  ] getMFTBlock blockIdx portIdx" 4
 .IX Item "[ Member : returns int  ] getMFTBlock blockIdx portIdx"
-get \s-1MFT\s0 block   
+get \s-1MFT\s0 block
 .IP "[ Member : returns int  ] setMFTBlock blockIdx portIdx inMftBlock" 4
 .IX Item "[ Member : returns int  ] setMFTBlock blockIdx portIdx inMftBlock"
-set \s-1MFT\s0 block   
+set \s-1MFT\s0 block
 .Sh "class madMcMemberRec"
 .IX Subsection "class madMcMemberRec"
 .IP "[ Constructor: returns madMcMemberRec * ] madMcMemberRec name" 4

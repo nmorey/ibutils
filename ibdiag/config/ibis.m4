@@ -1,6 +1,6 @@
-dnl This macro checks for the existance of ibis executable and defines the 
+dnl This macro checks for the existance of ibis executable and defines the
 dnl corresponding path variable
-dnl 
+dnl
 dnl Synopsys:
 dnl    CHECK_IBIS_EXEC_DIR()
 dnl

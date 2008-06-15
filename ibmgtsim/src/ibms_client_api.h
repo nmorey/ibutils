@@ -110,7 +110,7 @@ int
 ibms_set_cap(ibms_conn_handle_t conHdl, ibms_cap_msg_t *pCapMsg);
 
 /* send a message to the simulator */
-int 
+int
 ibms_send(ibms_conn_handle_t conHdl, ibms_mad_msg_t *pMadMsg);
 
 /* disconnect from the simulator */

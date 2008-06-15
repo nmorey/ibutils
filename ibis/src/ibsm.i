@@ -35,12 +35,12 @@
 %text %{
 
   Subnet Management:
-    The SM interface supports sending Subnet Management Packets to 
+    The SM interface supports sending Subnet Management Packets to
     the fabric devices.
 
     A set of object types is defined. The user can allocate a new attribute
-    object. Then the object can be set using configure or the direct 
-    manipulation methods. 
+    object. Then the object can be set using configure or the direct
+    manipulation methods.
 
     Extra methods are provided for each object:
     setByDr <dr> <attrMod>
@@ -50,10 +50,10 @@
 %}
 
 /*
- * NOTE : The simplest way to implement that interface is to 
+ * NOTE : The simplest way to implement that interface is to
  * code the Set section as embedded tcl code that will create a new
- * object of the attribute type and use the given set of flags 
- * as configuration command. This way we let swig do the coding 
+ * object of the attribute type and use the given set of flags
+ * as configuration command. This way we let swig do the coding
  * and parsing of each field.
  */
 
@@ -71,7 +71,7 @@
 
   /* the global pointer to this SM mads manager */
   static ibsm_t *gp_ibsm;
-  
+
   /* the data section within a LFT mad */
   typedef struct _ibsm_lft_block {
     uint8_t lft[64];
@@ -95,7 +95,7 @@
   typedef ib_node_desc_t        smNodeDesc;
   typedef ib_sm_info_t          smSMInfo;
   typedef ib_mad_notice_attr_t  smNotice;
-  
+
   /* these are the globals to be used for set/get */
   ib_node_info_t          ibsm_node_info_obj;
   ib_port_info_t          ibsm_port_info_obj;
@@ -109,14 +109,14 @@
   ib_node_desc_t          ibsm_node_desc_obj;
   ib_sm_info_t            ibsm_sm_info_obj;
   ib_mad_notice_attr_t    ibsm_notice_obj;
-  
+
   /* TODO - define a Vendor Specific CR Read/Write attributes to use VL15 */
 
 %}
 
 //
 // STANDARD IB TYPE MAPS:
-// 
+//
 
 %typemap(tcl8,in) ib_gid_t*(ib_gid_t temp) {
   char buf[38];
@@ -138,7 +138,7 @@
     printf("Wrong format for gid guid:%s\n", p_guid);
     return TCL_ERROR;
   }
-  
+
   $target = &temp;
 }
 
@@ -200,7 +200,7 @@
 
 //
 // INTERFACE DEFINITION (~copy of h file)
-// 
+//
 
 %section "IBSM Constants"
 /* These constants are provided by IBSM: */
@@ -228,23 +228,23 @@ typedef struct _ibsm_node_info
 
 %addmethods smNodeInfo {
   int getByDr(ibsm_dr_path_t *dr) {
-    return(ibsm_send_mad_by_dr(gp_ibsm, (uint8_t *)self, sizeof(smNodeInfo), 
-                               dr, CL_NTOH16(IB_MAD_ATTR_NODE_INFO), 0, 
+    return(ibsm_send_mad_by_dr(gp_ibsm, (uint8_t *)self, sizeof(smNodeInfo),
+                               dr, CL_NTOH16(IB_MAD_ATTR_NODE_INFO), 0,
                                IB_MAD_METHOD_GET));
   }
   int setByDr(ibsm_dr_path_t *dr) {
     return(ibsm_send_mad_by_dr(gp_ibsm, (uint8_t *)self, sizeof(smNodeInfo),
-                               dr, CL_NTOH16(IB_MAD_ATTR_NODE_INFO), 0, 
+                               dr, CL_NTOH16(IB_MAD_ATTR_NODE_INFO), 0,
                                IB_MAD_METHOD_SET));
   }
   int getByLid(uint16_t lid) {
     return(ibsm_send_mad_by_lid(gp_ibsm, (uint8_t *)self, sizeof(smNodeInfo),
-                                lid, CL_NTOH16(IB_MAD_ATTR_NODE_INFO), 0, 
+                                lid, CL_NTOH16(IB_MAD_ATTR_NODE_INFO), 0,
                                 IB_MAD_METHOD_GET));
   }
   int setByLid(uint16_t lid) {
-    return(ibsm_send_mad_by_lid(gp_ibsm, (uint8_t *)self, sizeof(smNodeInfo), 
-                                lid, CL_NTOH16(IB_MAD_ATTR_NODE_INFO), 0, 
+    return(ibsm_send_mad_by_lid(gp_ibsm, (uint8_t *)self, sizeof(smNodeInfo),
+                                lid, CL_NTOH16(IB_MAD_ATTR_NODE_INFO), 0,
                                 IB_MAD_METHOD_SET));
   }
 }
@@ -320,22 +320,22 @@ typedef struct _ibsm_switch_info
 %addmethods smSwInfo {
   int getByDr(ibsm_dr_path_t *dr) {
     return(ibsm_send_mad_by_dr(gp_ibsm, (uint8_t *)self, sizeof(smSwInfo),
-                               dr, CL_NTOH16(IB_MAD_ATTR_SWITCH_INFO), 0, 
+                               dr, CL_NTOH16(IB_MAD_ATTR_SWITCH_INFO), 0,
                                IB_MAD_METHOD_GET));
   }
   int setByDr(ibsm_dr_path_t *dr) {
     return(ibsm_send_mad_by_dr(gp_ibsm, (uint8_t *)self, sizeof(smSwInfo),
-                               dr, CL_NTOH16(IB_MAD_ATTR_SWITCH_INFO), 0, 
+                               dr, CL_NTOH16(IB_MAD_ATTR_SWITCH_INFO), 0,
                                IB_MAD_METHOD_SET));
   }
   int getByLid(uint16_t lid) {
     return(ibsm_send_mad_by_lid(gp_ibsm, (uint8_t *)self, sizeof(smSwInfo),
-                                lid, CL_NTOH16(IB_MAD_ATTR_SWITCH_INFO), 0, 
+                                lid, CL_NTOH16(IB_MAD_ATTR_SWITCH_INFO), 0,
                                 IB_MAD_METHOD_GET));
   }
   int setByLid(uint16_t lid) {
     return(ibsm_send_mad_by_lid(gp_ibsm, (uint8_t *)self, sizeof(smSwInfo),
-                                lid, CL_NTOH16(IB_MAD_ATTR_SWITCH_INFO), 0, 
+                                lid, CL_NTOH16(IB_MAD_ATTR_SWITCH_INFO), 0,
                                 IB_MAD_METHOD_SET));
   }
 }
@@ -347,19 +347,19 @@ typedef struct _ibsm_lft_block {
 
 %addmethods smLftBlock {
   int getByDr(ibsm_dr_path_t *dr, uint16_t blockNum) {
-    return(ibsm_send_mad_by_dr(gp_ibsm, (uint8_t *)self, sizeof(smLftBlock), 
+    return(ibsm_send_mad_by_dr(gp_ibsm, (uint8_t *)self, sizeof(smLftBlock),
                                dr, CL_NTOH16(IB_MAD_ATTR_LIN_FWD_TBL), blockNum, IB_MAD_METHOD_GET));
   }
   int setByDr(ibsm_dr_path_t *dr, uint16_t blockNum) {
-    return(ibsm_send_mad_by_dr(gp_ibsm, (uint8_t *)self, sizeof(smLftBlock), 
+    return(ibsm_send_mad_by_dr(gp_ibsm, (uint8_t *)self, sizeof(smLftBlock),
                                dr, CL_NTOH16(IB_MAD_ATTR_LIN_FWD_TBL), blockNum, IB_MAD_METHOD_SET));
   }
   int getByLid(uint16_t lid, uint16_t blockNum) {
-    return(ibsm_send_mad_by_lid(gp_ibsm, (uint8_t *)self, sizeof(smLftBlock), 
+    return(ibsm_send_mad_by_lid(gp_ibsm, (uint8_t *)self, sizeof(smLftBlock),
                                 lid, CL_NTOH16(IB_MAD_ATTR_LIN_FWD_TBL), blockNum, IB_MAD_METHOD_GET));
   }
   int setByLid(uint16_t lid, uint16_t blockNum) {
-    return(ibsm_send_mad_by_lid(gp_ibsm, (uint8_t *)self, sizeof(smLftBlock), 
+    return(ibsm_send_mad_by_lid(gp_ibsm, (uint8_t *)self, sizeof(smLftBlock),
                                 lid, CL_NTOH16(IB_MAD_ATTR_LIN_FWD_TBL), blockNum, IB_MAD_METHOD_SET));
   }
 }
@@ -372,7 +372,7 @@ typedef struct _ibsm_mft_block {
 %{
   int smMftGetAttrMod( uint16_t startLid, uint8_t startPort, uint32_t *p_attrMod )
     {
-      if (startLid % 32) 
+      if (startLid % 32)
       {
         printf("Error: Given startLid must be a multiply of 32: %u\n", startLid);
         return TCL_ERROR;
@@ -383,13 +383,13 @@ typedef struct _ibsm_mft_block {
         return TCL_ERROR;
       }
 
-      /* 
-         always true due to the uint8_t 
+      /*
+         always true due to the uint8_t
          if (startPort > 255)
          {
          printf("Error: Given startPort is out of range: %u > 255\n", startPort);
          return TCL_ERROR;
-         } 
+         }
       */
       *p_attrMod = ((startLid - 0xc000) / 32) + ((startPort / 16) << 28);
       return TCL_OK;
@@ -399,28 +399,28 @@ typedef struct _ibsm_mft_block {
 %addmethods smMftBlock {
   int getByDr(ibsm_dr_path_t *dr, uint16_t startLid, uint8_t startPort) {
     uint32_t attrMod;
-    if (smMftGetAttrMod(startLid, startPort, &attrMod) != TCL_OK) 
+    if (smMftGetAttrMod(startLid, startPort, &attrMod) != TCL_OK)
       return TCL_ERROR;
     return(ibsm_send_mad_by_dr(gp_ibsm, (uint8_t *)self, sizeof(smMftBlock),
                                dr, CL_NTOH16(IB_MAD_ATTR_MCAST_FWD_TBL), attrMod, IB_MAD_METHOD_GET));
   }
   int setByDr(ibsm_dr_path_t *dr, uint16_t startLid, uint8_t startPort) {
     uint32_t attrMod;
-    if (smMftGetAttrMod(startLid, startPort, &attrMod) != TCL_OK) 
+    if (smMftGetAttrMod(startLid, startPort, &attrMod) != TCL_OK)
       return TCL_ERROR;
     return(ibsm_send_mad_by_dr(gp_ibsm, (uint8_t *)self, sizeof(smMftBlock),
                                dr, CL_NTOH16(IB_MAD_ATTR_MCAST_FWD_TBL), attrMod, IB_MAD_METHOD_SET));
   }
   int getByLid(uint16_t lid, uint16_t startLid, uint8_t startPort) {
     uint32_t attrMod;
-    if (smMftGetAttrMod(startLid, startPort, &attrMod) != TCL_OK) 
+    if (smMftGetAttrMod(startLid, startPort, &attrMod) != TCL_OK)
       return TCL_ERROR;
     return(ibsm_send_mad_by_lid(gp_ibsm, (uint8_t *)self, sizeof(smMftBlock),
                                 lid, CL_NTOH16(IB_MAD_ATTR_MCAST_FWD_TBL), attrMod, IB_MAD_METHOD_GET));
   }
   int setByLid(uint16_t lid, uint16_t startLid, uint8_t startPort) {
     uint32_t attrMod;
-    if (smMftGetAttrMod(startLid, startPort, &attrMod) != TCL_OK) 
+    if (smMftGetAttrMod(startLid, startPort, &attrMod) != TCL_OK)
       return TCL_ERROR;
     return(ibsm_send_mad_by_lid(gp_ibsm, (uint8_t *)self, sizeof(smMftBlock),
                                 lid, CL_NTOH16(IB_MAD_ATTR_MCAST_FWD_TBL), attrMod, IB_MAD_METHOD_SET));
@@ -434,23 +434,23 @@ typedef struct _ibsm_guid_info
 
 %addmethods smGuidInfo {
   int getByDr(ibsm_dr_path_t *dr, uint16_t blockNum) {
-    return(ibsm_send_mad_by_dr(gp_ibsm, (uint8_t *)self, sizeof(smGuidInfo), 
+    return(ibsm_send_mad_by_dr(gp_ibsm, (uint8_t *)self, sizeof(smGuidInfo),
                                dr, CL_NTOH16(IB_MAD_ATTR_GUID_INFO), blockNum,
                                IB_MAD_METHOD_GET));
   }
   int setByDr(ibsm_dr_path_t *dr, uint16_t blockNum) {
-    return(ibsm_send_mad_by_dr(gp_ibsm, (uint8_t *)self, sizeof(smGuidInfo), 
-                               dr, CL_NTOH16(IB_MAD_ATTR_GUID_INFO), blockNum, 
+    return(ibsm_send_mad_by_dr(gp_ibsm, (uint8_t *)self, sizeof(smGuidInfo),
+                               dr, CL_NTOH16(IB_MAD_ATTR_GUID_INFO), blockNum,
                                IB_MAD_METHOD_SET));
   }
   int getByLid(uint16_t lid, uint16_t blockNum) {
-    return(ibsm_send_mad_by_lid(gp_ibsm, (uint8_t *)self, sizeof(smGuidInfo), 
-                                lid, CL_NTOH16(IB_MAD_ATTR_GUID_INFO), blockNum, 
+    return(ibsm_send_mad_by_lid(gp_ibsm, (uint8_t *)self, sizeof(smGuidInfo),
+                                lid, CL_NTOH16(IB_MAD_ATTR_GUID_INFO), blockNum,
                                 IB_MAD_METHOD_GET));
   }
   int setByLid(uint16_t lid, uint16_t blockNum) {
-    return(ibsm_send_mad_by_lid(gp_ibsm, (uint8_t *)self, sizeof(smGuidInfo), 
-                                lid, CL_NTOH16(IB_MAD_ATTR_GUID_INFO), blockNum, 
+    return(ibsm_send_mad_by_lid(gp_ibsm, (uint8_t *)self, sizeof(smGuidInfo),
+                                lid, CL_NTOH16(IB_MAD_ATTR_GUID_INFO), blockNum,
                                 IB_MAD_METHOD_SET));
   }
 }
@@ -463,26 +463,26 @@ typedef struct _ibsm_pkey_table
 %addmethods smPkeyTable {
   int getByDr(ibsm_dr_path_t *dr, uint8_t portNum, uint16_t blockNum) {
     uint32_t attrMod = blockNum | (portNum << 16);
-    return(ibsm_send_mad_by_dr(gp_ibsm, (uint8_t *)self, sizeof(smPkeyTable), 
+    return(ibsm_send_mad_by_dr(gp_ibsm, (uint8_t *)self, sizeof(smPkeyTable),
                                dr, CL_NTOH16(IB_MAD_ATTR_P_KEY_TABLE), attrMod,
                                IB_MAD_METHOD_GET));
   }
   int setByDr(ibsm_dr_path_t *dr, uint8_t portNum, uint16_t blockNum) {
     uint32_t attrMod = blockNum | (portNum << 16);
-    return(ibsm_send_mad_by_dr(gp_ibsm, (uint8_t *)self, sizeof(smPkeyTable), 
-                               dr, CL_NTOH16(IB_MAD_ATTR_P_KEY_TABLE), attrMod, 
+    return(ibsm_send_mad_by_dr(gp_ibsm, (uint8_t *)self, sizeof(smPkeyTable),
+                               dr, CL_NTOH16(IB_MAD_ATTR_P_KEY_TABLE), attrMod,
                                IB_MAD_METHOD_SET));
   }
   int getByLid(uint16_t lid, uint8_t portNum, uint16_t blockNum) {
     uint32_t attrMod = blockNum | (portNum << 16);
-    return(ibsm_send_mad_by_lid(gp_ibsm, (uint8_t *)self, sizeof(smPkeyTable), 
-                                lid, CL_NTOH16(IB_MAD_ATTR_P_KEY_TABLE), attrMod, 
+    return(ibsm_send_mad_by_lid(gp_ibsm, (uint8_t *)self, sizeof(smPkeyTable),
+                                lid, CL_NTOH16(IB_MAD_ATTR_P_KEY_TABLE), attrMod,
                                 IB_MAD_METHOD_GET));
   }
   int setByLid(uint16_t lid, uint8_t portNum, uint16_t blockNum) {
     uint32_t attrMod = blockNum | (portNum << 16);
-    return(ibsm_send_mad_by_lid(gp_ibsm, (uint8_t *)self, sizeof(smPkeyTable), 
-                                lid, CL_NTOH16(IB_MAD_ATTR_P_KEY_TABLE), attrMod, 
+    return(ibsm_send_mad_by_lid(gp_ibsm, (uint8_t *)self, sizeof(smPkeyTable),
+                                lid, CL_NTOH16(IB_MAD_ATTR_P_KEY_TABLE), attrMod,
                                 IB_MAD_METHOD_SET));
   }
 }
@@ -495,26 +495,26 @@ typedef struct _ibsm_slvl_table
 %addmethods smSlVlTable {
   int getByDr(ibsm_dr_path_t *dr, uint8_t inPortNum, uint8_t outPortNum) {
     uint32_t attrMod = outPortNum | (inPortNum << 8);
-    return(ibsm_send_mad_by_dr(gp_ibsm, (uint8_t *)self, sizeof(smSlVlTable), 
+    return(ibsm_send_mad_by_dr(gp_ibsm, (uint8_t *)self, sizeof(smSlVlTable),
                                dr, CL_NTOH16(IB_MAD_ATTR_SLVL_TABLE), attrMod,
                                IB_MAD_METHOD_GET));
   }
   int setByDr(ibsm_dr_path_t *dr, uint8_t inPortNum, uint8_t outPortNum) {
     uint32_t attrMod = outPortNum | (inPortNum << 8);
-    return(ibsm_send_mad_by_dr(gp_ibsm, (uint8_t *)self, sizeof(smSlVlTable), 
-                               dr, CL_NTOH16(IB_MAD_ATTR_SLVL_TABLE), attrMod, 
+    return(ibsm_send_mad_by_dr(gp_ibsm, (uint8_t *)self, sizeof(smSlVlTable),
+                               dr, CL_NTOH16(IB_MAD_ATTR_SLVL_TABLE), attrMod,
                                IB_MAD_METHOD_SET));
   }
   int getByLid(uint16_t lid, uint8_t inPortNum, uint8_t outPortNum) {
     uint32_t attrMod = outPortNum | (inPortNum << 8);
-    return(ibsm_send_mad_by_lid(gp_ibsm, (uint8_t *)self, sizeof(smSlVlTable), 
-                                lid, CL_NTOH16(IB_MAD_ATTR_SLVL_TABLE), attrMod, 
+    return(ibsm_send_mad_by_lid(gp_ibsm, (uint8_t *)self, sizeof(smSlVlTable),
+                                lid, CL_NTOH16(IB_MAD_ATTR_SLVL_TABLE), attrMod,
                                 IB_MAD_METHOD_GET));
   }
   int setByLid(uint16_t lid, uint8_t inPortNum, uint8_t outPortNum) {
     uint32_t attrMod = outPortNum | (inPortNum << 8);
-    return(ibsm_send_mad_by_lid(gp_ibsm, (uint8_t *)self, sizeof(smSlVlTable), 
-                                lid, CL_NTOH16(IB_MAD_ATTR_SLVL_TABLE), attrMod, 
+    return(ibsm_send_mad_by_lid(gp_ibsm, (uint8_t *)self, sizeof(smSlVlTable),
+                                lid, CL_NTOH16(IB_MAD_ATTR_SLVL_TABLE), attrMod,
                                 IB_MAD_METHOD_SET));
   }
 }
@@ -542,7 +542,7 @@ typedef struct _ibsm_slvl_table
            Tcl_GetStringFromObj($source,NULL));
     return TCL_ERROR;
   }
-  
+
   /* go over all sub lists and convert them */
   for (idx = 0; idx < countSubLists; idx++) {
     if (Tcl_ListObjLength(interp, subListObjArray[idx], &numElements) != TCL_OK)
@@ -551,8 +551,8 @@ typedef struct _ibsm_slvl_table
              Tcl_GetStringFromObj(subListObjArray[idx],NULL));
       return TCL_ERROR;
     }
-    
-    if (numElements != 2) 
+
+    if (numElements != 2)
     {
       printf("Error: wrong number of elements for VL Arb Table Entry: %s\n",
              Tcl_GetStringFromObj(subListObjArray[idx],NULL));
@@ -565,7 +565,7 @@ typedef struct _ibsm_slvl_table
              Tcl_GetStringFromObj(subListObjArray[idx],NULL));
       return TCL_ERROR;
     }
-    
+
     vl = strtol(Tcl_GetStringFromObj( tclObj, NULL ), NULL, 0);
     if (Tcl_ListObjIndex(interp, subListObjArray[idx], 1, &tclObj) != TCL_OK)
     {
@@ -573,20 +573,20 @@ typedef struct _ibsm_slvl_table
              Tcl_GetStringFromObj(subListObjArray[idx],NULL));
       return TCL_ERROR;
     }
-    
+
     weight = strtol(Tcl_GetStringFromObj( tclObj, NULL ), NULL, 0);
-    
+
     entrys[i].vl = vl;
     entrys[i++].weight = weight;
-    
+
     p_ch = strtok_r(NULL, " \t", &last);
   }
 
-  for (; i < $dim0; i++) 
+  for (; i < $dim0; i++)
   {
     entrys[i].vl = 0;
     entrys[i].weight = 0;
-  }    
+  }
 
   $target = entrys;
 }
@@ -608,26 +608,26 @@ typedef struct _ibsm_vl_arb_table
 %addmethods smVlArbTable {
   int getByDr(ibsm_dr_path_t *dr, uint8_t portNum, uint8_t block) {
     uint32_t attrMod = (block <<16) | portNum;
-    return(ibsm_send_mad_by_dr(gp_ibsm, (uint8_t *)self, sizeof(smVlArbTable), 
+    return(ibsm_send_mad_by_dr(gp_ibsm, (uint8_t *)self, sizeof(smVlArbTable),
                                dr, CL_NTOH16(IB_MAD_ATTR_VL_ARBITRATION), attrMod,
                                IB_MAD_METHOD_GET));
   }
   int setByDr(ibsm_dr_path_t *dr, uint8_t portNum, uint8_t block) {
     uint32_t attrMod = (block <<16) | portNum;
-    return(ibsm_send_mad_by_dr(gp_ibsm, (uint8_t *)self, sizeof(smVlArbTable), 
-                               dr, CL_NTOH16(IB_MAD_ATTR_VL_ARBITRATION), attrMod, 
+    return(ibsm_send_mad_by_dr(gp_ibsm, (uint8_t *)self, sizeof(smVlArbTable),
+                               dr, CL_NTOH16(IB_MAD_ATTR_VL_ARBITRATION), attrMod,
                                IB_MAD_METHOD_SET));
   }
   int getByLid(uint16_t lid, uint8_t portNum, uint8_t block) {
     uint32_t attrMod = (block <<16) | portNum;
-    return(ibsm_send_mad_by_lid(gp_ibsm, (uint8_t *)self, sizeof(smVlArbTable), 
-                                lid, CL_NTOH16(IB_MAD_ATTR_VL_ARBITRATION), attrMod, 
+    return(ibsm_send_mad_by_lid(gp_ibsm, (uint8_t *)self, sizeof(smVlArbTable),
+                                lid, CL_NTOH16(IB_MAD_ATTR_VL_ARBITRATION), attrMod,
                                 IB_MAD_METHOD_GET));
   }
   int setByLid(uint16_t lid, uint8_t portNum, uint8_t block) {
     uint32_t attrMod = (block <<16) | portNum;
-    return(ibsm_send_mad_by_lid(gp_ibsm, (uint8_t *)self, sizeof(smVlArbTable), 
-                                lid, CL_NTOH16(IB_MAD_ATTR_VL_ARBITRATION), attrMod, 
+    return(ibsm_send_mad_by_lid(gp_ibsm, (uint8_t *)self, sizeof(smVlArbTable),
+                                lid, CL_NTOH16(IB_MAD_ATTR_VL_ARBITRATION), attrMod,
                                 IB_MAD_METHOD_SET));
   }
 }
@@ -642,7 +642,7 @@ typedef struct _ibsm_vl_arb_table
 }
 %typemap(tcl8,memberin) ibsm_node_desc_str_t[IB_NODE_DESCRIPTION_SIZE] {
   strncpy((char *)$target,(char *)$source,IB_NODE_DESCRIPTION_SIZE - 1);
-  $target[IB_NODE_DESCRIPTION_SIZE] = '\0';  
+  $target[IB_NODE_DESCRIPTION_SIZE] = '\0';
 }
 
 %typemap(tcl8,out) ibsm_node_desc_str_t[ANY] {
@@ -660,23 +660,23 @@ typedef struct _ibsm_node_desc
 
 %addmethods smNodeDesc {
   int getByDr(ibsm_dr_path_t *dr) {
-    return(ibsm_send_mad_by_dr(gp_ibsm, (uint8_t *)self, sizeof(smNodeDesc), 
+    return(ibsm_send_mad_by_dr(gp_ibsm, (uint8_t *)self, sizeof(smNodeDesc),
                                dr, CL_NTOH16(IB_MAD_ATTR_NODE_DESC), 0,
                                IB_MAD_METHOD_GET));
   }
   int setByDr(ibsm_dr_path_t *dr) {
-    return(ibsm_send_mad_by_dr(gp_ibsm, (uint8_t *)self, sizeof(smNodeDesc), 
-                               dr, CL_NTOH16(IB_MAD_ATTR_NODE_DESC), 0, 
+    return(ibsm_send_mad_by_dr(gp_ibsm, (uint8_t *)self, sizeof(smNodeDesc),
+                               dr, CL_NTOH16(IB_MAD_ATTR_NODE_DESC), 0,
                                IB_MAD_METHOD_SET));
   }
   int getByLid(uint16_t lid) {
-    return(ibsm_send_mad_by_lid(gp_ibsm, (uint8_t *)self, sizeof(smNodeDesc), 
-                                lid, CL_NTOH16(IB_MAD_ATTR_NODE_DESC), 0, 
+    return(ibsm_send_mad_by_lid(gp_ibsm, (uint8_t *)self, sizeof(smNodeDesc),
+                                lid, CL_NTOH16(IB_MAD_ATTR_NODE_DESC), 0,
                                 IB_MAD_METHOD_GET));
   }
   int setByLid(uint16_t lid) {
-    return(ibsm_send_mad_by_lid(gp_ibsm, (uint8_t *)self, sizeof(smNodeDesc), 
-                                lid, CL_NTOH16(IB_MAD_ATTR_NODE_DESC), 0, 
+    return(ibsm_send_mad_by_lid(gp_ibsm, (uint8_t *)self, sizeof(smNodeDesc),
+                                lid, CL_NTOH16(IB_MAD_ATTR_NODE_DESC), 0,
                                 IB_MAD_METHOD_SET));
   }
 }
@@ -691,39 +691,39 @@ typedef struct _ibsm_sm_info
 
 %addmethods smSMInfo {
   int getByDr(ibsm_dr_path_t *dr) {
-    return(ibsm_send_mad_by_dr(gp_ibsm, (uint8_t *)self, sizeof(smSMInfo), 
+    return(ibsm_send_mad_by_dr(gp_ibsm, (uint8_t *)self, sizeof(smSMInfo),
                                dr, CL_NTOH16(IB_MAD_ATTR_SM_INFO), 0,
                                IB_MAD_METHOD_GET));
   }
   int setByDr(ibsm_dr_path_t *dr) {
-    return(ibsm_send_mad_by_dr(gp_ibsm, (uint8_t *)self, sizeof(smSMInfo), 
-                               dr, CL_NTOH16(IB_MAD_ATTR_SM_INFO), 0, 
+    return(ibsm_send_mad_by_dr(gp_ibsm, (uint8_t *)self, sizeof(smSMInfo),
+                               dr, CL_NTOH16(IB_MAD_ATTR_SM_INFO), 0,
                                IB_MAD_METHOD_SET));
   }
   int getByLid(uint16_t lid) {
-    return(ibsm_send_mad_by_lid(gp_ibsm, (uint8_t *)self, sizeof(smSMInfo), 
-                                lid, CL_NTOH16(IB_MAD_ATTR_SM_INFO), 0, 
+    return(ibsm_send_mad_by_lid(gp_ibsm, (uint8_t *)self, sizeof(smSMInfo),
+                                lid, CL_NTOH16(IB_MAD_ATTR_SM_INFO), 0,
                                 IB_MAD_METHOD_GET));
   }
   int setByLid(uint16_t lid) {
-    return(ibsm_send_mad_by_lid(gp_ibsm, (uint8_t *)self, sizeof(smSMInfo), 
-                                lid, CL_NTOH16(IB_MAD_ATTR_SM_INFO), 0, 
+    return(ibsm_send_mad_by_lid(gp_ibsm, (uint8_t *)self, sizeof(smSMInfo),
+                                lid, CL_NTOH16(IB_MAD_ATTR_SM_INFO), 0,
                                 IB_MAD_METHOD_SET));
   }
 }
 
-typedef struct _ibsm_notice 
+typedef struct _ibsm_notice
 {
-  uint8_t		   generic_type;  
+  uint8_t		   generic_type;
   union _sm_notice_g_or_v
   {
-	 struct _sm_notice_generic 
+	 struct _sm_notice_generic
 	 {
 		uint8_t		prod_type_msb;
 		ib_net16_t	prod_type_lsb;
 		ib_net16_t	trap_num;
 	 }	generic;
-	 
+	
 	 struct _sm_notice_vend
 	 {
 		uint8_t		vend_id_msb;
@@ -731,9 +731,9 @@ typedef struct _ibsm_notice
 		ib_net16_t	dev_id;
 	 } vend;
   } g_or_v;
-  
-  ib_net16_t			issuer_lid;    
-  ib_net16_t			toggle_count;  
+
+  ib_net16_t			issuer_lid;
+  ib_net16_t			toggle_count;
 
   union _data_details
   {
@@ -741,7 +741,7 @@ typedef struct _ibsm_notice
     {
       uint8_array_t	details[54];
     } raw_data;
-    
+
     struct _sm_ntc_64_67
     {
       uint8_array_t  res[6];
@@ -751,13 +751,13 @@ typedef struct _ibsm_notice
     struct _sm_ntc_128 {
       ib_net16_t sw_lid; // the sw lid of which link state changed
     } ntc_128;
-    
+
     struct _sm_ntc_129_131 {
       ib_net16_t    pad;
       ib_net16_t    lid;		// lid and port number of the violation
       uint8_t       port_num;
     } ntc_129_131;
-    
+
     struct _sm_ntc_144 {
       ib_net16_t    pad1;
       ib_net16_t    lid;		// lid where capability mask changed
@@ -772,47 +772,47 @@ typedef struct _ibsm_notice
       ib_net64_t    new_sys_guid; // new system image guid
     } ntc_145;
 
-    struct _sm_ntc_256 {                    
-      ib_net16_t    pad1;                   
-      ib_net16_t    lid;                    
-      ib_net16_t    pad2;                   
-      uint8_t       method;                 
-      uint8_t       pad3;                   
-      ib_net16_t    attr_id;                
-      ib_net32_t    attr_mod;               
-      ib_net64_t    mkey;                   
-      uint8_t       dr_slid;                
-      uint8_t       dr_trunc_hop;           
-      uint8_array_t dr_rtn_path[30];        
+    struct _sm_ntc_256 {
+      ib_net16_t    pad1;
+      ib_net16_t    lid;
+      ib_net16_t    pad2;
+      uint8_t       method;
+      uint8_t       pad3;
+      ib_net16_t    attr_id;
+      ib_net32_t    attr_mod;
+      ib_net64_t    mkey;
+      uint8_t       dr_slid;
+      uint8_t       dr_trunc_hop;
+      uint8_array_t dr_rtn_path[30];
     } ntc_256;
-    
+
     struct _sm_ntc_257_258 // violation of p/q_key // 49
     {
-      ib_net16_t    pad1; 
-      ib_net16_t    lid1; 
-      ib_net16_t    lid2; 
-      ib_net32_t    key;  
-      uint8_t       sl;   
-      ib_net32_t    qp1;  
-      ib_net32_t    qp2;  
-      ib_gid_t      gid1; 
-      ib_gid_t      gid2; 
+      ib_net16_t    pad1;
+      ib_net16_t    lid1;
+      ib_net16_t    lid2;
+      ib_net32_t    key;
+      uint8_t       sl;
+      ib_net32_t    qp1;
+      ib_net32_t    qp2;
+      ib_gid_t      gid1;
+      ib_gid_t      gid2;
     } ntc_257_258;
 
     struct _sm_ntc_259 // p/q_key violation with sw info 53
     {
-      ib_net16_t    data_valid;   
-      ib_net16_t    lid1;         
-      ib_net16_t    lid2;         
-      ib_net32_t    key;          
-      uint8_t       sl;           
-      ib_net32_t    qp1;          
-      uint8_t       qp2_msb;      
-      ib_net16_t    qp2_lsb;      
-      ib_gid_t      gid1;         
-      ib_gid_t      gid2;         
-      ib_net16_t    sw_lid;       
-      uint8_t       port_no;      
+      ib_net16_t    data_valid;
+      ib_net16_t    lid1;
+      ib_net16_t    lid2;
+      ib_net32_t    key;
+      uint8_t       sl;
+      ib_net32_t    qp1;
+      uint8_t       qp2_msb;
+      ib_net16_t    qp2_lsb;
+      ib_gid_t      gid1;
+      ib_gid_t      gid2;
+      ib_net16_t    sw_lid;
+      uint8_t       port_no;
     } ntc_259;
 
   } data_details;
@@ -822,15 +822,15 @@ typedef struct _ibsm_notice
 
 %addmethods smNotice {
   int trapByDr(ibsm_dr_path_t *dr) {
-    return(ibsm_send_mad_by_dr(gp_ibsm, (uint8_t *)self, 
-                               sizeof(smNotice), 
+    return(ibsm_send_mad_by_dr(gp_ibsm, (uint8_t *)self,
+                               sizeof(smNotice),
                                dr, CL_NTOH16(IB_MAD_ATTR_NOTICE), 0,
                                IB_MAD_METHOD_TRAP));
   }
   int trapByLid(uint16_t lid) {
-    return(ibsm_send_mad_by_lid(gp_ibsm, (uint8_t *)self, 
-                                sizeof(smNotice), 
-                                lid, CL_NTOH16(IB_MAD_ATTR_NOTICE), 0, 
+    return(ibsm_send_mad_by_lid(gp_ibsm, (uint8_t *)self,
+                                sizeof(smNotice),
+                                lid, CL_NTOH16(IB_MAD_ATTR_NOTICE), 0,
                                 IB_MAD_METHOD_TRAP));
   }
 }

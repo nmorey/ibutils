@@ -310,7 +310,7 @@ IBNode::setHops (IBPort *p_port, unsigned int lid, int hops) {
       // we allocate the complete table upfront
       MinHopsTable.resize(p_fabric->maxLid + 1);
       for(unsigned int l = 0; l < p_fabric->maxLid + 1; l++) {
-         MinHopsTable[l].resize(numPorts + 1);  
+         MinHopsTable[l].resize(numPorts + 1);
          for(unsigned int i = 0; i <= numPorts; i++)
             MinHopsTable[l][i] = IB_HOP_UNASSIGNED;
       }
@@ -382,7 +382,7 @@ IBNode::repHopTable () {
       cout << endl;
    }
 } // Method repHopTable
- 
+
 
 
 
@@ -901,12 +901,12 @@ IBSystem::dumpIBNL(char *ibnlDir, string &sysType) {
          ibnl << "\nNODE CA " << p_node->numPorts << " "
               << "DEV" << p_node->devId << " " << nameWithoutSysName.c_str() << endl;
       }
- 
+
       for (unsigned int pn = 1; pn <= p_node->numPorts; pn++) {
          IBPort *p_port = p_node->getPort(pn);
-   
+
          if (! p_port) continue;
-   
+
          if (p_port->p_sysPort)
          {
             ibnl << "   " << pn << " -> "
@@ -981,7 +981,7 @@ IBFabric::makeNode (string n, IBSystem *p_sys, IBNodeType type,
 
    return p_node;
 }
-   
+
 //////////////////////////////////////////////////////////////////////////////
 
 // Look for the node by its name
@@ -1036,7 +1036,7 @@ IBFabric::getSystemByGuid (uint64_t guid) {
 // return the list of node pointers matching the required type
 list_pnode *
 IBFabric::getNodesByType (IBNodeType type) {
-   
+
    list_pnode *res = new list_pnode;
    for (map_str_pnode::iterator nI = NodeByName.begin(); nI != NodeByName.end(); nI++) {
       if ((type == IB_UNKNOWN_NODE_TYPE) || (type == ((*nI).second)->type))
@@ -1142,21 +1142,21 @@ IBFabric::makeSystem (string name, string type, string cfg) {
 
       // We base our system building on the system definitions:
       map_str_str mods;
- 
+
       // convert the given configuration string to modifiers map
-      cfgStrToModifiers(cfg, mods); 
+      cfgStrToModifiers(cfg, mods);
 
       p_sys = theSysDefsCollection()->makeSystem(this, name, type, mods);
- 
+
       if (!p_sys)
       {
          cout << "-E- Fail to find System class:" << type
               << endl;
-         return NULL;  
+         return NULL;
       }
- 
+
       SystemByName[name] = p_sys;
-   
+
       // if the fabric require all ports to be declared do it:
       if (defAllPorts)
       {
@@ -1286,7 +1286,7 @@ IBFabric::parseCables (string fn) {
       f.getline(sLine,1024);
       // <SysType1> <sysName1> <portName1> <SysType2> <sysName2> <portName2>
       p_rexRes = cablingLine.apply(sLine);
-  
+
       if (p_rexRes)
       {
          t1 = p_rexRes->field(1);
@@ -1307,7 +1307,7 @@ IBFabric::parseCables (string fn) {
          delete p_rexRes;
          continue;
       }
-  
+
       // check if leagel ignored line
       p_rexRes = ignoreLine.apply(sLine);
       if (p_rexRes)
@@ -1359,7 +1359,7 @@ IBFabric::parseTopology (string fn) {
    while (f.good()) {
       lineNum++;
       f.getline(sLine,1024);
- 
+
       // check if legal ignored line
       p_rexRes = ignoreLine.apply(sLine);
       if (p_rexRes)
@@ -1370,7 +1370,7 @@ IBFabric::parseTopology (string fn) {
 
       // First look for system line:
       p_rexRes = sysLine.apply(sLine);
-  
+
       if (p_rexRes)
       {
          t1 = p_rexRes->field(1);
@@ -1409,7 +1409,7 @@ IBFabric::parseTopology (string fn) {
    while (f.good()) {
       lineNum++;
       f.getline(sLine,1024);
- 
+
       // check if legal ignored line
       p_rexRes = ignoreLine.apply(sLine);
       if (p_rexRes)
@@ -1420,7 +1420,7 @@ IBFabric::parseTopology (string fn) {
 
       // look for system line:
       p_rexRes = sysLine.apply(sLine);
-  
+
       if (p_rexRes)
       {
          t1 = p_rexRes->field(1);
@@ -1441,7 +1441,7 @@ IBFabric::parseTopology (string fn) {
          delete p_rexRes;
          continue;
       }
-  
+
       // is it a port line:
       p_rexRes = portLine.apply(sLine);
       if (p_rexRes)
@@ -1480,7 +1480,7 @@ IBFabric::parseTopology (string fn) {
          delete p_rexRes;
          continue;
       }
-  
+
       // check if empty line - marking system end:
       p_rexRes = emptyLine.apply(sLine);
       if (p_rexRes)
@@ -1524,7 +1524,7 @@ IBFabric::addLink(string type1, int numPorts1,
    IBSystem *p_sys1, *p_sys2;
    IBNode *p_node1, *p_node2;
    char buf[256];
- 
+
    // make sure the system1 exists
    if (!desc1.size())
    {
@@ -1921,7 +1921,7 @@ IBFabric::parseSubnetLinks (string fn) {
    int lineNum = 0;
    while (f.good()) {
       lineNum++;
- 
+
       f.getline(sLine,1024);
       if (!strlen(sLine)) continue;
 
@@ -1987,7 +1987,7 @@ IBFabric::parseFdbFile(string fn) {
          delete p_rexRes;
          continue;
       }
- 
+
       p_rexRes = lidLine.apply(sLine);
       if (p_rexRes)
       {
@@ -1999,14 +1999,14 @@ IBFabric::parseFdbFile(string fn) {
             if (FabricUtilsVerboseLevel & FABU_LOG_VERBOSE)
                cout << "-V- Setting FDB for:" << p_node->name
                     << " lid:" << lid << " port:" << port << endl;
-       
+
             p_node->setLFTPortForLid(lid,port);
             fdbLines++;
          }
          delete p_rexRes;
          continue;
       }
- 
+
       // is it an ignore line ?
       //cout << "-W- Ignoring line:" << sLine << endl;
    }
@@ -2067,7 +2067,7 @@ IBFabric::parseMCFdbFile(string fn) {
          delete p_rexRes;
          continue;
       }
- 
+
       p_rexRes = lidLine.apply(sLine);
       if (p_rexRes)
       {
@@ -2075,18 +2075,18 @@ IBFabric::parseMCFdbFile(string fn) {
          if (p_node)
          {
             unsigned int lid = strtol((p_rexRes->field(1)).c_str(), NULL, 16);
-     
+
             char buff[(p_rexRes->field(2)).size() + 1];
             strcpy(buff, p_rexRes->field(2).c_str());
-     
+
             char *pPortChr = strtok(buff, " ");
             while (pPortChr) {
                unsigned int port = strtol(pPortChr, NULL, 16);
-       
+
                if (FabricUtilsVerboseLevel & FABU_LOG_VERBOSE)
                   cout << "-V- Setting Multicast FDB for:" << p_node->name
                        << " lid:" << lid << " port:" << port << endl;
-       
+
                p_node->setMFTPortForMLid(lid,port);
                pPortChr = strtok(NULL, " ");
                fdbLines++;
@@ -2095,7 +2095,7 @@ IBFabric::parseMCFdbFile(string fn) {
          delete p_rexRes;
          continue;
       }
- 
+
       // is it an ignore line ?
       //cout << "-W- Ignoring line:" << sLine << endl;
    }
@@ -2124,7 +2124,7 @@ IBFabric::dump(ostream &sout) {
          IBSysPort *p_port = (*pI).second;
          IBLinkWidth width = IB_UNKNOWN_LINK_WIDTH;
          IBLinkSpeed speed = IB_UNKNOWN_LINK_SPEED;
-   
+
          if (! p_port) continue;
 
          // node port
@@ -2140,11 +2140,11 @@ IBFabric::dump(ostream &sout) {
          {
             sout << " (ERR: NO NODE PORT?)";
          }
-     
+
          // remote sys port?
          if ( p_port->p_remoteSysPort)
          {
-            sout << " -" << width2char(width) << "-" << speed2char(speed) 
+            sout << " -" << width2char(width) << "-" << speed2char(speed)
                  << "G-> "
                  << p_port->p_remoteSysPort->p_system->name << "/"
                  << p_port->p_remoteSysPort->name << endl;
@@ -2163,21 +2163,21 @@ IBFabric::dump(ostream &sout) {
       IBSystem *p_system = (*sI).second;
       sout << "--------------- SYSTEM " << (*sI).first
            << " DUMP ----------------------" << endl;
- 
+
       // go over all nodes of the system:
       for (map_str_pnode::iterator nI = p_system->NodeByName.begin();
            nI != p_system->NodeByName.end();
            nI++) {
          IBNode *p_node = (*nI).second;
-   
+
          sout << "\nNode:" << p_node->name << " (" << p_node->type
               << "," << guid2str(p_node->guid_get()) << ")" << endl;
 
          for (unsigned int pn = 1; pn <= p_node->numPorts; pn++) {
             IBPort *p_port = p_node->getPort(pn);
-     
+
             if (! p_port) continue;
-     
+
             // we do not report cross system connections:
             if (p_port->p_sysPort)
             {
@@ -2203,7 +2203,7 @@ IBFabric::dumpTopology(char *fileName, char * ibnlDir) {
    if (sout.fail())
    {
       cout << "-E- failed to open:" << fileName << " for writing." << endl;
-      return 1; 
+      return 1;
    }
    sout << "# This topology file was automaticlly generated by IBDM" << endl;
 
@@ -2229,15 +2229,15 @@ IBFabric::dumpTopology(char *fileName, char * ibnlDir) {
          IBSysPort *p_sysPort = (*pI).second;
          IBLinkWidth width = IB_UNKNOWN_LINK_WIDTH;
          IBLinkSpeed speed = IB_UNKNOWN_LINK_SPEED;
-   
+
          if (! p_sysPort) continue;
-     
+
          // remote sys port?
          if ( p_sysPort->p_remoteSysPort)
          {
             width = p_sysPort->p_nodePort->width;
             speed = p_sysPort->p_nodePort->speed;
-     
+
             if (p_sysPort->p_remoteSysPort->p_system->type == "Generic")
             {
                p_sysPort->p_remoteSysPort->p_system->dumpIBNL(ibnlDir, sysType);
@@ -2248,7 +2248,7 @@ IBFabric::dumpTopology(char *fileName, char * ibnlDir) {
             }
 
             sout << "   " << p_sysPort->name
-                 << " -" << width2char(width) << "-" << speed2char(speed) 
+                 << " -" << width2char(width) << "-" << speed2char(speed)
 					  << "G-> " << sysType.c_str() << " "
                  << p_sysPort->p_remoteSysPort->p_system->name << " "
                  << p_sysPort->p_remoteSysPort->name << endl;

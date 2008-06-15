@@ -1,6 +1,6 @@
 # Main idea here is to intialize the ibnl_path
-proc ibdmLoad%VERSION% {dir} { 
-   global ibnl_path 
+proc ibdmLoad%VERSION% {dir} {
+   global ibnl_path
    global env
    # support env variable for extending the search path for
    # system definition files.

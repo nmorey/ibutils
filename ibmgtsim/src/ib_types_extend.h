@@ -36,32 +36,32 @@
 #define IB_TYPES_EXTEND
 
 #include <complib/cl_packon.h>
-typedef struct _ib_pm_counters {  
+typedef struct _ib_pm_counters {
   ib_mad_t mad_header;
   ib_net32_t reserved0[10];
   uint8_t reserved1;
   uint8_t port_select;
   ib_net16_t counter_select;
-  ib_net16_t symbol_error_counter; 
+  ib_net16_t symbol_error_counter;
   uint8_t link_error_recovery_counter;
-  uint8_t link_down_counter; 
-  ib_net16_t port_rcv_errors; 
+  uint8_t link_down_counter;
+  ib_net16_t port_rcv_errors;
   ib_net16_t port_rcv_remote_physical_errors;
-  ib_net16_t port_rcv_switch_relay_errors; 
-  ib_net16_t port_xmit_discard; 
+  ib_net16_t port_rcv_switch_relay_errors;
+  ib_net16_t port_xmit_discard;
   uint8_t port_xmit_constraint_errors;
   uint8_t port_rcv_constraint_errors;
   uint8_t reserved2;
   uint8_t lli_errors_exc_buf_errors;
-  ib_net16_t reserved3; 
+  ib_net16_t reserved3;
   ib_net16_t vl15_dropped;
   ib_net32_t port_xmit_data;
   ib_net32_t port_rcv_data;
   ib_net32_t port_xmit_pkts;
   ib_net32_t port_rcv_pkts;
-  ib_net32_t reserved5[38]; 
+  ib_net32_t reserved5[38];
 } PACK_SUFFIX ib_pm_counters_t;
-#include <complib/cl_packoff.h>      
+#include <complib/cl_packoff.h>
 
 /****f* IBA Base: Types_extend/ib_switch_info_set_state_change
 * NAME
@@ -89,7 +89,7 @@ ib_switch_info_set_state_change(
 * NOTES
 *
 * SEE ALSO
-*   ib_switch_info_get_state_change, ib_switch_info_clear_state_change 
+*   ib_switch_info_get_state_change, ib_switch_info_clear_state_change
 *********/
 
 /****f* IBA Base: Types_extend/ib_node_info_set_local_port_num
@@ -106,7 +106,7 @@ ib_node_info_set_local_port_num(
 	IN      ib_node_info_t* 	p_ni,
     IN      uint8_t             inPort)
 {
-    p_ni->port_num_vendor_id = cl_hton32(((cl_ntoh32(p_ni->port_num_vendor_id) & 0x00ffffff) | 
+    p_ni->port_num_vendor_id = cl_hton32(((cl_ntoh32(p_ni->port_num_vendor_id) & 0x00ffffff) |
                                 (inPort << 24)));
 }
 /*

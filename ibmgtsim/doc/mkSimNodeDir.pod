@@ -23,11 +23,11 @@ The node name to create the files for.
 
 Dump file to use. default is ./ibmgtsim.guids.txt
 
-=back 
+=back
 
 =head1 LIMITATIONS
 
-Only HCAs are supported. 
+Only HCAs are supported.
 
 Single HCA per guid.
 

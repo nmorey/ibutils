@@ -4,7 +4,7 @@ B<ibdiagpath - IB diagnostic path>
 
 =head1 SYNOPSYS
 
-ibdiagpath 
+ibdiagpath
      {-n <[src-name,]dst-name>|-l <[src-lid,]dst-lid>|-d <p1,p2,p3,...>}
      [-c <count>] [-v] [-t <topo-file>] [-s <sys-name>] [-i <dev-index>]
      [-p <port-num>] [-o <out-dir>] [-lw <1x|4x|12x>] [-ls <2.5|5|10>] [-pm]
@@ -35,7 +35,7 @@ Checks for path validity from partitions, IPoIB and QoS perspectives are also pr
 
 =over
 
-=item F<ibdiagpath.log> - 
+=item F<ibdiagpath.log> -
 
 A dump of all the application reports generate according to the provided flags
 
@@ -49,7 +49,7 @@ A dump of the pm Counters values, of the fabric links
 
 =over
 
-=item B<-n <[src-name,]dst-name>> : 
+=item B<-n <[src-name,]dst-name>> :
 
 =over
 
@@ -58,7 +58,7 @@ Names of the source and destination ports (as defined in the topology file; sour
 	
 =back
 
-=item B<-l <[src-lid,]dst-lid>> : 
+=item B<-l <[src-lid,]dst-lid>> :
 
 =over
 
@@ -67,7 +67,7 @@ Source and destination LIDs (source may be omitted -> local port is assumed to b
 	
 =back
 
-=item B<-d <p1,p2,p3,...>> : 
+=item B<-d <p1,p2,p3,...>> :
 
 =over
 
@@ -76,7 +76,7 @@ directed route from the local node (which is the source) and the destination nod
 	
 =back
 
-=item B<-c <count>> : 
+=item B<-c <count>> :
 
 =over
 
@@ -85,7 +85,7 @@ The minimal number of packets to be sent across each link (default = 100)
 	
 =back
 
-=item B<-v> : 
+=item B<-v> :
 
 =over
 
@@ -94,7 +94,7 @@ Enable verbose mode
 
 =back
 
-=item B<-t <topo-file>> : 
+=item B<-t <topo-file>> :
 
 =over
 
@@ -112,7 +112,7 @@ Specifies the local system name. Meaningful only if a topology file is specified
 
 =back
 
-=item B<-i <dev-index>> : 
+=item B<-i <dev-index>> :
 
 =over
 
@@ -121,7 +121,7 @@ Specifies the index of the device of the port used to connect to the IB fabric (
 
 =back
 
-=item B<-p <port-num>> : 
+=item B<-p <port-num>> :
 
 =over
 
@@ -220,19 +220,19 @@ Prints the tool's environment variables and their values
 =item 1 -
 The path traced is un-healthy
 
-=item 2 - 
+=item 2 -
 Failed to parse command line options
 
-=item 3 - 
+=item 3 -
 More then 64 hops are required for traversing the local port to the "Source" port and then to the C<Destination> port.
 
-=item 4 - 
+=item 4 -
 Unable to traverse the LFT data from source to destination
 
-=item 5 - 
+=item 5 -
 Failed to use Topology File
 
-=item 6 - 
+=item 6 -
 Failed to load required Package
 
 =back

@@ -139,7 +139,7 @@
 This man page describes the \s-1IBNL\s0 file format used to define an arbitrary \s-1IB\s0 system internal \s-1IB\s0 connectivity. It outlines the main concepts used by the file, provides details for how to write such a file and provides a formal definition of the file syntax in \s-1BNF\s0 like format (YACC/Bison readable).
 .SH "1. Main Concepts"
 .IX Header "1. Main Concepts"
-The described file format for defining generic system \s-1IB\s0 connectivity uses the following terminology: 
+The described file format for defining generic system \s-1IB\s0 connectivity uses the following terminology:
 .IP "\s-1NODE\s0" 4
 .IX Item "NODE"
 The instantiation of an \s-1IB\s0 device may it be a switch or a channel adapter
@@ -159,7 +159,7 @@ Many systems allow multiple variations of their subsystem such as a 12X version 
 .IX Header "2. File Format"
 The exact file format is provided in section 4. This section only provides extra information regarding the specific semantics of various sections.
 .PP
-The \s-1IBNL\s0 file is line sensitive as it requires different sections to start on a new line. The file is broken into several \s-1SYSTEM\s0 (optional) and one \s-1TOPSYSTEM\s0 sections. Each has one or more names. 
+The \s-1IBNL\s0 file is line sensitive as it requires different sections to start on a new line. The file is broken into several \s-1SYSTEM\s0 (optional) and one \s-1TOPSYSTEM\s0 sections. Each has one or more names.
 .PP
 Connections are defined inside the \s-1SYSTEM/TOPSYSTEM\s0 section only and thus might be of two types:
 .IP "1. Between any node or sub-system to other node or sub-system" 4
@@ -169,41 +169,41 @@ Connections are defined inside the \s-1SYSTEM/TOPSYSTEM\s0 section only and thus
 .IX Item "2. From any node or sub-system to a connector of the system."
 .PD
 .PP
-\&\s-1NOTE\-1:\s0 The top system can define ports that might be redundant and not connected to any lower level board connector. In these cases the ports are simply omitted from the resulting system. This feature enables defining the front panel ports of a 12X/4X such that if a 12X leaf is selected only the 12X front panel ports are used. 
+\&\s-1NOTE\-1:\s0 The top system can define ports that might be redundant and not connected to any lower level board connector. In these cases the ports are simply omitted from the resulting system. This feature enables defining the front panel ports of a 12X/4X such that if a 12X leaf is selected only the 12X front panel ports are used.
 .PP
-\&\s-1NOTE\-2:\s0  Port width and speed provided at the lowest level have precedence over definitions provided at upper levels of the hierarchy. 
+\&\s-1NOTE\-2:\s0  Port width and speed provided at the lowest level have precedence over definitions provided at upper levels of the hierarchy.
 .SH "3. Guidelines for writing a System IBNL File"
 .IX Header "3. Guidelines for writing a System IBNL File"
 The following procedure should be followed in order to provide a new system \s-1IBNL:\s0
 .IP "a)" 4
-Name the file after the system name: <any sys name (no spaces)>.ibnl 
+Name the file after the system name: <any sys name (no spaces)>.ibnl
 .IP "b)" 4
-Define a \s-1SYSTEM\s0 section for each board included in the system 
+Define a \s-1SYSTEM\s0 section for each board included in the system
 .IP "c)" 4
-The port names of the boards are just strings, we use the simple format of Pn where N is just a serial number but you can pick any name you want. Just make sure it is unique. 
+The port names of the boards are just strings, we use the simple format of Pn where N is just a serial number but you can pick any name you want. Just make sure it is unique.
 .IP "d)" 4
-When different flavors of the boards exists like when you have a 4x and 12x option for a board name the optional boards with a modifier postfix. An example for such system that supports a \s-1LEAF\s0 board of 12x and 4x types would be to define two \s-1SYSTEMS:\s0 
+When different flavors of the boards exists like when you have a 4x and 12x option for a board name the optional boards with a modifier postfix. An example for such system that supports a \s-1LEAF\s0 board of 12x and 4x types would be to define two \s-1SYSTEMS:\s0
 .RS 4
 .Sp
 .RS 4
-\&\s-1SYSTEM\s0 \s-1LEAF\s0,LEAF:4x,LEAF:4X 
+\&\s-1SYSTEM\s0 \s-1LEAF\s0,LEAF:4x,LEAF:4X
 .Sp
 \&...
 .Sp
-\&\s-1SYSTEM\s0 LEAF:12x,LEAF:12X 
+\&\s-1SYSTEM\s0 LEAF:12x,LEAF:12X
 .Sp
 \&...
 .Sp
-\&\s-1NOTE\-3:\s0 The instantiations of the \s-1LEAF\s0 boards in another board or the top system need not specify the postfix and are being decided upon only when the topology file is being parsed. The \*(L"\s-1SYSTEM\s0 \s-1LEAF\s0\*(R" with no postfix will be used by default. To continue the example here is how the LEAFs are instantiated in the top system: 
+\&\s-1NOTE\-3:\s0 The instantiations of the \s-1LEAF\s0 boards in another board or the top system need not specify the postfix and are being decided upon only when the topology file is being parsed. The \*(L"\s-1SYSTEM\s0 \s-1LEAF\s0\*(R" with no postfix will be used by default. To continue the example here is how the LEAFs are instantiated in the top system:
 .Sp
 .RS 4
 \&\s-1TOPSYSTEM\s0 MyIbSystem
 .Sp
-\&\s-1LEAF\s0 leaf1 
+\&\s-1LEAF\s0 leaf1
 .Sp
 \&...
 .Sp
-\&\s-1LEAF\s0 leaf2 
+\&\s-1LEAF\s0 leaf2
 .Sp
 \&...
 .RE
@@ -213,16 +213,16 @@ When different flavors of the boards exists like when you have a 4x and 12x opti
 The actual 4x or 12x version of the \s-1LEAF\s0 board can then be specified in the topology file \s-1CFG\s0 section to select the right combination of optional boards in the system. An example will be:
 .Sp
 .RS 4
-MyIbSystem N001 \s-1CFG:\s0 leaf2=12x 
+MyIbSystem N001 \s-1CFG:\s0 leaf2=12x
 .Sp
-In this case leaf1 will be 4x as no special modifier is defined for it (and \s-1LEAF\s0 is by default a 4x leaf). Leaf2 will be 12x as defined in the \s-1CFG\s0 section. 
+In this case leaf1 will be 4x as no special modifier is defined for it (and \s-1LEAF\s0 is by default a 4x leaf). Leaf2 will be 12x as defined in the \s-1CFG\s0 section.
 .RE
 .IP "e)" 4
-Special considerations should be made to design the top system section when several optional board types exist. Top system section might include multiple definitions for front panel plugs like P1\-4x and P1\-12x (yes these are just names that should follow the writing on the front or back panels). As the different flavors of the boards are not required to define the same names for their ports including a 12x port might leave some of the top level connections dangling (not connected) and thus the front panel ports of the other flavor will be removed from the final system definition. As an example let us consider a simple board \s-1LEAF\s0 with 3 4x port flavor and one 12x port flavors. We recommend connecting it in the top level using the following scheme: 
+Special considerations should be made to design the top system section when several optional board types exist. Top system section might include multiple definitions for front panel plugs like P1\-4x and P1\-12x (yes these are just names that should follow the writing on the front or back panels). As the different flavors of the boards are not required to define the same names for their ports including a 12x port might leave some of the top level connections dangling (not connected) and thus the front panel ports of the other flavor will be removed from the final system definition. As an example let us consider a simple board \s-1LEAF\s0 with 3 4x port flavor and one 12x port flavors. We recommend connecting it in the top level using the following scheme:
 .RS 4
 .Sp
 .RS 4
-\&\s-1SYSTEM\s0 LEAF:4x 
+\&\s-1SYSTEM\s0 LEAF:4x
 .Sp
 \&\s-1NODE\s0 U1
 .Sp
@@ -232,9 +232,9 @@ Special considerations should be made to design the top system section when seve
 .Sp
 3 \-4x\-> 4XP3
 .Sp
-\&... 
+\&...
 .Sp
-\&\s-1SYSTEM\s0 LEAF:12x 
+\&\s-1SYSTEM\s0 LEAF:12x
 .Sp
 \&\s-1NODE\s0 U1
 .Sp
@@ -242,7 +242,7 @@ Special considerations should be made to design the top system section when seve
 .Sp
 \&...
 .Sp
-\&\s-1TOPSYSTEM\s0 myIbSystem 
+\&\s-1TOPSYSTEM\s0 myIbSystem
 .Sp
 \&\s-1SUBSYSTEM\s0 \s-1LEAF\s0 leaf1
 .Sp
@@ -257,103 +257,103 @@ Special considerations should be made to design the top system section when seve
 .RE
 .RS 4
 .IP "f)" 4
-Place the file in the <prefix>/lib/IBDM/ibdm1.0/ibnl directory 
+Place the file in the <prefix>/lib/IBDM/ibdm1.0/ibnl directory
 .IP "g)" 4
 Check the new file syntax by placing it in the ibnl directory as described above, creating a simple topology (\fBibdm-topo-file\fR file with one such system and running \fBibdmtr\fR utility to parse it tracing a simple path through it.
 .SH "4. Formal definition in YACC Syntax:"
 .IX Header "4. Formal definition in YACC Syntax:"
-\&\s-1INT\s0 ::= ([1\-9][0\-9]*|0) ; 
+\&\s-1INT\s0 ::= ([1\-9][0\-9]*|0) ;
 .Sp
-\&\s-1WIDTH\s0 ::= (4x|8x|12x) ; 
+\&\s-1WIDTH\s0 ::= (4x|8x|12x) ;
 .Sp
-\&\s-1SPEED\s0 ::= (2.5G|5G|10G) ; 
+\&\s-1SPEED\s0 ::= (2.5G|5G|10G) ;
 .Sp
-\&\s-1NODETYPE\s0 ::= (SW|CA|HCA) ; 
+\&\s-1NODETYPE\s0 ::= (SW|CA|HCA) ;
 .Sp
-\&\s-1NAME\s0 ::= ([\e[\e]\e\e\e*/A\-Za\-z0\-9_.:%@~]+) ; 
+\&\s-1NAME\s0 ::= ([\e[\e]\e\e\e*/A\-Za\-z0\-9_.:%@~]+) ;
 .Sp
-\&\s-1NL:\s0 
-\&\s-1LINE\s0 
-| \s-1NL\s0 \s-1LINE\s0; 
+\&\s-1NL:\s0
+\&\s-1LINE\s0
+| \s-1NL\s0 \s-1LINE\s0;
 .Sp
-\&\s-1ONL:\s0 
-| \s-1NL\s0; 
+\&\s-1ONL:\s0
+| \s-1NL\s0;
 .Sp
-ibnl: \s-1ONL\s0 systems topsystem; 
+ibnl: \s-1ONL\s0 systems topsystem;
 .Sp
-systems: 
-| systems system ; 
+systems:
+| systems system ;
 .Sp
-sub_inst_attributes: 
-| sub_inst_attributes sub_inst_attribute \s-1NL\s0; 
+sub_inst_attributes:
+| sub_inst_attributes sub_inst_attribute \s-1NL\s0;
 .Sp
-sub_inst_attribute: 
-\&\s-1NAME\s0 '=' \s-1NAME\s0 '=' \s-1NAME\s0 
-| \s-1NAME\s0 '=' \s-1NAME\s0 '=' \s-1INT\s0 
-| \s-1NAME\s0 '=' \s-1NAME\s0 ; 
+sub_inst_attribute:
+\&\s-1NAME\s0 '=' \s-1NAME\s0 '=' \s-1NAME\s0
+| \s-1NAME\s0 '=' \s-1NAME\s0 '=' \s-1INT\s0
+| \s-1NAME\s0 '=' \s-1NAME\s0 ;
 .Sp
-topsystem: 
-\&\s-1TOPSYSTEM\s0 system_names \s-1NL\s0 sub_inst_attributes insts ; 
+topsystem:
+\&\s-1TOPSYSTEM\s0 system_names \s-1NL\s0 sub_inst_attributes insts ;
 .Sp
-system: 
-\&\s-1SYSTEM\s0 system_names \s-1NL\s0 insts ; 
+system:
+\&\s-1SYSTEM\s0 system_names \s-1NL\s0 insts ;
 .Sp
-system_names: 
-system_name 
+system_names:
+system_name
 | system_names ',' system_name ;
 .Sp
-system_name: 
-\&\s-1NAME\s0 ; 
+system_name:
+\&\s-1NAME\s0 ;
 .Sp
-insts: 
-| insts node 
-| insts subsystem ; 
+insts:
+| insts node
+| insts subsystem ;
 .Sp
-node: 
-node_header \s-1NL\s0 node_connections ; 
+node:
+node_header \s-1NL\s0 node_connections ;
 .Sp
-node_header: 
-\&\s-1NODE\s0 \s-1NODETYPE\s0 \s-1INT\s0 \s-1NAME\s0 \s-1NAME\s0 ; 
+node_header:
+\&\s-1NODE\s0 \s-1NODETYPE\s0 \s-1INT\s0 \s-1NAME\s0 \s-1NAME\s0 ;
 .Sp
-node_connections: 
-| node_connections node_connection \s-1NL\s0 ; 
+node_connections:
+| node_connections node_connection \s-1NL\s0 ;
 .Sp
-node_connection: 
-node_to_node_link 
-| node_to_port_link ; 
+node_connection:
+node_to_node_link
+| node_to_port_link ;
 .Sp
-node_to_node_link: 
+node_to_node_link:
 \&\s-1INT\s0 '\-' \s-1WIDTH\s0 '\-' \s-1SPEED\s0 '\-' '>' \s-1NAME\s0
 | \s-1INT\s0 '\-' \s-1WIDTH\s0 '\-' '>' \s-1NAME\s0 \s-1INT\s0
 | \s-1INT\s0 '\-' \s-1SPEED\s0 '\-' '>' \s-1NAME\s0 \s-1INT\s0
 | \s-1INT\s0 '\-' '>' \s-1NAME\s0 \s-1INT\s0 ;
 .Sp
-node_to_port_link: 
+node_to_port_link:
 \&\s-1INT\s0 '\-' \s-1WIDTH\s0 '\-' \s-1SPEED\s0 '\-' '>' \s-1NAME\s0
 | \s-1INT\s0 '\-' \s-1WIDTH\s0 '\-' '>' \s-1NAME\s0
 | \s-1INT\s0 '\-' \s-1SPEED\s0 '\-' '>' \s-1NAME\s0
 | \s-1INT\s0 '\-' '>' \s-1NAME\s0 ;
 .Sp
-subsystem: 
-subsystem_header \s-1NL\s0 subsystem_connections ; 
+subsystem:
+subsystem_header \s-1NL\s0 subsystem_connections ;
 .Sp
-subsystem_header: 
-\&\s-1SUBSYSTEM\s0 \s-1NAME\s0 \s-1NAME\s0 ; 
+subsystem_header:
+\&\s-1SUBSYSTEM\s0 \s-1NAME\s0 \s-1NAME\s0 ;
 .Sp
-subsystem_connections: 
-| subsystem_connections subsystem_connection \s-1NL\s0 ; 
+subsystem_connections:
+| subsystem_connections subsystem_connection \s-1NL\s0 ;
 .Sp
-subsystem_connection: 
-subsystem_to_subsystem_link 
-| subsystem_to_port_link ; 
+subsystem_connection:
+subsystem_to_subsystem_link
+| subsystem_to_port_link ;
 .Sp
-subsystem_to_subsystem_link: 
-\&\s-1NAME\s0 '\-' \s-1WIDTH\s0 '\-' \s-1SPEED\s0 '\-' '>' \s-1NAME\s0 \s-1NAME\s0 
-| \s-1NAME\s0 '\-' \s-1WIDTH\s0 '\-' '>' \s-1NAME\s0 \s-1NAME\s0 
-| \s-1NAME\s0 '\-' \s-1SPEED\s0 '\-' '>' \s-1NAME\s0 \s-1NAME\s0 
-| \s-1NAME\s0 '\-' '>' \s-1NAME\s0 \s-1NAME\s0 ; 
+subsystem_to_subsystem_link:
+\&\s-1NAME\s0 '\-' \s-1WIDTH\s0 '\-' \s-1SPEED\s0 '\-' '>' \s-1NAME\s0 \s-1NAME\s0
+| \s-1NAME\s0 '\-' \s-1WIDTH\s0 '\-' '>' \s-1NAME\s0 \s-1NAME\s0
+| \s-1NAME\s0 '\-' \s-1SPEED\s0 '\-' '>' \s-1NAME\s0 \s-1NAME\s0
+| \s-1NAME\s0 '\-' '>' \s-1NAME\s0 \s-1NAME\s0 ;
 .Sp
-subsystem_to_port_link: 
+subsystem_to_port_link:
 \&\s-1NAME\s0 '\-' \s-1WIDTH\s0 '\-' \s-1SPEED\s0 '\-' '>' \s-1NAME\s0
 | \s-1NAME\s0 '\-' \s-1WIDTH\s0 '\-' '>' \s-1NAME\s0
 | \s-1NAME\s0 '\-' \s-1SPEED\s0 '\-' '>' \s-1NAME\s0

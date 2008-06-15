@@ -143,7 +143,7 @@ To use this shell you will write \s-1TCL\s0 code that excersizes the regular \s-
 The following sub sections provide detailed definition for the \s-1API\s0 and global objects defined by the extension. The different MADs APIs are group by the management class.
 .SH "IBIS Constants"
 .IX Header "IBIS Constants"
-These constants are provided by \s-1IBIS:\s0 
+These constants are provided by \s-1IBIS:\s0
 .Sh "Log Verbosity Flags"
 .IX Subsection "Log Verbosity Flags"
 .ie n .IP "[ Constant : int  ] $IBIS_LOG_NONE = 0x00" 4
@@ -178,32 +178,32 @@ They all return 0 on succes.
 Return the list of available \s-1IB\s0 ports with \s-1GUID\s0, \s-1LID\s0, state and port number.
 .IP "[ returns int  ] ibis_init" 4
 .IX Item "[ returns int  ] ibis_init"
-Initialize ibis object   
+Initialize ibis object
 .IP "[ returns int  ] ibis_set_verbosity level" 4
 .IX Item "[ returns int  ] ibis_set_verbosity level"
-Change the log verbosity   
+Change the log verbosity
 .IP "[ returns int  ] ibis_set_port guid" 4
 .IX Item "[ returns int  ] ibis_set_port guid"
 Set the port \s-1IBIS\s0 is attached to and initialize all sub packages.
 Must be called once during ibis operation.
 .IP "[ returns new_uint64_t  ] ibis_get_port" 4
 .IX Item "[ returns new_uint64_t  ] ibis_get_port"
-Provide the \s-1GUID\s0 of the port \s-1IBIS\s0 is attached to   
+Provide the \s-1GUID\s0 of the port \s-1IBIS\s0 is attached to
 .IP "[ returns int  ] ibis_set_transaction_timeout timeout_ms" 4
 .IX Item "[ returns int  ] ibis_set_transaction_timeout timeout_ms"
-Set the transaction time out in [msec]   
+Set the transaction time out in [msec]
 .IP "[ returns int  ] ibis_exit" 4
 .IX Item "[ returns int  ] ibis_exit"
-Exit \s-1IBIS\s0.   
+Exit \s-1IBIS\s0.
 .IP "[ returns int  ] ibis_puts verbosity msg" 4
 .IX Item "[ returns int  ] ibis_puts verbosity msg"
-Appends a message to the OpenSM log   
+Appends a message to the OpenSM log
 .Sh "\s-1IBIS\s0 Options Object"
 .IX Subsection "IBIS Options Object"
 .RS 4
 The \s-1IBIS\s0 options are available through the predefined object: ibis_opts.
 It can be manipulated using the standard Tcl methods: cget and configure.
-Examples: 
+Examples:
 .Sp
 .Vb 1
 \&   ibis_opts cget -force_log_flush
@@ -217,26 +217,26 @@ The following are the different options that can be configured:
 .RE
 .IP "[ Member data: returns boolean_t * ] \-single_thread" 4
 .IX Item "[ Member data: returns boolean_t * ] -single_thread"
-Run single threaded   
+Run single threaded
 .IP "[ Member data: returns boolean_t * ] \-force_log_flush" 4
 .IX Item "[ Member data: returns boolean_t * ] -force_log_flush"
-If \s-1TRUE\s0 \- forces flash after each log message (\s-1TRUE\s0).   
+If \s-1TRUE\s0 \- forces flash after each log message (\s-1TRUE\s0).
 .IP "[ Member data: returns uint8_t * ] \-log_flags" 4
 .IX Item "[ Member data: returns uint8_t * ] -log_flags"
-The log levels to be used   
+The log levels to be used
 .IP "[ Member data: returns char * ] \-log_file" 4
 .IX Item "[ Member data: returns char * ] -log_file"
 The name of the log file to be used.Must be configured before \fBibis_init\fR
 is used to make an affect
 .IP "[ Member data: returns uint64_t * ] \-sm_key" 4
 .IX Item "[ Member data: returns uint64_t * ] -sm_key"
-The SM_Key to be used when sending SubnetMgt and SubnetAdmin MADs   
+The SM_Key to be used when sending SubnetMgt and SubnetAdmin MADs
 .IP "[ Member data: returns uint64_t * ] \-m_key" 4
 .IX Item "[ Member data: returns uint64_t * ] -m_key"
-The M_Key to be used when sending SubnetMgt   
+The M_Key to be used when sending SubnetMgt
 .IP "[ Member data: returns uint64_t * ] \-v_key" 4
 .IX Item "[ Member data: returns uint64_t * ] -v_key"
-The Vendor Key to be used when sending Vendor Specific MADs.   
+The Vendor Key to be used when sending Vendor Specific MADs.
 .SH "IBPM"
 .IX Header "IBPM"
 \&\s-1IBPM\s0 stands for \s-1IB\s0 Performance Monitoring MADs. \s-1IB\s0 provides standard facilities for tracking statistics on every port.
@@ -273,7 +273,7 @@ The following sections describe the concepts behind the \s-1SAC\s0 interface and
 .IX Subsection "IBSAC Objects"
 .RS 4
 \&\s-1IBSAC\s0 uses predefined global objects to facilitate \s-1SA\s0 Queries.
-Such objects are named sac<Attribute>Query. Each such object 
+Such objects are named sac<Attribute>Query. Each such object
 exposes a standard set of methods:
 .RE
 .IP "dump" 4
@@ -1631,9 +1631,9 @@ Methods:
 .PD
 .SH "Subnet Management MADs (SMPs)"
 .IX Header "Subnet Management MADs (SMPs)"
-The \s-1SM\s0 interface supports sending Subnet Management Packets to the fabric devices. The specific attributes that can be access is provided in detail in each sub section below. 
+The \s-1SM\s0 interface supports sending Subnet Management Packets to the fabric devices. The specific attributes that can be access is provided in detail in each sub section below.
 .Sp
-A set of object types is defined. The user can allocate a new attribute object. Then the object can be set using configure or the direct manipulation methods. 
+A set of object types is defined. The user can allocate a new attribute object. Then the object can be set using configure or the direct manipulation methods.
 Extra methods are provided for each object:
 =item setByDr <dr> <attrMod>
 .Sp

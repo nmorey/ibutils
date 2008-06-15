@@ -61,9 +61,9 @@ IBMSPma::IBMSPma(
   MSG_ENTER_FUNC;
 
   IBNode*     pNodeData;
- 
+
   pNodeData = pSNode->getIBNode();
-   
+
   MSG_EXIT_FUNC;
 }
 
@@ -152,7 +152,7 @@ int IBMSPma::processMad(
   ib_pm_counters_t    respPmaMadMsg;
   ib_net16_t          status = 0;
   uint16_t            attributeId = 0;
-   
+
   memset(&respPmaMadMsg, 0, sizeof(respPmaMadMsg));
   memcpy(&pmaMadMsg, &madMsg.header, sizeof(ib_pm_counters_t));
 
@@ -187,7 +187,7 @@ int IBMSPma::processMad(
     MSG_EXIT_FUNC;
     return status;
     break;
-  }                      
+  }
 
   //send response
   //ibms_dump_mad( respPmaMadMsg, SND);
@@ -198,7 +198,7 @@ int IBMSPma::processMad(
     memcpy(pRespGmp, pReqGmp, sizeof(ib_mad_t));
   }
   memcpy(&respMadMsg.header, &respPmaMadMsg, sizeof(respPmaMadMsg));
-   
+
   respMadMsg.addr = madMsg.addr;
   respMadMsg.addr.slid = madMsg.addr.dlid;
   respMadMsg.addr.dlid = madMsg.addr.slid;
@@ -207,7 +207,7 @@ int IBMSPma::processMad(
     respMadMsg.header.method = IB_MAD_METHOD_GET_RESP;
   }
   else respMadMsg.header.method |= IB_MAD_METHOD_RESP_MASK;
-   
+
   pSimNode->getSim()->getDispatcher()->dispatchMad(pSimNode, inPort, respMadMsg);
 
   MSG_EXIT_FUNC;

@@ -62,7 +62,7 @@
 
 /****s* IBIS: ibbbm/ibbbm_t
 * NAME  ibbbm_t
-*       
+*
 *
 * DESCRIPTION
 *       ibbbm structure.
@@ -71,7 +71,7 @@
 */
 
 
-typedef struct _ibbbm 
+typedef struct _ibbbm
 {
   ibbbm_state_t      state;
   atomic32_t         bm_sequence;
@@ -93,7 +93,7 @@ typedef struct _ibbbm
 *            An event to signal the return of a MAD.
 *
 * SEE ALSO
-*      
+*
 *********/
 
 
@@ -144,7 +144,7 @@ ibbbm_destroy(
 *               A pointer to the ibbbm_t struct that is joining to be released
 *
 * RETURN VALUE
-*      
+*
 * NOTES
 *       Final step of the releasing of ibbbm_t
 *
@@ -172,9 +172,9 @@ ibbbm_init(
 *
 * RETURN VALUE
 *       The status of the function.
-*      
+*
 * NOTES
-*       
+*
 * SEE ALSO
 *       ibbbm_construct
 * *********/
@@ -200,16 +200,16 @@ ibbbm_bind(
 *
 * RETURN VALUE
 *       The status of the function.
-*      
+*
 * NOTES
-*       
+*
 * SEE ALSO
 *       ibbbm_construct
 *********/
 
 /****f* IBIS: ibbbm/ibbbm_get_counters
 * NAME
-*     ibbbm_get_counters  
+*     ibbbm_get_counters
 *
 * DESCRIPTION
 *      Send a BBM MAD (port counters) and wait for the reply.
@@ -238,16 +238,16 @@ ibbbm_read_vpd(
 *
 * RETURN VALUE
 *       The status of the function.
-*      
+*
 * NOTES
-*       
+*
 * SEE ALSO
 *       ibbbm_write
 *********/
 
 /****f* IBIS: ibbbm/ibbbm_write
 * NAME
-*     ibbbm_write  
+*     ibbbm_write
 *
 * DESCRIPTION
 *      Send a BBM MAD  that writes to a vpd address.
@@ -277,9 +277,9 @@ ibbbm_write_vpd(
 *
 * RETURN VALUE
 *       The status of the function.
-*      
+*
 * NOTES
-*       
+*
 * SEE ALSO
 *       ibbb_read
 *********/

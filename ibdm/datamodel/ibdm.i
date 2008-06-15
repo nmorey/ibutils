@@ -35,7 +35,7 @@
 
 /*
  * IB Fabric Data Model (and Utilities)
- * 
+ *
  * Data Model Interface File for TCL SWIG
  *
  */
@@ -78,13 +78,13 @@
   static IBLinkWidth DefaultLinkWidth = IB_LINK_WIDTH_4X;
   static IBLinkSpeed DefaultLinkSpeed = IB_LINK_SPEED_2_5;
 
-  /* 
+  /*
 	  MAPPING IBDM OBJECTS TO TCL and BACK:
 	  The idea is that we have specifc rules for naming
 	  Node, Port, System and SystemPort for a specific Fabric.
-	  
+	
 	  All Fabrics are stored by id in a global vector.
-	  
+	
 	  So the object names will follow:
 	  <type>:<fabricIdx>/<name>
 
@@ -120,8 +120,8 @@
 	 if (p_fabric) {
       /* look for an open index in the vector of fabrics */
       for (i = 0; i < ibdm_fabrics.size(); i++)
-      { 
-        if (ibdm_fabrics[i] == NULL) 
+      {
+        if (ibdm_fabrics[i] == NULL)
         {
           ibdm_fabrics[i] = p_fabric;
           return p_fabric;
@@ -133,7 +133,7 @@
   }
 
   /*
-	 we provide our own destructor such that the deleted fabric is 
+	 we provide our own destructor such that the deleted fabric is
     de-registered from the global fabrics vector
   */
   void delete_IBFabric(IBFabric *p_fabric) {
@@ -153,7 +153,7 @@
 	 char name[128];
 	 IBFabric *p_fabric;
 	 string uiType;
-	 
+	
 	 if (!strcmp(type, "IBNode *")) {
 		IBNode *p_node = (IBNode *)ptr;
 		p_fabric = p_node->p_fabric;
@@ -168,13 +168,13 @@
 		IBSystem *p_system = (IBSystem *)ptr;
 		sprintf(name, ":%s", p_system->name.c_str());
 		uiType = "system";
-		p_fabric = p_system->p_fabric; 
+		p_fabric = p_system->p_fabric;
 	 } else if (!strcmp(type, "IBSysPort *")) {
 		IBSysPort *p_sysPort = (IBSysPort *)ptr;
-		sprintf(name, ":%s:%s",  p_sysPort->p_system->name.c_str(), 
+		sprintf(name, ":%s:%s",  p_sysPort->p_system->name.c_str(),
 				  p_sysPort->name.c_str());
 		uiType = "sysport";
-		p_fabric = p_sysPort->p_system->p_fabric; 
+		p_fabric = p_sysPort->p_system->p_fabric;
 	 } else if (!strcmp(type, "IBFabric *")) {
 		p_fabric = (IBFabric *)ptr;
 		uiType = "fabric";
@@ -196,7 +196,7 @@
 	 Tcl_SetStringObj(objPtr, tclName, -1);
 	 return TCL_OK;
   }
-  
+
   /* Given the Object TCL Name Get it's pointer */
   int ibdmGetObjPtrByTclName(Tcl_Obj *objPtr, void **ptr) {
 	 /* we need to parse the name and get the type etc. */
@@ -207,7 +207,7 @@
 	 *ptr = NULL;
 
 	 strcpy(buf, Tcl_GetStringFromObj(objPtr,0));
-	 
+	
 	 /* the format is always: <type>:<idx>[:<name>] */
 
 	 /* first separate the type */
@@ -225,49 +225,49 @@
 	 if (strcmp(type, "fabric")) {
 		slashIdx = index(fabIdxStr,':');
 		if (!slashIdx) {
-		  printf( "-E- Bad formatted ibdm fabric object:%s\n", 
+		  printf( "-E- Bad formatted ibdm fabric object:%s\n",
 					 Tcl_GetStringFromObj(objPtr,0));
 		  return TCL_ERROR;
 		}
 		*slashIdx = '\0';
 		name = ++slashIdx;
 	 }
-	 
+	
 	 /* Ok so now get the fabic pointer */
 	 fabricIdx = atoi(fabIdxStr);
-	 
+	
 	 IBFabric *p_fabric = ibdmGetFabricPtrByIdx(fabricIdx);
 	 if (! p_fabric) {
 		*ptr = NULL;
 		return TCL_ERROR;
 	 }
-	 
+	
 	 if (!strcmp(type, "fabric")) {
 		*ptr = p_fabric;
 	 } else if (!strcmp(type, "node")) {
 		IBNode *p_node = p_fabric->getNode(string(name));
 		if (! p_node) {
 		  printf("-E- Fail to get node:%s\n", name);
-		  return TCL_ERROR;		  
+		  return TCL_ERROR;		
 		}
 		*ptr = p_node;
 	 } else if (!strcmp(type, "port")) {
 		slashIdx = rindex(name,'/');
 		if (!slashIdx) {
-		  printf("-E- Bad formatted ibdm node object:%s\n", 
+		  printf("-E- Bad formatted ibdm node object:%s\n",
 					Tcl_GetStringFromObj(objPtr,0));
-		  return TCL_ERROR;		  
+		  return TCL_ERROR;		
 		}
 		*slashIdx = '\0';
 		int portNum = atoi(++slashIdx);
 		IBNode *p_node = p_fabric->getNode(string(name));
 		if (! p_node) {
 		  printf("-E- Fail to get node:%s\n", name);
-		  return TCL_ERROR;		  
+		  return TCL_ERROR;		
 		}
 		IBPort *p_port = p_node->getPort(portNum);
 		if (! p_port) {
-		  printf("-E- Fail to get node:%s port:%u\n", 
+		  printf("-E- Fail to get node:%s port:%u\n",
 					 name, portNum);
 		  return TCL_ERROR;
 		}
@@ -276,7 +276,7 @@
 		IBSystem *p_system = p_fabric->getSystem(string(name));
 		if (! p_system) {
 		  printf("-E- Fail to get system:%s\n", name);
-		  return TCL_ERROR;		  
+		  return TCL_ERROR;		
 		}
 		*ptr = p_system;
 	 } else if (!strcmp(type, "sysport")) {
@@ -291,12 +291,12 @@
 		IBSystem *p_system = p_fabric->getSystem(string(name));
 		if (! p_system) {
 		  printf("-E- Fail to get system:%s\n", name);
-		  return TCL_ERROR;		  
+		  return TCL_ERROR;		
 		}
 		IBSysPort *p_sysPort = p_system->getSysPort(string(++colonIdx));
 		if (! p_sysPort) {
 		  printf("-E- Fail to get system:%s port:%s\n", name, colonIdx);
-		  return TCL_ERROR;		  
+		  return TCL_ERROR;		
 		}
 		*ptr = p_sysPort;
 	 } else {
@@ -325,7 +325,7 @@
     }
     return( SubnMgtFatTreeRoute(p_fabric));
   }
-  
+
   int ibdmCheckFabricMCGrpsForCreditLoopPotential(IBFabric *p_fabric, list_pnode rootNodes) {
     map_pnode_int nodesRank;
     if (SubnRankFabricNodesByRootNodes(p_fabric, rootNodes, nodesRank))
@@ -350,35 +350,35 @@
 
 
 //
-// exception handling wrapper based on the MsgMgr interfaces 
+// exception handling wrapper based on the MsgMgr interfaces
 //
 
 // it assumes we do not send the messages to stderr
-%except(tcl8) { 
+%except(tcl8) {
   ibdm_tcl_error = 0;
-  $function; 
-  if (ibdm_tcl_error) { 
+  $function;
+  if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR; 
+ 	 return TCL_ERROR;
   }
 }
 
 //
 // TYPE MAPS:
-// 
+//
 %include typemaps.i
 
 // Convert a TCL Object to C++ world.
 %typemap(tcl8,in) IBFabric *, IBNode *, IBSystem *, IBPort *, IBSysPort * {
-  
+
   void *ptr;
   if (ibdmGetObjPtrByTclName($source, &ptr) != TCL_OK) {
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString($source) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	 
+	 return TCL_ERROR;	
   }
-	 
+	
   $target = ($type)ptr;
 }
 
@@ -390,8 +390,8 @@
 
 %typemap(tcl8,check)  IBFabric *, IBNode *, IBSystem *, IBPort *, IBSysPort * {
   /* the format is always: <type>:<idx>[:<name>] */
-  
-  // get the type from the given source 
+
+  // get the type from the given source
   char buf[128];
   strcpy(buf, Tcl_GetStringFromObj($source,0));
   char *colonIdx = index(buf,':');
@@ -408,41 +408,41 @@
 	 char err[256];
 	 sprintf(err, "-E- basetype is $basetype but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	 
+	 return TCL_ERROR;	
 	}	
   } else if (!strcmp("$basetype", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is $basetype but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	 
+	 return TCL_ERROR;	
 	}
   } else if (!strcmp("$basetype", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is $basetype but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	 
+	 return TCL_ERROR;	
 	}
   } else if (!strcmp("$basetype", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is $basetype but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	 
+	 return TCL_ERROR;	
 	}
   } else if (!strcmp("$basetype", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is $basetype but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	 
+	 return TCL_ERROR;	
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype '$basetype' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	 
+	 return TCL_ERROR;	
   }
 }
 
@@ -460,7 +460,7 @@
 		} else {
 		  Tcl_AppendElement(interp, Tcl_GetString(p_tclObj));
 		}
-		Tcl_DecrRefCount(p_tclObj);	 
+		Tcl_DecrRefCount(p_tclObj);	
 	 }
   }
 }
@@ -651,7 +651,7 @@
 }
 
 /*
-  TCL Type Maps for Standard Integer Types 
+  TCL Type Maps for Standard Integer Types
 */
 
 %typemap(tcl8,in) uint64_t *(uint64_t temp) {
@@ -760,7 +760,7 @@
 
 
 %typemap(tcl8,argout) ostringstream & {
-  Tcl_SetStringObj($target, (char*)$source->str().c_str(), 
+  Tcl_SetStringObj($target, (char*)$source->str().c_str(),
                    $source->str().size() + 1);
 }
 
@@ -834,15 +834,15 @@
   int idx;
 
   /* we will use the TCL split list to split into elements */
-  if (Tcl_SplitList(interp, 
-                    Tcl_GetStringFromObj($source,0), 
+  if (Tcl_SplitList(interp,
+                    Tcl_GetStringFromObj($source,0),
                     &num_sub_lists, &sub_lists) != TCL_OK) {
     printf("-E- Bad formatted list :%s\n",
            Tcl_GetStringFromObj($source,0));
     return TCL_ERROR;
   }
 
-  for (idx = 0; (idx < num_sub_lists); idx++) 
+  for (idx = 0; (idx < num_sub_lists); idx++)
   {
     /* we need to double copy since TCL 8.4 requires split res to be const */
     Tcl_Obj *p_tclObj;
@@ -865,13 +865,13 @@
     Tcl_DecrRefCount(p_tclObj);
     tmpNodeList.push_back((IBNode *)ptr);
   }
-	 
+	
   $target = &tmpNodeList;
 }
 
 //
 // INTERFACE DEFINITION (~copy of h file)
-// 
+//
 
 %section "IBDM Constants"
 /* These constants are provided by IBDM: */
@@ -903,7 +903,7 @@ int ibdmUseCoutLog();
 /* This section decribes the various object types exposed by IBDM. */
 %text %{
 
-  IBDM exposes some of its internal objects. The objects 
+  IBDM exposes some of its internal objects. The objects
   identifiers returned by the various function calls are formatted
   according to the following rules:
   Fabric: fabric:<idx>
@@ -912,43 +912,43 @@ int ibdmUseCoutLog();
   Node: node:<fab idx>:<node name>
   Port: port:<fab idx>:<node name>/<port num>
 
-  IBDM Objects are standard Swig-Tcl objects. 
+  IBDM Objects are standard Swig-Tcl objects.
   As such they have two flavors for their usage: Variables, Objects.
 
   Variables/Pointers:
      For each object attribute a "get" and "set" methods are provided.
 	  The format of the methods is: <class>_<attribute>_<get|set>.
-     The "set" method is only available for read/write attributes. 
+     The "set" method is only available for read/write attributes.
 
 	  Example:
      set nodes [ibdm_get_nodes]
      set node  [lindex $nodes 0]
      IBNode_numPorts_get $node
-														  
+														
   Objects:
      Given an object pointer one can convert it to a Tcl "Object"
 	  using the following command:
      <class> <obj_name> -this <obj pointer>
- 
-     Once declared the <obj-name> can be used in conjunction to 
+
+     Once declared the <obj-name> can be used in conjunction to
      with the standard "configure" and "cget" commands.
 
 	  Example (following the previous one):
      IBFabric VaTech -this $fabric
 	  VaTech cget -NodeByName
 
-     To delete an object symbol (and enable its mapping to another 
+     To delete an object symbol (and enable its mapping to another
      pointer) use:
      rename <obj name> ""
      for example:
      rename VaTech ""
 %}
 
-// 
-// IB Port class. 
+//
+// IB Port class.
 // This is not the "End Node" but the physical port of
 // a node.
-// 
+//
 class IBPort {
  public:
   IBPort    * p_remotePort; // Port connected on the other side of link
@@ -959,10 +959,10 @@ class IBPort {
   IBLinkWidth     width;          // The link width of the port
   IBLinkSpeed     speed;          // The link speed of the port
   unsigned int    counter1;       // a generic value to be used by various algorithms
-  
+
   IBPort(IBNode *p_nodePtr, int number);
   // constructor
-  
+
   new_uint64_t guid_get();
   void guid_set(uint64_t guid);
 
@@ -978,9 +978,9 @@ class IBPort {
 
 };
 
-// 
+//
 // IB Node class
-// 
+//
 class IBNode {
  public:
   string			   name;      // Name of the node (instance name of the chip)
@@ -993,21 +993,21 @@ class IBNode {
 %readonly
   IBSystem	     *p_system; // What system we belong to
   IBFabric	     *p_fabric; // What fabric we belong to.
-  unsigned int	   numPorts;  // Number of physical ports 
+  unsigned int	   numPorts;  // Number of physical ports
   vec_pport		   Ports;     // Vector of all the ports
-  vec_vec_byte		MinHopsTable; // Table describing minimal hop count through 
+  vec_vec_byte		MinHopsTable; // Table describing minimal hop count through
                                 // each port to each target lid
   vec_byte        LFT;          // The LFT of this node (for switches only)
 %readwrite
-  // void            *p_appData1;  // Application Private Data #1 
+  // void            *p_appData1;  // Application Private Data #1
   // void            *p_appData2;  // Application Private Data #2
-  
+
   new_uint64_t guid_get();
   void guid_set(uint64_t guid);
 
-  IBNode(string n, 
-			IBFabric *p_fab, 
-			IBSystem *p_sys, 
+  IBNode(string n,
+			IBFabric *p_fab,
+			IBSystem *p_sys,
 			IBNodeType t, int np);
   // Constractor
 
@@ -1026,7 +1026,7 @@ class IBNode {
   // Get the min number of hops defined for the given port or all
 	
   IBPort *getFirstMinHopPort(unsigned int lid);
-  // Scan the node ports and find the first port 
+  // Scan the node ports and find the first port
   // with min hop to the lid
 
   void setLFTPortForLid (unsigned int lid, unsigned int portNum);
@@ -1043,14 +1043,14 @@ class IBNode {
 //
 // System Port Class
 // The System Port is a front pannel entity.
-// 
+//
 class IBSysPort {
  public:
   string			   name;              // The front pannel name of the port
   IBSysPort	*p_remoteSysPort;  // If connected the other side sys port
   IBSystem	*p_system;         // System it benongs to
   IBPort	   *p_nodePort;       // The node port it connects to.
-  
+
   IBSysPort(string n, IBSystem *p_sys);
   // Constructor
 
@@ -1066,7 +1066,7 @@ class IBSysPort {
 
 };
 
-// 
+//
 // IB System Class
 // This is normally derived into a system specific class
 //
@@ -1098,7 +1098,7 @@ class IBSystem {
   // Get a Sys Port by name
 };
 
-// 
+//
 // IB Fabric Class
 // The entire fabric
 //
@@ -1118,14 +1118,14 @@ class IBFabric {
 
   // IBFabric() {maxLid = 0;};
 
-  // we need to have our own destructor to take care of the 
+  // we need to have our own destructor to take care of the
   // fabrics vector cleanup
 
   // ~IBFabric();
 
-  IBNode *makeNode (string n, 
-						  IBSystem *p_sys, 
-						  IBNodeType type, 
+  IBNode *makeNode (string n,
+						  IBSystem *p_sys,
+						  IBNodeType type,
 						  unsigned int numPorts);
   // get the node by its name (create one of does not exist)
 		
@@ -1136,8 +1136,8 @@ class IBFabric {
   // return the list of node pointers matching the required type
 
   IBSystem *makeGenericSystem (string name);
-  // crate a new generic system - basically an empty contaner for nodes...  
-  
+  // crate a new generic system - basically an empty contaner for nodes...
+
   IBSystem *makeSystem (string name, string type);
   // crate a new system - the type must have a registed factory.
 
@@ -1151,7 +1151,7 @@ class IBFabric {
   IBPort *getPortByGuid(uint64_t guid);
   // get the port by its guid
 
-  void addCable (string t1, string n1, string p1, 
+  void addCable (string t1, string n1, string p1,
 					  string t2, string n2, string p2,
                  IBLinkWidth width = DefaultLinkWidth,
                  IBLinkSpeed speed = DefaultLinkSpeed
@@ -1165,15 +1165,15 @@ class IBFabric {
   int parseTopology (string fn);
   // Parse Topology File
 
-  int addLink(string type1, int numPorts1, uint64_t sysGuid1, 
-				  uint64_t nodeGuid1,  uint64_t portGuid1, 
-				  int vend1, int devId1, int rev1, string desc1, 
+  int addLink(string type1, int numPorts1, uint64_t sysGuid1,
+				  uint64_t nodeGuid1,  uint64_t portGuid1,
+				  int vend1, int devId1, int rev1, string desc1,
 				  int hcaIdx1, int lid1, int portNum1,
 				  string type2, int numPorts2, uint64_t sysGuid2,
-				  uint64_t nodeGuid2,  uint64_t portGuid2, 
-				  int vend2, int devId2, int rev2, string desc2, 
+				  uint64_t nodeGuid2,  uint64_t portGuid2,
+				  int vend2, int devId2, int rev2, string desc2,
 				  int hcaIdx2, int lid2, int portNum2,
-              IBLinkWidth width = DefaultLinkWidth, 
+              IBLinkWidth width = DefaultLinkWidth,
               IBLinkSpeed speed = DefaultLinkSpeed);
   // Add a link into the fabric - this will create system
   // and nodes as required.
@@ -1186,7 +1186,7 @@ class IBFabric {
 
   int parseMCFdbFile(string fn);
   // Parse an OpenSM MCFDBs file and set the MFT table accordingly
-  
+
   inline void setLidPort (unsigned int lid, IBPort *p_port);
   // set a lid port
 	
@@ -1214,12 +1214,12 @@ They all return 0 on succes.
 %text %{
 
   Subnet Utilities:
-  
-  The file holds a set of utilities to be run on the subnet to mimic OpenSM 
+
+  The file holds a set of utilities to be run on the subnet to mimic OpenSM
   initialization and analyze the results:
-  
+
   Assign Lids: SubnMgtAssignLids
-  Init min hop tables: SubnMgtCalcMinHopTables  
+  Init min hop tables: SubnMgtCalcMinHopTables
   Perform Enhanced LMC aware routing: SubnMgtOsmEnhancedRoute
   Perform standard routing: SubnMgtOsmRoute
   Perform Fat Tree specialized routing: SubnMgtFatTreeRoute
@@ -1227,9 +1227,9 @@ They all return 0 on succes.
 
 %}
 
-%name(ibdmAssignLids) 
+%name(ibdmAssignLids)
  int SubnMgtAssignLids (IBPort *p_smNodePort, unsigned int lmc = 0);
-// Assign lids 
+// Assign lids
 
 %name(ibdmCalcMinHopTables)
  int SubnMgtCalcMinHopTables (IBFabric *p_fabric);
@@ -1240,34 +1240,34 @@ They all return 0 on succes.
 // Fill in the FDB tables in a Up Down routing.
 // Start the tree from the given nodes by regular expression
 
-%name (ibdmOsmRoute) 
+%name (ibdmOsmRoute)
  int SubnMgtOsmRoute(IBFabric *p_fabric);
-// Fill in the FDB tables in an OpesnSM style routing 
-// which is switch based, uses number of routes per port 
+// Fill in the FDB tables in an OpesnSM style routing
+// which is switch based, uses number of routes per port
 // profiling and treat LMC assigned lids sequentialy
 // Rely on running the SubnMgtCalcMinHopTables beforehand
 
 %name(ibdmEnhancedRoute)
  int SubnMgtOsmEnhancedRoute(IBFabric *p_fabric);
-// Fill in the FDB tables in an OpesnSM style routing 
-// which is switch based, uses number of routes per port 
+// Fill in the FDB tables in an OpesnSM style routing
+// which is switch based, uses number of routes per port
 // profiling and treat LMC assigned lids sequentialy.
-// Also it will favor runing through a new system or node 
+// Also it will favor runing through a new system or node
 // on top of the port profile.
 // Rely on running the SubnMgtCalcMinHopTables beforehand
 
 int ibdmFatTreeRoute(IBFabric *p_fabric, list_pnode rootNodes);
-// Perform Fat Tree specific routing by assigning a single LID to 
+// Perform Fat Tree specific routing by assigning a single LID to
 // each root node port a single LID to route through.
 
 %name(ibdmFatTreeAnalysis) int FatTreeAnalysis(IBFabric *p_fabric);
 // Performs FatTree structural analysis
 
-%name(ibdmVerifyCAtoCARoutes) 
+%name(ibdmVerifyCAtoCARoutes)
  int SubnMgtVerifyAllCaToCaRoutes(IBFabric *p_fabric);
 // Verify point to point connectivity
 
-%name(ibdmVerifyAllPaths) 
+%name(ibdmVerifyAllPaths)
  int SubnMgtVerifyAllRoutes(IBFabric *p_fabric);
 // Verify all paths
 
@@ -1282,7 +1282,7 @@ list_pnode SubnMgtFindTreeRootNodes(IBFabric *p_fabric);
 
 %name(ibdmFindRootNodesByMinHop)
 list_pnode SubnMgtFindRootNodesByMinHop(IBFabric *p_fabric);
-// Analyze the fabric to find its root nodes using statistical methods 
+// Analyze the fabric to find its root nodes using statistical methods
 // on the profiles of min hops to CAs
 
 int ibdmRankFabricByRoots(IBFabric *p_fabric, list_pnode rootNodes);
@@ -1296,7 +1296,7 @@ int ibdmReportNonUpDownCa2CaPaths(IBFabric *p_fabric, list_pnode rootNodes);
 %name(ibdmCheckMulticastGroups)
 int SubnMgtCheckFabricMCGrps(IBFabric *p_fabric);
 // Check all multicast groups :
-// 1. all switches holding it are connected 
+// 1. all switches holding it are connected
 // 2. No loops (i.e. a single BFS with no returns).
 
 int ibdmCheckFabricMCGrpsForCreditLoopPotential(
@@ -1312,10 +1312,10 @@ int LinkCoverageAnalysis(IBFabric *p_fabric, list_pnode rootNodes);
 
 %name(ibdmTraceDRPathRoute)
 int TraceDRPathRoute (IBPort *p_smNodePort, list_int drPathPortNums);
-// Trace a direct route from the given SM node port 
+// Trace a direct route from the given SM node port
 
 %name(ibdmTraceRouteByMinHops)
-int TraceRouteByMinHops (IBFabric *p_fabric, 
+int TraceRouteByMinHops (IBFabric *p_fabric,
   unsigned int slid , unsigned int dlid);
 // Trace a route from slid to dlid by Min Hop
 
@@ -1335,7 +1335,7 @@ int TraceRouteByMinHops (IBFabric *p_fabric,
 	 } else {
 		char buf[128];
 		sprintf(buf, "%s", Tcl_GetString(p_tclObj));
-		Tcl_SetVar(interp, Tcl_GetString($arg), buf, 
+		Tcl_SetVar(interp, Tcl_GetString($arg), buf,
 					  TCL_LIST_ELEMENT|TCL_APPEND_VALUE);
 	 }
 	 Tcl_DecrRefCount(p_tclObj);
@@ -1360,9 +1360,9 @@ int TraceRouteByMinHops (IBFabric *p_fabric,
 %}
 
 %name(ibdmTraceRouteByLFT)
-int TraceRouteByLFT (IBFabric *p_fabric, 
+int TraceRouteByLFT (IBFabric *p_fabric,
 							unsigned int slid , unsigned int dlid,
-							unsigned_int_arg_name *hops, 
+							unsigned_int_arg_name *hops,
 							list_pnode_arg_name *p_nodesList);
 // Trace a route from slid to dlid by LFT
 
@@ -1388,7 +1388,7 @@ TopoMergeDiscAndSpecFabrics(
   IBFabric  *p_discovered_fabric, // The discovered fabric
   IBFabric  *p_merged_fabric);    // Output merged fabric (allocated internaly)
 // Build a merged fabric from a matched discovered and spec fabrics.
-// NOTE: you have to run ibdmMatchFabrics before calling this routine. 
+// NOTE: you have to run ibdmMatchFabrics before calling this routine.
 
 %subsection "Congestion Analysis Utilities",before,pre
 
@@ -1401,7 +1401,7 @@ TopoMergeDiscAndSpecFabrics(
 %name(ibdmCongClear) int CongZero(IBFabric *p_fabric);
 // Clear the congestion analysis path trace. Does not affect max paths
 
-%name(ibdmCongTrace) 
+%name(ibdmCongTrace)
 int CongTrackPath(IBFabric *p_fabric, uint16_t srcLid, uint16_t dstLid);
 // Trace the path from source to destination tracking the visited links
 
@@ -1412,8 +1412,8 @@ int CongTrackPath(IBFabric *p_fabric, uint16_t srcLid, uint16_t dstLid);
 // provide detailed dump of the link usage
 
 //
-// FIX OF SWIG TO SUPPORT NAME ALTERNATE MANGLING 
-// 
+// FIX OF SWIG TO SUPPORT NAME ALTERNATE MANGLING
+//
 %{
 #include "swig_alternate_mangling.cpp"
 %}

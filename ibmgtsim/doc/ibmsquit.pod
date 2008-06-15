@@ -1,6 +1,6 @@
 =head1 NAME
 
-B<ibmsquit> -  Quit the management simulator 
+B<ibmsquit> -  Quit the management simulator
 
 =head1 SYNOPSYS
 

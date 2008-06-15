@@ -1,12 +1,12 @@
 # This is the checker for SM LINK SETUP flow
 
 ##############################################################################
-# 
+#
 # Start up the test applications
 # This is the default flow that will start OpenSM only in 0x43 verbosity
 # Return a list of process ids it started (to be killed on exit)
 #
-proc runner {simDir osmPath osmPortGuid} { 
+proc runner {simDir osmPath osmPortGuid} {
    global simCtrlSock
    global env
 
@@ -22,10 +22,10 @@ proc runner {simDir osmPath osmPortGuid} {
    set osmCmd "$osmPath -D 0x43 -d2 -t 4000 -f $osmLog -g $osmPortGuid"
    puts "-I- Starting: $osmCmd"
    set osmPid [eval "exec $osmCmd > $osmStdOutLog &"]
-   
+
    # start a tracker on the log file and process:
    startOsmLogAnalyzer $osmLog
-   
+
    return $osmPid
 }
 
@@ -45,7 +45,7 @@ proc checker {simDir osmPath osmPortGuid} {
       return 1
    }
 
-	# make sure /proc is updated ... 
+	# make sure /proc is updated ...
 	puts $simCtrlSock "updateProcFSForNode \$fabric $simDir H-1/U1 H-1/U1 1"
    set res [gets $simCtrlSock]
    puts "SIM: Updated H-1 proc file:$res"
@@ -63,7 +63,7 @@ proc checker {simDir osmPath osmPortGuid} {
    puts "SIM: [gets $simCtrlSock]"
 	puts "---------------------------------------------------------------------"
 	puts " SUBNET READY FOR DIAGNOSTICS"
-	puts "\nCut and paste the following in a new window then run ibdiagnet:" 
+	puts "\nCut and paste the following in a new window then run ibdiagnet:"
 	puts "cd $simDir"
 	puts "setenv IBMGTSIM_DIR  $simDir"
 	puts "setenv OSM_CACHE_DIR $simDir"

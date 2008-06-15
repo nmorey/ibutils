@@ -38,41 +38,41 @@
 /*
 
   Subnet Utilities:
-  
-  The file holds a set of utilities to be run on the subnet to mimic OpenSM 
+
+  The file holds a set of utilities to be run on the subnet to mimic OpenSM
   initialization and analyze the results:
-  
+
   Assign Lids: SubnMgtAssignLids
-  Init min hop tables: SubnMgtCalcMinHopTables  
+  Init min hop tables: SubnMgtCalcMinHopTables
   Perform Enhanced LMC aware routing: SubnMgtOsmEnhancedRoute
   Perform standard routing: SubnMgtOsmRoute
   Verify all CA to CA routes: SubnMgtVerifyAllCaToCaRoutes
 
 */
 
-// Assign lids 
+// Assign lids
 int SubnMgtAssignLids (IBPort *p_smNodePort, unsigned int lmc = 0);
 
 // Calculate the minhop table for the switches
 int SubnMgtCalcMinHopTables (IBFabric *p_fabric);
 
-// Fill in the FDB tables in an OpesnSM style routing 
-// which is switch based, uses number of routes per port 
+// Fill in the FDB tables in an OpesnSM style routing
+// which is switch based, uses number of routes per port
 // profiling and treat LMC assigned lids sequentialy
 // Rely on running the SubnMgtCalcMinHopTables beforehand
 int
 SubnMgtOsmRoute(IBFabric *p_fabric);
 
-// Fill in the FDB tables in an OpesnSM style routing 
-// which is switch based, uses number of routes per port 
+// Fill in the FDB tables in an OpesnSM style routing
+// which is switch based, uses number of routes per port
 // profiling and treat LMC assigned lids sequentialy.
-// Also it will favor runing through a new system or node 
+// Also it will favor runing through a new system or node
 // on top of the port profile.
 // Rely on running the SubnMgtCalcMinHopTables beforehand
 int
 SubnMgtOsmEnhancedRoute(IBFabric *p_fabric);
 
-// Perform Fat Tree specific routing by assigning a single LID to 
+// Perform Fat Tree specific routing by assigning a single LID to
 // each root node port a single LID to route through.
 int
 SubnMgtFatTreeRoute(IBFabric *p_fabric);
@@ -86,7 +86,7 @@ int
 SubnMgtVerifyAllRoutes(IBFabric *p_fabric);
 
 // Calc Up/Down min hop tables using the given ranking per node
-int 
+int
 SubnMgtCalcUpDnMinHopTbls(IBFabric *p_fabric , map_pnode_int &nodesRank);
 
 //Calc by Up-Down Min Hop Algorithm the Switch Tables
@@ -98,13 +98,13 @@ SubnMgtCalcUpDnMinHopTblsByRootNodesRex(IBFabric *p_fabric , char * rootNodesNam
 list_pnode
 SubnMgtFindTreeRootNodes(IBFabric *p_fabric);
 
-// Analyze the fabric to find its root nodes using statistical methods 
+// Analyze the fabric to find its root nodes using statistical methods
 // on the profiles of min hops to CAs
 list_pnode
 SubnMgtFindRootNodesByMinHop(IBFabric *p_fabric);
 
 // Given a list of root nodes mark them with a zero rank
-// Then BFS and rank min 
+// Then BFS and rank min
 // note we use the provided map of IBNode* to int for storing the rank
 int
 SubnRankFabricNodesByRootNodes(
@@ -116,7 +116,7 @@ int
 SubnReportNonUpDownCa2CaPaths(IBFabric *p_fabric, map_pnode_int &nodesRank);
 
 // Check all multicast groups :
-// 1. all switches holding it are connected 
+// 1. all switches holding it are connected
 // 2. No loops (i.e. a single BFS with no returns).
 int SubnMgtCheckFabricMCGrps(IBFabric *p_fabric);
 
@@ -131,7 +131,7 @@ int
 LinkCoverageAnalysis(IBFabric *p_fabric, list_pnode rootNodes);
 
 // Perform FatTree analysis
-int 
+int
 FatTreeAnalysis(IBFabric *p_fabric);
 
 #endif /* IBDM_SUBN_MGT_H */

@@ -44,11 +44,11 @@
 
 /* constructor */
 IBMSDispatcher::IBMSDispatcher(
-  int numWorkers, 
+  int numWorkers,
   uint64_t dAvg_usec,
   uint64_t dStdDev_usec)
 {
-  MSG_ENTER_FUNC;  
+  MSG_ENTER_FUNC;
 
   MSGREG(err1, 'E', "Failed to init timer thread.", "dispatcher");
   MSGREG(err2, 'E', "Failed to init worker thread:$.", "dispatcher");
@@ -80,7 +80,7 @@ IBMSDispatcher::IBMSDispatcher(
   /* construct and init the worker threads */
   for (int i = 1; i <= numWorkers; i++)
   {
-	  if (pthread_create(&threads[i], 
+	  if (pthread_create(&threads[i],
 								NULL, &IBMSDispatcher::workerCallback, this))
 	  {
 		  MSGSND(err2, i);
@@ -88,14 +88,14 @@ IBMSDispatcher::IBMSDispatcher(
 	  }
   }
 
-  MSG_EXIT_FUNC;  
+  MSG_EXIT_FUNC;
 }
 
 /* distructor */
 IBMSDispatcher::~IBMSDispatcher()
 {
   MSG_ENTER_FUNC;
-  
+
   exit_now = TRUE;
 
   /* first tell the timer to exit */
@@ -132,13 +132,13 @@ int IBMSDispatcher::setDelayStdDev(uint64_t dStdDev_usec)
 
 /* introduce a new mad to the dispatcher */
 int IBMSDispatcher::dispatchMad(
-  IBMSNode *pFromNode, 
-  uint8_t fromPort, 
+  IBMSNode *pFromNode,
+  uint8_t fromPort,
   ibms_mad_msg_t &msg)
 {
-  MSG_ENTER_FUNC;  
+  MSG_ENTER_FUNC;
 
-  MSGREG(inf1, 'V', 
+  MSGREG(inf1, 'V',
          "Queued a mad from:$ tid:$ to expire in $ msec $ usec at $ usec",
          "dispatcher");
 
@@ -146,7 +146,7 @@ int IBMSDispatcher::dispatchMad(
   uint64_t waitTime_usec =
     llrint((2.0 * rand()) / RAND_MAX * stdDevDelay_usec) +
 	  (avgDelay_usec - stdDevDelay_usec);
-  
+
   madItem item;
   item.pFromNode = pFromNode;
   item.fromPort = fromPort;
@@ -174,19 +174,19 @@ int IBMSDispatcher::dispatchMad(
 
   /* release the lock */
   pthread_mutex_unlock( &madQueueByWakeupLock );
-  
-  MSG_EXIT_FUNC;  
+
+  MSG_EXIT_FUNC;
   return 0;
 }
 
 /*
-  The call back function for the threads 
+  The call back function for the threads
   Loop to handle all outstanding MADs (those expired their wakeup time)
 */
 void *
 IBMSDispatcher::workerCallback(void *context)
 {
-  MSG_ENTER_FUNC;  
+  MSG_ENTER_FUNC;
   IBMSDispatcher *pDisp = (IBMSDispatcher *)context;
 
   MSGREG(inf1,'V',"Entered workerCallback","dispatcher");
@@ -198,7 +198,7 @@ IBMSDispatcher::workerCallback(void *context)
   /* get the first message in the waiting map */
   pthread_mutex_lock( &pDisp->madDispatchQueueLock );
 
-  while (! pDisp->exit_now) 
+  while (! pDisp->exit_now)
   {
     if (! pDisp->madDispatchQueue.empty() )
 	 {
@@ -212,26 +212,26 @@ IBMSDispatcher::workerCallback(void *context)
 	 }
 	 else
 	 {
-		 pthread_cond_wait( &pDisp->newMadIntoDispatchQ, 
+		 pthread_cond_wait( &pDisp->newMadIntoDispatchQ,
 								  &pDisp->madDispatchQueueLock );
 	 }
   }
 
   pthread_mutex_unlock( &pDisp->madDispatchQueueLock );
-  MSG_EXIT_FUNC;  
+  MSG_EXIT_FUNC;
   return NULL;
 }
 
-/* 
+/*
    The the timer thread main
-	Loop using a cond wait - 
+	Loop using a cond wait -
 	When loop expires check to see if work exists and signal the threads
 	Then sleep for next time
 */
 void *
 IBMSDispatcher::timerCallback(void *context)
 {
-  MSG_ENTER_FUNC;  
+  MSG_ENTER_FUNC;
   IBMSDispatcher *pDisp = (IBMSDispatcher *)context;
   struct timespec nextWakeup;
   struct timeval now;
@@ -240,12 +240,12 @@ IBMSDispatcher::timerCallback(void *context)
 
   MSGREG(inf1, 'V', "Schedule next timer callback in $ [msec]", "dispatcher");
   MSGREG(inf2, 'V', "Signaling worker threads", "dispatcher");
-  
+
   /* obtain a lock on the Q */
   pthread_mutex_lock( &pDisp->madQueueByWakeupLock );
-  
+
   while (! pDisp->exit_now ) {
-	  
+	
 	  gettimeofday(&now, NULL);
 	  mmap_uint64_mad::iterator mI = pDisp->madQueueByWakeup.begin();
 	  if (mI != pDisp->madQueueByWakeup.end())
@@ -279,12 +279,12 @@ IBMSDispatcher::timerCallback(void *context)
 		  nextWakeup.tv_nsec = 0;
 		  wait = TRUE;
 		  MSGSND(inf1, 1000);
-	  } 
+	  }
 
 	  if ( wait == TRUE )
 	  {
-		  pthread_cond_timedwait( &pDisp->newMadIntoWaitQ, 
-										  &pDisp->madQueueByWakeupLock, 
+		  pthread_cond_timedwait( &pDisp->newMadIntoWaitQ,
+										  &pDisp->madQueueByWakeupLock,
 										  &nextWakeup );
 	  }
   }
@@ -300,34 +300,34 @@ int
 IBMSDispatcher::routeMadToDestByLid(
   madItem &item)
 {
-  MSG_ENTER_FUNC;  
+  MSG_ENTER_FUNC;
   IBMSNode *pCurNode = NULL;
   IBMSNode *pRemNode = item.pFromNode;
   IBPort   *pRemIBPort; /* stores the incoming remote port */
   uint16_t lid = item.madMsg.addr.dlid;
   uint8_t   prevPortNum = 0;
   int hops = 0;
-  
+
   MSGREG(inf0, 'I', "Routing MAD mgmt_class:$ method:$ tid:$ to lid:$ from:$ port:$", "dispatcher");
-  MSGREG(inf1, 'I', "Got to dead-end routing to lid:$ at node:$", 
+  MSGREG(inf1, 'I', "Got to dead-end routing to lid:$ at node:$",
          "dispatcher");
   MSGREG(inf2, 'I', "Arrived at lid $ = node $ after $ hops", "dispatcher");
-  MSGREG(inf3, 'I', "Got to dead-end routing to lid:$ at node:$ port:$", 
+  MSGREG(inf3, 'I', "Got to dead-end routing to lid:$ at node:$ port:$",
          "dispatcher");
-  MSGREG(inf4, 'I', "Got to dead-end routing to lid:$ at HCA node:$ port:$ lid:$", 
+  MSGREG(inf4, 'I', "Got to dead-end routing to lid:$ at HCA node:$ port:$ lid:$",
          "dispatcher");
   MSGREG(inf5, 'V', "Got node:$ through port:$", "dispatcher");
-  
-  MSGSND(inf0, 
-	 item.madMsg.header.mgmt_class,  
+
+  MSGSND(inf0,
+	 item.madMsg.header.mgmt_class,
 	 item.madMsg.header.method,
 	 item.madMsg.header.trans_id,
-    lid, 
+    lid,
 	 item.pFromNode->getIBNode()->name,
 	 item.fromPort);
 
   int isVl15 = (item.madMsg.header.mgmt_class == IB_MCLASS_SUBN_LID);
-  
+
   prevPortNum = item.fromPort;
 
   /* we will stop when we are done or stuck */
@@ -347,14 +347,14 @@ IBMSDispatcher::routeMadToDestByLid(
         {
           pRemNode = pCurNode;
           pRemIBPort = pCurNode->getIBNode()->getPort(item.fromPort);
-        } 
+        }
         else
         {
           if (pCurNode->getRemoteNodeByOutPort(
                 item.fromPort, &pRemNode, &pRemIBPort, isVl15))
           {
             MSGSND(inf3, lid, pCurNode->getIBNode()->name, item.fromPort);
-            MSG_EXIT_FUNC;  
+            MSG_EXIT_FUNC;
             return 1;
           }
           if (pRemIBPort)
@@ -364,7 +364,7 @@ IBMSDispatcher::routeMadToDestByLid(
           }
         }
       }
-      else 
+      else
       {
         /* we mark the fact we are done */
         pRemNode = pCurNode;
@@ -384,7 +384,7 @@ IBMSDispatcher::routeMadToDestByLid(
       {
         MSGSND(inf2, lid, pRemNode->getIBNode()->name, hops);
         int res = pRemNode->processMad(prevPortNum, item.madMsg);
-        MSG_EXIT_FUNC;  
+        MSG_EXIT_FUNC;
         return(res);
       }
       if (pRemIBPort)
@@ -406,7 +406,7 @@ IBMSDispatcher::routeMadToDestByLid(
   {
     MSGSND(inf2, lid, pRemNode->getIBNode()->name, hops);
     int res = pRemNode->processMad(pRemIBPort->num, item.madMsg);
-    MSG_EXIT_FUNC;  
+    MSG_EXIT_FUNC;
     return(res);
   }
   else
@@ -414,10 +414,10 @@ IBMSDispatcher::routeMadToDestByLid(
     /* we did not get to the target */
     MSGSND(inf4, lid, pRemNode->getIBNode()->name, pRemIBPort->num,
            cl_ntoh16(pRemNode->nodePortsInfo[pRemIBPort->num].base_lid));
-    MSG_EXIT_FUNC;  
+    MSG_EXIT_FUNC;
     return 1;
   }
-  MSG_EXIT_FUNC;  
+  MSG_EXIT_FUNC;
 }
 
 /* do Direct Routing */
@@ -425,7 +425,7 @@ int
 IBMSDispatcher::routeMadToDestByDR(
   madItem &item)
 {
-  MSG_ENTER_FUNC;  
+  MSG_ENTER_FUNC;
   IBMSNode *pCurNode = NULL;
   IBMSNode *pRemNode = item.pFromNode;
   IBPort   *pRemIBPort = NULL; /* stores the incoming remote port */
@@ -434,9 +434,9 @@ IBMSDispatcher::routeMadToDestByDR(
 
   /* we deal only with SMP with DR sections */
   ib_smp_t *p_mad = (ib_smp_t *)(&(item.madMsg.header));
-  
+
   MSGREG(inf0, 'I', "Routing MAD tid:$ by DR", "dispatcher");
-  MSGREG(inf1, 'I', "Got to dead-end routing by MAD tid:$ at node:$ hop:$", 
+  MSGREG(inf1, 'I', "Got to dead-end routing by MAD tid:$ at node:$ hop:$",
          "dispatcher");
   MSGREG(inf2, 'I', "MAD tid:$ to node:$ after $ hops", "dispatcher");
   MSGREG(err1, 'E', "Combination of direct and lid route is not supported by the simulator!", "dispatcher");
@@ -447,7 +447,7 @@ IBMSDispatcher::routeMadToDestByDR(
   if ((p_mad->dr_slid != 0xffff) || (p_mad->dr_slid != 0xffff) )
   {
     MSGSND(err1);
-    MSG_EXIT_FUNC;  
+    MSG_EXIT_FUNC;
     return(1);
   }
 
@@ -470,9 +470,9 @@ IBMSDispatcher::routeMadToDestByDR(
       if (pCurNode->getRemoteNodeByOutPort(
             p_mad->return_path[p_mad->hop_ptr--], &pRemNode, &pRemIBPort, 1))
       {
-        MSGSND(inf1, cl_ntoh64(p_mad->trans_id), 
+        MSGSND(inf1, cl_ntoh64(p_mad->trans_id),
                pCurNode->getIBNode()->name, hops);
-        MSG_EXIT_FUNC;  
+        MSG_EXIT_FUNC;
         return 1;
       }
     }
@@ -483,7 +483,7 @@ IBMSDispatcher::routeMadToDestByDR(
 
     /* we should start with 1 (init should be to zero) */
     p_mad->hop_ptr++;
-    
+
     while(p_mad->hop_ptr <= p_mad->hop_count)
     {
       pCurNode = pRemNode;
@@ -492,19 +492,19 @@ IBMSDispatcher::routeMadToDestByDR(
       if (pCurNode->getRemoteNodeByOutPort(
             p_mad->initial_path[p_mad->hop_ptr], &pRemNode, &pRemIBPort, 1))
       {
-        MSGSND(inf1, cl_ntoh64(p_mad->trans_id), 
+        MSGSND(inf1, cl_ntoh64(p_mad->trans_id),
                pCurNode->getIBNode()->name, hops);
-        MSG_EXIT_FUNC;  
+        MSG_EXIT_FUNC;
         return 1;
       }
 
       /* update the return path */
       p_mad->return_path[p_mad->hop_ptr] = pRemIBPort->num;
-      
+
       p_mad->hop_ptr++;
     }
   }
-  
+
   /* validate we reached the target node */
   if (! pRemNode) return(1);
   //if (! pRemIBPort) return(1);
@@ -512,7 +512,7 @@ IBMSDispatcher::routeMadToDestByDR(
   MSGSND(inf2, cl_ntoh64(p_mad->trans_id), pRemNode->getIBNode()->name, hops);
 
   int res = pRemNode->processMad(inPortNum, item.madMsg);
-  MSG_EXIT_FUNC;  
+  MSG_EXIT_FUNC;
   return(res);
 }
 
@@ -520,18 +520,18 @@ int
 IBMSDispatcher::routeMadToDest(
   madItem &item)
 {
-  MSG_ENTER_FUNC;  
+  MSG_ENTER_FUNC;
 
   MSGREG(inf1, 'V', "Routing mad to lid: $", "dispatcher");
   MSGSND(inf1, item.madMsg.addr.dlid);
 
-  /* 
-     the over all routing algorithm is the same - go from current node to 
-     next node, but the method used to get the next node is based on the 
-     routing types. 
+  /*
+     the over all routing algorithm is the same - go from current node to
+     next node, but the method used to get the next node is based on the
+     routing types.
 
-     Since the traversal involves all node connectivity, port status and 
-     packet loss statistics - the dispatcher calls the nodes methods for 
+     Since the traversal involves all node connectivity, port status and
+     packet loss statistics - the dispatcher calls the nodes methods for
      obtaining the remote nodes:
      getRemoteNodeByOutPort(outPort, &pRemNode, &remPortNum)
      getRemoteNodeByLid(lid, &pRemNode, &remPortNum)
@@ -546,8 +546,8 @@ IBMSDispatcher::routeMadToDest(
   else
     res = routeMadToDestByLid(item);
 
-  MSG_EXIT_FUNC;  
+  MSG_EXIT_FUNC;
   return res;
 }
 
-  
+

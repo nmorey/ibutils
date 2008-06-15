@@ -57,11 +57,11 @@ ibbbm_read_vpd_global(
   ib_bbm_vpd_t *p_bbm_vpd_mad)
 {
 	ib_api_status_t status;
- 
+
 	status = ibbbm_read_vpd(p_ibbbm_global,lid,vpd_device_selector,bytes_num,offset,p_bbm_vpd_mad);
 	;
 	ibis_set_tcl_error("-E- Failed to read VPD");
-   
+
 	return(status);
 }
 
@@ -91,7 +91,7 @@ ibbbm_read_vsd_vpd_global(
 	ib_bbm_vpd_t *p_bbm_vpd_mad;
 
 	p_bbm_vpd_mad = (ib_bbm_vpd_t *)p_bbm_vsd_vpd_mad;
- 
+
 	status = ibbbm_read_vpd(p_ibbbm_global,lid,IBBBM_VSD_VPD_DEV_SEL,IBBBM_VSD_VPD_SIZE,IBBBM_VSD_VPD_OFFSET,p_bbm_vpd_mad);
 	;
 	ibis_set_tcl_error("-E- Failed to read VSD VPD");
@@ -107,7 +107,7 @@ ibbbm_read_bsn_vpd_global(
 	ib_bbm_vpd_t *p_bbm_vpd_mad;
 
 	p_bbm_vpd_mad = (ib_bbm_vpd_t *)p_bbm_bsn_vpd_mad;
- 
+
 	status = ibbbm_read_vpd(p_ibbbm_global,lid,IBBBM_BSN_VPD_DEV_SEL,IBBBM_BSN_VPD_SIZE,IBBBM_BSN_VPD_OFFSET,p_bbm_vpd_mad);
 	;
 	ibis_set_tcl_error("-E- Failed to read BSN");
@@ -141,7 +141,7 @@ ibbbm_read_cha_vpd_global(
 	ib_bbm_vpd_t *p_bbm_vpd_mad;
 
 	p_bbm_vpd_mad = (ib_bbm_vpd_t *)p_bbm_cha_vpd_mad;
- 
+
 	status = ibbbm_read_vpd(p_ibbbm_global,lid,IBBBM_CHA_VPD_DEV_SEL,IBBBM_CHA_VPD_SIZE,IBBBM_CHA_VPD_OFFSET,p_bbm_vpd_mad);
 	;
    ibis_set_tcl_error("-E- Failed to read Chassis VPD");
@@ -158,7 +158,7 @@ ibbbm_read_fw_ver_vpd_global(
 	ib_bbm_vpd_t *p_bbm_vpd_mad;
 
 	p_bbm_vpd_mad = (ib_bbm_vpd_t *)p_bbm_fw_ver_vpd_mad;
- 
+
 	status = ibbbm_read_vpd(p_ibbbm_global,lid,IBBBM_FW_VER_VPD_DEV_SEL,IBBBM_FW_VER_VPD_SIZE,IBBBM_FW_VER_VPD_OFFSET,p_bbm_vpd_mad);
 	;
 
@@ -183,13 +183,13 @@ ibbbm_read_fw_ver_vpd_global(
 			($source->vpd_device_selector),
 			cl_ntoh16($source->bytes_num),
 			cl_ntoh16($source->offset));
-         for (i=0;i<cl_ntoh16($source->bytes_num);i++) {   
+         for (i=0;i<cl_ntoh16($source->bytes_num);i++) {
          	sprintf(buff,"%s {data%u 0x%x} ",buff,i,$source->data[i]);
          };
 
          Tcl_SetStringObj($target, buff, strlen(buff));
   } else {
-         Tcl_SetStringObj($target, "", 0);       
+         Tcl_SetStringObj($target, "", 0);
   }
 }
 
@@ -209,19 +209,19 @@ ibbbm_read_fw_ver_vpd_global(
 			cl_ntoh16($source->offset),
 			$source->temp_sensor_count);
 
-         for (i=0;i<IBBBM_MOD_VPD_TEMP_SIZE;i++) {   
+         for (i=0;i<IBBBM_MOD_VPD_TEMP_SIZE;i++) {
          	sprintf(buff,"%s {temp%u 0x%x} ",buff,i+1,cl_ntoh16($source->temp_sensor_record[i]));
          };
 
 	 sprintf(buff,"%s {power_sup_count 0x%x} ",buff,$source->power_sup_count);
 
-	 for (i=0;i<IBBBM_MOD_VPD_PWR_SIZE;i++) {   
+	 for (i=0;i<IBBBM_MOD_VPD_PWR_SIZE;i++) {
          	sprintf(buff,"%s {power%u 0x%x} ",buff,i+1,cl_ntoh32($source->power_sup_record[i]));
          };
 	 	
          Tcl_SetStringObj($target, buff, strlen(buff));
   } else {
-         Tcl_SetStringObj($target, "", 0);       
+         Tcl_SetStringObj($target, "", 0);
   }
 }
 
@@ -241,25 +241,25 @@ ibbbm_read_fw_ver_vpd_global(
 			cl_ntoh16($source->offset),
 			$source->temp_sensor_count);
 
-	 for (i=0;i<IBBBM_CHA_VPD_TEMP_SIZE;i++) {   
+	 for (i=0;i<IBBBM_CHA_VPD_TEMP_SIZE;i++) {
          	sprintf(buff,"%s {temp%u 0x%x} ",buff,i+1,cl_ntoh16($source->temp_sensor_record[i]));
          };
 
 	 sprintf(buff,"%s {power_sup_count 0x%x} ",buff,$source->power_sup_count);
 
-	 for (i=0;i<IBBBM_CHA_VPD_PWR_SIZE;i++) {   
+	 for (i=0;i<IBBBM_CHA_VPD_PWR_SIZE;i++) {
          	sprintf(buff,"%s {power%u 0x%x} ",buff,i+1,cl_ntoh32($source->power_sup_record[i]));
          };
 	
 	 sprintf(buff,"%s {fan_count 0x%x} ",buff,$source->fan_count);
 
-   	 for (i=0;i<IBBBM_CHA_VPD_FAN_SIZE;i++) {   
+   	 for (i=0;i<IBBBM_CHA_VPD_FAN_SIZE;i++) {
          	sprintf(buff,"%s {fan%u 0x%x} ",buff,i+1,cl_ntoh16($source->fan_record[i]));
-         }; 
+         };
 		
          Tcl_SetStringObj($target, buff, strlen(buff));
   } else {
-         Tcl_SetStringObj($target, "", 0);       
+         Tcl_SetStringObj($target, "", 0);
   }
 }
 
@@ -271,7 +271,7 @@ ibbbm_read_fw_ver_vpd_global(
   if ($source) {
          static char buff[512];
 	 static int j;
-	 sprintf(buff, "{b_key 0x%016" PRIx64 "} {bm_sequence 0x%x} {device_sel 0x%x} {bytes_num 0x%x} {offset 0x%x}", 
+	 sprintf(buff, "{b_key 0x%016" PRIx64 "} {bm_sequence 0x%x} {device_sel 0x%x} {bytes_num 0x%x} {offset 0x%x}",
                         cl_ntoh64($source->b_key),
                         cl_ntoh16($source->bm_sequence),
 			($source->vpd_device_selector),
@@ -283,7 +283,7 @@ ibbbm_read_fw_ver_vpd_global(
 	
          Tcl_SetStringObj($target, buff, strlen(buff));
   } else {
-         Tcl_SetStringObj($target, "", 0);       
+         Tcl_SetStringObj($target, "", 0);
   }
 }
 
@@ -295,7 +295,7 @@ ibbbm_read_fw_ver_vpd_global(
   if ($source) {
          static char buff[512];
 	 static int j;
-	 sprintf(buff, "{b_key 0x%016" PRIx64 "} {bm_sequence 0x%x} {device_sel 0x%x} {bytes_num 0x%x} {offset 0x%x}", 
+	 sprintf(buff, "{b_key 0x%016" PRIx64 "} {bm_sequence 0x%x} {device_sel 0x%x} {bytes_num 0x%x} {offset 0x%x}",
                         cl_ntoh64($source->b_key),
                         cl_ntoh16($source->bm_sequence),
 			($source->vpd_device_selector),
@@ -307,7 +307,7 @@ ibbbm_read_fw_ver_vpd_global(
 	
          Tcl_SetStringObj($target, buff, strlen(buff));
   } else {
-         Tcl_SetStringObj($target, "", 0);       
+         Tcl_SetStringObj($target, "", 0);
   }
 }
 
@@ -318,7 +318,7 @@ ibbbm_read_fw_ver_vpd_global(
 %typemap(tcl8,argout) ib_bbm_fw_ver_vpd_t *OUTPUT {
   if ($source) {
          static char buff[512];
-	 sprintf(buff, "{b_key 0x%016" PRIx64 "} {bm_sequence 0x%x} {device_sel 0x%x} {bytes_num 0x%x} {offset 0x%x} {maj_fw_ver 0x%x} {min_fw_ver 0x%x} {sub_min_fw_ver 0x%x}", 
+	 sprintf(buff, "{b_key 0x%016" PRIx64 "} {bm_sequence 0x%x} {device_sel 0x%x} {bytes_num 0x%x} {offset 0x%x} {maj_fw_ver 0x%x} {min_fw_ver 0x%x} {sub_min_fw_ver 0x%x}",
                         cl_ntoh64($source->b_key),
                         cl_ntoh16($source->bm_sequence),
 			($source->vpd_device_selector),
@@ -330,7 +330,7 @@ ibbbm_read_fw_ver_vpd_global(
 	
          Tcl_SetStringObj($target, buff, strlen(buff));
   } else {
-         Tcl_SetStringObj($target, "", 0);       
+         Tcl_SetStringObj($target, "", 0);
   }
 }
 

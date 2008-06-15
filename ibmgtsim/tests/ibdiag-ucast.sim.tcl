@@ -5,34 +5,34 @@ puts "FLOW: set some unicast partial connectivity"
 proc getRandomSwitchNodesList {fabric} {
    # get number of nodes:
    set nodesByName [IBFabric_NodeByName_get $fabric]
-   
+
    set nodeNOrderList {}
    foreach nodeNameNId [IBFabric_NodeByName_get $fabric] {
       set node [lindex $nodeNameNId 1]
-      
+
       # only switches please
       if {[IBNode_type_get $node] == 1} {
          lappend nodeNOrderList [list $node [rmRand]]
       }
    }
-   
+
    set randNodes {}
    foreach nodeNRnd [lsort -index 1 -real $nodeNOrderList] {
       lappend randNodes [lindex $nodeNRnd 0]
    }
-   return $randNodes   
+   return $randNodes
 }
 
 # scan the switches (randomly) for a LFT entry which is not zero
 # delete one entry ...
 proc removeUCastRouteEntry {fabric} {
    set nodes [getRandomSwitchNodesList $fabric]
-   
+
    while {[llength $nodes]} {
       set node [lindex $nodes 0]
       set nodeName [IBNode_name_get $node]
       set lft [IBNode_LFT_get $node]
-      
+
       # convert to LID Port list
       set lidPortList {}
       for {set lid 0 } {$lid < [llength $lft]} {incr lid} {
@@ -42,7 +42,7 @@ proc removeUCastRouteEntry {fabric} {
          }
       }
 
-      # select a random entry 
+      # select a random entry
       if {[llength $lidPortList]} {
          set badLidIdx [expr int([rmRand]*[llength $lidPortList])]
          set badLidNPort [lindex $lidPortList $badLidIdx]

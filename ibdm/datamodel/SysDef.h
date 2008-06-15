@@ -34,7 +34,7 @@
 
 /*
  * Fabric Utilities Project
- * 
+ *
  * Hierarchical Systems Definition DataModel
  *
  */
@@ -87,20 +87,20 @@ class IBSysInst {
   };
 
   IBSysInst(string n, string m) {
-    name = n; isNode = 0; master = m; nodeNumPorts = 0; 
+    name = n; isNode = 0; master = m; nodeNumPorts = 0;
     nodeType = IB_UNKNOWN_NODE_TYPE;
   };
-  
+
   inline int addPort(IBSysInstPort* p_port) {
     InstPorts[p_port->name] = p_port;
     return(0);
   };
-  
+
   inline int addInstMod(char *subInstName, char *instMod) {
     SubInstMods[subInstName] = instMod;
     return(0);
   };
- 
+
   inline string getName() { return name; };
 
   friend class IBSysDef;
@@ -123,7 +123,7 @@ class IBSysPortDef {
 };
 
 class IBSysDef {
-  string               fileName;          // The file the system was defined by  
+  string               fileName;          // The file the system was defined by
   map_str_psysinsts    SystemsInstByName; // all sub instances by name
   map_str_psysportdef  SysPortsDefs;      // all sys ports defs
 
@@ -136,7 +136,7 @@ class IBSysDef {
 
   // add sub instance attribute
   inline void setSubInstAttr(string hierInstName, string attrStr) {
-    map_str_str::iterator iaI = SubInstAtts.find(hierInstName); 
+    map_str_str::iterator iaI = SubInstAtts.find(hierInstName);
     if (iaI == SubInstAtts.end()) {
       SubInstAtts[hierInstName] = attrStr;
     } else {
@@ -153,7 +153,7 @@ class IBSysDef {
     SysPortsDefs[p_sysPort->name] = p_sysPort;
     return 0;
   };
-  
+
   string getName() {
     return fileName;
   };
@@ -161,16 +161,16 @@ class IBSysDef {
   friend class IBSystemsCollection;
 };
 
-// we collect all top level systems into this 
+// we collect all top level systems into this
 class IBSystemsCollection {
   map_str_psysdef SysDefByName; // Map of sub instances by name
  public:
 
-  // Initialize the system collection with all available 
+  // Initialize the system collection with all available
   // ibnl files in the given directory path list.
   int parseSysDefsFromDirs(list< string > dirs);
 
-  // Parse a system definition netlist 
+  // Parse a system definition netlist
   int parseIBSysdef(string fileName);
 
   // Add a new system def ..
@@ -180,7 +180,7 @@ class IBSystemsCollection {
     return 0;
   };
 
-  // given a system type and optionaly a modifier 
+  // given a system type and optionaly a modifier
   // look it up
   inline IBSysDef* getSysDef(string sname) {
     // The modifier is simply added to the system name
@@ -195,14 +195,14 @@ class IBSystemsCollection {
   // modifiers by hierarchical instance name.
   IBSystem *makeSystem(
     IBFabric *p_fabric, string name, string master, map_str_str mods);
-  
- private:  
-  // build all nodes recursively 
+
+ private:
+  // build all nodes recursively
   int
     makeSysNodes(
       IBFabric *p_fabric,        // the fabric we belong to
       IBSystem *p_system,        // the system we build
-      IBSysDef *p_parSysDef,     // the sysdef of the parent 
+      IBSysDef *p_parSysDef,     // the sysdef of the parent
       string    parHierName,     // the hier name of the parent "" for top
       map_str_str &mods          // hier name based modifiers list
       );
@@ -213,17 +213,17 @@ class IBSystemsCollection {
       IBSysDef    *p_sysDef,    // parent system def
       IBSysInst   *p_inst,      // the instance
       string       hierInstName,// instance hierarchical name
-      map_str_str &mods         // hier name based modifiers list  
+      map_str_str &mods         // hier name based modifiers list
       );
-  
+
   // find a system port def gven the instance, port name, hierName and
   IBSysPortDef *
     getSysPortDefByInstPortName(
-      IBSysDef     *p_sysDef,     // the system definition the port is on  
+      IBSysDef     *p_sysDef,     // the system definition the port is on
       IBSysInst    *p_inst,       // the instance
       string        instPortName, // the port name
       string        hierInstName, // the hier name of the instance
-      map_str_str  &mods          // hier name based modifiers list  
+      map_str_str  &mods          // hier name based modifiers list
       );
 
   IBPort *
@@ -233,7 +233,7 @@ class IBSystemsCollection {
       IBSysInst    *p_inst,       // the instance
       string        instPortName, // the port name
       string        hierInstName, // the hier name of the instance
-      map_str_str  &mods          // hier name based modifiers list  
+      map_str_str  &mods          // hier name based modifiers list
       );
 
   // find the lowest point connection of this port and make it if a node port
@@ -246,7 +246,7 @@ class IBSystemsCollection {
       string         parHierName, // the hier name of the parent "" for top
       map_str_str   &mods         // hier name based modifiers list
       );
-  
+
   // find the lowest point connection of this sub sysport and make a node port
   // assumes the nodes were already created for the
   IBPort *
@@ -258,8 +258,8 @@ class IBSystemsCollection {
       string         parHierName, // the hier name of the parent "" for top
       map_str_str   &mods         // hier name based modifiers list
       );
-  
-  //  DFS from top on each level connect all connected SysInst ports 
+
+  //  DFS from top on each level connect all connected SysInst ports
   int
     makeSubSystemToSubSystemConns(
       IBSystem      *p_system,    // the system we build the node port in

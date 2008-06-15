@@ -51,7 +51,7 @@ proc getAddressiblePorts {fabric} {
          for {set pn $pMin} {$pn <= $pMax} {incr pn} {
             set port [IBNode_getPort $node $pn]
             if {$port == ""} {continue}
-           
+
             # if the port is not connected ignore it:
             if {[IBPort_p_remotePort_get $port] != ""} {
                lappend nodePortNumPairs [list $node $pn]
@@ -87,13 +87,13 @@ proc assignPortLid {node portNum lid} {
    }
    set pi [IBMSNode_getPortInfo sim$node $portNum]
    set prevLid [ib_port_info_t_base_lid_get $pi]
-  
+
    if {$lid == $prevLid} {return 0}
 
    ib_port_info_t_base_lid_set $pi $lid
 
    # if case the SM was previously run we do not want any
-   # effect of the PORT_LID.. tables 
+   # effect of the PORT_LID.. tables
    if {$POST_SUBNET_UP} {return}
 
    # track it:
@@ -127,7 +127,7 @@ proc assignPortLid {node portNum lid} {
 proc assignLegalLids {fabric lmc} {
    global POST_SUBNET_UP
 
-   # mark that we are only in initial lid assignment 
+   # mark that we are only in initial lid assignment
    # the SM was not run yet.
    set  POST_SUBNET_UP 0
 
@@ -156,23 +156,23 @@ proc assignLegalLids {fabric lmc} {
    return "-I- Set all port lids"
 }
 
-# after first OpenSM run we need to be able to get the assigned 
+# after first OpenSM run we need to be able to get the assigned
 # lids
 proc updateAssignedLids {fabric} {
    global PORT_LID LID_PORTS BAD_LIDS POST_SUBNET_UP
 
    set addrNodePortNumPairs [getAddressiblePorts $fabric]
    foreach nodePortNum $addrNodePortNumPairs {
-      
+
       set node [lindex $nodePortNum 0]
       set pn   [lindex $nodePortNum 1]
       set pi [IBMSNode_getPortInfo sim$node $pn]
       set lid [ib_port_info_t_base_lid_get $pi]
-      
+
       assignPortLid $node $pn $lid
    }
 
-   # flag the fact that from now any change in lids 
+   # flag the fact that from now any change in lids
    # is not going to affect the PORT_LID...
    set POST_SUBNET_UP 1
 
@@ -201,7 +201,7 @@ proc getFreeLid {lmc} {
 
 # get a used lid
 proc getUsedLid {} {
-   global LID_PORTS  
+   global LID_PORTS
    return [getRandomNumOfSequence [array names LID_PORTS]]
 }
 
@@ -238,13 +238,13 @@ proc setNodePortsState {node state} {
             }
             # do the actual job (including traps and change bits...)
             IBMSNode_setLinkStatus sim$node $pn $state
-            
+
 
             set remPn [IBPort_num_get $remPort]
             set remNode [IBPort_p_node_get $remPort]
             set remPortGuid [IBPort_guid_get $remPort]
             set remName [IBNode_name_get $remNode]
-            # if the remote port is of an HCA we need to mark it too as 
+            # if the remote port is of an HCA we need to mark it too as
             # BAD or clean it out:
             if {[IBNode_type_get $remNode] != 1} {
                if {$state == 1} {
@@ -276,7 +276,7 @@ proc disconnectNode {node} {
 # state to INIT
 proc connectNode {node} {
    global DISCONNECTED_NODES
-   setNodePortsState $node 2   
+   setNodePortsState $node 2
    if {[info exists DISCONNECTED_NODES($node)]} {
       unset DISCONNECTED_NODES($node)
    }
@@ -292,7 +292,7 @@ proc setPortsDisconnected {fabric lmc} {
    # half subnet ...
    set maxDisconnects [expr int([llength $addrNodePortNumPairs] / 5.0)]
 
-   set numDisc 0 
+   set numDisc 0
    # go over all the ports in the fabric and set their lids
    foreach nodePortNum $addrNodePortNumPairs {
       set node [lindex $nodePortNum 0]
@@ -314,13 +314,13 @@ proc setPortsDisconnected {fabric lmc} {
       if {[array size DISCONNECTED_NODES] > $maxDisconnects} {
          continue
       }
-    
+
       # avoid disconnect of the SM node.
       set smNode [IBFabric_getNode $fabric "H-1/U1"]
       set smPort [IBNode_getPort $smNode 1]
       set smRemPort [IBPort_p_remotePort_get $smPort]
       set smRemNode [IBPort_p_node_get $smRemPort]
-    
+
       if {($smNode != $node) && ($smRemNode != $node)} {
           puts "-I- Disconnecting node:$node guid:$guid"
           disconnectNode $node
@@ -343,7 +343,7 @@ proc writeGuid2LidFile {fileName lmc} {
    }
 
    set randProfile {
-      OK OK OK OK OK OK OK OK OK 
+      OK OK OK OK OK OK OK OK OK
       OK OK OK OK ExtraGuid
       OK OK OK OK Skip
       OK OK OK OK ExtraGuidCollision
@@ -351,7 +351,7 @@ proc writeGuid2LidFile {fileName lmc} {
       OK OK OK OK LidOutOfRange
       OK OK OK OK NoLid
       OK OK OK OK GarbadgeGuid
-      OK OK OK OK OK OK OK OK OK 
+      OK OK OK OK OK OK OK OK OK
    }
 
    set numMods 0
@@ -370,11 +370,11 @@ proc writeGuid2LidFile {fileName lmc} {
          set guid [IBNode_guid_get $node]
          set maxLidOffset 0
       }
-     
+
       set pi [IBMSNode_getPortInfo sim$node $pn]
       set lid [ib_port_info_t_base_lid_get $pi]
       set lidMax [expr $lid + $maxLidOffset]
-     
+
       # randomize what we want to do with it:
       set hackCode [getRandomNumOfSequence $randProfile]
       switch $hackCode {
@@ -417,7 +417,7 @@ proc writeGuid2LidFile {fileName lmc} {
             incr numMods
          }
          LidZero {
-            puts $f "$guid 0 0\n"      
+            puts $f "$guid 0 0\n"
             puts [format "-I- LidZero guid:$guid lid:0x%04x,0x%04x" \
                      $lid $lidMax]
             # if the node is disconnected and we create invalid guid2lid
@@ -485,7 +485,7 @@ proc connectAllDisconnected {fabric isAll} {
    return "-I- Reconnected $numConn nodes"
 }
 
-# check that all the ports that have a valid lid 
+# check that all the ports that have a valid lid
 # still holds this value
 proc checkLidValues {fabric lmc} {
    global PORT_LID LID_PORTS BAD_LIDS BAD_GUIDS
@@ -510,7 +510,7 @@ proc checkLidValues {fabric lmc} {
 
       # ignore nodes that are disconnected:
       if {[info exists DISCONNECTED_NODES($node)]} {continue}
-      
+
       # ignore marked bad guids:
       if {[info exists BAD_GUIDS($guid)]} {continue}
 
@@ -519,9 +519,9 @@ proc checkLidValues {fabric lmc} {
          puts "-W- Somehow we do not have a lid assigned to $key"
          continue
       }
-      
+
       set lid $PORT_LID($key)
-      
+
       # ignore lids that are unknown to the SM
       if {[info exists SM_UNKNOWN_LIDS($lid)]} {continue}
 
@@ -533,7 +533,7 @@ proc checkLidValues {fabric lmc} {
       set actLid [ib_port_info_t_base_lid_get $pi]
 
       incr numPorts
-      
+
       if {($lid != 0) && ($lid != $actLid)} {
          puts [format "-E- On Port:$key Guid:$guid Expected lid:0x%04x != 0x%04x" \
                   $lid $actLid]
@@ -545,7 +545,7 @@ proc checkLidValues {fabric lmc} {
    } else {
       puts "-I- scanned $numPorts ports with no error"
    }
-   return $numErrs 
+   return $numErrs
 }
 
 # set the change bit on one of the switches:
@@ -583,27 +583,27 @@ proc sendJoinLeaveForPort {fabric port isLeave} {
    set portGuid [IBPort_guid_get $port]
    madMcMemberRec_port_gid_set $mcm \
       "0xfe80000000000000:[string range $portGuid 2 end]"
-   
+
    # must require full membership:
    madMcMemberRec_scope_state_set $mcm 0x1
- 
+
    # we need port number and sim node for the mad send:
    set portNum [IBPort_num_get $port]
    set node [IBPort_p_node_get $port]
-   
+
    # we need the comp_mask to include the mgid, port gid and join state:
    set compMask [format "0x%X" [expr (1<<16) | 3]]
-                  
+
 
    #getting the SM lid
    #From ibmgtsim.guids.txt get the GUID of H-1/P1
-   #From guid2lid file get the lid of the GUID 
+   #From guid2lid file get the lid of the GUID
    set n [IBFabric_getNode $fabric "H-1/U1"]
    set p [IBNode_getPort $n 1]
    set guid [IBPort_guid_get $p]
    set pi [IBMSNode_getPortInfo sim$n 1]
    set lid [ib_port_info_t_base_lid_get $pi]
-    
+
    # send it to the SM_LID:
    if {$isLeave} {
       puts "-I- Leaving port $node $portNum $portGuid"
@@ -612,11 +612,11 @@ proc sendJoinLeaveForPort {fabric port isLeave} {
       puts "-I- Joining port $node $portNum $portGuid"
       madMcMemberRec_send_set $mcm sim$node $portNum $lid $compMask
    }
-   
+
 
    # deallocate
    delete_madMcMemberRec $mcm
-   
+
    return 0
 }
 
@@ -627,7 +627,7 @@ proc getAllActiveHCAPorts {fabric} {
    # go over all nodes:
    foreach nodeNameId [IBFabric_NodeByName_get $fabric] {
       set node [lindex $nodeNameId 1]
-      
+
       # we do care about non switches only
       if {[IBNode_type_get $node] != 1} {
          # go over all ports:
@@ -654,7 +654,7 @@ proc randomJoinAllHCAPorts {fabric maxDelay_ms isAll} {
    foreach port $hcaPorts {
       lappend orederedPorts [list $port [rmRand]]
    }
-   
+
    # sort:
    set orederedPorts [lsort -index 1 -real $orederedPorts]
    set numHcasJoined 0
@@ -664,18 +664,18 @@ proc randomJoinAllHCAPorts {fabric maxDelay_ms isAll} {
       if {($isAll == 0) && [notToDo]} {continue}
 
       set port [lindex $portNOrder 0]
-      
+
       if {![sendJoinLeaveForPort $fabric $port 0]} {
          incr numHcasJoined
       }
-      
+
       after [expr int([rmRand]*$maxDelay_ms)]
    }
    return $numHcasJoined
 }
 
 # randomize join for all of the fabric HCA ports:
-# Please note that NOT all the ports are leaving - 
+# Please note that NOT all the ports are leaving -
 # each port is by random leaving or staying the same
 proc randomLeaveAllHCAPorts {fabric maxDelay_ms} {
    # get all HCA ports:
@@ -686,7 +686,7 @@ proc randomLeaveAllHCAPorts {fabric maxDelay_ms} {
    foreach port $hcaPorts {
       lappend orederedPorts [list $port [rmRand]]
    }
-   
+
    # sort:
    set orederedPorts [lsort -index 1 -real $orederedPorts]
    set numHcasLeft 0
@@ -700,20 +700,20 @@ proc randomLeaveAllHCAPorts {fabric maxDelay_ms} {
 
 
       set port [lindex $portNOrder 0]
-      
+
       if {![sendJoinLeaveForPort $fabric $port 1]} {
          incr numHcasLeft
       }
-      
+
       after [expr int([rmRand]*$maxDelay_ms)]
    }
    return $numHcasLeft
 }
 
-# register some of the nodes to receive some 
+# register some of the nodes to receive some
 # reports.
 proc randomRegisterFormInformInfo {fabric} {
-	global IB_INFORM_INFO_COMP_TRAP_NUM IB_INFORM_INFO_COMP_GID 
+	global IB_INFORM_INFO_COMP_TRAP_NUM IB_INFORM_INFO_COMP_GID
 	global IB_INFORM_INFO_COMP_LID_END
 	global IB_INFORM_INFO_COMP_LID_BEGIN
 
@@ -730,7 +730,7 @@ proc randomRegisterFormInformInfo {fabric} {
 
 	foreach port $hcaPorts {
 		# we skip most of them
-		if {[rmRand] > 0.66} {continue} 
+		if {[rmRand] > 0.66} {continue}
 
 		madGenericInform i
 
@@ -761,7 +761,7 @@ proc randomRegisterFormInformInfo {fabric} {
 				i configure -gid $gid
 				set compMask $IB_INFORM_INFO_COMP_GID
 				puts "-I- $mode InformInfo for $portName by GID:$gid"
-			} 
+			}
 			ByLid {
 				set otherPort [getRandomNumOfSequence $hcaPorts]
 				set fromLid [IBPort_base_lid_get $otherPort]
@@ -774,7 +774,7 @@ proc randomRegisterFormInformInfo {fabric} {
 				set toLid [expr $fromLid + int([rmRand]*10)]
 				set compMask [expr $IB_INFORM_INFO_COMP_LID_BEGIN | $IB_INFORM_INFO_COMP_LID_END]
 				puts "-I- $mode InformInfo for $portName by LID Range:$fromLid - $toLid"
-			} 
+			}
 			All {
 				puts "-I- $mode InformInfo for $portName to match all events"
 				set compMask 0
@@ -799,7 +799,7 @@ proc sendPathRecordRequest {fabric port1 port2 port3} {
 
    #getting the SM lid
    #From ibmgtsim.guids.txt get the GUID of H-1/P1
-   #From guid2lid file get the lid of the GUID 
+   #From guid2lid file get the lid of the GUID
    set n [IBFabric_getNode $fabric "H-1/U1"]
    set p [IBNode_getPort $n 1]
    set guidSM \
@@ -821,7 +821,7 @@ proc sendPathRecordRequest {fabric port1 port2 port3} {
    # we need port number and sim node for the mad send:
    set portNum [IBPort_num_get $port3]
    set node [IBPort_p_node_get $port3]
-   
+
    # we need the comp_mask to include all the above (see 15.2.5.16)
    # 3 SGID
    # 12 NumbPath
@@ -836,7 +836,7 @@ proc sendPathRecordRequest {fabric port1 port2 port3} {
 
    # deallocate
    delete_madPathRec $pam
-   
+
    return 0
 }
 
@@ -854,11 +854,11 @@ proc sendServiceRecordRequest {fabric port} {
    madServiceRec_sl_set $pam 0x8
    madServiceRec_mtu_set $pam 4
    madServiceRec_rate_set $pam 2
- 
+
    # we need port number and sim node for the mad send:
    set portNum [IBPort_num_get $port]
    set node [IBPort_p_node_get $port]
-   
+
    # we need the comp_mask to include all the above (see 15.2.5.16)
    # 3 SGID
    # 12 NumbPath
@@ -867,23 +867,23 @@ proc sendServiceRecordRequest {fabric port} {
    # 18,19 RATE
    set compMask \
      [format "0x%X" [expr (1<<19) | (1<<18) | (1<<17) | (1<<16) | (1<<15) | (1<<12) | (1<<3)]]
-                  
+
 
    #getting the SM lid
    #From ibmgtsim.guids.txt get the GUID of H-1/P1
-   #From guid2lid file get the lid of the GUID 
+   #From guid2lid file get the lid of the GUID
    set n [IBFabric_getNode $fabric "H-1/U1"]
    set p [IBNode_getPort $n 1]
    set guid [IBPort_guid_get $p]
    set pi [IBMSNode_getPortInfo sim$n 1]
    set lid [ib_port_info_t_base_lid_get $pi]
-    
+
    # send it to the SM_LID:
    madServiceRec_send_set $pam sim$node $portNum $lid $compMask
 
    # deallocate
    delete_madServiceRec $pam
-   
+
    return 0
 }
 
@@ -905,7 +905,7 @@ proc DisconnectRandomPorts {fabric} {
 }
 
 proc ConnectRandomPorts {fabric} {
-    connectAllDisconnected $fabric 0 
+    connectAllDisconnected $fabric 0
 }
 
 # send a random number of patch record requests from any HCA to any other
@@ -922,7 +922,7 @@ proc SendRandomPathRecordRequests {fabric} {
 
    set numQueries [expr int([rmRand]*[llength $hcaPorts])]
    puts "-I- SendRandomPathRecordRequests randomizing $numQueries requests"
-   
+
    # sort:
    set orederedPorts [lsort -index 1 -real $orederedPorts]
 
@@ -933,7 +933,7 @@ proc SendRandomPathRecordRequests {fabric} {
       set port1 [lindex $portNOrder1 0]
       set port2 [lindex $portNOrder2 0]
       set port3 [lindex $portNOrder2 0]
-      
+
       # Now send the request - waiting random time between them:
       after [expr int([rmRand]*10)]
       set retval [sendPathRecordRequest $fabric $port1 $port2 $port3]
@@ -979,7 +979,7 @@ proc RunRandomStressFlow {fabric iterations} {
            }
         }
     }
-    
+
     set actionsRun ""
     foreach action [array names RUN_ACTIONS] {
        append actionsRun "$action:$RUN_ACTIONS($action) "
@@ -1001,5 +1001,5 @@ set ACTION_ARRAY {}
 # set swi [IBMSNode_getSwitchInfo sim$node]
 # set n simnode:1:SWL2/spine1/U3
 # set x [IBMSNode_getPKeyTblB $n 0 0]
-# 
+#
 

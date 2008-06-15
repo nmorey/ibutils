@@ -65,24 +65,24 @@ class IBMSVendorSpecific : IBMSMadProcessor {
   int vsMadValidation(ibms_mad_msg_t &madMsg);
 
   /* ----------------------------
-        Attributes Handling 
+        Attributes Handling
      ----------------------------*/
-  int vsAttribute50(ibms_mad_msg_t &respMadMsg, 
-                    ibms_mad_msg_t &reqMadMsg, 
+  int vsAttribute50(ibms_mad_msg_t &respMadMsg,
+                    ibms_mad_msg_t &reqMadMsg,
                     uint8_t        inPort);
 
-  int vsAttribute51(ibms_mad_msg_t &respMadMsg, 
-                    ibms_mad_msg_t &reqMadMsg, 
+  int vsAttribute51(ibms_mad_msg_t &respMadMsg,
+                    ibms_mad_msg_t &reqMadMsg,
                     uint8_t        inPort);
 
- public: 
-   // init the CrSpace according to device type // 
+ public:
+   // init the CrSpace according to device type //
   void crSpaceInit(uint16_t devId);
   /* Top level of handling the Vendor Specific MAD. Might result with a call to the
      outstandingMads->push() with a result                     */
   int processMad(uint8_t inPort, ibms_mad_msg_t &madMsg);
 
-  /* Constructor - should initial the specific class elements 
+  /* Constructor - should initial the specific class elements
      in the node. */
   IBMSVendorSpecific(IBMSNode *pSNode, list_uint16 mgtClasses);
 
@@ -90,6 +90,6 @@ class IBMSVendorSpecific : IBMSMadProcessor {
   // ~IBMSVendorSpecific();
 
 };
-      
+
 #endif
 

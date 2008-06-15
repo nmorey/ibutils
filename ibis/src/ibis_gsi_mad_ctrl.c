@@ -174,7 +174,7 @@ __ibis_gsi_mad_ctrl_process(
 {
   ib_mad_t*                 p_mad;
   ibis_gsi_cb_msg_pair_t*   p_cb_msg_pair;
-  cl_vector_t*              p_attr_vector;     
+  cl_vector_t*              p_attr_vector;
   cl_status_t               status;
   cl_disp_msgid_t           msg_id = CL_DISP_MSGID_NONE;
   cl_disp_reg_handle_t      h_disp = CL_DISP_INVALID_HANDLE;
@@ -208,7 +208,7 @@ __ibis_gsi_mad_ctrl_process(
     osm_log( p_ctrl->p_log, OSM_LOG_ERROR,
              "__ibis_gsi_mad_ctrl_process: ERR : "
              "Failed to find matching class.\n");
-     
+
     osm_mad_pool_put( p_ctrl->p_mad_pool, p_madw );
     goto Exit;
   }
@@ -227,7 +227,7 @@ __ibis_gsi_mad_ctrl_process(
              "Failed to find matching attribute:%x class:%x.\n",
              cl_ntoh16(p_mad->attr_id),mgmt_class
              );
-     
+
     osm_mad_pool_put( p_ctrl->p_mad_pool, p_madw );
     goto Exit;
   }
@@ -259,7 +259,7 @@ __ibis_gsi_mad_ctrl_process(
              "__ibis_gsi_mad_ctrl_process: ERR : "
              "Dispatcher post message failed (%s).\n",
              CL_STATUS_MSG( status ) );
-     
+
     osm_mad_pool_put( p_ctrl->p_mad_pool, p_madw );
     goto Exit;
   }
@@ -303,7 +303,7 @@ __ibis_gsi_mad_ctrl_rcv_callback(
   p_mad = osm_madw_get_mad_ptr( p_madw );
 
   __ibis_gsi_mad_ctrl_process( p_ctrl, p_madw );
-  
+
   if (p_req_madw)
   {
     osm_mad_pool_put( p_ctrl->p_mad_pool, p_req_madw );
@@ -380,7 +380,7 @@ typedef struct _ibis_gsi_mad_batch_context
  *
  *  p_ctrl
  *     The pointer to the manager so we can log etc.
- *   
+ *
  *  id
  *     A unique id used to track the context activity and
  *     during mad receives.
@@ -513,9 +513,9 @@ __gsi_delete_mad_batch_context(
     /* need to cleanup the allocated event and lock */
     cl_event_destroy(&p_batch_ctx->wait_for_resp);
     cl_spinlock_destroy(&p_batch_ctx->lock);
-  
+
     memset(p_batch_ctx, 0, sizeof(ibis_gsi_mad_batch_context_t));
-  
+
     /* finally */
     free(p_batch_ctx);
   }
@@ -732,7 +732,7 @@ ibis_gsi_mad_ctrl_set_class_attr_cb(
   if (size <= mad_class)
   {
     cl_status = cl_vector_set_size(&p_ctrl->class_vector,mad_class);
-  
+
     if( cl_status != CL_SUCCESS)
     {
       osm_log(p_ctrl->p_log, OSM_LOG_ERROR,
@@ -841,22 +841,22 @@ ibis_gsi_sync_mad_batch_callback(
     uint8_t  *p_result;
     ib_mad_t *p_mad;
     OSM_LOG_ENTER(p_ctrl->p_log);
-  
+
     /* obtain the lock */
     cl_spinlock_acquire(&p_batch_ctx->lock);
 
     /* no need for the global lock since we got a lock on the context */
     cl_spinlock_release(&g_ibis_batch_contexts_map_lock);
-  
+
     /* ignore non GET RESP mads */
     if (!p_madw->p_mad || p_madw->p_mad->method != IB_MAD_METHOD_GET_RESP)
     {
       osm_log(p_ctrl->p_log, OSM_LOG_DEBUG,
               "ibis_gsi_sync_mad_batch_callback: "
               "Ignoring non GetResp\n");
-      // goto Exit;  
+      // goto Exit;
     }
-  
+
     /* the size of each result is known so we simply use the buffer */
     if (p_batch_ctx->res_arr)
     {
@@ -864,11 +864,11 @@ ibis_gsi_sync_mad_batch_callback(
       p_mad = (ib_mad_t*)p_result;
     }
     else
-    {   
+    {
       /* some mads do not require a result ... */
       p_result = NULL;
     }
-  
+
     /* make sure we did not already got this mad */
     if (p_madw->p_mad && p_madw->p_mad->method != IB_MAD_METHOD_GET_RESP)
     {
@@ -883,7 +883,7 @@ ibis_gsi_sync_mad_batch_callback(
       if (p_result && p_madw->p_mad)
         memcpy(p_result, p_madw->p_mad, p_batch_ctx->res_size);
     }
-  
+
     /* decrement the number of outstanding mads */
     /* NOTE: MADS that failed on timeout will be return with A GET/SET method */
 
@@ -892,12 +892,12 @@ ibis_gsi_sync_mad_batch_callback(
       printf("ERROR: Got a MAD after the outstanding is 0!\n");
     }
     p_batch_ctx->num_outstanding--;
-  
+
     osm_log(p_ctrl->p_log, OSM_LOG_DEBUG,
             "ibis_gsi_sync_mad_batch_callback: "
             "Updated MAD Index:%u Num Outstanding 0x%u\n",
             p_madw_ctx->idx, p_batch_ctx->num_outstanding);
-  
+
     if ((p_batch_ctx->num_outstanding == 0) && p_batch_ctx->all_sent)
     {
       /* Signal for the waiter we have got all data */
@@ -995,7 +995,7 @@ ibis_gsi_send_sync_mad_batch(
 
   /*
     Wait for all mads to retire:
-   
+
     NOTE:
     we can block forever since the mads are sent with
     a timeout etc. So we should always get out eventually

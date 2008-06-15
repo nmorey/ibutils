@@ -36,7 +36,7 @@
  * This file holds an extended implementation for SWIG TCL Objects.
  * The idea is to provide a generic interface for introducing new object
  * types and providing a nicer object mangling for them.
- * 
+ *
  */
 
 /*
@@ -61,7 +61,7 @@ cl_map_t SWIG_AltMnglTypeToPrefix;
  * obj num to object mapping.
  * Object numbers will be allocated sequentialy
  */
- 
+
 static long int SWIG_AltMnglObjIdx = 0;
 static cl_map_t SWIG_AltMnglTypeByPtr;
 static cl_map_t SWIG_AltMnglIdxByPtr;
@@ -95,10 +95,10 @@ int SWIG_AltMnglRegObj(char * type, void * ptr) {
   cl_map_t *p_typeByPtrMap = &(SWIG_AltMnglTypeByPtr);
   char *p_type;
   uint64_t key;
- 
+
   /* convert the ptr into a key */
   ptr_to_key(ptr, &key);
- 
+
   /* is such a pointer already registered */
   if ((p_type = (char *)cl_map_get(p_typeByPtrMap, key)))
   {
@@ -106,7 +106,7 @@ int SWIG_AltMnglRegObj(char * type, void * ptr) {
            p_type, ptr);
     return 1;
   }
- 
+
   // printf("-V- Registering type:%s ptr:%p.\n", type, ptr);
   /* advance our objects counter */
   SWIG_AltMnglObjIdx++;
@@ -119,19 +119,19 @@ int SWIG_AltMnglRegObj(char * type, void * ptr) {
 
 /* Remove an objects from the Maps */
 int SWIG_AltMnglUnregObj( void * ptr) {
- 
+
   uint64_t key;
   unsigned long int idx;
 
   /* convert the ptr into a key */
   ptr_to_key(ptr, &key);
- 
+
   /* is such a pointer already registered for a type? */
   if (!cl_map_remove(&(SWIG_AltMnglTypeByPtr), key))
   {
     printf("-W- Fail to find object type for ptr:%p.\n", ptr);
   }
- 
+
   /* but we must know it's idx ! */
   if (! (idx = (unsigned long int)cl_map_remove(&(SWIG_AltMnglIdxByPtr), key)))
   {
@@ -155,7 +155,7 @@ int SWIG_AltMnglGetObjNameByPtr(Tcl_Obj *objPt, char *p_expType, void * ptr) {
   unsigned long int idx;
   char *p_type;
   uint64_t key;
- 
+
   ptr_to_key(ptr, &key);
 
   /* first get the idx */
@@ -193,18 +193,18 @@ int SWIG_AltMnglGetObjPtrByName(Tcl_Obj *objPtr, void **ptr) {
   char *colonIdx;
   char *idStr;
   unsigned long int idx;
- 
+
   /* Format for the objects is always <type>:<idx> */
   strcpy(buf, Tcl_GetStringFromObj(objPtr,0));
   colonIdx = index(buf,':');
   idStr = colonIdx + 1;
- 
+
   if (!colonIdx)
   {
     sprintf(ibis_tcl_error_msg,"-E- Bad formatted object:%s\n", buf);
     return TCL_ERROR;
   }
- 
+
   *colonIdx = '\0';
 
   /* we can count on the object idx for the ptr */
@@ -215,14 +215,14 @@ int SWIG_AltMnglGetObjPtrByName(Tcl_Obj *objPtr, void **ptr) {
     printf("-E- fail to find object by idx:%lu\n", idx);
     return TCL_ERROR;
   }
- 
+
   return TCL_OK;
 }
 
 /* Register a SWIG type to Object Prefix */
 void SWIG_AltMnglRegTypeToPrefix (char *swig_type, char *objNamePrefix) {
   uint64_t type_key;
- 
+
   strToUInt64(swig_type, &type_key);
   cl_map_insert(&SWIG_AltMnglTypeToPrefix, type_key, (void *)objNamePrefix);
 }
@@ -233,12 +233,12 @@ int SWIG_AltMnglInit(void) {
   cl_map_construct(&SWIG_AltMnglTypeToPrefix);
   cl_map_construct(&SWIG_AltMnglTypeByPtr);
   cl_map_construct(&SWIG_AltMnglIdxByPtr);
-  cl_map_construct(&SWIG_AltMnglPtrByIdx);     
- 
+  cl_map_construct(&SWIG_AltMnglPtrByIdx);
+
   cl_map_init(&SWIG_AltMnglTypeToPrefix,10);
-  cl_map_init(&SWIG_AltMnglTypeByPtr,20); 
-  cl_map_init(&SWIG_AltMnglIdxByPtr,20);  
-  cl_map_init(&SWIG_AltMnglPtrByIdx,20);     
+  cl_map_init(&SWIG_AltMnglTypeByPtr,20);
+  cl_map_init(&SWIG_AltMnglIdxByPtr,20);
+  cl_map_init(&SWIG_AltMnglPtrByIdx,20);
   return 0;
 }
 
@@ -269,7 +269,7 @@ void SWIG_SetPointerObj(Tcl_Obj *objPtr, void *_ptr, char *type) {
   char _temp[20], *_c;
   char *p_type;
   uint64_t type_key;
- 
+
   /* only if this type was pre-registered as SWIG Alt Mangling */
   strToUInt64(type, &type_key);
   //  printf("Looking for key:%s\n", type);
@@ -281,7 +281,7 @@ void SWIG_SetPointerObj(Tcl_Obj *objPtr, void *_ptr, char *type) {
     {
       printf("-E- Fail to convert object %p to %s obj.\n", _ptr, type);
     }
-    return; 
+    return;
   }
 
   memset(_result, 0,20);
@@ -386,10 +386,10 @@ char *SWIG_GetPointerObj(Tcl_Interp *interp, Tcl_Obj *objPtr, void **ptr, char *
               SwigStart[i-1] = SwigStart[i];
           }
           SwigPtrSort = 1;
-          for (i = 0; i < SWIG_CACHESIZE; i++) 
+          for (i = 0; i < SWIG_CACHESIZE; i++)
             SwigCache[i].stat = 0;
         }
-    
+
         /* First check cache for matches.  Uses last cache value as starting point */
         cache = &SwigCache[SwigLastCache];
         for (i = 0; i < SWIG_CACHESIZE; i++) {
@@ -439,13 +439,13 @@ char *SWIG_GetPointerObj(Tcl_Interp *interp, Tcl_Obj *objPtr, void **ptr, char *
               strncat(temp_type,_t+len,255-tp->len);
               if (strcmp(_c,temp_type) == 0)
               {
-       
+
                 strcpy(SwigCache[SwigCacheIndex].mapped,_c);
                 strcpy(SwigCache[SwigCacheIndex].name,_t);
                 SwigCache[SwigCacheIndex].stat = 1;
                 SwigCache[SwigCacheIndex].tp = tp;
                 SwigCacheIndex = SwigCacheIndex & SWIG_CACHEMASK;
-       
+
                 /* Get pointer value */
                 *ptr = (void *) _p;
                 if (tp->cast) *ptr = (*(tp->cast))(*ptr);
@@ -457,7 +457,7 @@ char *SWIG_GetPointerObj(Tcl_Interp *interp, Tcl_Obj *objPtr, void **ptr, char *
             /* Hmmm. Didn't find it this time */
           }
         }
-        /* Didn't find any sort of match for this data. 
+        /* Didn't find any sort of match for this data.
            Get the pointer value and return the received type */
         *ptr = (void *) _p;
         return _c;

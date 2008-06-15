@@ -1,22 +1,22 @@
-# This is the checker for that setup a network with OpenSM and then calls 
+# This is the checker for that setup a network with OpenSM and then calls
 # the ibdiag on the full fabric
 # Intended to run with a set of sim flows - each causing some other errors
 
 ##############################################################################
-# 
+#
 # Start up the test applications
 # This is the default flow that will start OpenSM only in 0x43 verbosity
 # Return a list of process ids it started (to be killed on exit)
 #
-proc runner {simDir osmPath osmPortGuid} { 
+proc runner {simDir osmPath osmPortGuid} {
    set osmStdOutLog [file join $simDir osm.stdout.log]
    set osmLog [file join $simDir osm.log]
    puts "-I- Starting: $osmPath -V -s 0 -g $osmPortGuid ..."
    set osmPid [exec $osmPath -d2 -V -s 0 -f $osmLog -g $osmPortGuid > $osmStdOutLog &]
-   
+
    # start a tracker on the log file and process:
    startOsmLogAnalyzer $osmLog
-     
+
    return $osmPid
 }
 
@@ -51,7 +51,7 @@ proc checker {simDir osmPath osmPortGuid} {
    puts $simCtrlSock "verifyDiagRes \$fabric $ibdiagnetLog"
    set res [gets $simCtrlSock]
    puts "SIM: $res"
-   if {$res == 0} {return 0} 
+   if {$res == 0} {return 0}
 
    # make sure directory is not remoevd
    return 1

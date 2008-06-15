@@ -43,7 +43,7 @@ SUBDIRS                 = ibis ibdm ibdiag $(IBMGTSIMDIR)
 DIST_SUBDIRS            = ibis ibdm ibdiag $(IBMGTSIMDIR)
 
 # this will control the update of the files in order
-MAINTAINERCLEANFILES = Makefile.in aclocal.m4 configure config-h.in 
+MAINTAINERCLEANFILES = Makefile.in aclocal.m4 configure config-h.in
 
 ACLOCAL			= aclocal -I $(ac_aux_dir)
 
@@ -53,5 +53,5 @@ dist-hook: ibutils.spec
 	cp ibutils.spec $(distdir)
 
 #dist-hook:
-#	cd $(distdir) 
+#	cd $(distdir)
 #	cp -rf $(top_srcdir)/Clusters Clusters

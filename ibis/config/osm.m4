@@ -2,7 +2,7 @@
 dnl osm.m4: an autoconf for OpenSM (vendor and complib) reference
 dnl
 dnl
-dnl To use this macro, just do OPENIB_APP_OSM.  
+dnl To use this macro, just do OPENIB_APP_OSM.
 dnl The following variables are defined:
 dnl with-osm - the osm installation prefix
 dnl OSM_CFLAGS - CFLAGS additions required (-I and debug )
@@ -26,8 +26,8 @@ dnl * if the user did define where opensm is look for it in "standard" places
 dnl * if can not be found - ask the user for --with-osm
 dnl * figure out if OpenSM was compiles in debug mode or not
 dnl
-dnl As we might have an OpenSM installation of IBGD or OpenIB and 
-dnl different vendors too we need to use some heuristics for 
+dnl As we might have an OpenSM installation of IBGD or OpenIB and
+dnl different vendors too we need to use some heuristics for
 dnl figuring out the type of both STACK and VENDOR.
 dnl Heuristics is:
 dnl
@@ -50,10 +50,10 @@ dnl  if $with_osm/lib/osmvendor.so -> openib
 dnl if gen1 build
 dnl  if $with_osm/lib/osmsvc_ts.so -> ts
 dnl  if $with_osm/lib/osmsvc_mtl.so -> mtl
-dnl  if $with_osm/lib/osmsvc_sim.so -> sim 
+dnl  if $with_osm/lib/osmsvc_sim.so -> sim
 dnl ----------------------------------------------------------------
 
-dnl Define a way for the user to provide path to OpenSM 
+dnl Define a way for the user to provide path to OpenSM
 AC_ARG_WITH(osm,
 [  --with-osm=<dir> define OSM prefix],
 AC_MSG_NOTICE(Using OSM from:$with_osm),
@@ -69,7 +69,7 @@ osm_lib_dir="none"
 
 if test "x$libcheck" = "xtrue"; then
    dnl if the user did not provide --with-osm look for it in reasonable places
-   if test "x$with_osm" = xnone; then 
+   if test "x$with_osm" = xnone; then
       if test -d /usr/local/ibgd/apps/osm; then
          with_osm=/usr/local/ibgd/apps/osm
       elif test -d /usr/mellanox/osm; then
@@ -92,20 +92,20 @@ if test "x$libcheck" = "xtrue"; then
       fi
    fi
    AC_MSG_NOTICE(OSM: used from $with_osm)
-   
+
    if test "x$with_osm_libs" = "xnone"; then
    dnl if the user did not provide --with-osm-libs then look for it based on $with_osm
-      if (test -f $with_osm/lib64/libosmvendor_gen1.so || 
-			 test -f $with_osm/lib64/libosmvendor_vapi.so || 
-       	 test -f $with_osm/lib64/libopensm.so         || 
+      if (test -f $with_osm/lib64/libosmvendor_gen1.so ||
+			 test -f $with_osm/lib64/libosmvendor_vapi.so ||
+       	 test -f $with_osm/lib64/libopensm.so         ||
 			 test -f $with_osm/lib64/libosmvendor_sim.so); then
          osm_lib_dir=lib64
       else
          osm_lib_dir=lib
       fi
    fi
-   with_osm_libs=$with_osm/$osm_lib_dir        
-   
+   with_osm_libs=$with_osm/$osm_lib_dir
+
    dnl check what build we have gen1 or gen2
    if test -d $with_osm/include/infiniband; then
       OSM_BUILD=openib
@@ -113,15 +113,15 @@ if test "x$libcheck" = "xtrue"; then
       OSM_BUILD=gen1
    fi
    AC_MSG_NOTICE(OSM: build type $OSM_BUILD)
-   
+
    OSM_LDFLAGS="-Wl,-rpath -Wl,$with_osm_libs -L$with_osm_libs"
-   dnl based on the with_osm dir and the libs available 
+   dnl based on the with_osm dir and the libs available
    dnl we can try and decide what vendor was used:
    if test $OSM_BUILD = openib; then
       dnl it is an OpenIB based build but can be any vendor too.
       osm_include_dir="$with_osm/include/infiniband"
       osm_extra_includes="-I$with_osm/include"
-   
+
       if test -L $with_osm_libs/libosmvendor_gen1.so; then
          OSM_VENDOR=ts
          osm_vendor_sel="-DOSM_VENDOR_INTF_TS"
@@ -145,14 +145,14 @@ if test "x$libcheck" = "xtrue"; then
    else
       # we are in gen1 build
       osm_include_dir="$with_osm/include"
-   
+
       if test -L $with_osm_libs/libosmsvc_ts.so; then
          OSM_VENDOR=ts
          OSM_LDFLAGS="$OSM_LDFLAGS -losmsvc_ts -lcomplib"
          osm_vendor_sel="-DOSM_VENDOR_INTF_TS"
       elif test -L $with_osm_libs/libosmsvc_mtl.so; then
          OSM_VENDOR=mtl
-         OSM_LDFLAGS="$OSM_LDFLAGS -losmsvc_mtl -lcomplib -lvapi -lib_mgt" 
+         OSM_LDFLAGS="$OSM_LDFLAGS -losmsvc_mtl -lcomplib -lvapi -lib_mgt"
          osm_vendor_sel="-DOSM_VENDOR_INTF_MTL"
       elif test -L $with_osm_libs/libosmsvc_sim.so; then
          OSM_VENDOR=sim
@@ -163,12 +163,12 @@ if test "x$libcheck" = "xtrue"; then
       fi
    fi
    AC_MSG_NOTICE(OSM: vendor type $OSM_VENDOR)
-   
-   
+
+
    dnl validate the defined path - so the build id header is there
    AC_CHECK_FILE($osm_include_dir/opensm/osm_build_id.h,,
       AC_MSG_ERROR([OSM: could not find $with_osm/include/opensm/osm_build_id.h]))
-   
+
    dnl now figure out somehow if the build was for debug or not
    if test `grep debug $osm_include_dir/opensm/osm_build_id.h | wc -l` = 1; then
       dnl why did they need so many ???
@@ -177,7 +177,7 @@ if test "x$libcheck" = "xtrue"; then
    else
       osm_debug_flags=
    fi
-   
+
    OSM_CFLAGS="-I$osm_include_dir $osm_extra_includes $osm_debug_flags $osm_vendor_sel -D_XOPEN_SOURCE=600 -D_BSD_SOURCE=1"
 else
    dnl dummy values
@@ -187,7 +187,7 @@ else
    OSM_VEDNOR=disabled
    OSM_BUILD=disabled
 fi
-   
+
 AM_CONDITIONAL(OSM_VENDOR_TS, test "x$OSM_VENDOR" = xts)
 AM_CONDITIONAL(OSM_VENDOR_MTL, test "x$OSM_VENDOR" = xmtl)
 AM_CONDITIONAL(OSM_VENDOR_SIM, test "x$OSM_VENDOR" = xsim)

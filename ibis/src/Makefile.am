@@ -48,13 +48,13 @@ AM_CXXFLAGS = $(TCL_CPPFLAGS) $(OSM_CFLAGS) $(DBG) -fno-strict-aliasing -fPIC  -
 # ibis shared library version triplet is:
 # API_ID:API_VER:NUM_PREV_API_SUP = x:y:z
 # * change of API_ID means new API
-# * change of AGE means how many API backward compt 
+# * change of AGE means how many API backward compt
 # * change of API_VER is required every version
 # Results with SO version: x-z:z:y
 LIB_VER_TRIPLET="1:0:0"
 LIB_FILE_TRIPLET=1.0.0
 
-lib_LTLIBRARIES = libibiscom.la libibis.la 
+lib_LTLIBRARIES = libibiscom.la libibis.la
 
 libibiscom_la_SOURCES = ibbbm.c ibcr.c	ibis.c ibis_gsi_mad_ctrl.c \
 	ibpm.c ibsac.c ibsm.c ibvs.c
@@ -74,9 +74,9 @@ LDADD = $(OSM_LDFLAGS)
 
 ibis_SOURCES = ibissh_wrap.cpp
 
-ibis_LDFLAGS = -static 
+ibis_LDFLAGS = -static
 # note the order of the libraries does matter as we static link
-ibis_LDADD = -libiscom $(OSM_LDFLAGS) $(TCL_LIBS) 
+ibis_LDADD = -libiscom $(OSM_LDFLAGS) $(TCL_LIBS)
 
 
 # SWIG FILES:
@@ -156,7 +156,7 @@ EXTRA_DIST = swig_extended_obj.c fixSwigWrapper pkgIndex.tcl \
 install-libLTLIBRARIES:
 
 # this actually over write the lib install
-install-exec-am: install-binPROGRAMS 
+install-exec-am: install-binPROGRAMS
 	mkdir -p $(DESTDIR)/$(libdir)/ibis$(VERSION)
 	cp .libs/libibis.so.$(LIB_FILE_TRIPLET) $(DESTDIR)/$(libdir)/ibis$(VERSION)/libibis.so.$(VERSION)
 	sed 's/%VERSION%/'$(VERSION)'/g' $(srcdir)/pkgIndex.tcl > $(DESTDIR)/$(libdir)/ibis$(VERSION)/pkgIndex.tcl

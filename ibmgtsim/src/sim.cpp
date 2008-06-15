@@ -46,11 +46,11 @@
 // CLASS  IBMgtSim
 //
 
-char *IBMgtSim::getSimulatorDir() 
+char *IBMgtSim::getSimulatorDir()
 {
   static char *ibmgtSimDir = NULL;
   static char *defaultIbmgtSimDir = "/tmp/ibmgtsim";
-  
+
   if (ibmgtSimDir == NULL)
   {
     ibmgtSimDir = getenv("IBMGTSIM_DIR");
@@ -84,7 +84,7 @@ IBMgtSim::allocateFabricNodeGuids()
   MSGSND(msg1);
 
   uint64_t curGuid = 0x0002c90000000000ULL;
-  
+
   /* simply go over all nodes and allocate guids */
   for (map_str_pnode::iterator nI = pFabric->NodeByName.begin();
        nI != pFabric->NodeByName.end();
@@ -92,7 +92,7 @@ IBMgtSim::allocateFabricNodeGuids()
   {
     IBNode *pNode = (*nI).second;
     pNode->guid_set(++curGuid);
-    fprintf(dumpFile, "NODE   %s 0x%016" PRIx64 "\n", 
+    fprintf(dumpFile, "NODE   %s 0x%016" PRIx64 "\n",
             pNode->name.c_str(), pNode->guid_get());
 
     /* go over all ports of the node and assign guid */
@@ -101,26 +101,26 @@ IBMgtSim::allocateFabricNodeGuids()
       IBPort *pPort = pNode->getPort(pn);
       if (! pPort) continue;
 
-      if (pNode->type == IB_SW_NODE) 
+      if (pNode->type == IB_SW_NODE)
         pPort->guid_set(curGuid);
       else
       {
         pPort->guid_set(++curGuid);
-        fprintf(dumpFile, "PORT   %s 0x%016" PRIx64 "\n", 
+        fprintf(dumpFile, "PORT   %s 0x%016" PRIx64 "\n",
                 pPort->getName().c_str(), pPort->guid_get());
       }
 
     }
-    
+
     /* assign system guids by first one */
     IBSystem *pSystem = pNode->p_system;
-    if (pSystem && (pSystem->guid_get() == 0)) 
+    if (pSystem && (pSystem->guid_get() == 0))
     {
       pSystem->guid_set(++curGuid);
       fprintf(dumpFile, "SYSTEM %s 0x%016" PRIx64 "\n",
               pSystem->name.c_str(), pSystem->guid_get());
     }
-    
+
   } // all nodes
   fclose(dumpFile);
 
@@ -128,7 +128,7 @@ IBMgtSim::allocateFabricNodeGuids()
 }
 
 /* initialize simulator nodes */
-int IBMgtSim::populateFabricNodes()  
+int IBMgtSim::populateFabricNodes()
 {
 
   MSGREG(msg1, 'I', "Populating Fabric Nodes ...", "server");
@@ -147,7 +147,7 @@ int IBMgtSim::populateFabricNodes()
     smClassList.push_back(0x1);
     smClassList.push_back(0x81);
     IBMSSma *pSma = new IBMSSma(pSimNode, smClassList);
-    if (! pSma) 
+    if (! pSma)
     {
       MSGREG(err1, 'F', "Fail to allocate SMA for Node:$", "server");
       MSGSND(err1, pNode->name);
@@ -158,7 +158,7 @@ int IBMgtSim::populateFabricNodes()
     vsClassList.push_back(0x9);
     vsClassList.push_back(0x10);
     IBMSVendorSpecific *pVsa = new IBMSVendorSpecific(pSimNode, vsClassList);
-    if (! pVsa) 
+    if (! pVsa)
     {
       MSGREG(err2, 'F', "Fail to allocate VSA for Node:$", "server");
       MSGSND(err2, pNode->name);
@@ -166,14 +166,14 @@ int IBMgtSim::populateFabricNodes()
     }
 
     IBMSPma *pPma = new IBMSPma(pSimNode, 0x04);
-    if (! pPma) 
+    if (! pPma)
     {
 	MSGREG(err3, 'F', "Fail to allocate PMA for Node:$", "server");
 	MSGSND(err3, pNode->name);
 	exit(1);
     }
   }
-  
+
   return 0;
 }
 
@@ -198,25 +198,25 @@ int IBMgtSim::init(string topoFileName, int serverPortNum, int numWorkers)
   int trys = 0;
   do {
     pServer = new IBMSServer(this, serverPortNum++);
-    
-    if (pServer->isAlive()) 
+
+    if (pServer->isAlive())
       break;
     else
       delete pServer;
-    
+
   } while (trys++ < 10);
-  
+
   if (!pServer->isAlive())
     return 1;
-  
+
   pDispatcher = new IBMSDispatcher(numWorkers, 50, 10);
-  
+
   return 0;
 }
 
 //////////////////////////////////////////////////////////////
 //
-static char IBMgtSimUsage[] = 
+static char IBMgtSimUsage[] =
 "Usage: ibmgtsim [-vh] -t <topology file> [-p <server port>][-w <num workers>]";
 
 void
@@ -224,7 +224,7 @@ show_usage() {
   cout << IBMgtSimUsage << endl;
 }
 
-void 
+void
 show_help() {
   cout << "HELP" << endl;
 }
@@ -240,12 +240,12 @@ const char * ibmsSourceVersion = IBMGTSIM_CODE_VERSION ;
 //
 
 #ifdef BUILD_STANDALONE_SIM
-int main(int argc, char **argv) 
+int main(int argc, char **argv)
 {
   /*
-   * Parsing of Command Line 
+   * Parsing of Command Line
    */
-  
+
   string TopoFile = string("");
   int numWorkers = 5;
   int serverPortNum = 42561;
@@ -302,7 +302,7 @@ int main(int argc, char **argv)
 		numWorkers = atoi(optarg);
       printf(" Initializing %u mad dispatcher threads.\n", numWorkers);
 		break;
-      
+
 	 case 't':
 		/*
 		  Specifies Subnet Cabling file
@@ -335,10 +335,10 @@ int main(int argc, char **argv)
   msgMgr(verbosity, &cout);
 
   IBMgtSim sim;
-  
+
   sim.init(TopoFile, serverPortNum, numWorkers);
-  
-  while (1) 
+
+  while (1)
     sleep(1000);
 
   return 0;

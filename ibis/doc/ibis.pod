@@ -15,7 +15,7 @@ The following sub sections provide detailed definition for the API and global ob
 
 =head1 IBIS Constants
 
-These constants are provided by IBIS: 
+These constants are provided by IBIS:
 
 =head2 Log Verbosity Flags
 
@@ -45,35 +45,35 @@ They all return 0 on succes.
 
 Return the list of available IB ports with GUID, LID, state and port number.
 
-=item [ returns int  ] ibis_init 
+=item [ returns int  ] ibis_init
 
-Initialize ibis object   
-        
-=item [ returns int  ] ibis_set_verbosity level 
+Initialize ibis object
 
-Change the log verbosity   
-        
-=item [ returns int  ] ibis_set_port guid 
+=item [ returns int  ] ibis_set_verbosity level
+
+Change the log verbosity
+
+=item [ returns int  ] ibis_set_port guid
 
 Set the port IBIS is attached to and initialize all sub packages.
 Must be called once during ibis operation.
-        
-=item [ returns new_uint64_t  ] ibis_get_port 
 
-Provide the GUID of the port IBIS is attached to   
-        
-=item [ returns int  ] ibis_set_transaction_timeout timeout_ms 
+=item [ returns new_uint64_t  ] ibis_get_port
 
-Set the transaction time out in [msec]   
-        
-=item [ returns int  ] ibis_exit 
+Provide the GUID of the port IBIS is attached to
 
-Exit IBIS.   
-        
-=item [ returns int  ] ibis_puts verbosity msg 
+=item [ returns int  ] ibis_set_transaction_timeout timeout_ms
 
-Appends a message to the OpenSM log   
-        
+Set the transaction time out in [msec]
+
+=item [ returns int  ] ibis_exit
+
+Exit IBIS.
+
+=item [ returns int  ] ibis_puts verbosity msg
+
+Appends a message to the OpenSM log
+
 =back 4
 
 =head2 IBIS Options Object
@@ -83,42 +83,42 @@ Appends a message to the OpenSM log
 
 The IBIS options are available through the predefined object: ibis_opts.
 It can be manipulated using the standard Tcl methods: cget and configure.
-Examples: 
+Examples:
 
    ibis_opts cget -force_log_flush
 
-   ibis_opts configure -force_log_flush TRUE   
+   ibis_opts configure -force_log_flush TRUE
 
 The following are the different options that can be configured:
 
 =item [ Member data: returns boolean_t * ] -single_thread
 
-Run single threaded   
-        
+Run single threaded
+
 =item [ Member data: returns boolean_t * ] -force_log_flush
 
-If TRUE - forces flash after each log message (TRUE).   
-        
+If TRUE - forces flash after each log message (TRUE).
+
 =item [ Member data: returns uint8_t * ] -log_flags
 
-The log levels to be used   
-        
+The log levels to be used
+
 =item [ Member data: returns char * ] -log_file
 
 The name of the log file to be used.Must be configured before B<ibis_init>
 is used to make an affect
-        
+
 =item [ Member data: returns uint64_t * ] -sm_key
 
-The SM_Key to be used when sending SubnetMgt and SubnetAdmin MADs   
-        
+The SM_Key to be used when sending SubnetMgt and SubnetAdmin MADs
+
 =item [ Member data: returns uint64_t * ] -m_key
 
-The M_Key to be used when sending SubnetMgt   
-        
+The M_Key to be used when sending SubnetMgt
+
 =item [ Member data: returns uint64_t * ] -v_key
 
-The Vendor Key to be used when sending Vendor Specific MADs.   
+The Vendor Key to be used when sending Vendor Specific MADs.
 
 =head1 IBPM
 
@@ -131,11 +131,11 @@ They all return 0 on succes.
 
 Obtain the maximal number of parallel queries that can be sent
 
-=item [ returns int  ] pmGetPortCounters lid port_select 
+=item [ returns int  ] pmGetPortCounters lid port_select
 
 Send a "PortCounters" query to teh given LID and port
 
-=item [ returns int  ] pmGetPortCountersMulti num lid_list port_select_list 
+=item [ returns int  ] pmGetPortCountersMulti num lid_list port_select_list
 
 Send a batch of "PortCounters" queries to the given list of LIDs and ports.
 num - defines the number of elements in each list.
@@ -149,12 +149,12 @@ num - defines the number of elements in each list.
 
 Sends a command to "clear all counters" on the given LID and port
 
-=item [ returns int  ] pmClrAllCountersMulti num lid_list port_select_list 
+=item [ returns int  ] pmClrAllCountersMulti num lid_list port_select_list
 
 Send a batch of "clear all counters" commands to the given list of LIDs and ports.
 num - defines the number of elements in each list.
 
-=head1 IBSAC 
+=head1 IBSAC
 
 IBSAC stands for IB Subnet Administrator (SA) Client. It provide means to query the SA for information about the various objects it manages
 
@@ -168,22 +168,22 @@ The following sections describe the concepts behind the SAC interface and then p
 
 
 IBSAC uses predefined global objects to facilitate SA Queries.
-Such objects are named sac<Attribute>Query. Each such object 
+Such objects are named sac<Attribute>Query. Each such object
 exposes a standard set of methods:
 
 =item dump
 
 dump out all fields and values for the obejct
 
-=item cget -<field>: 
+=item cget -<field>:
 
 obtain the value of the given field
 
-=item configure -<field> <value>: 
+=item configure -<field> <value>:
 
 set the field value
 
-=item get <comp mask>: 
+=item get <comp mask>:
 
 query the SA for one record using the component mask and field values as set on the query object
 
@@ -209,11 +209,11 @@ Each query returns a list (or one) identifiers (pointers) for objects. There ide
 
 Queries embedding Subnet Management Attributes:
 
-=item ni:<idx>   = node info 
+=item ni:<idx>   = node info
 
 =item nr:<idx>   = node info record (SA RID + node info)
 
-=item pi:<idx>   = port info 
+=item pi:<idx>   = port info
 
 =item pir:<idx>  = port info record (SA RID + port info)
 
@@ -225,7 +225,7 @@ Queries embedding Subnet Management Attributes:
 
 =item swir:<idx> = switch info record (SA RID + switch info)
 
-=item slvt:<idx> = SL to VL table 
+=item slvt:<idx> = SL to VL table
 
 =item slvr:<idx> = SL to VL table Record (SA RID + SL to VL table)
 
@@ -321,7 +321,7 @@ Fields:
 
 =item [ Member data: returns ib_net32_t * ] -port_num_vendor_id
 
-=item [ Member : returns void  ] delete 
+=item [ Member : returns void  ] delete
 
 ----
 
@@ -338,11 +338,11 @@ RID Fields:
 
 Methods:
 
-=item [ Member : returns char * ] get comp_mask 
+=item [ Member : returns char * ] get comp_mask
 
-=item [ Member : returns char * ] getTable comp_mask 
+=item [ Member : returns char * ] getTable comp_mask
 
-=item [ Member : returns void  ] delete 
+=item [ Member : returns void  ] delete
 
 
 =back 4
@@ -482,23 +482,23 @@ Fields:
 =item [ Member data: returns uint8_t * ] -state_info1
 
 LinkSpeedSupported and PortState
-        
+
 =item [ Member data: returns uint8_t * ] -state_info2
 
 PortPhysState and LinkDownDefaultState
-        
+
 =item [ Member data: returns uint8_t * ] -mkey_lmc
 
 =item [ Member data: returns uint8_t * ] -link_speed
 
 LinkSpeedEnabled and LinkSpeedActive
-        
+
 =item [ Member data: returns uint8_t * ] -mtu_smsl
 
 =item [ Member data: returns uint8_t * ] -vl_cap
 
 VlCap and InitType
-        
+
 =item [ Member data: returns uint8_t * ] -vl_high_limit
 
 =item [ Member data: returns uint8_t * ] -vl_arb_high_cap
@@ -525,7 +525,7 @@ VlCap and InitType
 
 =item [ Member data: returns uint8_t * ] -error_threshold
 
-=item [ Member : returns void  ] delete 
+=item [ Member : returns void  ] delete
 
 ----
 
@@ -542,11 +542,11 @@ RID Fields:
 
 Methods:
 
-=item [ Member : returns char * ] get comp_mask 
+=item [ Member : returns char * ] get comp_mask
 
-=item [ Member : returns char * ] getTable comp_mask 
+=item [ Member : returns char * ] getTable comp_mask
 
-=item [ Member : returns void  ] delete 
+=item [ Member : returns void  ] delete
 
 
 =back 4
@@ -585,7 +585,7 @@ Fields:
 
 =item [ Member data: returns uint8_t * ] -pri_state
 
-=item [ Member : returns void  ] delete 
+=item [ Member : returns void  ] delete
 
 ----
 
@@ -600,11 +600,11 @@ RID Fields:
 
 Methods:
 
-=item [ Member : returns char * ] get comp_mask 
+=item [ Member : returns char * ] get comp_mask
 
-=item [ Member : returns char * ] getTable comp_mask 
+=item [ Member : returns char * ] getTable comp_mask
 
-=item [ Member : returns void  ] delete 
+=item [ Member : returns void  ] delete
 
 
 =back 4
@@ -671,7 +671,7 @@ Fields:
 
 =item [ Member data: returns uint8_t * ] -flags
 
-=item [ Member : returns void  ] delete 
+=item [ Member : returns void  ] delete
 
 ----
 
@@ -686,11 +686,11 @@ RID Fields:
 
 Methods:
 
-=item [ Member : returns char * ] get comp_mask 
+=item [ Member : returns char * ] get comp_mask
 
-=item [ Member : returns char * ] getTable comp_mask 
+=item [ Member : returns char * ] getTable comp_mask
 
-=item [ Member : returns void  ] delete 
+=item [ Member : returns void  ] delete
 
 
 =back 4
@@ -728,11 +728,11 @@ Fields:
 
 Methods:
 
-=item [ Member : returns char * ] get comp_mask 
+=item [ Member : returns char * ] get comp_mask
 
-=item [ Member : returns char * ] getTable comp_mask 
+=item [ Member : returns char * ] getTable comp_mask
 
-=item [ Member : returns void  ] delete 
+=item [ Member : returns void  ] delete
 
 
 =back 4
@@ -819,11 +819,11 @@ Fields:
 
 Methds:
 
-=item [ Member : returns char * ] get comp_mask 
+=item [ Member : returns char * ] get comp_mask
 
-=item [ Member : returns char * ] getTable comp_mask 
+=item [ Member : returns char * ] getTable comp_mask
 
-=item [ Member : returns void  ] delete 
+=item [ Member : returns void  ] delete
 
 
 =back 4
@@ -855,11 +855,11 @@ Fields:
 
 Methods:
 
-=item [ Member : returns char * ] get comp_mask 
+=item [ Member : returns char * ] get comp_mask
 
-=item [ Member : returns char * ] getTable comp_mask 
+=item [ Member : returns char * ] getTable comp_mask
 
-=item [ Member : returns void  ] delete 
+=item [ Member : returns void  ] delete
 
 
 =back 4
@@ -940,24 +940,24 @@ Fields:
 
 
 Methods:
-        
-=item [ Member : returns char * ] get comp_mask 
 
-=item [ Member : returns char * ] getTable comp_mask 
+=item [ Member : returns char * ] get comp_mask
 
-=item [ Member : returns char * ] set comp_mask 
+=item [ Member : returns char * ] getTable comp_mask
 
-=item [ Member : returns char * ] del comp_mask 
+=item [ Member : returns char * ] set comp_mask
 
-=item [ Member : returns int  ] proxy_join_get 
+=item [ Member : returns char * ] del comp_mask
+
+=item [ Member : returns int  ] proxy_join_get
 
 Instead of simple field cget
 
-=item [ Member : returns void  ] proxy_join_set proxy_join 
+=item [ Member : returns void  ] proxy_join_set proxy_join
 
 Instead of simple field configure
 
-=item [ Member : returns void  ] obj_delete 
+=item [ Member : returns void  ] obj_delete
 
 Delete the object
 
@@ -1010,9 +1010,9 @@ Fields:
 
 Methods:
 
-=item [ Member : returns char * ] get 
+=item [ Member : returns char * ] get
 
-=item [ Member : returns void  ] delete 
+=item [ Member : returns void  ] delete
 
 
 =back 4
@@ -1050,9 +1050,9 @@ Fields:
 
 Methods:
 
-=item [ Member : returns char * ] set 
+=item [ Member : returns char * ] set
 
-=item [ Member : returns void  ] delete 
+=item [ Member : returns void  ] delete
 
 ----
 
@@ -1215,15 +1215,15 @@ Fields:
 
 Methods:
 
-=item [ Member : returns char * ] get comp_mask 
+=item [ Member : returns char * ] get comp_mask
 
-=item [ Member : returns char * ] set comp_mask 
+=item [ Member : returns char * ] set comp_mask
 
-=item [ Member : returns char * ] getTable comp_mask 
+=item [ Member : returns char * ] getTable comp_mask
 
-=item [ Member : returns char * ] delete comp_mask 
+=item [ Member : returns char * ] delete comp_mask
 
-=item [ Member : returns void  ] obj_delete 
+=item [ Member : returns void  ] obj_delete
 
 
 =back 4
@@ -1256,15 +1256,15 @@ RID Fields:
 =item [ Member data: returns ib_net16_t * ] -lid
 
 for CA: lid of port, for switch lid of port 0
-        
+
 =item [ Member data: returns uint8_t * ] -in_port_num
 
 reserved for CA's
-        
+
 =item [ Member data: returns uint8_t * ] -out_port_num
 
 reserved for CA's
-        
+
 =item [ Member data: returns uint32_t * ] -resv
 
 =item [ Member data: returns sacSlVlTbl * ] -slvl_tbl
@@ -1272,11 +1272,11 @@ reserved for CA's
 
 Methods:
 
-=item [ Member : returns char * ] get comp_mask 
+=item [ Member : returns char * ] get comp_mask
 
-=item [ Member : returns char * ] getTable comp_mask 
+=item [ Member : returns char * ] getTable comp_mask
 
-=item [ Member : returns void  ] delete 
+=item [ Member : returns void  ] delete
 
 
 =back 4
@@ -1304,7 +1304,7 @@ Fields:
 =item [ Member data: returns ib_net16_t * ] -lid
 
 for CA: lid of port, for switch lid of port 0
-        
+
 =item [ Member data: returns uint8_t * ] -port_num
 
 =item [ Member data: returns uint8_t * ] -block_num
@@ -1316,11 +1316,11 @@ for CA: lid of port, for switch lid of port 0
 
 Methods:
 
-=item [ Member : returns char * ] get comp_mask 
+=item [ Member : returns char * ] get comp_mask
 
-=item [ Member : returns char * ] getTable comp_mask 
+=item [ Member : returns char * ] getTable comp_mask
 
-=item [ Member : returns void  ] delete 
+=item [ Member : returns void  ] delete
 
 
 =back 4
@@ -1356,13 +1356,13 @@ RID Fields:
 =item [ Member data: returns ib_net16_t * ] -lid
 
 for CA: lid of port, for switch lid of port 0
-        
+
 =item [ Member data: returns uint16_t * ] -block_num
 
 =item [ Member data: returns uint8_t * ] -port_num
 
 for switch: port number, for CA: reserved
-        
+
 =item [ Member data: returns uint8_t * ] -reserved1
 
 =item [ Member data: returns uint16_t * ] -reserved2
@@ -1372,17 +1372,17 @@ for switch: port number, for CA: reserved
 
 Methods:
 
-=item [ Member : returns char * ] get comp_mask 
+=item [ Member : returns char * ] get comp_mask
 
-=item [ Member : returns char * ] getTable comp_mask 
+=item [ Member : returns char * ] getTable comp_mask
 
-=item [ Member : returns void  ] delete 
+=item [ Member : returns void  ] delete
 
 =head1 Subnet Management MADs (SMPs)
 
-The SM interface supports sending Subnet Management Packets to the fabric devices. The specific attributes that can be access is provided in detail in each sub section below. 
+The SM interface supports sending Subnet Management Packets to the fabric devices. The specific attributes that can be access is provided in detail in each sub section below.
 
-A set of object types is defined. The user can allocate a new attribute object. Then the object can be set using configure or the direct manipulation methods. 
+A set of object types is defined. The user can allocate a new attribute object. Then the object can be set using configure or the direct manipulation methods.
 Extra methods are provided for each object:
 =item setByDr <dr> <attrMod>
 
@@ -1436,13 +1436,13 @@ Fields:
 
 Methods:
 
-=item [ Member : returns int  ] getByDr dr 
+=item [ Member : returns int  ] getByDr dr
 
-=item [ Member : returns int  ] setByDr dr 
+=item [ Member : returns int  ] setByDr dr
 
-=item [ Member : returns int  ] getByLid lid 
+=item [ Member : returns int  ] getByLid lid
 
-=item [ Member : returns int  ] setByLid lid 
+=item [ Member : returns int  ] setByLid lid
 
 =head1 class smPortInfo
 
@@ -1474,23 +1474,23 @@ Fields:
 =item [ Member data: returns uint8_t * ] -state_info1
 
 LinkSpeedSupported and PortState
-        
+
 =item [ Member data: returns uint8_t * ] -state_info2
 
 PortPhysState and LinkDownDefaultState
-        
+
 =item [ Member data: returns uint8_t * ] -mkey_lmc
 
 =item [ Member data: returns uint8_t * ] -link_speed
 
 LinkSpeedEnabled and LinkSpeedActive
-        
+
 =item [ Member data: returns uint8_t * ] -mtu_smsl
 
 =item [ Member data: returns uint8_t * ] -vl_cap
 
 VlCap and InitType
-        
+
 =item [ Member data: returns uint8_t * ] -vl_high_limit
 
 =item [ Member data: returns uint8_t * ] -vl_arb_high_cap
@@ -1520,13 +1520,13 @@ VlCap and InitType
 
 Methods:
 
-=item [ Member : returns int  ] getByDr dr portNum 
+=item [ Member : returns int  ] getByDr dr portNum
 
-=item [ Member : returns int  ] setByDr dr portNum 
+=item [ Member : returns int  ] setByDr dr portNum
 
-=item [ Member : returns int  ] getByLid lid portNum 
+=item [ Member : returns int  ] getByLid lid portNum
 
-=item [ Member : returns int  ] setByLid lid portNum 
+=item [ Member : returns int  ] setByLid lid portNum
 
 
 =back 4
@@ -1558,13 +1558,13 @@ Methods:
 
 =item [ Member data: returns uint8_t * ] -flags
 
-=item [ Member : returns int  ] getByDr dr 
+=item [ Member : returns int  ] getByDr dr
 
-=item [ Member : returns int  ] setByDr dr 
+=item [ Member : returns int  ] setByDr dr
 
-=item [ Member : returns int  ] getByLid lid 
+=item [ Member : returns int  ] getByLid lid
 
-=item [ Member : returns int  ] setByLid lid 
+=item [ Member : returns int  ] setByLid lid
 
 
 =back 4
@@ -1576,13 +1576,13 @@ Methods:
 
 =item [ Member data: returns uint8_array_t * ] -lft
 
-=item [ Member : returns int  ] getByDr dr blockNum 
+=item [ Member : returns int  ] getByDr dr blockNum
 
-=item [ Member : returns int  ] setByDr dr blockNum 
+=item [ Member : returns int  ] setByDr dr blockNum
 
-=item [ Member : returns int  ] getByLid lid blockNum 
+=item [ Member : returns int  ] getByLid lid blockNum
 
-=item [ Member : returns int  ] setByLid lid blockNum 
+=item [ Member : returns int  ] setByLid lid blockNum
 
 
 =back 4
@@ -1594,13 +1594,13 @@ Methods:
 
 =item [ Member data: returns ib_net16_array_t * ] -mft
 
-=item [ Member : returns int  ] getByDr dr startLid startPort 
+=item [ Member : returns int  ] getByDr dr startLid startPort
 
-=item [ Member : returns int  ] setByDr dr startLid startPort 
+=item [ Member : returns int  ] setByDr dr startLid startPort
 
-=item [ Member : returns int  ] getByLid lid startLid startPort 
+=item [ Member : returns int  ] getByLid lid startLid startPort
 
-=item [ Member : returns int  ] setByLid lid startLid startPort 
+=item [ Member : returns int  ] setByLid lid startLid startPort
 
 
 =back 4
@@ -1612,13 +1612,13 @@ Methods:
 
 =item [ Member data: returns ib_net64_array_t * ] -guid
 
-=item [ Member : returns int  ] getByDr dr blockNum 
+=item [ Member : returns int  ] getByDr dr blockNum
 
-=item [ Member : returns int  ] setByDr dr blockNum 
+=item [ Member : returns int  ] setByDr dr blockNum
 
-=item [ Member : returns int  ] getByLid lid blockNum 
+=item [ Member : returns int  ] getByLid lid blockNum
 
-=item [ Member : returns int  ] setByLid lid blockNum 
+=item [ Member : returns int  ] setByLid lid blockNum
 
 
 =back 4
@@ -1630,13 +1630,13 @@ Methods:
 
 =item [ Member data: returns ib_net16_array_t * ] -pkey_entry
 
-=item [ Member : returns int  ] getByDr dr portNum blockNum 
+=item [ Member : returns int  ] getByDr dr portNum blockNum
 
-=item [ Member : returns int  ] setByDr dr portNum blockNum 
+=item [ Member : returns int  ] setByDr dr portNum blockNum
 
-=item [ Member : returns int  ] getByLid lid portNum blockNum 
+=item [ Member : returns int  ] getByLid lid portNum blockNum
 
-=item [ Member : returns int  ] setByLid lid portNum blockNum 
+=item [ Member : returns int  ] setByLid lid portNum blockNum
 
 
 =back 4
@@ -1648,13 +1648,13 @@ Methods:
 
 =item [ Member data: returns uint8_array_t * ] -raw_vl_by_sl
 
-=item [ Member : returns int  ] getByDr dr inPortNum outPortNum 
+=item [ Member : returns int  ] getByDr dr inPortNum outPortNum
 
-=item [ Member : returns int  ] setByDr dr inPortNum outPortNum 
+=item [ Member : returns int  ] setByDr dr inPortNum outPortNum
 
-=item [ Member : returns int  ] getByLid lid inPortNum outPortNum 
+=item [ Member : returns int  ] getByLid lid inPortNum outPortNum
 
-=item [ Member : returns int  ] setByLid lid inPortNum outPortNum 
+=item [ Member : returns int  ] setByLid lid inPortNum outPortNum
 
 
 =back 4
@@ -1666,13 +1666,13 @@ Methods:
 
 =item [ Member data: returns ib_vl_arb_element_t * ] -vl_entry
 
-=item [ Member : returns int  ] getByDr dr portNum block 
+=item [ Member : returns int  ] getByDr dr portNum block
 
-=item [ Member : returns int  ] setByDr dr portNum block 
+=item [ Member : returns int  ] setByDr dr portNum block
 
-=item [ Member : returns int  ] getByLid lid portNum block 
+=item [ Member : returns int  ] getByLid lid portNum block
 
-=item [ Member : returns int  ] setByLid lid portNum block 
+=item [ Member : returns int  ] setByLid lid portNum block
 
 
 =back 4
@@ -1684,13 +1684,13 @@ Methods:
 
 =item [ Member data: returns ibsm_node_desc_str_t * ] -description
 
-=item [ Member : returns int  ] getByDr dr 
+=item [ Member : returns int  ] getByDr dr
 
-=item [ Member : returns int  ] setByDr dr 
+=item [ Member : returns int  ] setByDr dr
 
-=item [ Member : returns int  ] getByLid lid 
+=item [ Member : returns int  ] getByLid lid
 
-=item [ Member : returns int  ] setByLid lid 
+=item [ Member : returns int  ] setByLid lid
 
 
 =back 4
@@ -1708,13 +1708,13 @@ Methods:
 
 =item [ Member data: returns uint8_t * ] -pri_state
 
-=item [ Member : returns int  ] getByDr dr 
+=item [ Member : returns int  ] getByDr dr
 
-=item [ Member : returns int  ] setByDr dr 
+=item [ Member : returns int  ] setByDr dr
 
-=item [ Member : returns int  ] getByLid lid 
+=item [ Member : returns int  ] getByLid lid
 
-=item [ Member : returns int  ] setByLid lid 
+=item [ Member : returns int  ] setByLid lid
 
 
 =back 4
@@ -1738,9 +1738,9 @@ The NOTICE attribute is built out of several sub objects
 
 =item [ Member data: returns smNotice_data_details * ] -data_details
 
-=item [ Member : returns int  ] trapByDr dr 
+=item [ Member : returns int  ] trapByDr dr
 
-=item [ Member : returns int  ] trapByLid lid 
+=item [ Member : returns int  ] trapByLid lid
 
 ----
 
@@ -1808,7 +1808,7 @@ The NOTICE attribute is built out of several sub objects
 =item [ Member data: returns ib_gid_t * ] -gid
 
 the Node or Multicast Group that came in/out
-        
+
 ----
 
 =head3 class smNotice_data_details_ntc_128
@@ -1816,7 +1816,7 @@ the Node or Multicast Group that came in/out
 =item [ Member data: returns ib_net16_t * ] -sw_lid
 
 the sw lid of which link state changed
-        
+
 ----
 
 =head3 class smNotice_data_details_ntc_129_131
@@ -1826,7 +1826,7 @@ the sw lid of which link state changed
 =item [ Member data: returns ib_net16_t * ] -lid
 
 lid and port number of the violation
-        
+
 =item [ Member data: returns uint8_t * ] -port_num
 
 ----
@@ -1838,13 +1838,13 @@ lid and port number of the violation
 =item [ Member data: returns ib_net16_t * ] -lid
 
 lid where capability mask changed
-        
+
 =item [ Member data: returns ib_net16_t * ] -pad2
 
 =item [ Member data: returns ib_net32_t * ] -new_cap_mask
 
 new capability mask
-        
+
 ----
 
 =head3 class smNotice_data_details_ntc_145
@@ -1854,13 +1854,13 @@ new capability mask
 =item [ Member data: returns ib_net16_t * ] -lid
 
 lid where sys guid changed
-        
+
 =item [ Member data: returns ib_net16_t * ] -pad2
 
 =item [ Member data: returns ib_net64_t * ] -new_sys_guid
 
 new system image guid
-        
+
 ----
 
 =head3 class smNotice_data_details_ntc_256
@@ -1944,15 +1944,15 @@ Provides vendor specific access to the device internal coniguration space
 This section provide the details about the functions IBCR exposes.
 They all return 0 on succes.
 
-=item [ returns int  ] crMultiMaxGet 
+=item [ returns int  ] crMultiMaxGet
 
-=item [ returns int  ] crRead lid address 
+=item [ returns int  ] crRead lid address
 
-=item [ returns int  ] crWrite lid data address 
+=item [ returns int  ] crWrite lid data address
 
-=item [ returns int  ] crReadMulti num lid_list address 
+=item [ returns int  ] crReadMulti num lid_list address
 
-=item [ returns int  ] crWriteMulti num lid_list data address 
+=item [ returns int  ] crWriteMulti num lid_list data address
 
 =head1  IB Vendor Specific Functions
 
@@ -1961,60 +1961,60 @@ IBVS stands for Vendor Specific MADs.
 This section provide the details about the functions IBVS exposes.
 They all return 0 on succes.
 
-=item [ returns int  ] vsMultiMaxGet 
+=item [ returns int  ] vsMultiMaxGet
 
-=item [ returns int  ] vsCpuRead lid size cpu_traget_size address 
+=item [ returns int  ] vsCpuRead lid size cpu_traget_size address
 
-=item [ returns int  ] vsCpuWrite lid size cpu_traget_size data address 
+=item [ returns int  ] vsCpuWrite lid size cpu_traget_size data address
 
-=item [ returns int  ] vsI2cRead lid port_num device_id size address 
+=item [ returns int  ] vsI2cRead lid port_num device_id size address
 
-=item [ returns int  ] vsI2cWrite lid port_num device_id size address data 
+=item [ returns int  ] vsI2cWrite lid port_num device_id size address data
 
-=item [ returns int  ] vsI2cReadMulti num lid_list port_num device_id size address 
+=item [ returns int  ] vsI2cReadMulti num lid_list port_num device_id size address
 
-=item [ returns int  ] vsI2cWriteMulti num lid_list port_num device_id size address data 
+=item [ returns int  ] vsI2cWriteMulti num lid_list port_num device_id size address data
 
-=item [ returns int  ] vsGpioRead lid 
+=item [ returns int  ] vsGpioRead lid
 
-=item [ returns int  ] vsGpioWrite lid gpio_mask gpio_data 
+=item [ returns int  ] vsGpioWrite lid gpio_mask gpio_data
 
-=item [ returns int  ] vsSWReset num lid_list 
+=item [ returns int  ] vsSWReset num lid_list
 
-=item [ returns int  ] vsFlashStartMulti num lid_list last size address data 
+=item [ returns int  ] vsFlashStartMulti num lid_list last size address data
 
-=item [ returns int  ] vsFlashStopMulti num lid_list force 
+=item [ returns int  ] vsFlashStopMulti num lid_list force
 
-=item [ returns int  ] vsFlashSetBankMulti num lid_list address 
+=item [ returns int  ] vsFlashSetBankMulti num lid_list address
 
-=item [ returns int  ] vsFlashEraseSectorMulti num lid_list address 
+=item [ returns int  ] vsFlashEraseSectorMulti num lid_list address
 
-=item [ returns int  ] vsFlashReadSectorMulti num lid_list size address 
+=item [ returns int  ] vsFlashReadSectorMulti num lid_list size address
 
-=item [ returns int  ] vsFlashWriteSectorMulti num lid_list size address data 
+=item [ returns int  ] vsFlashWriteSectorMulti num lid_list size address data
 
-=item [ returns int  ] vsMirrorRead lid 
+=item [ returns int  ] vsMirrorRead lid
 
-=item [ returns int  ] vsMirrorWrite lid rx_mirror tx_mirror 
+=item [ returns int  ] vsMirrorWrite lid rx_mirror tx_mirror
 
 =head1  IBBBM Functions
 
 This section provide the details about the functions IBBBM exposes.
 They all return 0 on succes.
 
-=item [ returns int  ] bbmVpdRead lid vpd_device_selector bytes_num offset 
+=item [ returns int  ] bbmVpdRead lid vpd_device_selector bytes_num offset
 
-=item [ returns int  ] bbmVpdWrite lid vpd_device_selector bytes_num offset p_data 
+=item [ returns int  ] bbmVpdWrite lid vpd_device_selector bytes_num offset p_data
 
-=item [ returns int  ] bbmVSDRead lid 
+=item [ returns int  ] bbmVSDRead lid
 
-=item [ returns int  ] bbmBSNRead lid 
+=item [ returns int  ] bbmBSNRead lid
 
-=item [ returns int  ] bbmModRead lid 
+=item [ returns int  ] bbmModRead lid
 
-=item [ returns int  ] bbmChaRead lid 
+=item [ returns int  ] bbmChaRead lid
 
-=item [ returns int  ] bbmFWVerRead lid 
+=item [ returns int  ] bbmFWVerRead lid
 
 
 =head1 AUTHOR

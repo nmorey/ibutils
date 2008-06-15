@@ -10,9 +10,9 @@ proc assoc {key key_list} {
 		if {[lindex $kv 0] == $key} {return [lrange $kv 1 end]}
 	}
 	return ""
-} 
+}
 
-# Find the first available port that is not DOWN and 
+# Find the first available port that is not DOWN and
 # return its GUID
 proc Ibis_GetFirstAvailablePortGuid {} {
 	foreach GuidLidStat [ibis_get_local_ports_info] {
@@ -25,7 +25,7 @@ proc Ibis_GetFirstAvailablePortGuid {} {
 }
 
 # Use the first available port (active or init)
-set port_guid [Ibis_GetFirstAvailablePortGuid] 
+set port_guid [Ibis_GetFirstAvailablePortGuid]
 if {$port_guid == ""} {
 	puts "-E- Fail to find any available port"
 	exit
@@ -38,7 +38,7 @@ package require ibsac
 # get all nodes
 set allNodes [sacNodeQuery getTable 0]
 
-# get all ports 
+# get all ports
 set allPorts [sacPortQuery getTable 0]
 
 # get SM Info from the local port

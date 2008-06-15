@@ -2,7 +2,7 @@
 # the next line restarts using tclsh \
 	exec ibdmsh "$0" "$@"
 
-# 
+#
 set Usage "Usage: $argv0 -t topo-file"
 
 set Help "
@@ -13,8 +13,8 @@ Usage:
   $Usage
 
 Description:
-  The utility reads in a topology file and generate an OpenSM 
-subnet.lst file (in local dir) to match the specified topology. 
+  The utility reads in a topology file and generate an OpenSM
+subnet.lst file (in local dir) to match the specified topology.
 It 'invents' guids and lids sequentially.
 
 TODO: Randomize missmatches ...
@@ -125,7 +125,7 @@ foreach nodeDef [IBFabric_NodeByName_get $fabric ] {
       # assign port base lid and guid:
       IBPort_guid_set $port [format "0x0002c900%08x" $curGuid]
       IBPort_base_lid_set $port $curLid
-      
+
       # non switches require new lid and new guid to each port:
       if {[IBNode_type_get $node] != $IB_SW_NODE} {
          incr curGuid
@@ -148,7 +148,7 @@ foreach nodeDef [IBFabric_NodeByName_get $fabric ] {
 
    foreach port [IBNode_Ports_get $node] {
       set remPort [IBPort_p_remotePort_get $port]
-      
+
       # only interested in links
       if {$remPort != ""} {
          puts $of [getLinkStr $port $remPort]

@@ -1,12 +1,12 @@
 # This is the checker for for a fat-tree routing check
 
 ##############################################################################
-# 
+#
 # Start up the test applications
 # This is the default flow that will start OpenSM only in 0x43 verbosity
 # Return a list of process ids it started (to be killed on exit)
 #
-proc runner {simDir osmPath osmPortGuid} { 
+proc runner {simDir osmPath osmPortGuid} {
    set osmStdOutLog [file join $simDir osm.stdout.log]
    set osmLog [file join $simDir osm.log]
    puts "-I- Starting: $osmPath -R ftree -d2 -V -g $osmPortGuid ..."
@@ -16,7 +16,7 @@ proc runner {simDir osmPath osmPortGuid} {
 
    # start a tracker on the log file and process:
    startOsmLogAnalyzer $osmLog
-     
+
    return $osmPid
 }
 
@@ -53,7 +53,7 @@ proc checker {simDir osmPath osmPortGuid} {
    after 5000
 
    # Check that the fat-tree routing has run to completion.
-   # If it has, then opensm-ftree-ca-order.dump file should exist 
+   # If it has, then opensm-ftree-ca-order.dump file should exist
    # in the simulation directory.
    set osmFtreeCAOrderDump [file join $simDir opensm-ftree-ca-order.dump]
    if {[file exists $osmFtreeCAOrderDump]} {
@@ -75,7 +75,7 @@ proc checker {simDir osmPath osmPortGuid} {
       puts "-E- Congestion analysis failed with status: $e"
       return 1
    }
-   
+
    puts "-I- Congestion analysis completed"
    puts "-I- Parsing congestion log"
 
@@ -83,7 +83,7 @@ proc checker {simDir osmPath osmPortGuid} {
    set maxWorstCong 0
    set f [open $congestionLog]
    while {[gets $f sLine] >= 0} {
-      
+
       if {[regexp {.*TOTAL CONGESTION HISTOGRAM.*} $sLine match]} {
          #seek three lines forward in the file
          if {[gets $f sLine] < 0 || [gets $f sLine] < 0 || [gets $f sLine] < 0} {
@@ -103,7 +103,7 @@ proc checker {simDir osmPath osmPortGuid} {
             }
          }
       }
-      
+
       if {[regexp {.*STAGE CONGESTION HISTOGRAM.*} $sLine match]} {
          #seek three lines forward in the file
          if {[gets $f sLine] < 0 || [gets $f sLine] < 0 || [gets $f sLine] < 0} {
@@ -125,12 +125,12 @@ proc checker {simDir osmPath osmPortGuid} {
       }
    }
    close $f
-   
+
    if {$maxNumPath > 1 || $maxWorstCong > 1} {
       puts "-E- FatTree routing is unbalanced"
       return 1
    }
-   
+
    puts "-I- FatTree routing is well-balanced"
    return 0
 }

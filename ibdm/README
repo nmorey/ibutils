@@ -1,7 +1,7 @@
-                             FABRIC UTILS 
+                             FABRIC UTILS
                             --------------
 
-This package provides a set of utilities that is based on a common 
+This package provides a set of utilities that is based on a common
 data model to hold a complete fabric at both the system and node levels.
 
 ibdmchk:
@@ -13,10 +13,10 @@ ibdmchk:
    ibdmchk [-v][-h][-u][-a <roots file>] -t <topology file> -n <SM Node> -p <SM Port> [-e] [-l <lmc>]
 
   Description:
-   The Design mode is intended to be used before the cluster is built. It provides 
+   The Design mode is intended to be used before the cluster is built. It provides
    basic checks of the specified network as described by a topology file.
    After simulating the SM LID assignment and routing algorithms it provides reports
-   of the CA to CA paths depth histogram and credit deadlock potential 
+   of the CA to CA paths depth histogram and credit deadlock potential
    in the resulting routing scheme.
 
   Arguments (required):
@@ -41,7 +41,7 @@ ibdmchk:
    After the cluster is built and OpenSM is run (using flag -D 0x43) it reports the
    subnet and FDB tables into the files /tmp/subnet.lst and /tmp/osm.fdbs.
    Based on these files the utility checks all CA to CA connectivity. Further analysis
-   for credit deadlock potential is performed and reported. 
+   for credit deadlock potential is performed and reported.
    In case of an LMC > 0 it reports histograms for how many systems and nodes
    are common between the different paths for the same port pairs.
   Arguments (required):
@@ -58,7 +58,7 @@ ibdmchk:
   -r|--roots <roots file> = a file holding all root nodes guids (one per line).
 
 
-ibdmtr: 
+ibdmtr:
 -----------
 Traces a direct route through the fabric while printing the path
 information at both node and system levels.
@@ -85,7 +85,7 @@ Options:
 
 ibtopodiff
 --------
-Tests a topology file matching vs subnet.lst. 
+Tests a topology file matching vs subnet.lst.
 
 Usage: ibtopodiff [-v][-h] -t <topo file> -d <subnet file> -s <start node name> -p <start port num> -g <start port guid>
 

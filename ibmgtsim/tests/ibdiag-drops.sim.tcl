@@ -2,10 +2,10 @@
 puts "Randomally picking some ports and assigning random drop rate on"
 
 proc setPortErrProfile {node portNum} {
-   # pick a random drop rate in the range 0 - 1 . The higher the number the more chances for 
+   # pick a random drop rate in the range 0 - 1 . The higher the number the more chances for
    # drop.
    set dropRate [expr [rmRand]*0.6 + 0.2]
-   
+
    # set the node drop rate
    puts "-I- Setting drop rate:$dropRate on node:$node port:$portNum"
    set portErrProf "-drop-rate-avg $dropRate -drop-rate-var 4"
@@ -24,19 +24,19 @@ proc setNodePortErrProfile {node} {
       # pick a random port number
       set portNum [expr int([rmRand]*[IBNode_numPorts_get $node])+1]
       setPortErrProfile $node $portNum
-   } 
+   }
 }
 
 # get a random order of all the fabric nodes:
 proc getNodesByRandomOreder {fabric} {
    # get number of nodes:
    set nodesByName [IBFabric_NodeByName_get $fabric]
-   
+
    set nodeNameNOrderList {}
    foreach nodeNameNId [IBFabric_NodeByName_get $fabric] {
       lappend nodeNameNOrderList [list [lindex $nodeNameNId 1] [rmRand]]
    }
-   
+
    set randNodes {}
    foreach nodeNameNOrder [lsort -index 1 -real $nodeNameNOrderList] {
       lappend randNodes [lindex $nodeNameNOrder 0]

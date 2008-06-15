@@ -48,8 +48,8 @@
 
 static ibcr_t *p_ibcr_global;
 
-/* 
-   this function returns the string corresponding to the 
+/*
+   this function returns the string corresponding to the
    read cpu data
 */
 char *
@@ -70,46 +70,46 @@ ibcr_get_cr_str(
           sprintf(buff,"TARGET_ERROR : Fail to obtain CR mad response");
         } else {
           sprintf(buff,"ERROR : Fail to obtain CR mad response");
-        } 
+        }
       } else if (ibis_get_mad_status((ib_mad_t*)&p_cr_mads[i]) != 0) {
         if (is_multi) {
-          sprintf(buff,"TARGET_ERROR : Got remote error:0x%x", 
+          sprintf(buff,"TARGET_ERROR : Got remote error:0x%x",
                   ibis_get_mad_status((ib_mad_t*)&p_cr_mads[i]));
         } else {
-          sprintf(buff,"ERROR : Got remote error:0x%x", 
+          sprintf(buff,"ERROR : Got remote error:0x%x",
                   ibis_get_mad_status((ib_mad_t*)&p_cr_mads[i]));
-        } 
+        }
       } else {
         sprintf(buff, "{vendor_key 0x%016" PRIx64 "} {data 0x%x}",
-                cl_ntoh64(p_cr_mads[i].vendor_key), 
+                cl_ntoh64(p_cr_mads[i].vendor_key),
                 cl_ntoh32(p_cr_mads[i].data[0]));
       }
-      
+
       if (is_multi) extra = 3; else extra = 0;
-      
+
       if (p_res_str) {
-        p_res_str = 
+        p_res_str =
           (char *)realloc(p_res_str,strlen(p_res_str)+strlen(buff) + 1+ extra);
       } else {
         p_res_str = (char *)malloc(strlen(buff) + 1+ extra);
         p_res_str[0] = '\0';
       }
-      
+
       /* need an extra list wrap */
       if (is_multi) {
         strcat(p_res_str,"{");
         strcat(p_res_str, buff);
-        strcat(p_res_str,"} ");        
+        strcat(p_res_str,"} ");
       } else {
         strcat(p_res_str, buff);
       }
     }
   }
-  return(p_res_str);  
+  return(p_res_str);
 }
 
 int
-ibcr_destroy_global(void) 
+ibcr_destroy_global(void)
 {
 	ibcr_destroy(p_ibcr_global);
 	return (0);
@@ -137,7 +137,7 @@ ibcr_read_global(
    } else {
      *pp_new_cr_str = ibcr_get_cr_str(FALSE, 1, cr_space_mads_arr);
    }
-   
+
 	return(status);
 }
 
@@ -167,15 +167,15 @@ ibcr_multi_read_global(
 {
 	ib_api_status_t status;
    ib_cr_space_t   cr_space_mads_arr[IBCR_MULTI_MAX];
-   
-	status = 
+
+	status =
      ibcr_multi_read(p_ibcr_global,num,lid_list,address,cr_space_mads_arr);
 	
    if (status) {
      ibis_set_tcl_error("ERROR : Fail to read all targets CR space");
    } else {
      *pp_new_cr_str = ibcr_get_cr_str(TRUE, num, cr_space_mads_arr);
-   } 
+   }
 	return(status);
 }
 
@@ -201,7 +201,7 @@ ibcr_multi_write_global(
 
 //
 // STANDARD IB TYPE MAPS:
-// 
+//
 
 %{
 #define uint16_cr_arr_t uint16_t
@@ -212,12 +212,12 @@ ibcr_multi_write_global(
     int i;
     char *loc_buf;
     char *str_token;
-    
+
     str_tcl = Tcl_GetStringFromObj($source,NULL);
     loc_buf = (char *)malloc((strlen(str_tcl)+1)*sizeof(char));
     strcpy(loc_buf,str_tcl);
-    
-    
+
+
     str = strtok_r(loc_buf," ", &str_token);			
     for (i=0;i<IBCR_MULTI_MAX;i++) {		
 	if (str == NULL) {
@@ -229,7 +229,7 @@ ibcr_multi_write_global(
     $target = temp;
     free(loc_buf);
 }
- 
+
 //
 // IBCR MAD TYPE MAPS
 //
@@ -259,24 +259,24 @@ They all return 0 on succes.
 
 %name(crRead) int ibcr_read_global(
   uint16_t lid,
-  uint32_t address, 
+  uint32_t address,
   char **pp_new_cr_str);
 
 %name(crWrite) int ibcr_write_global(
   uint16_t lid,
-  uint32_t data, 
+  uint32_t data,
   uint32_t address);
 
 %name(crReadMulti) int ibcr_multi_read_global(
   uint8_t num,
   uint16_cr_arr_t lid_list[],
-  uint32_t address, 
+  uint32_t address,
   char **pp_new_cr_str);
 
 %name(crWriteMulti) int ibcr_multi_write_global(
   uint8_t num,
   uint16_cr_arr_t lid_list[],
-  uint32_t data, 
+  uint32_t data,
   uint32_t address );
 
 //

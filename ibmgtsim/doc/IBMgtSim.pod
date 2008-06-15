@@ -4,7 +4,7 @@ B<IBMgtSim> - Infiniband Management Simulator
 
 =head1 SYNOPSYS
 
-IBMgtSim [-h] [-V mod-verb-pair-list] [-l log-file] [-p server-port] 
+IBMgtSim [-h] [-V mod-verb-pair-list] [-l log-file] [-p server-port]
   [-w num-threads] [-f flow-tcl-file] [-s seed] -t topology
 
 =head1 DESCRIPTION
@@ -46,13 +46,13 @@ Provides a fine grain control over the log file verbosity. Given list of pairs o
 
 =over 4
 
-Current Verbosity Levels:            
+Current Verbosity Levels:
 
- MsgShowFatal  = 0x01;                
- MsgShowError  = 0x02;                
- MsgShowWarning= 0x04;                
- MsgShowInfo   = 0x08;                
- MsgShowVerbose= 0x10;                
+ MsgShowFatal  = 0x01;
+ MsgShowError  = 0x02;
+ MsgShowWarning= 0x04;
+ MsgShowInfo   = 0x08;
+ MsgShowVerbose= 0x10;
  MsgShowContext= 0x20;
  MsgShowSource = 0x40;
  MsgShowTime   = 0x80;
@@ -62,15 +62,15 @@ Current Verbosity Levels:
  MsgShowAll    = 0xffff;
  MsgDefault    = 0x62f;
 
-Software Modules:           
-                            
-client, server, dispatcher, node, sma, lftMad, mftMad, vlArbMad, pKeyMad, portInfoMad                 
+Software Modules:
+
+client, server, dispatcher, node, sma, lftMad, mftMad, vlArbMad, pKeyMad, portInfoMad
 
 Examples -V flag values might be:
 
  -V 0xffff = Full verbosity on all modules
 
- -V '0x3 server 0x6f2 sma 0xffff' = Only fatal and error for all modules 
+ -V '0x3 server 0x6f2 sma 0xffff' = Only fatal and error for all modules
      full verbosity for the SMA module and default verbosity for the
      Server module.
 
@@ -86,4 +86,4 @@ Eitan Zahavi, Mellanox Technologies LTD, eitan@mellanox.co.il
 
 
 
-  
+

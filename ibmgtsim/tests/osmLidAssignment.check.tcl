@@ -13,7 +13,7 @@
 # 2. Copy some port lids to other ports
 # 3. Invent some new lids to some ports
 # 4. Turn some node ports down - disconect (all ports of the node)
-# 
+#
 # D. The simulator shoudl send a trap or set a switch change bit
 #
 # E. Wait for heavy sweep.
@@ -24,12 +24,12 @@
 #
 
 ##############################################################################
-# 
+#
 # Start up the test applications
 # This is the default flow that will start OpenSM only in 0x43 verbosity
 # Return a list of process ids it started (to be killed on exit)
 #
-proc runner {simDir osmPath osmPortGuid} { 
+proc runner {simDir osmPath osmPortGuid} {
    global simCtrlSock
    global env
    global lmc
@@ -43,7 +43,7 @@ proc runner {simDir osmPath osmPortGuid} {
    # randomize lids
    puts $simCtrlSock "assignLegalLids \$fabric $lmc"
    puts "SIM: [gets $simCtrlSock]"
-   
+
    # randomize lid failures:
    puts $simCtrlSock "setLidAssignmentErrors  \$fabric $lmc"
    puts "SIM: [gets $simCtrlSock]"
@@ -52,16 +52,16 @@ proc runner {simDir osmPath osmPortGuid} {
    set env(OSM_CACHE_DIR) $simDir/
    puts $simCtrlSock "writeGuid2LidFile $simDir/guid2lid $lmc"
    puts "SIM: [gets $simCtrlSock]"
-   
+
    file copy $simDir/guid2lid $simDir/guid2lid.orig
 
    set osmCmd "$osmPath -l $lmc -d2 -V -f $osmLog -g $osmPortGuid"
    puts "-I- Starting: $osmCmd"
    set osmPid [eval "exec $osmCmd > $osmStdOutLog &"]
-   
+
    # start a tracker on the log file and process:
    startOsmLogAnalyzer $osmLog
-     
+
    return $osmPid
 }
 
@@ -98,12 +98,12 @@ proc checker {simDir osmPath osmPortGuid} {
       # refresh the lid database and start the POST_SUBNET_UP mode
       puts $simCtrlSock "updateAssignedLids \$fabric"
       puts "SIM: [gets $simCtrlSock]"
-      
+
       # randomize lid failures:
       puts $simCtrlSock "setLidAssignmentErrors \$fabric $lmc"
       puts "SIM: [gets $simCtrlSock]"
 
-      # inject a change bit 
+      # inject a change bit
       puts "-I- Injecting change bit"
       puts $simCtrlSock "setOneSwitchChangeBit \$fabric"
       puts "SIM: [gets $simCtrlSock]"
@@ -114,11 +114,11 @@ proc checker {simDir osmPath osmPortGuid} {
       if {[osmWaitForUpOrDeadWithTimeout $osmLog 1000000 $ignorePrev]} {
          return 1
       }
-      
+
       # wait 30 seconds
       after 30000
-      
-      # inject a change bit 
+
+      # inject a change bit
       puts "-I- Injecting change bit"
       puts $simCtrlSock "setOneSwitchChangeBit \$fabric"
       puts "SIM: [gets $simCtrlSock]"
@@ -129,10 +129,10 @@ proc checker {simDir osmPath osmPortGuid} {
       if {[osmWaitForUpOrDeadWithTimeout $osmLog 1000000 $ignorePrev]} {
          return 1
       }
-      
+
       # wait 3 seconds
       after 3000
-      
+
       # check for lid validity:
       puts "-I- Checking LID Validity"
       puts $simCtrlSock "checkLidValues \$fabric $lmc"

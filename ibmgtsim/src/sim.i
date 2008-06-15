@@ -33,8 +33,8 @@
  */
 
 /*
- * IB Management Simulator 
- * 
+ * IB Management Simulator
+ *
  * Interface File for TCL SWIG
  *
  */
@@ -42,8 +42,8 @@
 %title "IB Management Simulator - TCL Extension"
 
 //
-// FIX OF SWIG TO SUPPORT NAME ALTERNATE MANGLING 
-// 
+// FIX OF SWIG TO SUPPORT NAME ALTERNATE MANGLING
+//
 %include "ibdm.i"
 
 %module ibms
@@ -77,8 +77,8 @@
 
   static IBMgtSim Simulator;
 
-  /* 
-     As we do not want to expose our own objects we 
+  /*
+     As we do not want to expose our own objects we
      rely on ibdm objects mapping. All IBMSNode calls are
      then mapped to their Nodes.
   */
@@ -88,14 +88,14 @@
   IBFabric *ibdmGetFabricPtrByIdx(unsigned int idx);
   int ibdmGetObjTclNameByPtr(Tcl_Obj *objPtr, void *ptr, char *type);
   int ibdmGetObjPtrByTclName(Tcl_Obj *objPtr, void **ptr);
-  
+
   /* Given the Object Pointer and Type provide it's TCL name */
   int ibmsGetSimNodeTclNameByPtr(Tcl_Obj *objPtr, void *ptr, char *type) {
 	 char tclName[128];
 	 char name[128];
 	 IBFabric *p_fabric;
 	 string uiType;
-	 
+	
 	 if (!strcmp(type, "IBMSNode *")) {
 		IBNode *p_node = ((IBMSNode *)ptr)->getIBNode();
 		p_fabric = p_node->p_fabric;
@@ -113,12 +113,12 @@
 		Tcl_SetStringObj(objPtr, "-E- Fail to find fabric by ptr", -1);
 		return TCL_ERROR;
 	 }
-    
+
 	 sprintf(tclName, "%s:%u%s", uiType.c_str(), idx, name);
 	 Tcl_SetStringObj(objPtr, tclName, -1);
 	 return TCL_OK;
   }
-  
+
   /* Given the Object TCL Name Get it's pointer */
   int ibmsGetSimNodePtrByTclName(Tcl_Obj *objPtr, void **ptr) {
 	 /* we need to parse the name and get the type etc. */
@@ -129,7 +129,7 @@
 	 *ptr = NULL;
 
 	 strcpy(buf, Tcl_GetStringFromObj(objPtr,0));
-	 
+	
 	 /* the format is always: <type>:<idx>[:<name>] */
 
 	 /* first separate the type */
@@ -142,12 +142,12 @@
 
 	 type = buf;
 	 fabIdxStr = ++colonIdx;
-	 
+	
 	 /* now separate the fabric section if type is not fabric */
 	 if (strcmp(type, "fabric")) {
 		slashIdx = index(fabIdxStr,':');
 		if (!slashIdx) {
-		  printf( "-E- Bad formatted ibdm fabric object:%s\n", 
+		  printf( "-E- Bad formatted ibdm fabric object:%s\n",
 					 Tcl_GetStringFromObj(objPtr,0));
 		  return TCL_ERROR;
 		}
@@ -157,23 +157,23 @@
 
 	 /* OK so now get the fabric pointer */
 	 fabricIdx = atoi(fabIdxStr);
-	 
+	
 	 IBFabric *p_fabric = ibdmGetFabricPtrByIdx(fabricIdx);
 	 if (! p_fabric) {
 		*ptr = NULL;
 		return TCL_ERROR;
 	 }
-	 
+	
     if (!strcmp(type, "simnode")) {
 		IBNode *p_node = p_fabric->getNode(string(name));
       if (!p_node) {
 		  printf("-E- Fail to get node:%s\n", name);
-		  return TCL_ERROR;		  
+		  return TCL_ERROR;		
 		}
       IBMSNode *pSimNode = ibmsGetIBNodeSimNode(p_node);
 		if (! pSimNode) {
 		  printf("-E- Fail to get node:%s\n", name);
-		  return TCL_ERROR;		  
+		  return TCL_ERROR;		
 		}
 		*ptr = pSimNode;
 	 } else {
@@ -186,34 +186,34 @@
 
 
 //
-// exception handling wrapper based on the MsgMgr interfaces 
+// exception handling wrapper based on the MsgMgr interfaces
 //
 
 // it assumes we do not send the messages to stderr
-%except(tcl8) { 
+%except(tcl8) {
   ibms_tcl_error = 0;
-  $function; 
-  if (ibms_tcl_error) { 
+  $function;
+  if (ibms_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibms_tcl_error_msg, -1);
- 	 return TCL_ERROR; 
+ 	 return TCL_ERROR;
   }
 }
 
 //
 // TYPE MAPS:
-// 
+//
 
 // Convert a TCL Object to C++ world.
 %typemap(tcl8,in) IBMSNode * {
-  
+
   void *ptr;
   if (ibmsGetSimNodePtrByTclName($source, &ptr) != TCL_OK) {
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString($source) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	 
+	 return TCL_ERROR;	
   }
-	 
+	
   $target = ($type)ptr;
 }
 
@@ -225,8 +225,8 @@
 
 %typemap(tcl8,check)  IBMSNode * {
   /* the format is always: <type>:<idx>[:<name>] */
-  
-  // get the type from the given source 
+
+  // get the type from the given source
   char buf[128];
   strcpy(buf, Tcl_GetStringFromObj($source,0));
   char *colonIdx = index(buf,':');
@@ -243,57 +243,57 @@
       char err[256];
       sprintf(err, "-E- basetype is $basetype but received obj of type %s", buf);
       Tcl_SetStringObj(tcl_result, err, strlen(err));
-      return TCL_ERROR;	 
+      return TCL_ERROR;	
     }
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype '$basetype' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	 
+	 return TCL_ERROR;	
   }
 }
 
 /* we describe a port err profile as a record of key value pairs */
-%typemap(tcl8,in) IBMSPortErrProfile *RefIn (IBMSPortErrProfile tmp) { 
-  if (sscanf(Tcl_GetStringFromObj($source,0), 
+%typemap(tcl8,in) IBMSPortErrProfile *RefIn (IBMSPortErrProfile tmp) {
+  if (sscanf(Tcl_GetStringFromObj($source,0),
              "-drop-rate-avg %g -drop-rate-var %g",
              &tmp.packetDropRate,
              &tmp.packetDropRateVar) != 2)
   {
 	 char err[256];
-	 sprintf(err, "-E- bad format for IBMSPortErrProfile:%s", 
+	 sprintf(err, "-E- bad format for IBMSPortErrProfile:%s",
             Tcl_GetStringFromObj($source,0));
     Tcl_SetStringObj(tcl_result, err, strlen(err));
     return TCL_ERROR;
   }
-  
-  $target = &tmp; 
+
+  $target = &tmp;
 }
 
-%typemap(tcl8,out)  IBMSPortErrProfile *(IBMSPortErrProfile tmp) { 
+%typemap(tcl8,out)  IBMSPortErrProfile *(IBMSPortErrProfile tmp) {
   char buff[128];
-  if ($source) { 
-    sprintf(buff, "-drop-rate-avg %g -drop-rate-var %g", 
+  if ($source) {
+    sprintf(buff, "-drop-rate-avg %g -drop-rate-var %g",
             $source->packetDropRate,
             $source->packetDropRateVar);
     Tcl_SetStringObj(tcl_result, buff, strlen(buff));
-  } 
-} 
+  }
+}
 
 %typemap(tcl8,ignore) IBMSPortErrProfile *OUTPUT(IBMSPortErrProfile temp) {
   $target = &temp;
 }
 
-%typemap(tcl8,argout)  IBMSPortErrProfile *OUTPUT { 
+%typemap(tcl8,argout)  IBMSPortErrProfile *OUTPUT {
     /* argout */
   char buff[128];
-  if ($source) { 
-    sprintf(buff, "-drop-rate-avg %g -drop-rate-var %g", 
+  if ($source) {
+    sprintf(buff, "-drop-rate-avg %g -drop-rate-var %g",
             $source->packetDropRate,
             $source->packetDropRateVar);
     Tcl_SetStringObj(tcl_result, buff, strlen(buff));
-  } 
-} 
+  }
+}
 
 %include inttypes.i
 %include ib_types.i
@@ -367,7 +367,7 @@ class msgManager {
   float rmRand() {
     return RandMgr()->random();
   }
-  
+
   int rmSeed(int seed) {
     return RandMgr()->setRandomSeed(seed);
   }
@@ -383,14 +383,14 @@ int rmSeed(int seed);
 
 %section "IBMgtSim Simulator Objects",pre
 class IBMgtSim {
-  
+
  public:
 
   /* access function */
   IBFabric *getFabric() { return pFabric;};
   IBMSServer *getServer() { return pServer; };
   IBMSDispatcher *getDispatcher() { return pDispatcher; };
-  
+
   /* Initialize the fabric server and dispatcher */
   // We can not expose this method as we want to register the created fabric
   // in the ibdm_fabrics. So we provide our own wrapper for it...
@@ -424,23 +424,23 @@ class IBMSNode {
 
   int setPhyPortErrProfile(uint8_t portNum, IBMSPortErrProfile &errProfileIn);
   /* set a particular port err profile */
-  
+
   int getPhyPortErrProfile(uint8_t portNum, IBMSPortErrProfile &errProfileOut);
   /* get a particular port err profile */
-  
-  int setPhyPortPMCounter(uint8_t portNum, uint32_t counterSelect, 
+
+  int setPhyPortPMCounter(uint8_t portNum, uint32_t counterSelect,
                           ib_pm_counters_t &countersVal);
   /* set a specific port counter */
 
   ib_pm_counters_t *
     getPhyPortPMCounter(uint8_t portNum, uint32_t counterSelect);
   /* get a specific port counter */
-  
+
   ib_port_info_t * getPortInfo(uint8_t portNum);
   /* get a specific port info */
 
   int setLinkStatus(uint8_t portNum, uint8_t newState);
-  /* set the Link status including sending trap128 */  
+  /* set the Link status including sending trap128 */
 
   ib_node_info_t * getNodeInfo();
   /* get the node info */
@@ -483,7 +483,7 @@ class IBMSNode {
 
 %{
   void ibmssh_exit(ClientData clientData ) {
-	  
+	
   }
 %}
 
@@ -496,7 +496,7 @@ extern char * ibmsSourceVersion;
 
   /* mixing declarations .... */
   {
-	 Tcl_PkgProvide(interp,"ibms", "1.0");	 
+	 Tcl_PkgProvide(interp,"ibms", "1.0");	
 #ifdef OSM_BUILD_OPENIB
     Tcl_CreateExitHandler(ibmssh_exit, NULL);
 #endif
@@ -534,12 +534,12 @@ extern char * ibmsSourceVersion;
     SWIG_AlternateNameToObj  ["_ib_pkey_table_t_p"] = &ibmsGetIBStructObjPtrByTclName;
 
     // declare the simulator object :
-    Tcl_CreateObjCommand(interp,"IBMgtSimulator", 
+    Tcl_CreateObjCommand(interp,"IBMgtSimulator",
 								 TclIBMgtSimMethodCmd,
 								 (ClientData)&Simulator, 0);
 
     // declare the message manager
-    Tcl_CreateObjCommand(interp,"MsgMgr", 
+    Tcl_CreateObjCommand(interp,"MsgMgr",
 								 TclmsgManagerMethodCmd,
 								 (ClientData)&msgMgr(), 0);
 

@@ -1,9 +1,9 @@
-dnl This macro checks for the existance of swig and defines the 
+dnl This macro checks for the existance of swig and defines the
 dnl corresponding SWIG variable.
-dnl 
+dnl
 dnl Synopsys:
 dnl    MLX_PROG_SWIG(maj.min.patch, eq|lt)
-dnl The second parameter defines the required relation of the found version 
+dnl The second parameter defines the required relation of the found version
 dnl to the requested version:
 dnl lt - the found version required to be newer or equal to the maj.min.patch
 dnl eq - the found version required to be equal to the maj.min.patch
@@ -57,7 +57,7 @@ AC_DEFUN([MLX_PROG_SWIG],[
             [available_patch=0]
          fi
          # we have two modes of comparison...
-         if test x"$2" == xeq; then 
+         if test x"$2" == xeq; then
             if test $available_major -ne $required_major \
                -o $available_minor -ne $required_minor \
                -o $available_patch -ne $required_patch ; then
@@ -81,12 +81,12 @@ AC_DEFUN([MLX_PROG_SWIG],[
          SWIG='echo "Error: Cannot determine SWIG version.  You should look at http://www.swig.org" ; false'
       fi
    fi
-   if test ! -z "$has_swig"; then 
+   if test ! -z "$has_swig"; then
         dnl AC_MSG_INFO([SWIG executable is '$SWIG'])
         SWIG_LIB=`$SWIG -swiglib`
         dnl AC_MSG_INFO([SWIG runtime library directory is '$SWIG_LIB'])
         AM_CONDITIONAL(HAS_SWIG,[test 1])
-   else 
+   else
         AM_CONDITIONAL(HAS_SWIG,[test 0])
    fi
    AC_SUBST([SWIG_LIB])

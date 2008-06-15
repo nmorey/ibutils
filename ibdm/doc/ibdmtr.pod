@@ -4,7 +4,7 @@ B<ibdmtr> -  Fabric Trace Route
 
 =head1 SYNOPSYS
 
-ibdmtr [-v][-h] {-c <cbaling file>|-t <topo file>} -s <sm node name>  
+ibdmtr [-v][-h] {-c <cbaling file>|-t <topo file>} -s <sm node name>
   -p <sm port num> -d <comma-sep-dr-path>
 
 =head1 DESCRIPTION
@@ -16,7 +16,7 @@ Required arguments description.
 
 =over
 
-=item -t|--topology <file> 
+=item -t|--topology <file>
 
 =over
 
@@ -42,7 +42,7 @@ Required arguments description.
 
 =back
 
-=item -p|--port-num <num> 
+=item -p|--port-num <num>
 
 =over
 
@@ -68,7 +68,7 @@ Required arguments description.
 
 =back
 
-=item -h|--help 
+=item -h|--help
 
 =over
 

@@ -44,7 +44,7 @@
 *	IB Management Simulator Server
 *
 * DESCRIPTION
-*	The simulator provides a TCP/IP server by which the clients can send 
+*	The simulator provides a TCP/IP server by which the clients can send
 *  and receive mads.
 *
 * AUTHOR
@@ -55,9 +55,9 @@
 
 /* the client connection class handles a specific client */
 /*
-  One instance of this class per exists for each connected client. 
-  The instance is created when the client sends the connect message, 
-  providing the port guid it attaches to. 
+  One instance of this class per exists for each connected client.
+  The instance is created when the client sends the connect message,
+  providing the port guid it attaches to.
 */
 typedef std::list< class IBMSClientMsgProcessor *> list_pmad_proc;
 class IBMSClientConn : GenClient {
@@ -99,17 +99,17 @@ class IBMSClientConn : GenClient {
   Specialization of IBMSMadProcessor - this processor is being created
   for each "BIND" command requested by the client. It should handle
   forwarding of the MAD that it got to the client by invoking the
-  client send method. 
+  client send method.
 */
 class IBMSClientMsgProcessor : IBMSMadProcessor {
   /* The filtering information by which we attach to. */
   ibms_bind_msg_t filter;
-  
+
   /* the client object attached. */
   class IBMSClientConn *pClient;
 
  public:
-  
+
   /* if filter is matched - forward the mad msg to the client send() */
   int processMad(uint8_t inPort, ibms_mad_msg_t &madMsg);
 
@@ -138,13 +138,13 @@ class IBMSServer : public GenServer {
 
   /* handle a connection message */
   int handleDisconnectMsg(int clientSock, ibms_disconn_msg_t &discMsg);
-  
+
   /* handle a bind message */
   int handleBindMsg(int clientSock, ibms_bind_msg_t &bindMsg);
 
   /* handle a mad message */
   int handleMadMsg(int clientSock, ibms_mad_msg_t &madMsg);
-  
+
   /* handle client port capabilities mask request */
   int handleCapMsg(int clientSock, ibms_cap_msg_t &msg);
 
@@ -155,13 +155,13 @@ class IBMSServer : public GenServer {
   /* CONSTRUCTOR */
   IBMSServer(IBMgtSim *pS, unsigned short portNum);
 
-  /* handle client request - 
-     either create a new client conn or pass the request to the 
+  /* handle client request -
+     either create a new client conn or pass the request to the
      existing one */
-  int proccessClientMsg(int clientSock, 
-                        int reqLen, char request[], 
+  int proccessClientMsg(int clientSock,
+                        int reqLen, char request[],
                         int &resLen, char *(pResponse[]));
-  
+
 };
 
 #endif /* IBMS_SERVER_H */

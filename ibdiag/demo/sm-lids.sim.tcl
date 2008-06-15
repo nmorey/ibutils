@@ -31,7 +31,7 @@ proc getAddressiblePorts {fabric} {
          for {set pn $pMin} {$pn <= $pMax} {incr pn} {
             set port [IBNode_getPort $node $pn]
             if {$port == ""} {continue}
-         
+
 				set lid [IBPort_base_lid_get $port]
 				set key "$node $pn"
 				set PORT_LID($key) $lid
@@ -126,7 +126,7 @@ proc getFreeLid {lmc} {
 
 # get a used lid
 proc getUsedLid {} {
-   global LID_PORTS 
+   global LID_PORTS
    return [getRandomNumOfSequence [array names LID_PORTS]]
 }
 

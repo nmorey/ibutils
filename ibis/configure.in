@@ -70,8 +70,8 @@ AC_ARG_ENABLE(debug,
 esac],[debug=false])
 AM_CONDITIONAL(DEBUG, test x$debug = xtrue)
 
-dnl Define an input config option to allow ibis know where 
-dnl the OSM is installed. This should point to one directory above 
+dnl Define an input config option to allow ibis know where
+dnl the OSM is installed. This should point to one directory above
 dnl the include directory holding opensm/osm_build_id.h
 OPENIB_APP_OSM
 

@@ -61,13 +61,13 @@ IBMSVendorSpecific::IBMSVendorSpecific(
   MSG_ENTER_FUNC;
 
   IBNode*     pNodeData;
- 
+
   pNodeData = pSNode->getIBNode();
   MSGREG(inf0, 'V', "I'm in CrSpace const ", "IBMSVendorSpecific");
   MSGSND(inf0);
 
   crSpaceInit((*pNodeData).devId);
-   
+
   MSG_EXIT_FUNC;
 }
 
@@ -129,7 +129,7 @@ int IBMSVendorSpecific::vsAttribute50(
 
   switch (accessMode) {
   case 0:
-    startAddr = ((attrMod & 0xffff) | ((attrMod & 0xff000000) >> 8)); 
+    startAddr = ((attrMod & 0xffff) | ((attrMod & 0xff000000) >> 8));
     length = (attrMod >> 16) & 0x3f;
     if (length > 57)
     {
@@ -145,7 +145,7 @@ int IBMSVendorSpecific::vsAttribute50(
     MSGSND(inf1,startAddr,length);
     // set CrSpace
     if (method == IB_MAD_METHOD_SET )
-    { 
+    {
       for (unsigned int i=0;i<(length);i+=1) {
         data[i] =     (reqMadMsg.payload[8 + i*4]   << 24 |
                        reqMadMsg.payload[8 + i*4+1] << 16 |
@@ -273,7 +273,7 @@ int IBMSVendorSpecific::vsAttribute50(
     status = 0x1c; //One or more fields in the attribute or attribute modifier contain an invalid value
     break;
   }
-   
+
   MSG_EXIT_FUNC;
   return status;
 }
@@ -303,7 +303,7 @@ int IBMSVendorSpecific::vsAttribute51(
 
   switch (accessMode) {
   case 0:
-    startAddr = attrMod & 0xfffff; 
+    startAddr = attrMod & 0xfffff;
     length = (attrMod >> 20) & 0x3f;
     if (length > 57)
     {
@@ -523,7 +523,7 @@ int IBMSVendorSpecific::processMad(
   respMadMsg.addr.slid = madMsg.addr.dlid;
   respMadMsg.addr.dlid = madMsg.addr.slid;
   MSGREG(inf6, 'V', "sending response mad - lid - ", "processMad");
-  MSGSND(inf6);  
+  MSGSND(inf6);
   respMadMsg.header.status = status;
   pSimNode->getSim()->getDispatcher()->dispatchMad(pSimNode, inPort, respMadMsg);
 
@@ -537,7 +537,7 @@ void IBMSVendorSpecific::crSpaceInit(
   uint16_t devId) {
   /* configure CrSpace according to node type -
      1/2/3 - Tavor/Arbel/Sinai
-     10/11 -  anafa/anafa2   */ 
+     10/11 -  anafa/anafa2   */
   uint32_t portGuidLow;
   uint32_t portGuidHigh;
   MSG_ENTER_FUNC;

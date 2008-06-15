@@ -138,7 +138,7 @@ ibdmchk has two operation modes: design and verification.
 .PP
 \&\s-1DESIGN:\s0
 .PP
-ibdmchk [\-v][\-h][\-u][\-a <roots file>] \-t <topology file> \-n <\s-1SM\s0 Node> 
+ibdmchk [\-v][\-h][\-u][\-a <roots file>] \-t <topology file> \-n <\s-1SM\s0 Node>
   \-p <\s-1SM\s0 Port> [\-e] [\-l <lmc>]
 .PP
 \&\s-1VERIFICATION:\s0
@@ -190,7 +190,7 @@ Use up/down routing algorithm instead of OpenSM min\-hop.
 .SH "VERIFICATION MODE DESCRIPTION"
 .IX Header "VERIFICATION MODE DESCRIPTION"
 After the cluster is built and OpenSM is run (using flag \-D 0x43) it reports the subnet and \s-1FDB\s0 tables into the files osm\-subnet.lst, osm.fdbs and osm.fdbs in /var/log/ (or subnet.lst, osm.fdbs and osm.mcfdbs into /tmp in older OpenSM versions).
-Based on these files the utility checks all \s-1CA\s0 to \s-1CA\s0 connectivity. Further analysis for credit deadlock potential is performed and reported. 
+Based on these files the utility checks all \s-1CA\s0 to \s-1CA\s0 connectivity. Further analysis for credit deadlock potential is performed and reported.
 In case of an \s-1LMC\s0 > 0 it reports histograms for how many systems and nodes are common between the different paths for the same port pairs.
 .SH "ARGUMENTS"
 .IX Header "ARGUMENTS"

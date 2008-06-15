@@ -42,7 +42,7 @@ struct less_char_array : public binary_function<const char *, const char *, bool
 };
 
 #define charp_getname_map map<const char *, int (*)(Tcl_Obj *, void *,char *type),  less_char_array >
-#define charp_getobjp_map map<const char *, int (*)(Tcl_Obj *, void **), less_char_array > 
+#define charp_getobjp_map map<const char *, int (*)(Tcl_Obj *, void **), less_char_array >
 
 // two maps - for in and out of C++ space
 charp_getname_map SWIG_AlternateObjMangling;
@@ -66,7 +66,7 @@ void SWIG_SetPointerObj(Tcl_Obj *objPtr, void *_ptr, char *type) {
 	 if (getName(objPtr, _ptr, type)) {
 		cerr << "-E- Fail to convert object to string\n";
 	 }
-	 return;	 
+	 return;	
   }
 
   static char _hex[16] =
@@ -145,9 +145,9 @@ char *SWIG_GetPointerObj(Tcl_Interp *interp, Tcl_Obj *objPtr, void **ptr, char *
 	 }
 
 	 if (_t) {
-		if (strcmp(_t,_c)) { 
+		if (strcmp(_t,_c)) {
 		  if (!SwigPtrSort) {
-			 qsort((void *) SwigPtrTable, SwigPtrN, sizeof(SwigPtrType), swigsort); 
+			 qsort((void *) SwigPtrTable, SwigPtrN, sizeof(SwigPtrType), swigsort);
 			 for (i = 0; i < 256; i++) {
 				SwigStart[i] = SwigPtrN;
 			 }
@@ -159,10 +159,10 @@ char *SWIG_GetPointerObj(Tcl_Interp *interp, Tcl_Obj *objPtr, void **ptr, char *
 				  SwigStart[i-1] = SwigStart[i];
 			 }
 			 SwigPtrSort = 1;
-			 for (i = 0; i < SWIG_CACHESIZE; i++)  
+			 for (i = 0; i < SWIG_CACHESIZE; i++)
 				SwigCache[i].stat = 0;
 		  }
-	  
+	
 		  /* First check cache for matches.  Uses last cache value as starting point */
 		  cache = &SwigCache[SwigLastCache];
 		  for (i = 0; i < SWIG_CACHESIZE; i++) {
@@ -206,13 +206,13 @@ char *SWIG_GetPointerObj(Tcl_Interp *interp, Tcl_Obj *objPtr, void **ptr, char *
 				  strcpy(temp_type,tp->name);
 				  strncat(temp_type,_t+len,255-tp->len);
 				  if (strcmp(_c,temp_type) == 0) {
-		  
+		
 					 strcpy(SwigCache[SwigCacheIndex].mapped,_c);
 					 strcpy(SwigCache[SwigCacheIndex].name,_t);
 					 SwigCache[SwigCacheIndex].stat = 1;
 					 SwigCache[SwigCacheIndex].tp = tp;
 					 SwigCacheIndex = SwigCacheIndex & SWIG_CACHEMASK;
-		  
+		
 					 /* Get pointer value */
 					 *ptr = (void *) _p;
 					 if (tp->cast) *ptr = (*(tp->cast))(*ptr);
@@ -224,7 +224,7 @@ char *SWIG_GetPointerObj(Tcl_Interp *interp, Tcl_Obj *objPtr, void **ptr, char *
 				/* Hmmm. Didn't find it this time */
 			 }
 		  }
-		  /* Didn't find any sort of match for this data.  
+		  /* Didn't find any sort of match for this data.
 			  Get the pointer value and return the received type */
 		  *ptr = (void *) _p;
 		  return _c;

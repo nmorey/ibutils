@@ -1,4 +1,4 @@
-#!/bin/bash 
+#!/bin/bash
 #
 # This software is available to you under a choice of one of two
 # licenses.  You may choose to be licensed under the terms of the GNU
@@ -22,7 +22,7 @@
 # pointing to the dir where this install script resides
 PACKAGE_ORIG_DIR=`cd ${0%*/*};pwd`
 
-# we modify the srcs so we need to 
+# we modify the srcs so we need to
 PACKAGE_DIR=/tmp/ibmgtsim_install_tmp
 if [ -d $PACKAGE_DIR ]; then
     rm -rf $PACKAGE_DIR
@@ -62,7 +62,7 @@ NO_BAR=0
 while [ "$1" ]; do
 #  echo "Current parsed param is : $1"
   case $1 in
-    "--prefix") 
+    "--prefix")
           PREFIX=$2
           shift
           ;;
@@ -78,7 +78,7 @@ while [ "$1" ]; do
           OSM_PREFIX=$2
           shift
           ;;
-    "--batch") 
+    "--batch")
           NO_BAR=1
           ;;
     *)
@@ -97,7 +97,7 @@ done
 
 tar_file=ibmgtsim-1.0.tar.gz
 
-cd $PACKAGE_DIR 
+cd $PACKAGE_DIR
 if test ! -f $tar_file; then
     echo " Fail to find matching tar file for the current platform:$tar_file"
     exit 1
@@ -116,9 +116,9 @@ rm -f /tmp/IBMGTSIM.make.log.* 2&>1 > /dev/null
 echo "IBMGTSIM installation at `date`." >| $MAKELOG
 echo "make log file:" >| $MAKELOG
 
-echo IBMGTSIM installation script 
+echo IBMGTSIM installation script
 echo Copyright \(C\) June 2005, Mellanox Technologies Ltd. ALL RIGHTS RESERVED.
-echo Use of software subject to the terms and conditions detailed in the 
+echo Use of software subject to the terms and conditions detailed in the
 echo file \"LICENSE.txt\".
 echo " "
 
@@ -156,7 +156,7 @@ if test -z $TCLSH; then
 else
  echo " Using tclsh from:$TCLSH"
  cfg="$cfg --with-tclsh=$TCLSH"
-fi 
+fi
 
 eval $cfg >> $CFGLOG 2>&1 &
 config_pid=$!

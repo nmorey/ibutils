@@ -1,12 +1,12 @@
 # This is the checker for Multiple SMs  Flow
 
 ##############################################################################
-# 
+#
 # Start up the test applications
 # This is the default flow that will start OpenSM only in 0x43 verbosity
 # Return a list of process ids it started (to be killed on exit)
 #
-proc runner {simDir osmPath osmPortGuid} { 
+proc runner {simDir osmPath osmPortGuid} {
    global simCtrlSock
    global env
 
@@ -14,16 +14,16 @@ proc runner {simDir osmPath osmPortGuid} {
    set osmLog [file join $simDir osm.log]
 
    fconfigure $simCtrlSock -blocking 1 -buffering line
-   
+
 	puts "---------------------------------------------------------------------\n"
 	puts " Running OpenSM:"
    set osmCmd "$osmPath -D 0x43 -d2 -f $osmLog -g $osmPortGuid"
    puts "-I- Starting: $osmCmd"
    set osmPid [eval "exec $osmCmd > $osmStdOutLog &"]
-   
+
    # start a tracker on the log file and process:
    startOsmLogAnalyzer $osmLog
-   
+
    return $osmPid
 }
 
@@ -45,7 +45,7 @@ proc checker {simDir osmPath osmPortGuid} {
 	set PORT_GUID(H-2/P1) [makeProcFSForNode $simDir H-2 1 1]
 	set PORT_GUID(H-3/P1) [makeProcFSForNode $simDir H-3 1 1]
 
-	# make sure /proc is updated ... 
+	# make sure /proc is updated ...
 	puts "---------------------------------------------------------------------\n"
 	puts " Creating /proc file system for H-1,H-2,H-3:"
 	puts $simCtrlSock "updateProcFSForNode \$fabric $simDir H-1/U1 H-1/U1 1"

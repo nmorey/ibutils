@@ -9,7 +9,7 @@
 -I- Building Gazelle: GZL4...
 -I- Building Gazelle: GZS1...
 -I- Building Gazelle: GZS2...
--I- Defined 198/600 systems/nodes 
+-I- Defined 198/600 systems/nodes
 -I- Assigned 1199 LIDs (lmc=1) in 13 steps
 -I- Init Min Hops Tables in:9 steps
 ---- CA to CA MIN HOP HISTOGRAM ----
@@ -131,7 +131,7 @@ COMM=  1|     0|     0|   813|     0|  7909|     0|     0|     0|     0|     0| 
 COMM=  2|     0|     0|     0|     0|     0|     0|   432|     0|     0|     0|  6012|     0|     0|     0| 20916|
 COMM=  3|     0|     0|     0|     0|     0|     0|     0|     0|     0|     0|     0|     0|     0|     0|     0|
 ------------------------------------
--I- Scanned:72962 CA to CA paths 
+-I- Scanned:72962 CA to CA paths
 -I- Registering System Factory for:Generic
 -I- Registering System Factory for:Reindeer
 -I- Registering System Factory for:Gazelle
@@ -143,7 +143,7 @@ COMM=  3|     0|     0|     0|     0|     0|     0|     0|     0|     0|     0| 
 -I- Building Gazelle: GZL4...
 -I- Building Gazelle: GZS1...
 -I- Building Gazelle: GZS2...
--I- Defined 198/600 systems/nodes 
+-I- Defined 198/600 systems/nodes
 -I- Assigned 1199 LIDs (lmc=1) in 13 steps
 -I- Init Min Hops Tables in:9 steps
 ---- CA to CA MIN HOP HISTOGRAM ----
@@ -267,4 +267,4 @@ COMM=  1|     0|     0|   813|     0|  7909|     0|     0|     0|     0|     0| 
 COMM=  2|     0|     0|     0|     0|     0|     0|   432|     0|     0|     0|  6012|     0|     0|     0| 20916|
 COMM=  3|     0|     0|     0|     0|     0|     0|     0|     0|     0|     0|     0|     0|     0|     0|     0|
 ------------------------------------
--I- Scanned:72962 CA to CA paths 
+-I- Scanned:72962 CA to CA paths

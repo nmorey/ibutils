@@ -5,12 +5,12 @@
 set Usage "Usage: $argv0 portNum <is3Lid> <remTavorLid> <badLid>"
 
 set Help "
- 
-IBCR API Test 
+
+IBCR API Test
 
 SYNOPSYS:
  $Usage
- 
+
 DESCRIPTION:
  This simple test works at the CR Space lowest level interface.
  It perfoems the following checks.
@@ -32,8 +32,8 @@ write1 - write to Tavor  and Read to see if got it.
 write2 - write to IS3  and Read to see if got it.
 write3 - write to bad lid - make sure we got an error
 
-API crWriteMulti : 
-write_multi1 - write to the 2 tavors 
+API crWriteMulti :
+write_multi1 - write to the 2 tavors
 write_multi2 - write twice to the IS3
 
 "
@@ -59,7 +59,7 @@ proc assoc {key key_list} {
 		if {[lindex $kv 0] == $key} {return [lrange $kv 1 end]}
 	}
 	return ""
-} 
+}
 
 # check if the given result is an error
 proc ibcr_is_error_res {data idx} {
@@ -137,8 +137,8 @@ for {set loop 0} {$loop < $numLoops} {incr loop} {
       puts "-E- crMultiMaxGet did not return 64"
       incr anyError
    }
-   
-   # 
+
+   #
    # API crRead :
    # get_1 - Use a good lid - check we did obtain some values
    set data [ex "crRead $is3Lid 0x60014"]
@@ -148,7 +148,7 @@ for {set loop 0} {$loop < $numLoops} {incr loop} {
       incr anyError
    }
 
-   
+
    set data [ex "crRead $remTavorLid 0xF0014"]
    set tavor_id [lindex [lindex $data 1 ] 1 ]
    if {[expr $tavor_id & 0xffff] != 0x5A44} {
@@ -164,8 +164,8 @@ for {set loop 0} {$loop < $numLoops} {incr loop} {
          incr anyError
       }
    }
-   
-   # 
+
+   #
    # API crReadMulti :
    # get_multi1 - Use local and remote lids - check we did devcie ids
    set data [ex "crReadMulti 3 {$locLid $remTavorLid $is3Lid} 0xF0014"]
@@ -195,7 +195,7 @@ for {set loop 0} {$loop < $numLoops} {incr loop} {
       puts "-E- Failed to validate IS3 Device ID for lid $is3Lid."
       incr anyError
    }
-   
+
    # get_multi2 - Use local, remote and bad lids - check we obtain some data.
    set lidsList "$locLid $remTavorLid $is3Lid"
    for {set badIdx 0} {$badIdx < 4} {incr badIdx} {
@@ -223,7 +223,7 @@ for {set loop 0} {$loop < $numLoops} {incr loop} {
    set res [ex "crWrite $locLid $data $addr"]
    if {$res != 0} {
       puts "-E- Fail to write : crWrite $locLid $data $addr"
-      incr anyError      
+      incr anyError
    } else {
       set rdata [ex "crRead $locLid $addr"]
       set rdata [assoc data $rdata]
@@ -232,12 +232,12 @@ for {set loop 0} {$loop < $numLoops} {incr loop} {
          incr anyError
       }
    }
-   
+
    # do a multi write ...
    set res [ex "crWriteMulti 2 {$locLid $remTavorLid} $data $addr"]
    if {$res != 0} {
       puts "-E- Fail to multi write : crWriteMulti 2 {$locLid $remTavorLid} $data $addr"
-      incr anyError 
+      incr anyError
    } else {
       set rdata [ex "crRead $locLid $addr"]
       set rdata [assoc data $rdata]
@@ -252,7 +252,7 @@ for {set loop 0} {$loop < $numLoops} {incr loop} {
          incr anyError
       }
    }
-      
+
 }
 
 if {$anyError} {

@@ -51,13 +51,13 @@ ibdmchk_DEPENDENCIES=../datamodel/libibdmcom.la
 ibtopodiff_DEPENDENCIES=../datamodel/libibdmcom.la
 ibnlparse_DEPENDENCIES=../datamodel/libibdmcom.la
 
-# Deprecated : ibdmsim_SOURCES = fabric_sim.cpp 
-ibdmtr_SOURCES = fabric_tr.cpp 
-ibdmchk_SOURCES = osm_check.cpp 
+# Deprecated : ibdmsim_SOURCES = fabric_sim.cpp
+ibdmtr_SOURCES = fabric_tr.cpp
+ibdmchk_SOURCES = osm_check.cpp
 ibtopodiff_SOURCES = test_topo_match.cpp
 ibnlparse_SOURCES = test_ibnl_parser.cpp
 
-#regexp_test_SOURCES = regexp_test.cpp 
+#regexp_test_SOURCES = regexp_test.cpp
 
 # Don't distribute common.h, since it is build host dependent!
 dist-hook:

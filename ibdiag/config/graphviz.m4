@@ -1,5 +1,5 @@
 dnl This macro checks for the existance of Graphviz libs
-dnl 
+dnl
 dnl Synopsys:
 dnl    SET_GRAPHVIZ_LIBS()
 dnl

@@ -6,7 +6,7 @@ MTS800 SW_L2_1
    P5 -4x-5G-> Gnu L1_1 M/P1
    P6 -4x-5G-> Gnu L1_1 M/P2
    P7 -4x-5G-> Gnu L1_2 M/P1
-   P8 -4x-5G-> Gnu L1_2 M/P2 
+   P8 -4x-5G-> Gnu L1_2 M/P2
 
 MTS800 SW_L2_2
    P1 -4x-5G-> Cougar H-5 P1
@@ -16,7 +16,7 @@ MTS800 SW_L2_2
    P5 -4x-5G-> Gnu L1_1 M/P3
    P6 -4x-5G-> Gnu L1_1 M/P4
    P7 -4x-5G-> Gnu L1_2 M/P3
-   P8 -4x-5G-> Gnu L1_2 M/P4 
+   P8 -4x-5G-> Gnu L1_2 M/P4
 
 MTS800 SW_L2_3
    P1 -4x-5G-> Cougar H-9 P1	
@@ -26,7 +26,7 @@ MTS800 SW_L2_3
    P5 -4x-5G-> Gnu L1_1 M/P5
    P6 -4x-5G-> Gnu L1_1 M/P6
    P7 -4x-5G-> Gnu L1_2 M/P5
-   P8 -4x-5G-> Gnu L1_2 M/P6 
+   P8 -4x-5G-> Gnu L1_2 M/P6
 
 MTS800 SW_L2_4
    P1  -4x-5G-> Cougar H-13 P1
@@ -36,7 +36,7 @@ MTS800 SW_L2_4
    P5 -4x-5G-> Gnu L1_1 M/P7
    P6 -4x-5G-> Gnu L1_1 M/P8
    P7 -4x-5G-> Gnu L1_2 M/P7
-   P8 -4x-5G-> Gnu L1_2 M/P8 
+   P8 -4x-5G-> Gnu L1_2 M/P8
    	
 MTS800 SW_L2_5
    P1 -4x-5G-> Cougar H-17 P1
@@ -46,7 +46,7 @@ MTS800 SW_L2_5
    P5 -4x-5G-> Gnu L1_1 L1/P1
    P6 -4x-5G-> Gnu L1_1 L1/P2
    P7 -4x-5G-> Gnu L1_2 L1/P1
-   P8 -4x-5G-> Gnu L1_2 L1/P2 
+   P8 -4x-5G-> Gnu L1_2 L1/P2
 
 MTS800 SW_L2_6
    P1 -4x-5G-> Cougar H-21 P1
@@ -56,7 +56,7 @@ MTS800 SW_L2_6
    P5 -4x-5G-> Gnu L1_1 L1/P3
    P6 -4x-5G-> Gnu L1_1 L1/P4
    P7 -4x-5G-> Gnu L1_2 L1/P3
-   P8 -4x-5G-> Gnu L1_2 L1/P4 
+   P8 -4x-5G-> Gnu L1_2 L1/P4
 
 MTS800 SW_L2_7
    P1 -4x-5G-> Cougar H-25 P1
@@ -66,7 +66,7 @@ MTS800 SW_L2_7
    P5 -4x-5G-> Gnu L1_1 L2/P1
    P6 -4x-5G-> Gnu L1_1 L2/P2
    P7 -4x-5G-> Gnu L1_2 L2/P1
-   P8 -4x-5G-> Gnu L1_2 L2/P2 
+   P8 -4x-5G-> Gnu L1_2 L2/P2
 
 MTS800 SW_L2_8
    P1 -4x-5G-> Cougar H-29 P1
@@ -76,5 +76,5 @@ MTS800 SW_L2_8
    P5 -4x-5G-> Gnu L1_1 L2/P3
    P6 -4x-5G-> Gnu L1_1 L2/P4
    P7 -4x-5G-> Gnu L1_2 L2/P3
-   P8 -4x-5G-> Gnu L1_2 L2/P4 
+   P8 -4x-5G-> Gnu L1_2 L2/P4
 

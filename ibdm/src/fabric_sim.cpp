@@ -15,7 +15,7 @@
 /*
 
 Fabric Simulator
-  
+
 Reads a cabling list file and run OpenSM like initialization
 providing statistics and analysis.
 
@@ -27,7 +27,7 @@ providing statistics and analysis.
 
 #include <getopt.h>
 
-static char FabricSimUsage[] = 
+static char FabricSimUsage[] =
 "Usage: ibdmsim [-v][-h] {-c <cbaling file>|-t <topo file>} -s <sm node name> -p <sm port num> [-l <lmc>] [-a][-e]";
 
 void
@@ -35,7 +35,7 @@ show_usage() {
   cout << FabricSimUsage << endl;
 }
 
-void 
+void
 show_help() {
   cout << "\n"
        << " Fabric Simulator\n"
@@ -76,7 +76,7 @@ show_help() {
 
 int main (int argc, char **argv) {
   /*
-   * Parseing of Command Line 
+   * Parseing of Command Line
    */
 
   int EnhancedRouting = 0;
@@ -102,14 +102,14 @@ int main (int argc, char **argv) {
 		{	"help",		     0,	NULL,	'h'},
 		{	"analyze-loops", 0,	NULL,	'a'},
 		{	"sm-node",	     1,	NULL,	's'},
-		{  "enhanced-route",0,  NULL, 'e'}, 
+		{  "enhanced-route",0,  NULL, 'e'},
 		{	"port-num",	     1,	NULL,	'p'},
 		{	"lmc",	        1,	NULL,	'l'},
 		{	"cables",	     1,	NULL,	'c'},
 		{	"topology",	     1,	NULL,	't'},
 		{	NULL,		0,	NULL,	 0 }	/* Required at the end of the array */
 	 };
-  
+
   printf("-------------------------------------------------\n");
   do
   {
@@ -221,7 +221,7 @@ int main (int argc, char **argv) {
       exit(1);
     }
   }
-    
+
 	// get the SM Port
 	IBNode *p_smNode = fabric.getNode(SmNodeName);
 	if (! p_smNode ) {
@@ -231,7 +231,7 @@ int main (int argc, char **argv) {
 
 	IBPort *p_smPort = p_smNode->getPort(SmPortNum);
 	if (! p_smPort) {
-	  cout <<  "-E- Fail to find SM Port: " << SmNodeName 
+	  cout <<  "-E- Fail to find SM Port: " << SmNodeName
 			 << "/" << SmPortNum << endl;
 	  exit(1);
 	}
@@ -249,7 +249,7 @@ int main (int argc, char **argv) {
 	}
 
 	if (!EnhancedRouting) {
-	  
+	
 	  if (SubnMgtOsmRoute(&fabric)) {
 		 cout << "-E- Fail to update LFT Tables." << endl;
 		 exit(1);
@@ -268,7 +268,7 @@ int main (int argc, char **argv) {
 
 	if (AnalyzeLoops) {
      list <IBNode *> rootNodes;
-     
+
      rootNodes = SubnMgtFindRootNodesByMinHop(&fabric);
      if (!rootNodes.empty()) {
        cout << "-I- Recognized " << rootNodes.size() << " root nodes:" << endl;
@@ -277,7 +277,7 @@ int main (int argc, char **argv) {
          cout << " " << (*nI)->name << endl;
        }
        cout << "-----------------------------------------" << endl;
-       
+
        // rank the fabric by these roots
        map_pnode_int nodesRank;
        SubnRankFabricNodesByRootNodes(&fabric, rootNodes, nodesRank);

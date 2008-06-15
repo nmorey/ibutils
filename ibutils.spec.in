@@ -38,7 +38,7 @@ Source: %{name}-%{version}.tar.gz
 BuildRoot: %{?build_root:%{build_root}}%{!?build_root:%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)}
 # Requires: opensm
 Vendor: Mellanox Technologies Ltd.
-%description 
+%description
 ibutils provides IB network and path diagnostics.
 
 
@@ -86,7 +86,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %post
 /sbin/ldconfig
- 
+
 ###
 ### Files
 ###

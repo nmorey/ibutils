@@ -1,4 +1,4 @@
-                     Open Fabrics InfiniBand Diagnostic Utilities 
+                     Open Fabrics InfiniBand Diagnostic Utilities
                      --------------------------------------------
 
 *******************************************************************************
@@ -10,7 +10,7 @@ Table of Contents
 ===============================================================================
 1. Overview
 2. New features
-3. Major Bugs Fixed 
+3. Major Bugs Fixed
 4. Known Issues
 
 ===============================================================================
@@ -30,7 +30,7 @@ The following new checks were added to the tools:
 
 ibdiagnet new features:
 -----------------------
-+ Partitions Check: 
++ Partitions Check:
   - Validate all leaf switch ports (conencted to a host) which enforce
     partitions are not blocking partitions set on the host ports they
     are connected to.
@@ -51,18 +51,18 @@ Other changes:
 + The multicast groups report was enhanced to provide the details of each
   group and the memebers list is provided in a new report file: ibdiagnet.mcgs.
 
-+ A new flag, -wt <file-name>, was added. ibdiagnet, with the new option, 
++ A new flag, -wt <file-name>, was added. ibdiagnet, with the new option,
   writes out a discovered topology file by the provided file-name and
   the required new IBNL files into an output directory named ibdiag_ibnl.
   This new feature allows you to capture the current state of the fabric
   and later compare to it. Such the features provided by the "Topology
-  Matching" check become available. These feature include recognizing 
-  changes in connections, speed and width. 
+  Matching" check become available. These feature include recognizing
+  changes in connections, speed and width.
 
 + Load subnet database from file:
-  Ibdiagnet dumps its internal database, which contains the subnet structure, 
+  Ibdiagnet dumps its internal database, which contains the subnet structure,
   to a file (/tmp/ibdiagnet.db by default). This file can be loaded in later
-  ibdiagnet runs (using the -load_db <db file> option). When this option is set, 
+  ibdiagnet runs (using the -load_db <db file> option). When this option is set,
   ibdiagnet loads the subnet data from the file and skips the discovery stage.
   Using this option can save the subnet discovery time for large cluster.
   Note: Some if ibdiagnet checks would not be performed when the -load_db
@@ -71,21 +71,21 @@ Other changes:
         - Zero guids.
         - Links in INIT state.
         - SMs status.
-  
- + A new flag, -skip <skip-option(s)>, was added. When this flag is specified, 
+
+ + A new flag, -skip <skip-option(s)>, was added. When this flag is specified,
    ibdiagnet skips the given check. One or more space separated values can be
    specified.
    Available skip options: dup_guids, zero_guids, pm, logical_state, part, ipoib.
-   The -skip flag can be used in order to run only specific checks, or to reduce 
+   The -skip flag can be used in order to run only specific checks, or to reduce
    ibdiagnet run time.
 
 ibdiagpath new features:
 ------------------------
-+ Partitions Check: 
++ Partitions Check:
   - The list of partitions of source and destination ports is reported.
   - A check for which partitions are common to the source, destination and
     every port on the path (if enforcing partitions) is calculated and
-    reported. A warning is provided if a source partition is blocked by 
+    reported. A warning is provided if a source partition is blocked by
     a port on the path.
     An error is provided in there are no common partitions for the path.
 
@@ -96,13 +96,13 @@ ibdiagpath new features:
     provided.
 
 + QoS Check:
-  With the introduction of QoS, the following new issues might arise from 
+  With the introduction of QoS, the following new issues might arise from
   impropper setup of the fabric:
-  - VL Arbitration Tables might use VLs which are higher then the currently 
+  - VL Arbitration Tables might use VLs which are higher then the currently
     supported maximal VL on the port. A warning is provided for such cases.
   - VL Arbitration Tables might "block" a VL by setting its weight to zero.
     A warning is provided for these cases
-  - SLs (service levels) might be mapped to VLs which are blocked by the 
+  - SLs (service levels) might be mapped to VLs which are blocked by the
     two above rules. In such case these SLs can not be used by the path.
     A report including the set of "valid" SLs for the path is provided.
   - If there are no "valid" SLs an error is provided since the source and
@@ -114,10 +114,10 @@ A summary table of all the checks perfomed and their total number of errors and
 warnings was added to the tools standard output.
 
 ===============================================================================
-3. Major Bugs Fixed 
+3. Major Bugs Fixed
 ===============================================================================
 
-+ Fabrics Qualities report is now available in the main log file (and not only 
++ Fabrics Qualities report is now available in the main log file (and not only
   in the standard output
 
 ===============================================================================
@@ -127,11 +127,11 @@ warnings was added to the tools standard output.
 - Ibdiagnet tries to query port counters for ports in INIT state. In this
   case, run time would be longer and an error message for each port would be
   printed to screen.
-  Workaround: 
+  Workaround:
   * Use "-skip pm" option if links in INIT state are found.
   * Run opensm to activate the links.
 
-- A failure in IPoIB check may cause ibdiagnet to exit, without printing the 
+- A failure in IPoIB check may cause ibdiagnet to exit, without printing the
   summary report.
 
 - Ibdiagnet "-wt" option may generate a bad topology file when running on a
@@ -154,7 +154,7 @@ Table of Contents
 1. Overview
 ===============================================================================
 
-The ibdiag package provides tools that encapsulate the best known diagnostic 
+The ibdiag package provides tools that encapsulate the best known diagnostic
 procedures for InfiniBand fabrics. Target users of these utilities are network
 managers not expert in the details of the InfiniBand specification.
 
@@ -168,14 +168,14 @@ o ibdiagnet - performs a diagnostic check of the entire network.
      groups)
     - Check for fabric links health
 
-o ibdiagpath - traces a path between two nodes specified by LIDs or a directed 
-  path. This utility should be used when connectivity between specific two 
+o ibdiagpath - traces a path between two nodes specified by LIDs or a directed
+  path. This utility should be used when connectivity between specific two
   hosts is broken.
 
-o ibdiagui - a graphic user interface on top of ibdiagnet 
-  Mostly suitable for medium size fabrics (<100 nodes) and for users who needs 
-  to explore an unknown network. The main features it provides is an 
-  automatically generated connectivity graph, an object properties browser and 
+o ibdiagui - a graphic user interface on top of ibdiagnet
+  Mostly suitable for medium size fabrics (<100 nodes) and for users who needs
+  to explore an unknown network. The main features it provides is an
+  automatically generated connectivity graph, an object properties browser and
   hyperlinking of ibdiagnet log to these widgets.
 
 Note: man pages are provided for each tools.
@@ -196,7 +196,7 @@ The package tools performs the following diagnostic procedures:
   - An InfiniBand link is in the INIT state, which prevents data transfer
   - Unexpected link width (when using the -lw flag)
   - Unexpected link speed (when using the -ls flag)
-  - Check for partitions and SL2VL settings preventing communication between 
+  - Check for partitions and SL2VL settings preventing communication between
      specific nodes (ibdiagpath)
 
 ===============================================================================
@@ -205,17 +205,17 @@ The package tools performs the following diagnostic procedures:
 
 Software dependency:
 
-1. ibis and ibdm must be installed (are included in same 
+1. ibis and ibdm must be installed (are included in same
 
 2. ibdiagui also depends on installation of the following packages:
-    * Tk8.4 is standard on all Linux distributions, but if not please 
+    * Tk8.4 is standard on all Linux distributions, but if not please
       download and install from:
       http://www.tcl.tk/software/tcltk/
-    * Graphviz - an automatic graph layout utility. Should be downloaded 
+    * Graphviz - an automatic graph layout utility. Should be downloaded
       and installed from:
       http://www.graphviz.org/
 
-3. ibdiags are part of the ibutils package and should be installed 
+3. ibdiags are part of the ibutils package and should be installed
     as part of it. Updates are possible as standalone package.
 
 ===============================================================================
@@ -227,33 +227,33 @@ Both utilities collect summary information regarding all the fabric SM's
 during the run, and then output that information at end of the run in file
 /tmp/ibdiagnet.sm.
 
-Each report message includes: 
+Each report message includes:
    - Device Type
    - Device portGUID
-   - The direct path to the device 
+   - The direct path to the device
    - If a topology file is provided to be matched with the discovered fabric,
      the node name is also provided in the report message. Otherwise, host
-     names are included only in HCA-related report messages.  
+     names are included only in HCA-related report messages.
 
 ===============================================================================
 4. Known Issues
 ===============================================================================
    ibdiagpath issues:
    - If no subnet manager is initialized in the subnet, FDB tables may be
-     incorrectly set. Consequently, PortCounter MADs cannot be sent. 
+     incorrectly set. Consequently, PortCounter MADs cannot be sent.
 
    - A link along a LID-routed path in INIT state causes ibdiagpath performance
      queries to fail. The performance queries fail since they cannot proceed
-      via non-ACTIVE links. 
+      via non-ACTIVE links.
 
    - ibdiagpath cannot validate the provided topology file against the
       existing fabric topology. If the topology file includes a device/link
-      that does not exist, or the device/link information is incorrect, 
+      that does not exist, or the device/link information is incorrect,
       then ibdiagpath may - in name-based routing - extract a non-existing
       path based on the incorrect topology file.
 
-   - If the hostname provided for the -s flag is not the actual local 
-      hostname, then all the extracted names from the topology file will 
+   - If the hostname provided for the -s flag is not the actual local
+      hostname, then all the extracted names from the topology file will
       be incorrect. However, all the other information provided will be correct.
 
    - Executing "ibis exit" in order to terminate ibis, while running over

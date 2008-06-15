@@ -1,10 +1,10 @@
-#!/bin/bash 
+#!/bin/bash
 # fprogbar: File PROGress BAR
 #   This script output a progress bar in the terminal width which monitors
-#   file size relative to final expected size. 
+#   file size relative to final expected size.
 #   This may be used to provide a progress bar by applying to build output
 #   log file (when final size of the log file is approx. known)
-#   If a process ID is given, the fprogbar will terminate only when the 
+#   If a process ID is given, the fprogbar will terminate only when the
 #   given process ID is gone from the active processes list.
 #
 # Note: It is recommended to provide final size which is a bit less than
@@ -41,7 +41,7 @@ let percent=0
 
 # Update dots until final size is reached
 while ((1)); do
-  lead_proc_cnt=`ps -eo "%p" | awk '$1 == '$pid2track' {print}' | wc -l` 
+  lead_proc_cnt=`ps -eo "%p" | awk '$1 == '$pid2track' {print}' | wc -l`
   current_sz=`ls -l $file | awk '{print $5}'`
   let req_bars=$current_sz/$bytes_per_dot
   if [ $req_bars -ge $num_of_dots ]; then
@@ -54,9 +54,9 @@ while ((1)); do
   done
 
   # Check if reached expected file size
-  if [ \( $cur_bars -eq $num_of_dots \) -o \( $percent -ge 100 \)  ]; then 
+  if [ \( $cur_bars -eq $num_of_dots \) -o \( $percent -ge 100 \)  ]; then
     echo " 100%"
-    exit 0 
+    exit 0
   fi
 
   if [ $lead_proc_cnt -eq 0 ]; then
@@ -65,5 +65,5 @@ while ((1)); do
     exit 2
   fi
 
- usleep 200000 
-done  
+ usleep 200000
+done

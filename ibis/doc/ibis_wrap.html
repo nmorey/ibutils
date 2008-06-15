@@ -72,7 +72,7 @@ IBIS Tcl Extension</TITLE>
 
 <A name="s1_">
 <HR><H2>1. IBCR Functions</H2></A>
-<PRE>   IBCR UI functions   
+<PRE>   IBCR UI functions
 
 </PRE>
 <P><PRE>
@@ -105,7 +105,7 @@ They all return 0 on succes.</PRE>
 
 <A name="s2_">
 <HR><H2>2. IBPM Functions</H2></A>
-<PRE>   IBPM UI functions   
+<PRE>   IBPM UI functions
 
 </PRE>
 <P><PRE>
@@ -138,7 +138,7 @@ They all return 0 on succes.</PRE>
 
 <A name="s3_">
 <HR><H2>3. IB Vendor Specific Functions</H2></A>
-<PRE>   IBVS UI functions   
+<PRE>   IBVS UI functions
 
 </PRE>
 <P><PRE>
@@ -211,7 +211,7 @@ They all return 0 on succes.</PRE>
 
 <A name="s4_">
 <HR><H2>4. IBBBM Functions</H2></A>
-<PRE>   IBBBM UI functions   
+<PRE>   IBBBM UI functions
 
 </PRE>
 <P><PRE>
@@ -248,37 +248,37 @@ They all return 0 on succes.</PRE>
 
 <A name="s5_">
 <HR><H2>5. IBSAC Constants</H2></A>
-   These constants are provided by IBIS:   
+   These constants are provided by IBIS:
 
 <A name="s6_">
 <HR><H2>6. IBSAC Objects</H2></A>
-<PRE>   This section describes the various object types exposed by IBSAC.   
+<PRE>   This section describes the various object types exposed by IBSAC.
 
 </PRE>
 <P><PRE>
 
-  IBSAC exposes some of its internal subnet objects. The objects 
+  IBSAC exposes some of its internal subnet objects. The objects
   identifiers returned by the various function calls are formatted
   acording to the following rules:
   ni:&lt;idx&gt; = node info objects
- 
-  IBIS Objects are standard Swig-Tcl objects. 
+
+  IBIS Objects are standard Swig-Tcl objects.
   As such they have two flavors for their usage: Variables, Objects.
 
   Variables:
      For each object attribute a &quot;get&quot; and &quot;set&quot; methods are provided.
 	  The format of the methods is: &lt;class&gt;_&lt;attribute&gt;_&lt;get|set&gt;.
-     The &quot;set&quot; method is only available for read/write attributes. 
+     The &quot;set&quot; method is only available for read/write attributes.
 
   Example:
   ib_node_info_t_port_guid_get ni:1
-														  
+														
   Objects:
      Given an object identifier one can convert it to a Tcl &quot;Object&quot;
 	  using the following command:
      &lt;class&gt; &lt;obj_name&gt; -this &lt;obj identifier&gt;
- 
-     Once declared the &lt;obj-name&gt; can be used in conjunction to 
+
+     Once declared the &lt;obj-name&gt; can be used in conjunction to
      with the standard &quot;configure&quot; and &quot;cget&quot; commands.
 
   Example: (following the previous one):
@@ -2093,12 +2093,12 @@ for switch: port number, for CA: reserved
 <P><PRE>
 
   Subnet Management:
-    The SM interface supports sending Subnet Management Packets to 
+    The SM interface supports sending Subnet Management Packets to
     the fabric devices.
 
     A set of object types is defined. The user can allocate a new attribute
-    object. Then the object can be set using configure or the direct 
-    manipulation methods. 
+    object. Then the object can be set using configure or the direct
+    manipulation methods.
 
     Extra methods are provided for each object:
     setByDr &lt;dr&gt; &lt;attrMod&gt;
@@ -2108,11 +2108,11 @@ for switch: port number, for CA: reserved
 
 <A name="s7_">
 <HR><H2>7. IBSM Constants</H2></A>
-   These constants are provided by IBSM:   
+   These constants are provided by IBSM:
 
 <A name="s8_">
 <HR><H2>8. IBSM Objects</H2></A>
-<PRE>   This section describes the various object types exposed by IBSM.   
+<PRE>   This section describes the various object types exposed by IBSM.
 
 </PRE>
 <P><PRE>
@@ -3080,7 +3080,7 @@ new system image guid
 
 <A name="s9_">
 <HR><H2>9. IBIS Constants</H2></A>
-   These constants are provided by IBIS:   
+   These constants are provided by IBIS:
 
 <A name="s9_1_">
 <H3>9.1. Log Verbosity Flags</H3></A>
@@ -3118,7 +3118,7 @@ new system image guid
 <PRE></PRE>
 <A name="s11_">
 <HR><H2>11. IBIS Functions</H2></A>
-<PRE>   IBIS UI functions   
+<PRE>   IBIS UI functions
 
 </PRE>
 <P><PRE>
@@ -3127,7 +3127,7 @@ They all return 0 on succes.</PRE>
 
 <P><TT><B>ibis_puts verbosity msg </B></TT>
 <BLOCKQUOTE><PRE>[ returns int  ]
-Append a message to the OpenSM log   
+Append a message to the OpenSM log
 </PRE></BLOCKQUOTE>
 
 <A name="s11_1_">
@@ -3137,61 +3137,61 @@ IBIS Options:
 The IBIS options are available through the predefined object: ibis_opts.
 It can be manipulated using the standard Tcl methods: cget and configure.
 Examples: ibis_opts cget -force_log_flush
-          ibis_opts configure -force_log_flush TRUE   
+          ibis_opts configure -force_log_flush TRUE
 
 </PRE>
 <P><TT><B>-single_thread
 </B></TT>
 <BLOCKQUOTE><PRE>[ Member data: returns boolean_t * ]
-run single threaded   
+run single threaded
 </PRE></BLOCKQUOTE>
 
 <P><TT><B>-force_log_flush
 </B></TT>
 <BLOCKQUOTE><PRE>[ Member data: returns boolean_t * ]
-If TRUE - forces flash after each log message (TRUE).   
+If TRUE - forces flash after each log message (TRUE).
 </PRE></BLOCKQUOTE>
 
 <P><TT><B>-log_flags
 </B></TT>
 <BLOCKQUOTE><PRE>[ Member data: returns uint8_t * ]
-The log levels to be used   
+The log levels to be used
 </PRE></BLOCKQUOTE>
 
 <P><TT><B>-log_file
 </B></TT>
 <BLOCKQUOTE><PRE>[ Member data: returns char * ]
-The name of the log file used (read only)   
+The name of the log file used (read only)
 </PRE></BLOCKQUOTE>
 
 <P><TT><B>ibis_init </B></TT>
 <BLOCKQUOTE><PRE>[ returns int  ]
-Initialize ibis object   
+Initialize ibis object
 </PRE></BLOCKQUOTE>
 
 <P><TT><B>ibis_set_verbosity level </B></TT>
 <BLOCKQUOTE><PRE>[ returns int  ]
-Change the log verbosity   
+Change the log verbosity
 </PRE></BLOCKQUOTE>
 
 <P><TT><B>ibis_set_port guid </B></TT>
 <BLOCKQUOTE><PRE>[ returns int  ]
-Set the port IBIS is attached to and initialize all sub packages   
+Set the port IBIS is attached to and initialize all sub packages
 </PRE></BLOCKQUOTE>
 
 <P><TT><B>ibis_get_port </B></TT>
 <BLOCKQUOTE><PRE>[ returns new_uint64_t  ]
-Provide the GUID of the port IBIS is attached to   
+Provide the GUID of the port IBIS is attached to
 </PRE></BLOCKQUOTE>
 
 <P><TT><B>ibis_set_transaction_timeout timeout_ms </B></TT>
 <BLOCKQUOTE><PRE>[ returns int  ]
-Set the transaction time out in [msec]   
+Set the transaction time out in [msec]
 </PRE></BLOCKQUOTE>
 
 <P><TT><B>ibis_exit </B></TT>
 <BLOCKQUOTE><PRE>[ returns int  ]
-Exit IBIS.   
+Exit IBIS.
 </PRE></BLOCKQUOTE>
 
 <P><PRE>

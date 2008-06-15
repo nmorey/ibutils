@@ -5,12 +5,12 @@
 set Usage "Usage: $argv0 portNum i2c|flash <remLid1> <remLid2>"
 
 set Help "
- 
-IBVS API Test 
+
+IBVS API Test
 
 SYNOPSYS:
  $Usage
- 
+
 DESCRIPTION:
  This simple test works at the Vendor Specific lowest level interface.
  It either works on a flash or i2c controlled ROM.
@@ -71,7 +71,7 @@ proc assoc {key key_list} {
 		if {[lindex $kv 0] == $key} {return [lrange $kv 1 end]}
 	}
 	return ""
-} 
+}
 
 ########################################################################
 
@@ -153,7 +153,7 @@ for {set i 0} {$i < $numLoops} {incr i} {
          puts "-E- Expected 0x53010000 as the data3 got:$DATA1(3)"
          incr anyError
       }
-      
+
       # read2 - repeat from the other devices
       set data [ex "vsI2cRead $remLid1 1 0x56 32 0x30"]
       for {set i 0} {$i < 4} {incr i} {
@@ -196,7 +196,7 @@ for {set i 0} {$i < $numLoops} {incr i} {
          }
       }
 
-      # read4 - try reading same multi read but this time with some garbadge 
+      # read4 - try reading same multi read but this time with some garbadge
       #         lid too. verify we still get what expect.
       set mdata [ex "vsI2cReadMulti 3 {$remLid1 $remLid2 99} 1 0x56 32 0x30"]
       if {[llength $mdata] != 3} {
@@ -222,7 +222,7 @@ for {set i 0} {$i < $numLoops} {incr i} {
             incr anyError
          }
       }
-      
+
       # writ1 - modify the data using vsI2cWrite (with some random data)
       set newWords {}
       for {set i 0} {$i < 4} {incr i} {
@@ -264,8 +264,8 @@ for {set i 0} {$i < $numLoops} {incr i} {
             }
          }
       }
-      
-      # 
+
+      #
    } else {
       puts "-E- Unsupported Mode:$mode"
       exit 1

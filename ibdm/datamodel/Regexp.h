@@ -35,7 +35,7 @@
 #ifndef IBDM_REXIFC_H
 #define IBDM_REXIFC_H
 
-// this file holds simplified object oriented interface for 
+// this file holds simplified object oriented interface for
 // reguar expressions
 #include <string.h>
 #include <sys/types.h>
@@ -54,14 +54,14 @@ class rexMatch {
  public:
   // no default constructor
   rexMatch();
-  
+
   // construct:
   rexMatch(const char *s, int numMatches) {
 	 str = s;
 	 nMatches = numMatches;
 	 matches = new regmatch_t[nMatches + 1];
   };
-  
+
   // destrutor:
   ~rexMatch() {
 	 delete [] matches;
@@ -90,7 +90,7 @@ class rexMatch {
 	 res = tmp.substr(matches[num].rm_so, matches[num].rm_eo - matches[num].rm_so);
 	 return 0;
   };
- 
+
   string field(int num) {
 	 string tmp = string(str);
 	 // check for non match:
@@ -99,13 +99,13 @@ class rexMatch {
 	 }
 	 return tmp.substr(matches[num].rm_so, matches[num].rm_eo - matches[num].rm_so);
   };
-  
+
   inline int numFields() {return nMatches;};
 
   friend class regExp;
 };
 
-// this will basically hold the compiled regular expression 
+// this will basically hold the compiled regular expression
 class regExp {
   regex_t re;
   char *expr;
@@ -143,7 +143,7 @@ class regExp {
 	 }
 	 return res;
   }
-  
+
   friend class rexMatch;
 };
 

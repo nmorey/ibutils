@@ -111,7 +111,7 @@ int main (int argc, char **argv) {
       {  "topology",      1,  NULL, 't'},
       {  NULL,    0, NULL,  0 }  /* Required at the end of the array */
     };
- 
+
   printf("-------------------------------------------------\n");
   do
   {
@@ -125,7 +125,7 @@ int main (int argc, char **argv) {
       FabricUtilsVerboseLevel |= FABU_LOG_VERBOSE;
       printf(" Verbose Mode\n");
       break;
-   
+
     case 's':
       /*
         Specifies SM Node
@@ -166,7 +166,7 @@ int main (int argc, char **argv) {
       show_help();
       return 0;
       break;
-      
+
     case -1:
       break; /* done with option */
     default: /* something wrong */

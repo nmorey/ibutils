@@ -203,7 +203,7 @@ ibvs_bind(
     VS_MIRROR,
     ibis_gsi_sync_mad_batch_callback,
     (void *)p_ibvs);
-  
+
   status = ibis_gsi_mad_ctrl_set_class_attr_cb(
     &(IbisObj.mad_ctrl),
     VS_CLASS ,
@@ -805,7 +805,7 @@ ibvs_multi_sw_reset(
   uint8_t         i;
   osm_madw_t     *p_madw_arr[IBVS_MULTI_MAX];
   ib_vs_t         res_mads[IBVS_MULTI_MAX];
-    
+
   OSM_LOG_ENTER(&(IbisObj.log));
 
   if (num > IBVS_MULTI_MAX)
@@ -1261,8 +1261,8 @@ ibvs_mirror_read(
 
   *p_madw_arr = p_madw;
 
-  __ibvs_init_mad_hdr(VENDOR_GET, VS_MIRROR, SWITCH_PORT, p_madw);  
- ((ib_vs_t *)p_madw->p_mad)->vendor_key = 
+  __ibvs_init_mad_hdr(VENDOR_GET, VS_MIRROR, SWITCH_PORT, p_madw);
+ ((ib_vs_t *)p_madw->p_mad)->vendor_key =
  cl_hton64(IbisObj.p_opt->v_key);
 
   status = ibis_gsi_send_sync_mad_batch(
@@ -1279,7 +1279,7 @@ ibvs_mirror_read(
 
 
 /**********************************************************************
- 
+
 **********************************************************************/
 
 
@@ -1311,11 +1311,11 @@ ibvs_mirror_write(
 
   *p_madw_arr = p_madw;
 
-  __ibvs_init_mad_hdr(VENDOR_SET, VS_MIRROR, SWITCH_PORT, p_madw);  
- ((ib_vs_t *)p_madw->p_mad)->vendor_key = 
+  __ibvs_init_mad_hdr(VENDOR_SET, VS_MIRROR, SWITCH_PORT, p_madw);
+ ((ib_vs_t *)p_madw->p_mad)->vendor_key =
  cl_hton64(IbisObj.p_opt->v_key);
 
-  ((ib_vs_t *)p_madw->p_mad)->data[0] = cl_hton32(rx_mirror);  
+  ((ib_vs_t *)p_madw->p_mad)->data[0] = cl_hton32(rx_mirror);
  ((ib_vs_t *)p_madw->p_mad)->data[1] = cl_hton32(tx_mirror);
 
 
@@ -1420,8 +1420,8 @@ ibvs_general_info_get(
 
   *p_madw_arr = p_madw;
 
-  __ibvs_init_mad_hdr(VENDOR_GET, VS_GENERAL_INFO_ATTR, 0, p_madw);  
- ((ib_vs_t *)p_madw->p_mad)->vendor_key = 
+  __ibvs_init_mad_hdr(VENDOR_GET, VS_GENERAL_INFO_ATTR, 0, p_madw);
+ ((ib_vs_t *)p_madw->p_mad)->vendor_key =
 	 cl_hton64(IbisObj.p_opt->v_key);
 
   status = ibis_gsi_send_sync_mad_batch(

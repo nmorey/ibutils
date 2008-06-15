@@ -34,7 +34,7 @@
 
 /****h* IBMS/RandomManager
 * NAME
-*	A singleton for random numbers generation. 
+*	A singleton for random numbers generation.
 *
 * DESCRIPTION
 *	The random number generator singleton is required to
@@ -64,10 +64,10 @@ class RandomMgr {
     randomSeed = 0;
     pthread_mutex_init( &lock, NULL );
   };
-  
+
   /* set the random number seed */
   int setRandomSeed( int seed );
-  
+
   /* get a random floating point number 0.0 - 1.0 */
   float random();
 };

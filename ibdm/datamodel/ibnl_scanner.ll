@@ -86,7 +86,7 @@ extern long lineNum;
 
 %%
 
-([1-9][0-9]*|0) { 
+([1-9][0-9]*|0) {
   yylval.ival = atoi(yytext);
 #ifdef DEBUG
   printf("INT:%d\n",yylval.ival);
@@ -158,7 +158,7 @@ CFG: {
     yylval.tval = IB_SW_NODE;
   } else {
     yylval.tval = IB_CA_NODE;
-  }    
+  }
 #ifdef DEBUG
   printf("%s\n", yytext);
 #endif
@@ -179,8 +179,8 @@ CFG: {
 #ifdef DEBUG
   printf("LINE\n");
 #endif
-  if(lineNum % 10000==0) 
-	 fprintf(stderr,"-I- Parsed %ld lines\r",lineNum);   
+  if(lineNum % 10000==0)
+	 fprintf(stderr,"-I- Parsed %ld lines\r",lineNum);
   yylval.ival = LINE;
   return(LINE);
 }

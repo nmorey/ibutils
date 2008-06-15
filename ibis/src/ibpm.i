@@ -55,8 +55,8 @@ ibpm_num_of_multi_max(void)
 	return (IBPM_MULTI_MAX);
 }
 
-/* 
-   this function returns the string corresponding to the 
+/*
+   this function returns the string corresponding to the
    port counters.
 */
 char *
@@ -67,7 +67,7 @@ ibpm_get_port_counters_str(
   char *p_res_str = 0;
   char buff[1024];
   static int i;
-  
+
   buff[0] = '\0';
   for (i=0;i<num;i++) {
     /* format the string */
@@ -75,16 +75,16 @@ ibpm_get_port_counters_str(
       sprintf(buff,"{{port_select %u } {counter_select %u } {symbol_error_counter %u } {link_error_recovery_counter %u } {link_down_counter %u } {port_rcv_errors %u } {port_rcv_remote_physical_errors %u } {port_rcv_switch_relay_errors %u } {port_xmit_discard %u } {port_xmit_constraint_errors %u } {port_rcv_constraint_errors %u } {local_link_integrity_errors %u } {excesive_buffer_errors %u } {vl15_dropped %u } {port_xmit_data %u } {port_rcv_data %u } {port_xmit_pkts %u } {port_rcv_pkts %u }} ",
               p_counters[i].port_select,
               cl_ntoh16(p_counters[i].counter_select),
-              cl_ntoh16(p_counters[i].symbol_error_counter),  
+              cl_ntoh16(p_counters[i].symbol_error_counter),
               p_counters[i].link_error_recovery_counter,
-              p_counters[i].link_down_counter,  
-              cl_ntoh16(p_counters[i].port_rcv_errors),  
+              p_counters[i].link_down_counter,
+              cl_ntoh16(p_counters[i].port_rcv_errors),
               cl_ntoh16(p_counters[i].port_rcv_remote_physical_errors),
-              cl_ntoh16(p_counters[i].port_rcv_switch_relay_errors),  
-              cl_ntoh16(p_counters[i].port_xmit_discard),  
+              cl_ntoh16(p_counters[i].port_rcv_switch_relay_errors),
+              cl_ntoh16(p_counters[i].port_xmit_discard),
               p_counters[i].port_xmit_constraint_errors,
               p_counters[i].port_rcv_constraint_errors,
-              (p_counters[i].lli_errors_exc_buf_errors & 0xf0) >> 4, 
+              (p_counters[i].lli_errors_exc_buf_errors & 0xf0) >> 4,
               (p_counters[i].lli_errors_exc_buf_errors & 0x0f),
               cl_ntoh16(p_counters[i].vl15_dropped),
               cl_ntoh32(p_counters[i].port_xmit_data),
@@ -94,7 +94,7 @@ ibpm_get_port_counters_str(
     } else {
       sprintf(buff,"{TARGET_ERROR : Fail to obtain port counters} ");
     }
-    
+
     if (p_res_str) {
       p_res_str = (char *)realloc(p_res_str,strlen(p_res_str)+strlen(buff) + 1);
     } else {
@@ -105,9 +105,9 @@ ibpm_get_port_counters_str(
   }
   return(p_res_str);
 }
- 
-/* 
-   this function returns the string corresponding to the 
+
+/*
+   this function returns the string corresponding to the
    extended port counters.
 */
 char *
@@ -118,7 +118,7 @@ ibpm_get_port_counters_extended_str(
   char *p_res_str = 0;
   char buff[1024];
   static int i;
-  
+
   buff[0] = '\0';
   for (i=0;i<num;i++) {
     /* format the string */
@@ -138,7 +138,7 @@ ibpm_get_port_counters_extended_str(
     } else {
       sprintf(buff,"{TARGET_ERROR : Fail to obtain port counters} ");
     }
-    
+
     if (p_res_str) {
       p_res_str = (char *)realloc(p_res_str,strlen(p_res_str)+strlen(buff) + 1);
     } else {
@@ -149,13 +149,13 @@ ibpm_get_port_counters_extended_str(
   }
   return(p_res_str);
 }
-  
+
 int
 ibpm_get_counters_global(
   uint16_t lid,
   uint8_t port_select,
   char **pp_new_counters_str)
-{  
+{
   int status;
   ib_pm_port_counter_t single_counters_set;
   *pp_new_counters_str = NULL;
@@ -179,7 +179,7 @@ ibpm_get_multi_counters_global(
   ib_pm_port_counter_t *p_multi_counters_set;
   p_multi_counters_set = (ib_pm_port_counter_t *)malloc(sizeof(ib_pm_port_counter_t)*num);
   *pp_new_counters_str = NULL;
-  
+
   status = (int) ibpm_get_multi_counters(
     p_ibpm_global,num,lid_list,port_select_list,p_multi_counters_set);
   if (status) {
@@ -200,10 +200,10 @@ ibpm_get_multi_counters_extended_global(
 {
   int status;
   ib_pm_port_counter_extended_t *p_multi_counters_set;
-  p_multi_counters_set = 
+  p_multi_counters_set =
     (ib_pm_port_counter_extended_t *)malloc(sizeof(ib_pm_port_counter_t)*num);
   *pp_new_counters_str = NULL;
-  
+
   status = (int) ibpm_get_multi_counters_extended(
     p_ibpm_global,num,lid_list,port_select_list,p_multi_counters_set);
   if (status) {
@@ -234,9 +234,9 @@ ibpm_clr_all_multi_counters_global(
   uint16_t lid_list[],
   uint8_t port_select_list[])
 {
-  int status; 
+  int status;
   status = (int) ibpm_clr_all_multi_counters(p_ibpm_global,num,lid_list,port_select_list);
-  
+
   if (status) {
     ibis_set_tcl_error("ERROR : Fail to clear multiple port counters");
   }
@@ -247,7 +247,7 @@ ibpm_clr_all_multi_counters_global(
 
 //
 // STANDARD IB TYPE MAPS:
-// 
+//
 
 %{
 #define  uint16_pm_arr_t  uint16_t
@@ -262,7 +262,7 @@ ibpm_clr_all_multi_counters_global(
     str_tcl = Tcl_GetStringFromObj($source,NULL);
     loc_buf = (char *)malloc((strlen(str_tcl)+1)*sizeof(char));
     strcpy(loc_buf,str_tcl);
-    
+
     str = strtok_r(loc_buf," ", &str_token);			
     for (i=0;i<IBPM_MULTI_MAX;i++) {		
 	if (str == NULL) {
@@ -284,11 +284,11 @@ ibpm_clr_all_multi_counters_global(
   int i;
   char *loc_buf;
   char *str_token;
-  
+
   str_tcl = Tcl_GetStringFromObj($source,NULL);
   loc_buf = (char *)malloc((strlen(str_tcl)+1)*sizeof(char));
   strcpy(loc_buf,str_tcl);
-  
+
   str = strtok_r(loc_buf," ", &str_token);			
   for (i=0;i<IBPM_MULTI_MAX;i++) {		
     if (str == NULL) {
@@ -297,7 +297,7 @@ ibpm_clr_all_multi_counters_global(
     temp[i] = atoi(str);
     str = strtok_r(NULL," ",&str_token);	
   }
-  
+
   $target = temp;
   free(loc_buf);
 
@@ -327,13 +327,13 @@ They all return 0 on succes.
 
 %apply char **p_out_str {char **p_counters_str};
 
-%name(pmGetPortCounters) 
+%name(pmGetPortCounters)
      int ibpm_get_counters_global(uint16_t lid,uint8_t port_select, char **p_counters_str);
 
-%name(pmGetPortCountersMulti) 
+%name(pmGetPortCountersMulti)
      int ibpm_get_multi_counters_global(uint8_t num, uint16_pm_arr_t lid_list[],uint8_pm_arr_t port_select_list[], char **p_counters_str);
 
-%name(pmGetExtPortCountersMulti) 
+%name(pmGetExtPortCountersMulti)
      int ibpm_get_multi_counters_extended_global(uint8_t num, uint16_pm_arr_t lid_list[],uint8_pm_arr_t port_select_list[], char **p_counters_str);
 
 %name(pmClrAllCounters) int ibpm_clr_all_counters_global(uint16_t lid,uint8_t port_select);

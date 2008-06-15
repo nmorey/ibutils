@@ -38,7 +38,7 @@
 SUBDIRS 		= replace datamodel src Clusters ibnl doc
 
 # this will control the update of the files in order
-MAINTAINERCLEANFILES = Makefile.in aclocal.m4 configure config-h.in 
+MAINTAINERCLEANFILES = Makefile.in aclocal.m4 configure config-h.in
 
 ACLOCAL			= aclocal -I $(ac_aux_dir)
 
@@ -47,5 +47,5 @@ swigclean:
 	for dir in datamodel; do make -C $$dir swigclean; done
 
 #dist-hook:
-#	cd $(distdir) 
+#	cd $(distdir)
 #	cp -rf $(top_srcdir)/Clusters Clusters

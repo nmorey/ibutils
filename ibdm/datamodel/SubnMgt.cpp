@@ -83,17 +83,17 @@ int SubnMgtAssignLids (IBPort *p_smNodePort, unsigned int lmc = 0) {
       while (! thisStepPorts.empty()) {
          p_port = thisStepPorts.front();
          thisStepPorts.pop_front();
-             
+
          // get the node
          p_node = p_port->p_node;
-             
+
          // just making sure since we can get on the BFS from several sides ...
          if (visited.find(p_node) != visited.end())
             continue;
-             
+
          // mark as visited
          visited.insert(p_node);
-             
+
          // based on the node type we do the recursion and assignment
          switch (p_node->type) {
          case IB_CA_NODE:
@@ -122,11 +122,11 @@ int SubnMgtAssignLids (IBPort *p_smNodePort, unsigned int lmc = 0) {
 
          // do not forget to increment the lids
          lid = lid + numLidsPerPort;
-             
+
          // now recurse
          for (i = 0; i < p_node->numPorts; i++) {
             if (p_node->Ports[i] == NULL) continue;
-             
+
             // if we have a remote port that is not visited
             p_remPort = p_node->Ports[i]->p_remotePort;
             if (p_remPort != NULL)
@@ -142,7 +142,7 @@ int SubnMgtAssignLids (IBPort *p_smNodePort, unsigned int lmc = 0) {
             }
          }
       }
-      
+
       thisStepPorts = nextStepNodePorts;
    }
 
@@ -174,13 +174,13 @@ SubnMgtCalcMinHopTables (IBFabric *p_fabric) {
    for( nI = p_fabric->NodeByName.begin();
         nI != p_fabric->NodeByName.end();
         nI++) {
-     
+
       p_node = (*nI).second;
 
       // we should not assign hops for non SW nodes:
       if (p_node->type == IB_SW_NODE)
       {
-             
+
          lid = 0;
          // switch lids are identical to all ports
          // get the lid of the first available port
@@ -188,7 +188,7 @@ SubnMgtCalcMinHopTables (IBFabric *p_fabric) {
             if (p_node->Ports[i])
                lid = p_node->Ports[i]->base_lid;
          }
-      
+
          // assign all ports value
          p_node->setHops(NULL,lid,0);
       }
@@ -226,12 +226,12 @@ SubnMgtCalcMinHopTables (IBFabric *p_fabric) {
       for( nI = p_fabric->NodeByName.begin();
            nI != p_fabric->NodeByName.end();
            nI++) {
-             
+
          p_node = (*nI).second;
-             
+
          // we should not assign hops for non SW nodes:
          if (p_node->type != IB_SW_NODE) continue;
-             
+
          // go over all lids (base) on this switch:
          for (unsigned int bLid = 1;
               bLid <= p_fabric->maxLid;
@@ -254,7 +254,7 @@ SubnMgtCalcMinHopTables (IBFabric *p_fabric) {
 						// hops value + 1 is < hops
                   int remNodeHops =
                      p_port->p_remotePort->p_node->getHops(NULL, bLid);
-         
+
                   if (remNodeHops + 1 < minHops)
                   {
                      // need to update:
@@ -278,10 +278,10 @@ SubnMgtCalcMinHopTables (IBFabric *p_fabric) {
    for( nI = p_fabric->NodeByName.begin();
         nI != p_fabric->NodeByName.end();
         nI++) {
-     
+
       p_node = (*nI).second;
       if (p_node->type == IB_CA_NODE) continue;
-      
+
       // go over all the lids.
       for (unsigned int i = 1; i <= p_fabric->maxLid; i += lidStep ) {
          // skip lids that are not mapped to a port:
@@ -300,7 +300,7 @@ SubnMgtCalcMinHopTables (IBFabric *p_fabric) {
             IBPort *p_targetPort = p_fabric->getPortByLid(i);
             if (p_targetPort && (p_targetPort->p_node->type != IB_SW_NODE))
             {
-       
+
                int numMinHopPorts = 0;
                for (unsigned int pn = 1; pn <= p_node->numPorts; pn++)
                {
@@ -342,7 +342,7 @@ SubnMgtCalcMinHopTables (IBFabric *p_fabric) {
    for( nI = p_fabric->NodeByName.begin();
         nI != p_fabric->NodeByName.end();
         nI++) {
-     
+
       p_caNode = (*nI).second;
       if (p_caNode->type != IB_CA_NODE) continue;
 
@@ -359,7 +359,7 @@ SubnMgtCalcMinHopTables (IBFabric *p_fabric) {
          for (unsigned int i = 1; i <= p_fabric->maxLid; i += lidStep ) {
             // please ignore non CA lids and ourselves
             IBPort *p_port = p_fabric->PortByLid[i];
-            if (p_port && (p_port->p_node->type == IB_CA_NODE) && 
+            if (p_port && (p_port->p_node->type == IB_CA_NODE) &&
 					 (p_caPort != p_port))
             {
                int minHops = p_node->getHops(NULL, i);
@@ -401,7 +401,7 @@ SubnMgtCalcMinHopTables (IBFabric *p_fabric) {
       cout << "-I- Found worst min hops:" << maxHops + 1 << " at node:"
            << p_worstHopNode->name << " to node:"
            << p_fabric->PortByLid[worstHopLid]->p_node->name << endl;
-      
+
       // the worst hop node lid
       TraceRouteByMinHops(p_fabric, p_worstHopPort->base_lid, worstHopLid);
    }
@@ -434,12 +434,12 @@ SubnMgtOsmEnhancedRoute(IBFabric *p_fabric) {
    for( map_str_pnode::iterator nI = p_fabric->NodeByName.begin();
         nI != p_fabric->NodeByName.end();
         nI++) {
-     
+
       p_node = (*nI).second;
 
       // if not a switch cont
       if (p_node->type != IB_SW_NODE) continue;
-      
+
       // define port profiles
       vec_int portsSubscriptions(p_node->numPorts,0);
       int lidStep = 1 << p_fabric->lmc;
@@ -448,7 +448,7 @@ SubnMgtOsmEnhancedRoute(IBFabric *p_fabric) {
       for (unsigned int bLid = 1;
            bLid <= p_fabric->maxLid;
            bLid += lidStep) {
-   
+
          int targetIsHCA;
          IBPort *pTargetPort = p_fabric->PortByLid[bLid];
          if (pTargetPort && (pTargetPort->p_node->type == IB_SW_NODE))
@@ -467,7 +467,7 @@ SubnMgtOsmEnhancedRoute(IBFabric *p_fabric) {
 
          // loop on every LMC value:
          for (int lmcValue = 0; lmcValue < lidStep; lmcValue++) {
-               
+
             // if same assign 0
             unsigned int lid = 0;
             for (unsigned int i = 0; (lid == 0) && (i< p_node->numPorts); i++) {
@@ -497,17 +497,17 @@ SubnMgtOsmEnhancedRoute(IBFabric *p_fabric) {
                for (unsigned int pn = 1; pn <= p_node->numPorts; pn++) {
                   IBPort *p_port = p_node->getPort(pn);
                   if (! p_port) continue;
-         
+
                   if (! p_port->p_remotePort) continue;
-         
+
                   // the hops should match the min
                   if (p_node->getHops(p_port,bLid) == minHop)
                   {
-           
+
                      minSubs = portsSubscriptions[pn-1];
                      IBNode   *p_remNode = p_port->p_remotePort->p_node;
                      IBSystem *p_system = p_remNode->p_system;
-           
+
                      if (goThroughSystems.find(p_system) == goThroughSystems.end())
                      {
                         if (minSubsDiffSystems > minSubs)
@@ -524,13 +524,13 @@ SubnMgtOsmEnhancedRoute(IBFabric *p_fabric) {
                            minPortNumDiffNodes = pn;
                         }
                      }
-           
+
                      if (minSubsShared > minSubs)
                      {
                         minSubsShared = minSubs;
                         minPortNumShared = pn;
                      }
-           
+
                   } // hop = min hops
                } // all ports
 
@@ -559,7 +559,7 @@ SubnMgtOsmEnhancedRoute(IBFabric *p_fabric) {
                IBPort *p_bestPort = p_node->getPort(minPortNumShared);
                IBNode *p_remNode = p_bestPort->p_remotePort->p_node;
                IBSystem *p_system = p_node->p_system;
-       
+
                goThroughSystems.insert(p_system);
                goThroughNodes.insert(p_remNode);
 
@@ -573,13 +573,13 @@ SubnMgtOsmEnhancedRoute(IBFabric *p_fabric) {
             // track subscriptions:
             if (targetIsHCA)
                portsSubscriptions[minPortNumShared-1]++;
-               
+
             // assign the fdb table.
             p_node->setLFTPortForLid(bLid + lmcValue, minPortNumShared);
-               
+
          } // all port lids
       } // all lids
- 
+
       // we want to get some histogram of subsriptions.
       for (unsigned int pn = 1; pn <= p_node->numPorts; pn++) {
          IBPort *p_port = p_node->getPort(pn);
@@ -631,12 +631,12 @@ SubnMgtOsmRoute(IBFabric *p_fabric) {
    for( map_str_pnode::iterator nI = p_fabric->NodeByName.begin();
         nI != p_fabric->NodeByName.end();
         nI++) {
-     
+
       p_node = (*nI).second;
 
       // if not a switch cont
       if (p_node->type != IB_SW_NODE) continue;
-      
+
       // define port profiles
       vec_int portsSubscriptions(p_node->numPorts,0);
       int lidStep = 1 << p_fabric->lmc;
@@ -664,7 +664,7 @@ SubnMgtOsmRoute(IBFabric *p_fabric) {
 
          // loop on every LMC value:
          for (int lmcValue = 0; lmcValue < lidStep; lmcValue++) {
-               
+
             // if same assign 0
             unsigned int lid = 0;
             for (unsigned int i = 0; (lid == 0) && (i< p_node->numPorts); i++) {
@@ -676,20 +676,20 @@ SubnMgtOsmRoute(IBFabric *p_fabric) {
                p_node->setLFTPortForLid( bLid + lmcValue, 0);
                continue;
             }
-     
+
             // initialize the min subsription to a huge number:
             int minSubsc = 100000;
             unsigned int minSubsPortNum = 0;
-     
+
             // look for the port with min profile
 #if 1
             if (minHop != 255)
             {
                for (unsigned int pn = 1; pn <= p_node->numPorts; pn++) {
                   IBPort *p_port = p_node->getPort(pn);
-         
+
                   if (! p_port) continue;
-         
+
                   // the hops should match the min
                   if (p_node->getHops(p_port, bLid) == minHop)
                   {
@@ -715,7 +715,7 @@ SubnMgtOsmRoute(IBFabric *p_fabric) {
                   IBPort *p_port = p_node->getPort(pn);
 
                   if (! p_port) continue;
-         
+
                   // the hops should match the min
                   if (p_node->getHops(p_port, bLid) == minHop)
                   {
@@ -737,13 +737,13 @@ SubnMgtOsmRoute(IBFabric *p_fabric) {
             // track subscriptions only if target is not a switch:
             if (targetIsHCA)
                portsSubscriptions[minSubsPortNum-1]++;
-               
+
             // assign the fdb table.
             p_node->setLFTPortForLid(bLid + lmcValue, minSubsPortNum);
-               
+
          } // all port lids
       } // all lids
-      
+
       // we want to get some histogram of subsriptions.
       for (unsigned int pn = 1; pn <= p_node->numPorts; pn++) {
          IBPort *p_port = p_node->getPort(pn);
@@ -785,7 +785,7 @@ SubnRankFabricNodesByRootNodes(
    list_pnode rootNodes,
    map_pnode_int &nodesRank
    ) {
-   list_pnode curNodes, nextNodes; 
+   list_pnode curNodes, nextNodes;
 
    curNodes = rootNodes;
    int rank = 0;
@@ -803,7 +803,7 @@ SubnRankFabricNodesByRootNodes(
    while (curNodes.size()) {
       nextNodes.clear();
       rank++;
- 
+
       // go over cur step nodes
       for (list_pnode::iterator lI = curNodes.begin();
            lI != curNodes.end(); lI++) {
@@ -913,7 +913,7 @@ SubnFindPathCommonality(list_pnode *p_path1, list_pnode *p_path2,
          // we increase it for next time
          (*sI).second++;
       }
-      
+
    }
 
    //  cout << "P1:" << p_path1->size()
@@ -961,9 +961,9 @@ SubnMgtVerifyAllCaToCaRoutes(IBFabric *p_fabric) {
    // go over all ports in the fabric
    for (unsigned int i = p_fabric->minLid; i <= p_fabric->maxLid; i += lidStep ) {
       IBPort *p_dstPort = p_fabric->PortByLid[i];
-      
+
       if (!p_dstPort || (p_dstPort->p_node->type == IB_SW_NODE)) continue;
- 
+
       // tracks if a path to current dlid was found per switch out port
       map_pnode_vec_int switchAnyPathsPerOutPort;
 
@@ -984,7 +984,7 @@ SubnMgtVerifyAllCaToCaRoutes(IBFabric *p_fabric) {
          // go over all LMC combinations:
          for (unsigned int l = 0; l < lidStep; l++) {
             paths++;
-               
+
             // we track the path nodes in lists but need to know which one
             // to use:
             if (l == 0)
@@ -1032,7 +1032,7 @@ SubnMgtVerifyAllCaToCaRoutes(IBFabric *p_fabric) {
                      vec_int tmp(pNode->numPorts + 1,0);
                      switchAnyPathsPerOutPort[pNode] = tmp;
                   }
-         
+
                   list_pnode::const_iterator nlI = lI;
                   nlI++;
                   if (nlI != p_path->end())
@@ -1045,7 +1045,7 @@ SubnMgtVerifyAllCaToCaRoutes(IBFabric *p_fabric) {
                      switchAnyPathsPerOutPort[pNode][outPort]++;
                   }
                }
-       
+
                // Analyze the path against the previous path:
                if (l != 0)
                {
@@ -1077,7 +1077,7 @@ SubnMgtVerifyAllCaToCaRoutes(IBFabric *p_fabric) {
                      CommonSystems[commonSystems][path1.size()]++;
                      CommonNodes[commonNodes][0]++;
                      CommonNodes[commonNodes][path1.size()]++;
-                               
+
                      if (commonSystems > 5)
                      {
                         cout << "---- MORE THEN 5 COMMON SYSTEMS PATH ----- " << endl;
@@ -1089,13 +1089,13 @@ SubnMgtVerifyAllCaToCaRoutes(IBFabric *p_fabric) {
                         for (list_pnode::iterator lI = path1.begin();
                              lI!= path1.end();lI++)
                            cout << "." << (*lI)->name.c_str() << endl;
-                                      
+
                         cout << "Path 2" << endl;
                         for (list_pnode::iterator lI = path2.begin();
                              lI != path2.end();
                              lI++ )
                            cout << "." << (*lI)->name.c_str() << endl;
-                                      
+
                      }
                   }
                   // cleanup :
@@ -1125,7 +1125,7 @@ SubnMgtVerifyAllCaToCaRoutes(IBFabric *p_fabric) {
                   vec_int tmp(pNode->numPorts + 1,0);
                   switchDLidsPerOutPort[pNode] = tmp;
                }
-       
+
                switchDLidsPerOutPort[pNode][pn]++;
                if (switchDLidsPerOutPort[pNode][pn] > maxDlidPerOutPort)
                   maxDlidPerOutPort = switchDLidsPerOutPort[pNode][pn];
@@ -1154,7 +1154,7 @@ SubnMgtVerifyAllCaToCaRoutes(IBFabric *p_fabric) {
       for (unsigned int d = 1; d <= maxDepth; d++)
          cout <<  setw(6) << d << "|";
       cout << endl;
-      
+
       for (unsigned int b = 0; b <= maxHops ; b++)
          if (CommonNodes[b][0] != 0)
          {
@@ -1167,7 +1167,7 @@ SubnMgtVerifyAllCaToCaRoutes(IBFabric *p_fabric) {
 
       cout << "---------------- LMC BASED ROTING :COMMON SYSTEMS HISTOGRAM ---------------" << endl;
       cout << "The distribution of the number of common systems between the " << endl;
-      cout << "different LMC paths of all the CA to CA paths.\n" << endl;  
+      cout << "different LMC paths of all the CA to CA paths.\n" << endl;
       cout << "COMMON-SYSTEM NUM-CA-CA-PAIRS" << endl;
       cout << "PATH DPT|";
       for (unsigned int d = 1; d <= maxDepth; d++)
@@ -1177,7 +1177,7 @@ SubnMgtVerifyAllCaToCaRoutes(IBFabric *p_fabric) {
          if (CommonSystems[b][0] != 0)
          {
             cout << "COMM=" << setw(3) << b << "|";
-            for (unsigned int d = 1; d <= maxDepth; d++)          
+            for (unsigned int d = 1; d <= maxDepth; d++)
                cout << setw(6) << CommonSystems[b][d] << "|";
             cout << endl;
          }
@@ -1279,9 +1279,9 @@ SubnMgtVerifyAllRoutes(IBFabric *p_fabric) {
    for (unsigned int i = p_fabric->minLid; i <= p_fabric->maxLid; i += lidStep )
    {
       IBPort *p_srcPort = p_fabric->PortByLid[i];
- 
+
       if (!p_srcPort) continue;
- 
+
       unsigned int sLid = p_srcPort->base_lid;
       // go over all the rest of the ports:
       for (unsigned int j = p_fabric->minLid; j <= p_fabric->maxLid; j += lidStep )
@@ -1294,11 +1294,11 @@ SubnMgtVerifyAllRoutes(IBFabric *p_fabric) {
          if (! p_dstPort) continue;
 
          unsigned int dLid = p_dstPort->base_lid;
-   
+
          // go over all LMC combinations:
          for (unsigned int l = 0; l < lidStep; l++) {
             paths++;
-               
+
             // now go and verify the path:
             if (TraceRouteByLFT(p_fabric, sLid + l, dLid + l, &hops, &path))
             {
@@ -1354,7 +1354,7 @@ SubnMgtFindTreeRootNodes(IBFabric *p_fabric) {
    for( map_str_pnode::iterator nI = p_fabric->NodeByName.begin();
         nI != p_fabric->NodeByName.end();
         nI++) {
- 
+
       p_node = (*nI).second;
       if (p_node->type == IB_SW_NODE) continue;
 
@@ -1364,7 +1364,7 @@ SubnMgtFindTreeRootNodes(IBFabric *p_fabric) {
    // BFS:
    while (! curNodes.empty()) {
       rank++;
- 
+
       nextNodes.clear();
 
       // the last group should be our roots nodes.
@@ -1391,11 +1391,11 @@ SubnMgtFindTreeRootNodes(IBFabric *p_fabric) {
       while (! curNodes.empty()) {
          p_node = curNodes.front();
          curNodes.pop_front();
-   
+
          // go over all ports of the node
          for (unsigned int pn = 1; pn <= p_node->numPorts; pn++) {
             IBPort *p_port = p_node->getPort(pn);
-     
+
             // if there is a connection:
             if (p_port && p_port->p_remotePort)
             {
@@ -1403,13 +1403,13 @@ SubnMgtFindTreeRootNodes(IBFabric *p_fabric) {
 
                // we ignore non SW nodes:
                if (p_remNode->type != IB_SW_NODE) continue;
-       
+
                // if already marked
                map_pnode_int::iterator nI = nodeRankMap.find(p_remNode);
                if (nI != nodeRankMap.end())
                {
                   int remNodeRank = (*nI).second;
-         
+
                   // as we use the rank for signing visited status
                   // we might have the remote node be marked
                   // either with rank - 1 or rank + 1
@@ -1426,7 +1426,7 @@ SubnMgtFindTreeRootNodes(IBFabric *p_fabric) {
                {
                   // first we mark the node as rank + 1
                   nodeRankMap[p_remNode] = rank + 1;
-         
+
                   // now we push it to the next level list:
                   nextNodes.push_back(p_remNode);
                }
@@ -1458,7 +1458,7 @@ SubnMgtFindRootNodesByMinHop(IBFabric *p_fabric) {
    for( map_str_pnode::iterator nI = p_fabric->NodeByName.begin();
         nI != p_fabric->NodeByName.end();
         nI++) {
- 
+
       IBNode *p_node = (*nI).second;
       if (p_node->type != IB_SW_NODE) numCas++;
    }
@@ -1467,32 +1467,32 @@ SubnMgtFindRootNodesByMinHop(IBFabric *p_fabric) {
    for( map_str_pnode::iterator nI = p_fabric->NodeByName.begin();
         nI != p_fabric->NodeByName.end();
         nI++) {
- 
+
       IBNode *p_node = (*nI).second;
       if (p_node->type != IB_SW_NODE) continue;
- 
+
 
       // the min hop table should exist on the node:
       unsigned int maxHops = 0;
- 
+
       // go over all nodes that are CA and calc the histogram of min hops to cas
       vec_int swToCaMinHopsHist(50,0);
- 
+
       // go over all ports in the fabric
       for (unsigned int i = p_fabric->minLid;
            i <= p_fabric->maxLid; i += lidStep ) {
-   
+
          IBPort *p_port = p_fabric->PortByLid[i];
-   
+
          if (!p_port || (p_port->p_node->type == IB_SW_NODE)) continue;
-   
+
          unsigned int bLid = p_port->base_lid;
-   
+
          // get the min hops to this port:
          minHop = p_node->getHops(NULL, bLid);
-   
+
          swToCaMinHopsHist[minHop]++;
-   
+
          // track the max:
          if (minHop > maxHops) maxHops = minHop;
       } // all lids
@@ -1505,7 +1505,7 @@ SubnMgtFindRootNodesByMinHop(IBFabric *p_fabric) {
             cout << " " << setw(4) << swToCaMinHopsHist[b] ;
          cout << endl;
       }
- 
+
       // we recognize spines by requiring one bar to be above 90% of the
       // number of CAs
       int numHopBarsOverThd1 = 0;
@@ -1543,18 +1543,18 @@ SubnReportNonUpDownCa2CaPaths(
    for (unsigned int i = p_fabric->minLid;
         i <= p_fabric->maxLid; i += lidStep ) {
       IBPort *p_srcPort = p_fabric->PortByLid[i];
- 
+
       // avoid too many errors...
       if (numBadPaths > 100) break;
 
       if (!p_srcPort || (p_srcPort->p_node->type == IB_SW_NODE)) continue;
- 
+
       unsigned int sLid = p_srcPort->base_lid;
       // go over all the rest of the ports:
       for (unsigned int j = p_fabric->minLid;
            j <= p_fabric->maxLid; j += lidStep ) {
          IBPort *p_dstPort = p_fabric->PortByLid[j];
-   
+
          // avoid too many errors...
          if (numBadPaths > 100) break;
 
@@ -1564,11 +1564,11 @@ SubnReportNonUpDownCa2CaPaths(
          if (! p_dstPort) continue;
 
          if (p_dstPort->p_node->type == IB_SW_NODE) continue;
-   
+
          paths++;
 
          unsigned int dLid = p_dstPort->base_lid;
-   
+
          // now go and verify the path:
          if (TraceRouteByLFT(p_fabric, sLid, dLid, &hops, &path))
          {
@@ -1597,7 +1597,7 @@ SubnReportNonUpDownCa2CaPaths(
                        << endl;
                   exit(1);
                }
-       
+
                rank = (*rI).second;
 
                // we are going up if
@@ -1605,7 +1605,7 @@ SubnReportNonUpDownCa2CaPaths(
                   goingUp = 1;
                else
                   goingUp = 0;
-       
+
                // now look for dir change.
                if (prevGoingUp != goingUp)
                {
@@ -1648,7 +1648,7 @@ SubnReportNonUpDownCa2CaPaths(
                prevGoingUp = goingUp;
                p_prevNode = p_node;
             }
-     
+
             path.clear();
          }
       }
@@ -1709,7 +1709,7 @@ SubnMgtUpDnBFSFromPort (
          cout << "-V- This is a switch ..." << endl;
       self = tmpPort;
       self_node = tmpPort->p_node;
- 
+
       // Update in MinHop Table port 0 with 1 hop
       //tmpPort = self_node->getPort(0);
       if (FabricUtilsVerboseLevel & FABU_LOG_VERBOSE)
@@ -1764,23 +1764,23 @@ SubnMgtUpDnBFSFromPort (
       for (list_pnode::iterator lI = CurState.begin();
            lI != CurState.end(); lI++) {
          IBNode *p_node = *lI;
-   
+
          if (FabricUtilsVerboseLevel & FABU_LOG_VERBOSE)
             cout << "-V- Current switch handeled is : " << p_node->name << endl;
-   
+
          IBPort *p_zero_port = p_node->getPort(1);
-   
+
          // go over all ports to find unvisited remote nodes
          for (unsigned int pn = 1; pn <= p_node->numPorts; pn++) {
             IBPort *p_port = p_node->getPort(pn);
 
             // Only if current port is NULL or not connected skip it
             if (! p_port || ! p_port->p_remotePort ) continue;
-     
+
             if (FabricUtilsVerboseLevel & FABU_LOG_VERBOSE)
                cout << "-V- Handling port num : " << pn << " of node :" << p_node->name
                     << " p_type="<<p_node->type<<"\n"<<endl;
-     
+
             IBPort *p_rem_port = p_node->getPort(pn)->p_remotePort;
             IBNode *p_rem_node = p_rem_port->p_node;
 
@@ -1803,7 +1803,7 @@ SubnMgtUpDnBFSFromPort (
                if (SubnMgtUpDnIsLegelStep(p_node,p_rem_node)) continue;
                if (FabricUtilsVerboseLevel & FABU_LOG_VERBOSE)
                   cout << "-V- Current step is legal ..." << endl;
-       
+
                // Update remote port MinHopTable according to Current MinHopTable
                // Set minHop with the minimum hop count for this lid through current node
                minHop = p_node->getHops(NULL,lid);
@@ -1818,16 +1818,16 @@ SubnMgtUpDnBFSFromPort (
                        << " and p_rem_node(minHop)="
                        << p_rem_node->getHops(p_rem_port, lid) << "\n"<<endl;
                }
-       
+
                // we will use the remote node min hops to know if we
                // already have visited this node
                int remNodeHops = p_rem_node->getHops(NULL,lid);
-       
+
                // Check min hop count if better insert into NextState
                // list && update the remote node Min Hop Table
                if (minHop + 1 <= p_rem_node->getHops(p_rem_port, lid))
                {
-         
+
                   // Update MinHopTable of remote node and add it to NextState
                   p_rem_node->setHops(p_rem_port,lid,minHop + 1);
 
@@ -1890,7 +1890,7 @@ SubnMgtCalcUpDnMinHopTbls(
       for( map_str_pnode::iterator nI = p_fabric->NodeByName.begin();
            nI != p_fabric->NodeByName.end();
            nI++) {
-   
+
          IBNode *p_node = (*nI).second;
          if (p_node->type != IB_SW_NODE) continue;
          p_node->repHopTable();
@@ -1941,13 +1941,13 @@ SubnMgtCheckMCGrp(
    for( map_str_pnode::iterator nI = p_fabric->NodeByName.begin();
         nI != p_fabric->NodeByName.end();
         nI++) {
- 
+
       IBNode *p_node = (*nI).second;
       if (p_node->type != IB_SW_NODE) continue;
 
       // see if we have an MFT entry by the given lid:
       list_int portNums = p_node->getMFTPortsForMLid(mlid);
- 
+
       if (portNums.empty()) continue;
 
       groupSwitches.push_back(p_node);
@@ -1959,7 +1959,7 @@ SubnMgtCheckMCGrp(
            lI++)
       {
          IBPort *p_port = p_node->getPort(*lI);
-   
+
          // we do not count switches and disconnected ports
          if (p_port && p_port->p_remotePort &&
              (p_port->p_remotePort->p_node->type != IB_SW_NODE))
@@ -1999,22 +1999,22 @@ SubnMgtCheckMCGrp(
    {
       thisStep = nodesQueue.front();
       nodesQueue.pop_front();
- 
+
       // we keep track of all visited nodes
       visitedNodeFromPort[thisStep.pNode] = thisStep.inPort;
 
       // get the list of MC group ports for this mlid of this node
       list_int portNums = thisStep.pNode->getMFTPortsForMLid(mlid);
- 
+
       // go over all MC output ports of the current node ignoring the input
       for (list_int::iterator pnI = portNums.begin();
            pnI != portNums.end(); pnI++)
       {
          unsigned int pn = (*pnI);
-   
+
          // ignore the port we got here through.
          if (pn == thisStep.inPort) continue;
-   
+
          IBPort *pPort = thisStep.pNode->getPort(pn);
          if (! pPort || ! pPort->p_remotePort) continue;
 
@@ -2027,7 +2027,7 @@ SubnMgtCheckMCGrp(
          // if we already visited this node - it is a loop!
          map< IBNode *, uint8_t, less < IBNode *> >::iterator vI =
             visitedNodeFromPort.find(pRemNode);
-   
+
          if (vI != visitedNodeFromPort.end())
          {
             int prevPort =  (*vI).second ;
@@ -2038,7 +2038,7 @@ SubnMgtCheckMCGrp(
             anyErr++;
             continue;
          }
-  
+
          // if the remote node does not point back to this one (i.e. the port is bit is not set in the
          // MFT do not go through ...
          list_int remPortNums = pRemNode->getMFTPortsForMLid(mlid);
@@ -2052,7 +2052,7 @@ SubnMgtCheckMCGrp(
                  << " port:" << pPort->num << endl;
             continue;
          }
- 
+
          // push the node into next steps:
          nextStep.pNode = pRemNode;
          nextStep.inPort = pPort->p_remotePort->num;
@@ -2067,7 +2067,7 @@ SubnMgtCheckMCGrp(
       IBNode *p_node = *lI;
       map< IBNode *, uint8_t, less < IBNode *> >::iterator vI =
          visitedNodeFromPort.find(p_node);
- 
+
       if (vI == visitedNodeFromPort.end())
       {
          // we care only if there are HCAs connected:
@@ -2082,7 +2082,7 @@ SubnMgtCheckMCGrp(
               lI++)
          {
             IBPort *p_port = p_node->getPort(*lI);
-     
+
             // we do not count switches and disconnected ports
             if (p_port && p_port->p_remotePort &&
                 (p_port->p_remotePort->p_node->type != IB_SW_NODE))
@@ -2115,7 +2115,7 @@ SubnMgtCheckMCGrp(
    {
       list< IBNode *>::iterator lI =
          find(groupSwitches.begin(), groupSwitches.end(), (*vI).first);
- 
+
       if (lI == groupSwitches.end())
       {
          cout << "-E- Extra switch:" << (*vI).first->name << " in group:"
@@ -2124,7 +2124,7 @@ SubnMgtCheckMCGrp(
          anyErr++;
       }
    }
-    
+
    // TODO: Do credit loop check in the Credit.cpp ...
    // traverse all paths from each HCA and report any that do not follow
    // UP/DN requirements. Also make sure no loops exist.
@@ -2194,13 +2194,13 @@ SubnReportNonUpDownMulticastGroupFromCaSwitch(
    {
       thisStep = nodesQueue.front();
       nodesQueue.pop_front();
- 
+
       // we keep track of all visited nodes
       visitedNodeFromPort[thisStep.pNode] = thisStep.inPort;
 
       // get the list of MC group ports for this mlid of this node
       list_int portNums = thisStep.pNode->getMFTPortsForMLid(mlid);
- 
+
       // lookup the rank of the current node:
       map_pnode_int::iterator rI = nodesRank.find(thisStep.pNode);
       if (rI == nodesRank.end())
@@ -2220,10 +2220,10 @@ SubnReportNonUpDownMulticastGroupFromCaSwitch(
            pnI != portNums.end(); pnI++)
       {
          unsigned int pn = (*pnI);
- 
+
          // ignore the port we got here through.
          if (pn == thisStep.inPort) continue;
-   
+
          IBPort *pPort = thisStep.pNode->getPort(pn);
          if (! pPort || ! pPort->p_remotePort) continue;
 
@@ -2236,7 +2236,7 @@ SubnReportNonUpDownMulticastGroupFromCaSwitch(
          // if we already visited this node - it is a loop!
          map< IBNode *, uint8_t, less < IBNode *> >::iterator vI =
             visitedNodeFromPort.find(pRemNode);
-   
+
          if (vI != visitedNodeFromPort.end())
          {
             int prevPort =  (*vI).second ;
@@ -2318,13 +2318,13 @@ SubnReportNonUpDownMulticastGroupCa2CaPaths(
    for( map_str_pnode::iterator nI = p_fabric->NodeByName.begin();
         nI != p_fabric->NodeByName.end();
         nI++) {
- 
+
       IBNode *p_node = (*nI).second;
       if (p_node->type != IB_SW_NODE) continue;
 
       // see if we have an MFT entry by the given lid:
       list_int portNums = p_node->getMFTPortsForMLid(mlid);
- 
+
       if (portNums.empty()) continue;
 
       // find all HCAs connected to the group by following the links that
@@ -2334,7 +2334,7 @@ SubnReportNonUpDownMulticastGroupCa2CaPaths(
            lI++)
       {
          IBPort *p_port = p_node->getPort(*lI);
-   
+
          if (p_port && p_port->p_remotePort &&
              p_port->p_remotePort->p_node->type != IB_SW_NODE)
          {
@@ -2355,7 +2355,7 @@ SubnReportNonUpDownMulticastGroupCa2CaPaths(
    {
       // avoid too many errors reported:
       if (numBadPaths > 100) break;
- 
+
       numBadPaths +=
          SubnReportNonUpDownMulticastGroupFromCaSwitch(
             p_fabric, (*lI), nodesRank, mlid);
@@ -2460,11 +2460,11 @@ getLowestUtilzedPortFromTo( IBNode *p_fromNode, IBNode *p_toNode)
    for (unsigned int pn = 1; pn <= p_fromNode->numPorts; pn++)
    {
       p_port = p_fromNode->getPort(pn);
- 
+
       if (! p_port) continue;
       if (! p_port->p_remotePort) continue;
       if (p_port->p_remotePort->p_node != p_toNode) continue;
- 
+
       // the hops should match the min
       if ((minUtilPortNum == 0) || (p_port->counter1 < minUtil))
       {
@@ -2490,10 +2490,10 @@ getLowestUtilzedPortToLid(IBNode *p_node, unsigned int dLid)
    for (unsigned int pn = 1; pn <= p_node->numPorts; pn++)
    {
       p_port = p_node->getPort(pn);
- 
+
       if (! p_port) continue;
       if (! p_port->p_remotePort) continue;
- 
+
       // the hops should match the min
       if (p_node->getHops(p_port, dLid) == minHop)
       {
@@ -2531,7 +2531,7 @@ SubnMgtFatTreeBwd(IBNode *p_node, uint16_t dLid, unsigned int outPortNum)
    for (unsigned int pn = 1; pn <= p_node->numPorts; pn++)
    {
       if (pn == outPortNum) continue;
-  
+
       p_port = p_node->getPort(pn);
       if (!p_port || !p_port->p_remotePort) continue;
 
@@ -2696,7 +2696,7 @@ SubnMgtFatTreeRoute(IBFabric *p_fabric) {
             }
          }
       } // all ports of switch
- 
+
       // now handle all allocated lids of this switch:
       for ( set<int, less<int> >::iterator alI = switchAllocatedLids.begin();
             alI != switchAllocatedLids.end();

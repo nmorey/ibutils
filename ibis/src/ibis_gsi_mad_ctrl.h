@@ -88,10 +88,10 @@ typedef struct _ibis_gsi_cb_msg_pair
 *     the call back registered for the class/attr
 *
 *  msg_id
-*     dispatcher message id allocated 
+*     dispatcher message id allocated
 *
 *  class
-*     mad class. 
+*     mad class.
 *
 *  attr
 *     mad attribute
@@ -104,7 +104,7 @@ typedef struct _ibis_gsi_cb_msg_pair
 *	GSI MAD object
 *********/
 /*
- * destroy an entry in the attribute vector. 
+ * destroy an entry in the attribute vector.
  */
 
 
@@ -202,7 +202,7 @@ void ibis_gsi_mad_ctrl_destroy(
 *
 * SYNOPSIS
 */
-ib_api_status_t 
+ib_api_status_t
 ibis_gsi_mad_ctrl_init(
 	IN ibis_gsi_mad_ctrl_t* const p_ctrl,
 	IN osm_mad_pool_t* const p_mad_pool,

@@ -1,24 +1,24 @@
 # This is the checker for for a simple 16 node test with opensm and osmtest
 
 ##############################################################################
-# 
+#
 # Start up the test applications
 # This is the default flow that will start OpenSM only in 0x43 verbosity
 # Return a list of process ids it started (to be killed on exit)
 #
-proc runner {simDir osmPath osmPortGuid} { 
+proc runner {simDir osmPath osmPortGuid} {
    set osmStdOutLog [file join $simDir osm.stdout.log]
    set osmLog [file join $simDir osm.log]
 
    # prevent long transactions return BUSY signal
    exec echo max_msg_fifo_timeout 0 > $simDir/opensm.opts
-  
+
    puts "-I- Starting: $osmPath -g $osmPortGuid  ..."
    set osmPid [exec $osmPath -d2 -s 0 -t 1000 -f $osmLog -g $osmPortGuid > $osmStdOutLog &]
-   
+
    # start a tracker on the log file and process:
    startOsmLogAnalyzer $osmLog
-   
+
    return $osmPid
 }
 
@@ -67,7 +67,7 @@ proc checker {simDir osmPath osmPortGuid} {
       puts "-E- osmtest All Validations failed"
       return 1
    }
-   
+
    puts "-I- osmtest completed successfuly"
    return 0
 }

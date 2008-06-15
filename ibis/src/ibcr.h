@@ -62,7 +62,7 @@
 
 /****s* IBIS: ibcr/ibcr_t
 * NAME  ibcr_t
-*       
+*
 *
 * DESCRIPTION
 *       ibcr structure.
@@ -71,7 +71,7 @@
 */
 
 
-typedef struct _ibcr 
+typedef struct _ibcr
 {
   ibcr_state_t       state;
   osm_bind_handle_t  h_bind;
@@ -88,7 +88,7 @@ typedef struct _ibcr
 *            The handle to bind with the lower level.
 *
 * SEE ALSO
-*      
+*
 *********/
 
 
@@ -139,7 +139,7 @@ ibcr_destroy(
 *               A pointer to the ibcr_t struct that is about to be released
 *
 * RETURN VALUE
-*      
+*
 * NOTES
 *       Final step of the releasing of ibcr_t
 *
@@ -167,9 +167,9 @@ ibcr_init(
 *
 * RETURN VALUE
 *       The status of the function.
-*      
+*
 * NOTES
-*       
+*
 * SEE ALSO
 *       ibcr_construct
 * *********/
@@ -195,9 +195,9 @@ ibcr_bind(
 *
 * RETURN VALUE
 *       The status of the function.
-*      
+*
 * NOTES
-*       
+*
 * SEE ALSO
 *       ibcr_construct
 *********/
@@ -234,16 +234,16 @@ ibcr_read(
 *
 * RETURN VALUE
 *       The status of the function.
-*      
+*
 * NOTES
-*       
+*
 * SEE ALSO
 *       ibcr_write
 *********/
 
 /****f* IBIS: ibcr/ibcr_write
 * NAME
-*     ibcr_write  
+*     ibcr_write
 *
 * DESCRIPTION
 *      Send a CR MAD  that writes to a cr-space address.
@@ -274,9 +274,9 @@ ibcr_write(
 
 * RETURN VALUE
 *       The status of the function.
-*      
+*
 * NOTES
-*       
+*
 * SEE ALSO
 *       ibcr_read
 *********/
@@ -317,16 +317,16 @@ ibcr_multi_read(
 *
 * RETURN VALUE
 *       The status of the function.
-*      
+*
 * NOTES
-*       
+*
 * SEE ALSO
 *       ibcr_multi_write
 *********/
 
 /****f* IBIS: ibcr/ibcr_multi_write
 * NAME
-*     ibcr_multi_write  
+*     ibcr_multi_write
 *
 * DESCRIPTION
 *      Send a CR MAD  that writes to a cr-space address.
@@ -361,9 +361,9 @@ ibcr_multi_write(
 
 * RETURN VALUE
 *       The status of the function.
-*      
+*
 * NOTES
-*       
+*
 * SEE ALSO
 *       ibcr_multi_read
 *********/

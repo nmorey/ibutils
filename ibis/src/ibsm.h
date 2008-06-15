@@ -67,14 +67,14 @@ typedef enum _ibsm_state
 
 /****s* IBIS: ibsm/ibsm_t
 * NAME  ibsm_t
-*       
+*
 *
 * DESCRIPTION
 *       ibsm structure.
 *
 * SYNOPSIS
 */
-typedef struct _ibsm 
+typedef struct _ibsm
 {
   ibsm_state_t         state;
   osm_bind_handle_t    lid_route_bind;
@@ -87,12 +87,12 @@ typedef struct _ibsm
 *            The ibsm state: INIT, READ or BUSY
 *
 * SEE ALSO
-*      
+*
 *********/
 
 /****s* IBIS: ibsm/ibsm_dr_path_t
 * NAME  ibsm_dr_path_t
-*       
+*
 *
 * DESCRIPTION
 *       ibsm directed route structure.
@@ -106,13 +106,13 @@ typedef struct _ibsm_dr_path {
 /*
 * FIELDS
 *
-*  path 
+*  path
 *   The list of output ports to be used in the path going out (initial)
 *
 *  number of entries
 *
 * SEE ALSO
-*      
+*
 *********/
 
 /****f* IBIS: ibsm/ibsm_construct
@@ -162,7 +162,7 @@ ibsm_destroy(
 *               A pointer to the ibsm_t struct that is about to be released
 *
 * RETURN VALUE
-*      
+*
 * NOTES
 *       Final step of the releasing of ibsm_t
 *
@@ -190,9 +190,9 @@ ibsm_init(
 *
 * RETURN VALUE
 *       The status of the function.
-*      
+*
 * NOTES
-*       
+*
 * SEE ALSO
 *       ibsm_construct
 * *********/
@@ -218,9 +218,9 @@ ibsm_bind(
 *
 * RETURN VALUE
 *       The status of the function.
-*      
+*
 * NOTES
-*       
+*
 * SEE ALSO
 *       ibsm_construct
 *********/
@@ -241,8 +241,8 @@ ibsm_send_mad_by_lid(
   ibsm_t   *p_ibsm,
   uint8_t  *p_data,
   size_t    data_size,
-  uint16_t  lid, 
-  uint16_t  attr, 
+  uint16_t  lid,
+  uint16_t  attr,
   uint32_t  mod,
   uint16_t  meth);
 /*
@@ -260,9 +260,9 @@ ibsm_send_mad_by_lid(
 *               The Destination lid of the MAD.
 *
 *       attr
-*               The Attribute code 
+*               The Attribute code
 *
-*       mod  
+*       mod
 *               Attribute modifier value
 *
 *       meth
@@ -270,11 +270,11 @@ ibsm_send_mad_by_lid(
 *
 * RETURN VALUE
 *       The status of the function or response status.
-*      
+*
 * NOTES
-*       
+*
 * SEE ALSO
-*       
+*
 *********/
 
 /****f* IBIS: ibsm/ibsm_send_mad_by_dr
@@ -293,8 +293,8 @@ ibsm_send_mad_by_dr(
   ibsm_t   *p_ibsm,
   uint8_t  *p_data,
   size_t    data_size,
-  ibsm_dr_path_t *dr, 
-  uint16_t  attr, 
+  ibsm_dr_path_t *dr,
+  uint16_t  attr,
   uint32_t  mod,
   uint16_t  meth);
 /*
@@ -310,13 +310,13 @@ ibsm_send_mad_by_dr(
 *
 *
 *       dr
-*               The directed route to the destination as an 
+*               The directed route to the destination as an
 *               array of bytes with last one is 0.
 *
 *       attr
-*               The Attribute code 
+*               The Attribute code
 *
-*       mod  
+*       mod
 *               Attribute modifier value
 *
 *       meth
@@ -324,11 +324,11 @@ ibsm_send_mad_by_dr(
 *
 * RETURN VALUE
 *       The status of the function or response status.
-*      
+*
 * NOTES
-*       
+*
 * SEE ALSO
-*       
+*
 *********/
 
 #endif /* _IBSM_H_ */

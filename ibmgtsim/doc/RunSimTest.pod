@@ -9,7 +9,7 @@ RunSimTest [-h] [-o osm-path][-f flow-file][-c checker-file]
 
 This command starts the simulator and runs the the given test flow
 on top of it. Then it runs the checker flow. The default test flow starts
-OpenSM and wait for Subnet-Up event. User given flow can make use of the 
+OpenSM and wait for Subnet-Up event. User given flow can make use of the
 provided facilities for starting OpenSM and tracking it events.
 
 =head1 ARGUMENTS
@@ -57,13 +57,13 @@ Examples:
 
  -V 0xffff = Full verbosity on all modules
  -V '"0x3 server 0x6f2 sma 0xffff"' = Only fatal and error
-    for all modules full verbosity for the SMA module and default 
+    for all modules full verbosity for the SMA module and default
     verbosity for the Server module.
 
 =item -h
 
 This help message
-    
+
 
 =head1 AUTHOR
 

@@ -67,7 +67,7 @@
 *
 * SYNOPSIS
 */
-void 
+void
 ibms_dump_mad( const ibms_mad_msg_t &madMsg, const uint8_t dir);
 /*
 * PARAMETERS
@@ -80,9 +80,9 @@ ibms_dump_mad( const ibms_mad_msg_t &madMsg, const uint8_t dir);
 * NOTES
 *
 * SEE ALSO
-* 
+*
 *********/
-        
+
 class IBMSSma : IBMSMadProcessor {
 
   /* init functions of node structures */
@@ -99,7 +99,7 @@ class IBMSSma : IBMSMadProcessor {
   int madValidation(ibms_mad_msg_t &madMsg);
 
   /* ----------------------------
-        Attributes Handling 
+        Attributes Handling
      ----------------------------*/
   /* NodeInfo */
   int nodeInfoMad(ibms_mad_msg_t &respMadMsg, uint8_t inPort);
@@ -109,33 +109,33 @@ class IBMSSma : IBMSMadProcessor {
   int setIBPortBaseLid(IBMSNode *pSimNode,
                        uint8_t   portNum,
                        uint16_t base_lid);
-  int setPortInfoHca(ibms_mad_msg_t &respMadMsg, 
+  int setPortInfoHca(ibms_mad_msg_t &respMadMsg,
                      ibms_mad_msg_t &reqMadMsg,
                      uint8_t        inPort,
-                     ib_port_info_t portInfoElm, 
+                     ib_port_info_t portInfoElm,
                      int            portNum);
-  int setPortInfoSwExtPort(ibms_mad_msg_t &respMadMsg, 
+  int setPortInfoSwExtPort(ibms_mad_msg_t &respMadMsg,
                            ibms_mad_msg_t &reqMadMsg,
                            uint8_t        inPort,
-                           ib_port_info_t portInfoElm, 
+                           ib_port_info_t portInfoElm,
                            int            portNum);
-  int setPortInfoSwBasePort(ibms_mad_msg_t &respMadMsg, 
+  int setPortInfoSwBasePort(ibms_mad_msg_t &respMadMsg,
                             ibms_mad_msg_t &reqMadMsg,
                             uint8_t        inPort,
-                            ib_port_info_t portInfoElm, 
+                            ib_port_info_t portInfoElm,
                             int            portNum);
-  int setPortInfoGeneral(ibms_mad_msg_t &respMadMsg, 
+  int setPortInfoGeneral(ibms_mad_msg_t &respMadMsg,
                          ibms_mad_msg_t &reqMadMsg,
                          uint8_t        inPort,
-                         ib_port_info_t portInfoElm, 
+                         ib_port_info_t portInfoElm,
                          int            portNum);
-  int setPortInfo(ibms_mad_msg_t &respMadMsg, 
+  int setPortInfo(ibms_mad_msg_t &respMadMsg,
                   ibms_mad_msg_t &reqMadMsg,
                   uint8_t        inPort,
-                  ib_port_info_t portInfoElm, 
+                  ib_port_info_t portInfoElm,
                   int            portNum);
-  int portInfoMad(ibms_mad_msg_t &respMadMsg, 
-                  ibms_mad_msg_t &reqMadMsg, 
+  int portInfoMad(ibms_mad_msg_t &respMadMsg,
+                  ibms_mad_msg_t &reqMadMsg,
                   uint8_t        inPort);
   /* P_Key */
   int pKeyMad(ibms_mad_msg_t &respMadMsg, ibms_mad_msg_t &reqMadMsg, uint8_t inPort);
@@ -150,12 +150,12 @@ class IBMSSma : IBMSMadProcessor {
   /* VL Arbitration */
   int vlArbMad(ibms_mad_msg_t &respMadMsg, ibms_mad_msg_t &reqMadMsg, uint8_t inPort);
 
- public:  
+ public:
   /* Top level of handling the SMA MAD. Might result with a call to the
      outstandingMads->push() with a result                     */
   int processMad(uint8_t inPort, ibms_mad_msg_t &madMsg);
 
-  /* Constructor - should initial the specific class elements 
+  /* Constructor - should initial the specific class elements
      in the node. */
   IBMSSma(IBMSNode *pSNode, list_uint16 mgtClasses);
 

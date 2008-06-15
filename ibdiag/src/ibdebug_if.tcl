@@ -345,7 +345,7 @@ proc UpToolsFlags {_flag _tool} {
 proc GetToolsFlags { tool } {
     global TOOLS_FLAGS
     if {[info exists TOOLS_FLAGS($tool)]} {
-	return $TOOLS_FLAGS($tool)   
+	return $TOOLS_FLAGS($tool)
     }
     return ""
 }
@@ -1140,7 +1140,7 @@ proc inform { msgCode args } {
 	    append msgText "are connected to the IBFabric (described in : $G(argv:topo.file))%n"
 	    append msgText "Port number : $msgF(port) will be used."
 	}
-        
+
 
 
         "-E-ibis:ibis_init.failed" {
@@ -1169,7 +1169,7 @@ proc inform { msgCode args } {
 	"-V-ibis.ibis.log.file" {
 	    append msgText "IBIS: ibis log file: $msgF(value)"
 	}
-        
+
 
 	
 	"-E-loading:cannot.use.current.tcl.package" {
@@ -1291,7 +1291,7 @@ proc inform { msgCode args } {
 	}
 	"-E-localPort:enable.ibis.set.port" {
 	    append msgText "Failed running : \"ibis_set_port $G(data:root.port.guid)\""
-	}   
+	}
         "-W-localPort:few.ports.up" {
 	    append msgText "A few ports of local device are up.%n"
 	    append msgText "Since port-num was not specified (-p option), "
@@ -1451,7 +1451,7 @@ proc inform { msgCode args } {
 	    append msgText "starting at the local node) are not discovered and "
 	    append msgText "therefore will be reported as \"missing\"."
 	    if { [llength [array names G bad,paths,*]] == 0 } {
-		set msgText "" 
+		set msgText ""
                 # <- this means don't print the "-I-" prefix
 	    }
 	}
@@ -1726,7 +1726,7 @@ proc inform { msgCode args } {
 	}
         "-I-ibdiagnet:mgid.mlid.hca.header" {
 	    append msgText "mgid-mlid-HCAs table"
-	    set headerText "Multicast Groups Report"     
+	    set headerText "Multicast Groups Report"
 	}
 
 
@@ -1768,7 +1768,7 @@ proc inform { msgCode args } {
 	}
 	"-I-ibdiagnet:bad.sm.header" {
 	    append msgText "Bad Fabric SM Info"
-	    set headerText "SM Info Check"     
+	    set headerText "SM Info Check"
 	}
 	"-I-ibdiagnet:bad.links.header" {
 	    append msgText "Bad Links Info%n"
@@ -1819,7 +1819,7 @@ proc inform { msgCode args } {
 	"-I-ibdiagnet:no.bad.link.width" {
 	    append msgText "No unmatched Links (with width != $G(argv:link.width)) were found"
 	}
-        
+
         "-W-ibdiagnet:report.links.speed.state" {
             set CSV_scope "port"
             set CSV_severity 3
@@ -2031,8 +2031,8 @@ proc inform { msgCode args } {
 	    PutsIn80Chars " "
 	    append msgText "Retrying discovery multiple times (according to the -c flag) ... "
 	}
-        
-        
+
+
 	"-V-outfiles:.lst"   {
 	    PutsIn80Chars " "
 	    append msgText "Writing file $G(outfiles,.lst) "
@@ -2250,7 +2250,7 @@ proc inform { msgCode args } {
     }
 
     regsub -all {%n} "[join $msgText \n]" "\n" msgText
-    
+
     ### DontTrimLine
     if {[info exists dontTrimLine]} {
 	PutsIn80Chars $msgText $putsFlags -length 160
@@ -2271,7 +2271,7 @@ proc inform { msgCode args } {
 ##############################
 
 ##############################
-#  NAME         RequirePackage   
+#  NAME         RequirePackage
 #  FUNCTION require the available packages for device specific crRead/crWrite
 #  RESULT       ammm... the available packages are required
 proc RequirePackage {} {

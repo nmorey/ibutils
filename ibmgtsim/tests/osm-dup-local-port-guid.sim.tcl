@@ -6,7 +6,7 @@ proc dupPortGuid {fromNodeNPort toNodeNPort} {
 
    # IBDM has a limitation of not holding "end ports"
    # instead only physical ports are available.
-   # So in case of a switch port (port num 0) we need to handle all physical ports 
+   # So in case of a switch port (port num 0) we need to handle all physical ports
    # instead...
 
    # do we have a switch as the guid to duplicate?
@@ -35,7 +35,7 @@ proc dupPortGuid {fromNodeNPort toNodeNPort} {
       set port [IBNode_getPort $node [lindex $toNodeNPort 1]]
       set targetPorts $port
    }
-   
+
    # do the copy
    foreach port $targetPorts {
       puts "-I- Overriding port:[IBPort_getName $port] guid to $newGuid (dup of $fromPortName)"
@@ -48,12 +48,12 @@ proc dupPortGuid {fromNodeNPort toNodeNPort} {
 proc getEndPortsByRandomOreder {fabric} {
    # get number of nodes:
    set nodesByName [IBFabric_NodeByName_get $fabric]
-   
+
    set nodePortNOrderList {}
    foreach nodeNameNId [IBFabric_NodeByName_get $fabric] {
       set node [lindex $nodeNameNId 1]
       set nodeName [lindex $nodeNameNId 0]
-      # each node might be a switch (then take port 0) 
+      # each node might be a switch (then take port 0)
       if {[IBNode_type_get $node] != 1} {
          # only connected ports please:
          set numPorts [IBNode_numPorts_get $node]
@@ -67,7 +67,7 @@ proc getEndPortsByRandomOreder {fabric} {
          }
       }
    }
-   
+
    set randNodes {}
    foreach nodePortNRnd [lsort -index 2 -real $nodePortNOrderList] {
       lappend randNodes [lrange $nodePortNRnd 0 1]

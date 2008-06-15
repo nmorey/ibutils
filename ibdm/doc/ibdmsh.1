@@ -166,14 +166,14 @@ The following constants are used as argument bits for the global variable \f(CW$
 .RE
 .SH "IBDM Globals"
 .IX Header "IBDM Globals"
-Log level: set to FABU_LOG* values 
+Log level: set to FABU_LOG* values
 .Sp
 .RS 4
 [ Global : int ] \f(CW$FabricUtilsVerboseLevel\fR
 .RE
 .SH "IBDM Objects"
 .IX Header "IBDM Objects"
-This section decribes the various object types exposed by \s-1IBDM\s0.   
+This section decribes the various object types exposed by \s-1IBDM\s0.
 .PP
 \&\s-1IBDM\s0 exposes some of its internal objects. The objects identifiers returned by the various function calls are formatted according to the following rules:
 .PP
@@ -192,7 +192,7 @@ Port: port:<fab idx>:<node name>/<port num>
 \&\fBVariables/Pointers:\fR
    For each object attribute a \*(L"get\*(R" and \*(L"set\*(R" methods are provided.
    The format of the methods is: <class>_<attribute>_<get|set>.
-   The \*(L"set\*(R" method is only available for read/write attributes. 
+   The \*(L"set\*(R" method is only available for read/write attributes.
 .PP
 .Vb 4
 \&   Example:
@@ -207,7 +207,7 @@ Port: port:<fab idx>:<node name>/<port num>
    <class> <obj_name> \-this <obj pointer>
 .PP
 .Vb 2
-\&   Once declared the <obj-name> can be used in conjunction to 
+\&   Once declared the <obj-name> can be used in conjunction to
 \&   with the standard "configure" and "cget" commands.
 .Ve
 .PP
@@ -218,7 +218,7 @@ Port: port:<fab idx>:<node name>/<port num>
 .Ve
 .PP
 .Vb 5
-\&   To delete an object symbol (and enable its mapping to another 
+\&   To delete an object symbol (and enable its mapping to another
 \&   pointer) use:
 \&   rename <obj name> ""
 \&   for example:
@@ -325,7 +325,7 @@ What fabric we belong to.
 .RE
 .IP "[ Member data: returns unsigned int  ] \-numPorts"
 .IX Item "[ Member data: returns unsigned int  ] -numPorts"
-Number of physical ports 
+Number of physical ports
 .RE
 .IP "[ Member data: returns vec_pport * ] \-Ports"
 .IX Item "[ Member data: returns vec_pport * ] -Ports"
@@ -514,7 +514,7 @@ Return the list of node pointers matching the required type
 .RE
 .IP "[ Member : returns IBSystem * ] makeGenericSystem name"
 .IX Item "[ Member : returns IBSystem * ] makeGenericSystem name"
-Create a new generic system \- basically an empty container for nodes...  
+Create a new generic system \- basically an empty container for nodes...
 .RE
 .IP "[ Member : returns IBSystem * ] makeSystem name type"
 .IX Item "[ Member : returns IBSystem * ] makeSystem name type"
@@ -582,7 +582,7 @@ Destruct a fabric
 .SH "IBDM Functions"
 .IX Header "IBDM Functions"
 This section provide the details about the functions \s-1IBDM\s0 exposes.
-The order follows the expected order in a regular \s-1IBDM\s0 flow. 
+The order follows the expected order in a regular \s-1IBDM\s0 flow.
 They all return 0 on succes.
 .Sh "Subnet Utilities"
 .IX Subsection "Subnet Utilities"
@@ -646,7 +646,7 @@ Analyze the routes to make sure Up/Down rule is maintained
 .RE
 .IP "[ returns int  ] ibdmCheckMulticastGroups p_fabric"
 .IX Item "[ returns int  ] ibdmCheckMulticastGroups p_fabric"
-Verify connectivity of multicast routing 
+Verify connectivity of multicast routing
 .RE
 .IP "[ returns int  ] ibdmCheckFabricMCGrpsForCreditLoopPotential p_fabric rootNodes"
 .IX Item "[ returns int  ] ibdmCheckFabricMCGrpsForCreditLoopPotential p_fabric rootNodes"

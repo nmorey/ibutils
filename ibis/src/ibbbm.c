@@ -82,7 +82,7 @@ ibbbm_construct()
   ibbbm_t* p_ibbbm;
 
   OSM_LOG_ENTER(&(IbisObj.log));
- 
+
   p_ibbbm = malloc(sizeof(ibbbm_t));
   if (p_ibbbm == NULL)
   {
@@ -96,7 +96,7 @@ ibbbm_construct()
 
   Exit :
     OSM_LOG_EXIT(&(IbisObj.log));
-  return(p_ibbbm);   
+  return(p_ibbbm);
 }
 
 /**********************************************************************
@@ -120,9 +120,9 @@ ibbbm_init(
   IN ibbbm_t* const p_ibbbm )
 {
   ib_api_status_t status = IB_SUCCESS;
- 
+
   OSM_LOG_ENTER(&(IbisObj.log));
- 
+
   cl_event_init(&p_ibbbm->wait_for_resp, FALSE); // FALSE: auto reset
   p_ibbbm->state = IBBBM_STATE_READY;
 
@@ -135,7 +135,7 @@ ibbbm_init(
 static void
 __ibbbm_space_rcv_callback(
   IN void* context,
-  IN void* p_data) 
+  IN void* p_data)
 {
   osm_madw_t* const p_madw = (osm_madw_t*)p_data;
   /* HACK : how do we get the context from the mad itself ??? */
@@ -162,15 +162,15 @@ ibbbm_bind(
   IN ibbbm_t* const p_ibbbm )
 {
   ib_api_status_t status;
- 
+
   OSM_LOG_ENTER(&(IbisObj.log));
- 
+
   status = ibis_gsi_mad_ctrl_bind(
     &(IbisObj.mad_ctrl),
     BBM_CLASS,
     &p_ibbbm->h_bind
     );
- 
+
   if( status != IB_SUCCESS )
   {
     goto Exit;
@@ -219,7 +219,7 @@ __ibbbm_vpd(
   bm_sequence =(uint16_t)cl_atomic_inc(&p_ibbbm->bm_sequence);
 
   *p_trans_id = cl_ntoh64(trans_id);
- 
+
 
   mad_addr.dest_lid = cl_hton16(lid);
   mad_addr.path_bits = 0;
@@ -290,9 +290,9 @@ ibbbm_read_vpd(
   cl_status_t     wait_status;
 
   OSM_LOG_ENTER(&(IbisObj.log));
- 
+
   status = __ibbbm_vpd(p_ibbbm,lid,BBM_ATTR_READVPD,&trans_id,vpd_device_selector,bytes_num,offset,NULL);
- 
+
   if (status != IB_SUCCESS )
   {
     goto Exit;

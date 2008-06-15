@@ -40,7 +40,7 @@ pkginclude_HEADERS = git_version.h Fabric.h \
 # ibdm shared library version triplet is:
 # API_ID:API_VER:NUM_PREV_API_SUP = x:y:z
 # * change of API_ID means new API
-# * change of AGE means how many API backward compt 
+# * change of AGE means how many API backward compt
 # * change of API_VER is required every version
 # Results with SO version: x-z:z:y
 LIB_VER_TRIPLET="2:1:1"
@@ -67,7 +67,7 @@ endif
 # We have a special mode where we know the package will be eventually moved
 # to $with_final_prefix
 if USE_FINAL_PREFIX
-IBNL_PATH=-DIBDM_IBNL_DIR='"$(with_final_prefix)/lib/ibdm$(VERSION)"' 
+IBNL_PATH=-DIBDM_IBNL_DIR='"$(with_final_prefix)/lib/ibdm$(VERSION)"'
 else
 IBNL_PATH=-DIBDM_IBNL_DIR='"$(libdir)/ibdm$(VERSION)"'
 endif
@@ -78,14 +78,14 @@ AM_CFLAGS =   $(DBG) $(IBNL_PATH) $(TCL_CFLAGS) $(REGEXP_INCLUDE)
 lib_LTLIBRARIES = libibdmcom.la libibdm.la
 libibdmcom_la_SOURCES = $(common_SOURCES)
 libibdmcom_la_LIBADD = -L../replace -lreplace
-libibdmcom_la_LDFLAGS = -version-info $(LIB_VER_TRIPLET) 
+libibdmcom_la_LDFLAGS = -version-info $(LIB_VER_TRIPLET)
 
 libibdm_la_SOURCES = ibdm_wrap.cpp ibdm.i $(common_SOURCES)
 libibdm_la_LIBADD = $(TCL_LIBS) -L../replace -lreplace
 libibdm_la_LDFLAGS = -Wl,-rpath -Wl,$(TCL_PREFIX)/lib -version-info $(LIB_VER_TRIPLET) -no-undefined
 
 bin_PROGRAMS  = ibdmsh
-ibdmsh_SOURCES = ibdmsh_wrap.cpp 
+ibdmsh_SOURCES = ibdmsh_wrap.cpp
 ibdmsh_LDADD =  -libdmcom $(TCL_LIBS)
 ibdmsh_LDFLAGS = -static -Wl,-rpath -Wl,$(TCL_PREFIX)/lib
 
@@ -157,7 +157,7 @@ dist-hook: git_version.h
 EXTRA_DIST = swig_alternate_mangling.cpp fixSwigWrapper pkgIndex.tcl ibdm.i
 
 # this actually over write the lib install
-install-exec-am: install-binPROGRAMS 
+install-exec-am: install-binPROGRAMS
 	mkdir -p $(DESTDIR)$(libdir)/ibdm$(VERSION)
 	cp .libs/$(shell grep dlname libibdm.la | sed 's/.*=\(.*\)/\1/') \
 	   $(DESTDIR)$(libdir)/ibdm$(VERSION)/libibdm.so.$(VERSION)

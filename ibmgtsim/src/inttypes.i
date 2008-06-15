@@ -119,9 +119,9 @@
 
 %typemap(tcl8,out) ib_gid_t* {
   char buff[36];
-  sprintf(buff, "0x%016" PRIx64 ":0x%016" PRIx64, 
-          cl_ntoh64($source->unicast.prefix), 
-          cl_ntoh64($source->unicast.interface_id) 
+  sprintf(buff, "0x%016" PRIx64 ":0x%016" PRIx64,
+          cl_ntoh64($source->unicast.prefix),
+          cl_ntoh64($source->unicast.interface_id)
           );
   Tcl_SetStringObj($target,buff,strlen(buff));
 }
@@ -147,8 +147,8 @@
   buff = (char *)malloc((strlen(Tcl_GetStringFromObj($source,NULL))+1)*sizeof(char));
   strcpy(buff, Tcl_GetStringFromObj($source,NULL));
   p_ch = strtok_r(buff, " \t",&last);
-  while (p_ch && (i < $dim0)) 
-  {    
+  while (p_ch && (i < $dim0))
+  {
     entry = strtol(p_ch, NULL, 0);
     if (entry > 0xff)
     {
@@ -194,8 +194,8 @@
   buff = (char *)malloc((strlen(Tcl_GetStringFromObj($source,NULL))+1)*sizeof(char));
   strcpy(buff, Tcl_GetStringFromObj($source,NULL));
   p_ch = strtok_r(buff, " \t",&last);
-  while (p_ch && (i < $dim0)) 
-  {    
+  while (p_ch && (i < $dim0))
+  {
     entry = strtol(p_ch, NULL, 0);
     if (entry > 0xffff)
     {
@@ -241,8 +241,8 @@
   buff = (char *)malloc((strlen(Tcl_GetStringFromObj($source,NULL))+1)*sizeof(char));
   strcpy(buff, Tcl_GetStringFromObj($source,NULL));
   p_ch = strtok_r(buff, " \t",&last);
-  while (p_ch && (i < $dim0)) 
-  {    
+  while (p_ch && (i < $dim0))
+  {
     entry = strtol(p_ch, NULL, 0);
     if (entry > (long int)0xffffffff)
     {
@@ -288,8 +288,8 @@
   buff = (char *)malloc((strlen(Tcl_GetStringFromObj($source,NULL))+1)*sizeof(char));
   strcpy(buff, Tcl_GetStringFromObj($source,NULL));
   p_ch = strtok_r(buff, " \t",&last);
-  while (p_ch && (i < $dim0)) 
-  {    
+  while (p_ch && (i < $dim0))
+  {
     entry = strtol(p_ch, NULL, 0);
     if (entry > 0xffffffffffffffffULL )
     {
@@ -337,8 +337,8 @@
   buff = (char *)malloc((strlen(Tcl_GetStringFromObj($source,NULL))+1)*sizeof(char));
   strcpy(buff, Tcl_GetStringFromObj($source,NULL));
   p_ch = strtok_r(buff, " \t",&last);
-  while (p_ch && (i < $dim0)) 
-  {    
+  while (p_ch && (i < $dim0))
+  {
     entry = strtol(p_ch, NULL, 0);
     if (entry > 65535)
     {
@@ -386,8 +386,8 @@
   buff = (char *)malloc((strlen(Tcl_GetStringFromObj($source,NULL))+1)*sizeof(char));
   strcpy(buff, Tcl_GetStringFromObj($source,NULL));
   p_ch = strtok_r(buff, " \t",&last);
-  while (p_ch && (i < $dim0)) 
-  {    
+  while (p_ch && (i < $dim0))
+  {
     entry = strtol(p_ch, NULL, 0);
     if (entry > 0xffffffff)
     {
@@ -435,8 +435,8 @@
   buff = (char *)malloc((strlen(Tcl_GetStringFromObj($source,NULL))+1)*sizeof(char));
   strcpy(buff, Tcl_GetStringFromObj($source,NULL));
   p_ch = strtok_r(buff, " \t",&last);
-  while (p_ch && (i < $dim0)) 
-  {    
+  while (p_ch && (i < $dim0))
+  {
     entry = strtoll(p_ch, NULL, 0);
     if (entry > 0xffffffffffffffffULL )
     {

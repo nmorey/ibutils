@@ -52,16 +52,16 @@ proc runner {simDir osmPath osmPortGuid} {
    set env(OSM_CACHE_DIR) $simDir/
    puts $simCtrlSock "writeGuid2LidFile $simDir/guid2lid $lmc"
    puts "SIM: [gets $simCtrlSock]"
-  
+
    file copy $simDir/guid2lid $simDir/guid2lid.orig
 
    set osmCmd "$osmPath -d2 -l $lmc -V -f $osmLog -g $osmPortGuid"
    puts "-I- Starting: $osmCmd"
    set osmPid [eval "exec $osmCmd > $osmStdOutLog &"]
-  
+
    # start a tracker on the log file and process:
    startOsmLogAnalyzer $osmLog
-  
+
    return $osmPid
 }
 
@@ -86,7 +86,7 @@ proc checker {simDir osmPath osmPortGuid} {
    puts $simCtrlSock "updateProcFSForNode \$fabric $simDir H-1/U1 H-1/U1 1"
    set res [gets $simCtrlSock]
    puts "SIM: Updated H-1 proc file:$res"
-   
+
    # check for lid validity:
    puts $simCtrlSock "checkLidValues \$fabric $lmc"
    set res [gets $simCtrlSock]
@@ -121,10 +121,10 @@ proc checker {simDir osmPath osmPortGuid} {
       puts $simCtrlSock "updateProcFSForNode \$fabric $simDir H-1/U1 H-1/U1 1"
       set res [gets $simCtrlSock]
       puts "SIM: Updated H-1 proc file:$res"
-      
+
       # wait 3 seconds
       after 3000
-     
+
       # check for lid validity:
       puts $simCtrlSock "checkLidValues \$fabric $lmc"
       set res [gets $simCtrlSock]
@@ -151,7 +151,7 @@ proc checker {simDir osmPath osmPortGuid} {
       puts $simCtrlSock "connectAllDisconnected \$fabric 1"
       set  returnVal [gets $simCtrlSock]
       puts "SIM: $returnVal"
-      
+
       # wait for sweep to end or exit
       puts "-I- if we did connect some we need to wait for them"
       if {"-I- Reconnected 0 nodes" != $returnVal} {
@@ -192,7 +192,7 @@ proc checker {simDir osmPath osmPortGuid} {
          set fdbsFile [file join $simDir opensm.fdbs]
          set mcfdbsFile [file join $simDir opensm.mcfdbs]
          set cmd "ibdmchk -s $subnetFile -f $fdbsFile -m $mcfdbsFile"
-         
+
          puts "-I- Invoking $cmd "
          if {[catch {set res [eval "exec $cmd > $ibdmchkLog"]} e]} {
             puts "-E- ibdmchk failed"
@@ -218,7 +218,7 @@ proc checker {simDir osmPath osmPortGuid} {
          puts "-E- Fail to parse the Multicast registration ports:$res"
          return 1
       }
-     
+
       if {$numHcasJoined != $hcas} {
          puts "-E- Not all HCAs are registered. Expected:$numHcasJoined got:$hcas"
          return 1

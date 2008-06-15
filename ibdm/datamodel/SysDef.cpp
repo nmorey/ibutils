@@ -47,30 +47,30 @@ IB Systems Definition Parsing and Building Systems.
 #include <sys/types.h>
 #include <dirent.h>
 
-// build all nodes recursively 
+// build all nodes recursively
 int
 IBSystemsCollection::makeSysNodes(
   IBFabric *p_fabric,        // the fabric we belong to
   IBSystem *p_system,        // the system we build
-  IBSysDef *p_parSysDef,     // the sysdef of the parent 
+  IBSysDef *p_parSysDef,     // the sysdef of the parent
   string    parHierName,     // the hier name of the parent "" for top
   map_str_str &mods          // hier name based modifiers list
   )
 {
   int anyErr = 0;
 
-  // go over all child sysdefs 
+  // go over all child sysdefs
   for(map_str_psysinsts::iterator sI = p_parSysDef->SystemsInstByName.begin();
       sI != p_parSysDef->SystemsInstByName.end();
       sI++) {
     string hierInstName = parHierName + (*sI).first;
     IBSysInst *p_inst = (*sI).second;
-    
+
     // are we at the bottom ?
     if (p_inst->isNode) {
       string nodeName = p_system->name + "/" + hierInstName;
       // simply make this node ...
-      IBNode *p_node = new IBNode(nodeName, p_fabric, p_system, 
+      IBNode *p_node = new IBNode(nodeName, p_fabric, p_system,
                                   p_inst->nodeType, p_inst->nodeNumPorts);
       if (! p_node) {
         cout << "-E- Fail to create node:" << nodeName << endl;
@@ -89,11 +89,11 @@ IBSystemsCollection::makeSysNodes(
         getInstSysDef(p_parSysDef, p_inst, hierInstName, mods);
       if (p_sysDef) {
         // recurse down
-        anyErr |= 
+        anyErr |=
           makeSysNodes(
-            p_fabric, 
-            p_system, 
-            p_sysDef, 
+            p_fabric,
+            p_system,
+            p_sysDef,
             hierInstName + string("/"),
             mods);
       }
@@ -106,35 +106,35 @@ IBSystemsCollection::makeSysNodes(
 IBSysDef *
 IBSystemsCollection::getInstSysDef(
   IBSysDef  *p_sysDef,  // parent system def
-  IBSysInst *p_inst, 
+  IBSysInst *p_inst,
   string     hierInstName,
-  map_str_str  &mods    // hier name based modifiers list  
+  map_str_str  &mods    // hier name based modifiers list
   )
 {
   // find the definition of this inst:
   string master = p_sysDef->fileName + string("/") + p_inst->master;
-  map_str_str::iterator mI = mods.find(hierInstName);  
+  map_str_str::iterator mI = mods.find(hierInstName);
   if (mI != mods.end()) {
     string mod = (*mI).second;
     // we support several acronims for a removed subsystem
     if ((mod == string("Removed")) ||
         (mod == string("X")) ||
-        (mod == string("R"))) 
+        (mod == string("R")))
       return NULL;
     master += string(":") + mod;
   }
-  
+
   // try to find the master:
   IBSysDef *p_subSysDef = getSysDef(master);
   if (! p_subSysDef) {
       cout << "-E- Fail to find definition for system:" << master << endl;
       dump();
       return NULL;
-  } 
+  }
   return p_subSysDef;
 }
 
-// 
+//
 IBPort *
 IBSystemsCollection::makeNodePortByInstAndPortName(
   IBSystem     *p_system,    // the system we build the node port in
@@ -142,7 +142,7 @@ IBSystemsCollection::makeNodePortByInstAndPortName(
   IBSysInst    *p_inst,       // the instance
   string        instPortName, // the port name
   string        hierInstName, // the hier name of the instance
-  map_str_str  &mods          // hier name based modifiers list  
+  map_str_str  &mods          // hier name based modifiers list
   )
 {
   IBSysDef *p_subSysDef;
@@ -151,14 +151,14 @@ IBSystemsCollection::makeNodePortByInstAndPortName(
   p_subSysDef = getInstSysDef(p_sysDef, p_inst, hierInstName, mods);
   if (p_subSysDef) {
     // can we find the sys port by the given name ?
-    map_str_psysportdef::iterator pI = 
+    map_str_psysportdef::iterator pI =
       p_subSysDef->SysPortsDefs.find(instPortName);
-    
+
     // not all connections exists - since we might very the boards...
     if (pI == p_subSysDef->SysPortsDefs.end()) return NULL;
-    
+
     IBSysPortDef *p_subInstPort = (*pI).second;
-    
+
     // recurse downwards
     return(
       makeNodePortBySysPortDef(
@@ -183,17 +183,17 @@ IBSystemsCollection::makeNodePortBySysPortDef(
 
   IBPort *p_port = NULL;
   // find the instance def:
-  map_str_psysinsts::iterator sI = 
+  map_str_psysinsts::iterator sI =
     p_sysDef->SystemsInstByName.find(p_sysPortDef->instName);
-  
+
   if (sI == p_sysDef->SystemsInstByName.end()) {
     cout << "-E- Fail to find the instance:" << p_sysPortDef->instName
          << " connected to port:" << p_sysPortDef->name << endl;
     return NULL;
   }
-  
+
   IBSysInst *p_inst = (*sI).second;
-  
+
   // is it a node?
   if (p_inst->isNode) {
     // Try to find the node in the system
@@ -204,11 +204,11 @@ IBSystemsCollection::makeNodePortBySysPortDef(
            << " connected to port:" << p_sysPortDef->name <<  endl;
       return NULL;
     }
-    
+
     // simply make this node port ...
     p_port = p_node->makePort(atoi(p_sysPortDef->instPortName.c_str()));
     if (! p_port) {
-      cout << "-E- Fail to make port:" << nodeName << "/" 
+      cout << "-E- Fail to make port:" << nodeName << "/"
            << p_sysPortDef->instPortName << endl;
       return NULL;
     }
@@ -224,8 +224,8 @@ IBSystemsCollection::makeNodePortBySysPortDef(
         p_system,
         p_sysDef,
         p_inst,
-        p_sysPortDef->instPortName, 
-        hierInstName, 
+        p_sysPortDef->instPortName,
+        hierInstName,
         mods)
       );
   }
@@ -242,22 +242,22 @@ IBSystemsCollection::makeNodePortBySubSysInstPortName(
   string         instPortName,// Name of instance port
   string         parHierName, // the hier name of the parent "" for top
   map_str_str   &mods         // hier name based modifiers list
-  ) 
+  )
 {
   // find the instance
   IBPort *p_port = NULL;
 
   // find the instance def:
-  map_str_psysinsts::iterator sI = 
+  map_str_psysinsts::iterator sI =
     p_sysDef->SystemsInstByName.find(instName);
-  
+
   if (sI == p_sysDef->SystemsInstByName.end()) {
     cout << "-E- Fail to find the instance:" << instName << endl;
     return NULL;
   }
-  
+
   IBSysInst *p_inst = (*sI).second;
-  
+
   // is it a node?
   if (p_inst->isNode) {
     // Try to find the node in the system
@@ -268,7 +268,7 @@ IBSystemsCollection::makeNodePortBySubSysInstPortName(
            <<  endl;
       return NULL;
     }
-    
+
     // simply make this node port ...
     p_port = p_node->makePort(atoi(instPortName.c_str()));
     return p_port;
@@ -281,15 +281,15 @@ IBSystemsCollection::makeNodePortBySubSysInstPortName(
         p_system,
         p_sysDef,
         p_inst,
-        instPortName, 
-        hierInstName, 
+        instPortName,
+        hierInstName,
         mods)
       );
   }
   return NULL;
 }
 
-//  DFS from top on each level connect all connected SysInst ports 
+//  DFS from top on each level connect all connected SysInst ports
 int
 IBSystemsCollection::makeSubSystemToSubSystemConns(
   IBSystem      *p_system,    // the system we build the node port in
@@ -300,41 +300,41 @@ IBSystemsCollection::makeSubSystemToSubSystemConns(
 {
   int anyErr = 0;
 
-  // go over all instances 
+  // go over all instances
   for (map_str_psysinsts::iterator iI = p_sysDef->SystemsInstByName.begin();
        iI != p_sysDef->SystemsInstByName.end();
        iI++) {
-    
+
     IBSysInst *p_inst = (*iI).second;
-    
+
     // go through all inst ports aand connect them
     for (map_str_pinstport::iterator pI = p_inst->InstPorts.begin();
          pI != p_inst->InstPorts.end();
          pI++) {
       IBSysInstPort *p_instPort = (*pI).second;
 
-      IBPort *p_port = 
+      IBPort *p_port =
         makeNodePortBySubSysInstPortName(
-          p_system, 
+          p_system,
           p_sysDef,
           p_inst->name,
           p_instPort->name,
-          parHierName, 
+          parHierName,
           mods);
-      
+
       // we might not find this inst port on this mod:
       if (! p_port) continue;
-     
+
       // make the remote inst port
-      IBPort *p_remPort = 
+      IBPort *p_remPort =
         makeNodePortBySubSysInstPortName(
-          p_system, 
+          p_system,
           p_sysDef,
           p_instPort->remInstName,
           p_instPort->remPortName,
-          parHierName, 
+          parHierName,
           mods);
-      
+
       // can it be disconnected on the other side?
       if (! p_remPort) continue;
 
@@ -363,24 +363,24 @@ IBSystemsCollection::makeSubSystemToSubSystemConns(
 // modifiers by hierarchical instance name.
 IBSystem *
 IBSystemsCollection::makeSystem(
-  IBFabric *p_fabric, 
-  string name, 
-  string master, 
-  map_str_str mods) 
+  IBFabric *p_fabric,
+  string name,
+  string master,
+  map_str_str mods)
 {
   // ALGO:
-  
+
   // Find the master system definition
   IBSysDef *p_sysDef = getSysDef(master);
   if (! p_sysDef) {
     cout << "-E- Fail to find definition for system:" << master << endl;
     return NULL;
   }
-  
+
   // Create the top level system:
   IBSystem *p_system = new IBSystem(name, p_fabric, master);
-  
-  // create all node insts: 
+
+  // create all node insts:
   //   DFS down through all subsys apply any inst modifier rules
   //   create any nodes found.
   if (makeSysNodes(p_fabric, p_system, p_sysDef, "", mods)) {
@@ -393,11 +393,11 @@ IBSystemsCollection::makeSystem(
   for ( map_str_psysportdef::iterator pI = p_sysDef->SysPortsDefs.begin();
         pI != p_sysDef->SysPortsDefs.end();
         pI++) {
-    
+
     // find the lowest point connection of this port and make it if a node port
     IBPort *p_port =
       makeNodePortBySysPortDef(p_system, p_sysDef, (*pI).second,"", mods);
-    
+
     // might have been a disconnected port.
     if (! p_port) continue;
 
@@ -410,7 +410,7 @@ IBSystemsCollection::makeSystem(
   //   2. BFS from top on each level connect all connected SysPortDefs
   if (makeSubSystemToSubSystemConns(p_system, p_sysDef, "", mods)) {
     delete p_system;
-    return NULL;    
+    return NULL;
   }
 
   // Last step is to use given set of sub-inst attributes adn assign
@@ -420,12 +420,12 @@ IBSystemsCollection::makeSystem(
        siA++) {
     string nodeName = p_system->name + "/" + (*siA).first;
     // try to find the node:
-    IBNode *p_node = 
+    IBNode *p_node =
       p_system->getNode(nodeName);
     if (p_node) {
       p_node->attributes =  (*siA).second ;
     } else {
-      cout << "-W- Fail to set attributes:" << (*siA).second 
+      cout << "-W- Fail to set attributes:" << (*siA).second
            << " on non-existing Node:" << nodeName << endl;
     }
   }
@@ -446,7 +446,7 @@ list< string > getDirIbnlFiles(string dir) {
     while ((ep = readdir (dp)))
     {
       lastDot = strrchr(ep->d_name,'.');
-      if (lastDot && !strcmp(lastDot, ".ibnl")) 
+      if (lastDot && !strcmp(lastDot, ".ibnl"))
       {
         res.push_back(ep->d_name);
       }
@@ -455,7 +455,7 @@ list< string > getDirIbnlFiles(string dir) {
   }
   else
     cout << "-E- Fail to scan for IBNL files in directory:" << dir << endl;
-  
+
   return res;
 }
 
@@ -463,7 +463,7 @@ list< string > getDirIbnlFiles(string dir) {
 extern int
 ibnlParseSysDefs (IBSystemsCollection *p_sysColl, const char *fileName);
 
-// Parse a system definition netlist 
+// Parse a system definition netlist
 int
 IBSystemsCollection::parseIBSysdef(string fileName) {
   return ibnlParseSysDefs(this, fileName.c_str());
@@ -471,7 +471,7 @@ IBSystemsCollection::parseIBSysdef(string fileName) {
 
 // Read all IBNL files available from the given path list.
 int
-IBSystemsCollection::parseSysDefsFromDirs(list< string > dirs) 
+IBSystemsCollection::parseSysDefsFromDirs(list< string > dirs)
 {
   int anyErr = 0;
   // go through all directories
@@ -479,23 +479,23 @@ IBSystemsCollection::parseSysDefsFromDirs(list< string > dirs)
        dI != dirs.end();
        dI++) {
     string dirName = (*dI);
-    
+
     // find all matching files
     list <string > ibnlFiles = getDirIbnlFiles(dirName);
-    
+
     // parse them all:
     for (list< string >::iterator fI = ibnlFiles.begin();
          fI != ibnlFiles.end();
          fI++) {
       string fileName = dirName + string("/") + (*fI);
-      
+
       if (ibnlParseSysDefs(this, fileName.c_str())) {
         cout << "-E- Error parsing System definition file:"
              <<  fileName << endl;
         anyErr |= 1;
       } else {
-        if (FabricUtilsVerboseLevel & FABU_LOG_VERBOSE) 
-          cout << "-I- Loaded system definition from:"  << fileName 
+        if (FabricUtilsVerboseLevel & FABU_LOG_VERBOSE)
+          cout << "-I- Loaded system definition from:"  << fileName
                << endl;
       }
     }
@@ -505,21 +505,21 @@ IBSystemsCollection::parseSysDefsFromDirs(list< string > dirs)
 
 // dump out the available systems:
 void
-IBSystemsCollection::dump() 
+IBSystemsCollection::dump()
 {
   for (map_str_psysdef::iterator sI = SysDefByName.begin();
        sI != SysDefByName.end();
        sI++) {
     cout << "-I- Found Definition for:" << (*sI).first <<endl;
   }
-     
+
 }
 
 // we use a singleton system repository
 IBSystemsCollection *theSysDefsCollection()
 {
   static IBSystemsCollection *p_sysDefsColl = NULL;
-  
+
   // we only need to initialize once.
   if (! p_sysDefsColl) {
     p_sysDefsColl = new IBSystemsCollection();

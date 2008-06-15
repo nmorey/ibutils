@@ -34,7 +34,7 @@
 
 /* Holds ib_types.h MAD structs in and out TypeMaps */
 %{
-  
+
   /* for IB structs we use the format: <type>:<ptr> */
 
   /* Given the Object Pointer and Type provide it's TCL name */
@@ -42,7 +42,7 @@
 	 char tclName[128];
 	 string uiType;
 	 char name[128];
-    
+
     /* check that the string starts with _ib_ and ends with _t_p */
     if (strncmp(type, "_ib_", 4)) {
 		sprintf(tclName, "-E- Unrecognized Object Type:%s (should start with _ib_)", type);
@@ -56,14 +56,14 @@
 		Tcl_SetStringObj(objPtr, tclName, -1);
 		return TCL_ERROR;
 	 }
-    
+
     strncpy(name, type+4, strlen(type) - 8);
     name[strlen(type) - 8] = '\0';
     sprintf(tclName, "%s:%p", name, ptr);
     Tcl_SetStringObj(objPtr, tclName, -1);
-    return TCL_OK;      
+    return TCL_OK;
   }
-  
+
   /* Given the Object TCL Name Get it's pointer */
   int ibmsGetIBStructObjPtrByTclName(Tcl_Obj *objPtr, void **ptr) {
 	 /* we need to parse the name and get the type etc. */
@@ -72,7 +72,7 @@
     char buf[256];
 
 	 strcpy(buf, Tcl_GetStringFromObj(objPtr,0));
-	 
+	
 	 /* the format is always: <type>:<idx>[:<name>] */
 
 	 /* first separate the type */
@@ -88,7 +88,7 @@
        rest of the string */
     if (sscanf(colonIdx,"%p", ptr) != 1) {
 		printf("-E- Bad formatted pointer value:%s\n", colonIdx);
-		return TCL_ERROR;      
+		return TCL_ERROR;
     }
 	 return TCL_OK;
   }
@@ -114,15 +114,15 @@
     printf("Wrong format for gid guid:%s\n", p_guid);
     return TCL_ERROR;
   }
-  
+
   $target = &temp;
 }
 
 %typemap(tcl8,out) ib_gid_t* {
   char buff[36];
-  sprintf(buff, "0x%016" PRIx64 ":0x%016" PRIx64, 
-          cl_ntoh64($source->unicast.prefix), 
-          cl_ntoh64($source->unicast.interface_id) 
+  sprintf(buff, "0x%016" PRIx64 ":0x%016" PRIx64,
+          cl_ntoh64($source->unicast.prefix),
+          cl_ntoh64($source->unicast.interface_id)
           );
   Tcl_SetStringObj($target,buff,strlen(buff));
 }
@@ -130,9 +130,9 @@
 %typemap(tcl8,out) ib_vl_arb_table_t* {
   char buff[256];
   int i;
-  if ($source != NULL) 
+  if ($source != NULL)
   {
-    for (i = 0; i < 32; i++) 
+    for (i = 0; i < 32; i++)
     {
       sprintf(buff, "{0x%02x 0x%02x} ", $source->vl_entry[i].vl, $source->vl_entry[i].weight);
       Tcl_AppendToObj($target,buff,strlen(buff));
@@ -151,14 +151,14 @@
   int numEntries, numElements, code;
   const char **subListStrings, **elements;
 
-  code = Tcl_SplitList(interp, Tcl_GetStringFromObj($source,NULL), 
+  code = Tcl_SplitList(interp, Tcl_GetStringFromObj($source,NULL),
 							  &numEntries, &subListStrings);
   if (code != TCL_OK) {
-	 printf("Wrong format for vl_arb_table should be list of lists:%s\n", 
+	 printf("Wrong format for vl_arb_table should be list of lists:%s\n",
 			  Tcl_GetStringFromObj($source,NULL));
 	 return TCL_ERROR;
   }
-  
+
   memset(&tmp, 0, sizeof(ib_vl_arb_table_t));
   for (i = 0; i < numEntries; i++) {
 	 code = Tcl_SplitList(interp, subListStrings[i], &numElements, &elements);
@@ -202,9 +202,9 @@
   char buff[64];
   int i;
   int entry;
-  if ($source != NULL) 
+  if ($source != NULL)
   {
-    for (i = 0; i < 8; i++) 
+    for (i = 0; i < 8; i++)
 	 {
 		 entry = $source->raw_vl_by_sl[i];
 		 sprintf(buff, "0x%02x 0x%02x ", ((entry & 0xf0) >> 4), (entry & 0xf));
@@ -223,15 +223,15 @@
   int numEntries, code;
   const char **subListStrings;
 
-  code = Tcl_SplitList(interp, Tcl_GetStringFromObj($source,NULL), 
+  code = Tcl_SplitList(interp, Tcl_GetStringFromObj($source,NULL),
 							  &numEntries, &subListStrings);
   if (code != TCL_OK) {
-	 printf("Wrong format for ib_slvl_table_t should be list:%s\n", 
+	 printf("Wrong format for ib_slvl_table_t should be list:%s\n",
 			  Tcl_GetStringFromObj($source,NULL));
 	 return TCL_ERROR;
   }
   if (numEntries > 16) {
-	 printf("Maximal number of SL2VL entries is 16:%s\n", 
+	 printf("Maximal number of SL2VL entries is 16:%s\n",
 			  Tcl_GetStringFromObj($source,NULL));
 	 Tcl_Free((char *) subListStrings);
 	 return TCL_ERROR;
@@ -267,9 +267,9 @@
 %typemap(tcl8,out) ib_pkey_table_t* {
   char buff[36];
   int i;
-  if ($source != NULL) 
+  if ($source != NULL)
   {
-    for (i = 0; i < 32; i++) 
+    for (i = 0; i < 32; i++)
     {
       sprintf(buff, "0x%04x ", cl_ntoh16($source->pkey_entry[i]));
       Tcl_AppendToObj($target,buff,strlen(buff));
@@ -299,7 +299,7 @@
       printf("Wrong format for pkey:%s\n", p_pkey);
       return TCL_ERROR;
     }
-    
+
     p_pkey = strtok_r(NULL," ", &str_token);
   }
   $target = &tmp;
@@ -308,7 +308,7 @@
 %typemap(tcl8,out) ib_mft_table_t* {
   char buff[36];
   int i;
-  for (i = 0; i < IB_MCAST_BLOCK_SIZE; i++) 
+  for (i = 0; i < IB_MCAST_BLOCK_SIZE; i++)
   {
     sprintf(buff, "0x%04x ", cl_ntoh16($source->mft_entry[i]));
     Tcl_AppendToObj($target,buff,strlen(buff));
@@ -319,7 +319,7 @@
   $target = &temp;
 }
 
-%typemap(tcl8,argout) ib_mft_table_t *OUTPUT { 
+%typemap(tcl8,argout) ib_mft_table_t *OUTPUT {
   /* Argout ib_mft_table_t */
   char buff[36];
   int i;
@@ -328,7 +328,7 @@
   {
     /* we need to cleanup the result 0 ... */
     Tcl_ResetResult(interp);
-    for (i = 0; i < IB_MCAST_BLOCK_SIZE; i++) 
+    for (i = 0; i < IB_MCAST_BLOCK_SIZE; i++)
     {
       sprintf(buff, "0x%04x ", cl_ntoh16($source->mft_entry[i]));
       Tcl_AppendToObj($target,buff,strlen(buff));
@@ -353,7 +353,7 @@
       printf("Wrong format for MFT Entry:%s\n", p_mftEntry);
       return TCL_ERROR;
     }
-    
+
     p_mftEntry = strtok_r(NULL," ", &str_token);
   }
   while (i < IB_MCAST_BLOCK_SIZE)
@@ -464,28 +464,28 @@ typedef struct _ib_lft_record
 	uint8_array_t  lft[64];
 } ib_lft_record_t;
 
-typedef struct _ib_pm_counters {  
+typedef struct _ib_pm_counters {
   ib_mad_t mad_header;
   uint32_array_t reserved0[10];
   uint8_t reserved1;
   uint8_t port_select;
   ib_net16_t counter_select;
-  ib_net16_t symbol_error_counter; 
+  ib_net16_t symbol_error_counter;
   uint8_t link_error_recovery_counter;
-  uint8_t link_down_counter; 
-  ib_net16_t port_rcv_errors; 
+  uint8_t link_down_counter;
+  ib_net16_t port_rcv_errors;
   ib_net16_t port_rcv_remote_physical_errors;
-  ib_net16_t port_rcv_switch_relay_errors; 
-  ib_net16_t port_xmit_discard; 
+  ib_net16_t port_rcv_switch_relay_errors;
+  ib_net16_t port_xmit_discard;
   uint8_t port_xmit_constraint_errors;
   uint8_t port_rcv_constraint_errors;
   uint8_t reserved2;
   uint8_t lli_errors_exc_buf_errors;
-  ib_net16_t reserved3; 
+  ib_net16_t reserved3;
   ib_net16_t vl15_dropped;
   ib_net32_t port_xmit_data;
   ib_net32_t port_rcv_data;
   ib_net32_t port_xmit_pkts;
   ib_net32_t port_rcv_pkts;
-  uint32_array_t reserved5[38]; 
+  uint32_array_t reserved5[38];
 } ib_pm_counters_t;

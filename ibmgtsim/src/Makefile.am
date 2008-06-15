@@ -50,12 +50,12 @@ INCLUDES		= -I$(with_ibdm)/include $(TCL_CPPFLAGS)
 endif
 
 
-bin_PROGRAMS = ibmssh ibmsquit #ibmgtsim test_msgmgr test_client test_server ibmgt_client 
+bin_PROGRAMS = ibmssh ibmsquit #ibmgtsim test_msgmgr test_client test_server ibmgt_client
 
 if IBDM_REF_IS_USED
 # we assume we are building a parallel tree
 IBDM_PREFIX=$prefix
-IBDM_LIB=-L../../ibdm/datamodel -libdmcom 
+IBDM_LIB=-L../../ibdm/datamodel -libdmcom
 IBDM_INC=-I$(srcdir)/../../ibdm/datamodel
 IBDM_IFC=$(srcdir)/../../ibdm/datamodel/ibdm.i
 else
@@ -79,7 +79,7 @@ ibmssh_SOURCES = sim.cpp server.cpp node.cpp dispatcher.cpp \
 	 ibmssh_wrap.cpp sma.cpp pma.cpp vsa.cpp randmgr.cpp
 
 ibmssh_LDFLAGS = -static -Wl,-rpath -Wl,$(TCL_PREFIX)/lib \
-	-Wl,-rpath -Wl,$(IBDM_PREFIX)/lib 
+	-Wl,-rpath -Wl,$(IBDM_PREFIX)/lib
 
 ibmssh_LDADD = -libmscli $(IBDM_LIB) $(TCL_LIBS) -lpthread
 
@@ -133,13 +133,13 @@ swigclean:
 	rm -f $(srcdir)/ibms_wrap.cpp $(srcdir)/ibmssh_wrap.cpp *wrap.o
 
 # we need there extra in the distribution as their dependency is not defined
-EXTRA_DIST = swig_alternate_mangling.cpp 
+EXTRA_DIST = swig_alternate_mangling.cpp
 
 # Quiter for the server
 ibmsquit_SOURCES = client.cpp msgmgr.cpp simmsg.cpp tcpcomm.cpp
 ibmsquit_CPPFLAGS = -DBUILD_QUIT_CLIENT=1 -I$(INCLUDES)
 
-# tester of the client code 
+# tester of the client code
 #ibmgt_client_SOURCES = client.cpp msgmgr.cpp simmsg.cpp tcpcomm.cpp
 #ibmgt_client_CPPFLAGS = -DBUILD_TEST_CLIENT=1
 
@@ -151,7 +151,7 @@ ibmsquit_CPPFLAGS = -DBUILD_QUIT_CLIENT=1 -I$(INCLUDES)
 #test_server_SOURCES = tcpcomm.cpp msgmgr.cpp
 #test_server_CPPFLAGS = -DBUILD_TCP_COMM_SERVER=1
 
-# testing message manager 
+# testing message manager
 #test_msgmgr_SOURCES = msgmgr.cpp simmsg.cpp
 #test_msgmgr_CPPFLAGS = -DMSG_MGR_TEST=1
 
@@ -160,7 +160,7 @@ ibmsquit_CPPFLAGS = -DBUILD_QUIT_CLIENT=1 -I$(INCLUDES)
 # ibms shared library version triplet is:
 # API_ID:API_VER:NUM_PREV_API_SUP = x:y:z
 # * change of API_ID means new API
-# * change of AGE means how many API backward compt 
+# * change of AGE means how many API backward compt
 # * change of API_VER is required every version
 # Results with SO version: x-z:z:y
 LIB_VER_TRIPLET="1:0:0"

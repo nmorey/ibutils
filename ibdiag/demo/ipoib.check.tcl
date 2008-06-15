@@ -12,8 +12,8 @@ proc parseNodePortGroup {simDir} {
    return $res
 }
 
-# given the node port group defined by the sim flow 
-# setup the partitions policy file for the SM 
+# given the node port group defined by the sim flow
+# setup the partitions policy file for the SM
 proc setupPartitionPolicyFile {fileName} {
    global nodePortGroupList
 	for {set g 1} {$g <= 3} {incr g} {
@@ -36,7 +36,7 @@ proc setupPartitionPolicyFile {fileName} {
             set GROUP_PKEYS($grp) [lindex $png 4]
          } elseif {$grp == 3} {
             # group 3 ports are members of both other groups
-            lappend guids [lindex $png 3]            
+            lappend guids [lindex $png 3]
          }
       }
 
@@ -86,12 +86,12 @@ proc getFirstHostOfEachGroup {} {
 }
 
 ##############################################################################
-# 
+#
 # Start up the test applications
 # This is the default flow that will start OpenSM only in 0x43 verbosity
 # Return a list of process ids it started (to be killed on exit)
 #
-proc runner {simDir osmPath osmPortGuid} { 
+proc runner {simDir osmPath osmPortGuid} {
    global simCtrlSock
    global env
    global nodePortGroupList
@@ -107,7 +107,7 @@ proc runner {simDir osmPath osmPortGuid} {
    puts "SIM: [gets $simCtrlSock]"
    puts $simCtrlSock "dumpHcaPKeyGroupFile $simDir"
    puts "SIM: [gets $simCtrlSock]"
-   
+
    # parse the node/port/pkey_group file from the sim dir:
    set nodePortGroupList [parseNodePortGroup $simDir]
 
@@ -135,10 +135,10 @@ proc runner {simDir osmPath osmPortGuid} {
    set osmCmd "$osmPath -P$partitionPolicyFile -D 0x43 -d2 -t 4000 -f $osmLog -g $osmPortGuid"
    puts "-I- Starting: $osmCmd"
    set osmPid [eval "exec $osmCmd > $osmStdOutLog &"]
-   
+
    # start a tracker on the log file and process:
    startOsmLogAnalyzer $osmLog
-   
+
    return $osmPid
 }
 
@@ -158,7 +158,7 @@ proc checker {simDir osmPath osmPortGuid} {
       return 1
    }
 
-	# make sure /proc is updated ... 
+	# make sure /proc is updated ...
 	puts $simCtrlSock "updateProcFSForNode \$fabric $simDir H-1/U1 H-1/U1 1"
    set res [gets $simCtrlSock]
    puts "SIM: Updated H-1 proc file:$res"
@@ -174,7 +174,7 @@ proc checker {simDir osmPath osmPortGuid} {
 	after 10000
 	puts "---------------------------------------------------------------------"
 	puts " SUBNET READY FOR DIAGNOSTICS"
-	puts "\nCut and paste the following in a new window then run ibdiagnet:" 
+	puts "\nCut and paste the following in a new window then run ibdiagnet:"
 	puts "cd $simDir"
 	puts "setenv IBMGTSIM_DIR  $simDir"
 	puts "setenv OSM_CACHE_DIR $simDir"

@@ -1,5 +1,5 @@
 dnl This macro checks for the existance of tk8.4 libs
-dnl 
+dnl
 dnl Synopsys:
 dnl    SET_TK_LIBS()
 dnl

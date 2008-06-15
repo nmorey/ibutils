@@ -5,14 +5,14 @@ B<ibmssh> IB MANAGEMENT SIMULATOR - Extentended TCL shell
 =head1 DESCRIPTION
 
 B<ibmssh> is a TCL shell extended with interface for the IB Management Simulator facilities.
-Normally you will not run this shell directly - but instead it will be invoked by the B<IBMgtSim> utility. 
-However, in order to write simulation flows that interacts closely with the simulated model, a simulation flow should be provided. This flow is loaded by IBMgtSim and excersize the API provided by this shell. 
+Normally you will not run this shell directly - but instead it will be invoked by the B<IBMgtSim> utility.
+However, in order to write simulation flows that interacts closely with the simulated model, a simulation flow should be provided. This flow is loaded by IBMgtSim and excersize the API provided by this shell.
 
 The following sub sections provide detailed definition for those objects and API.
 
 =head1 IBMgtSim Constants
 
-These constants are provided by IBMgtSim 
+These constants are provided by IBMgtSim
 
 =head2 Massage Manager Log Verbosity Flags
 
@@ -47,7 +47,7 @@ These constants are provided by IBMgtSim
 
 
 
-=back 
+=back
 
 =head1 Message Manager Objects
 
@@ -55,38 +55,38 @@ These constants are provided by IBMgtSim
 
 =over
 
-This is the Message Manager class   
+This is the Message Manager class
 
-=item [ Member : returns int  ] getVerbLevel ?module? 
+=item [ Member : returns int  ] getVerbLevel ?module?
 
-=item [ Member : returns int  ] clrVerbLevel ?module? 
+=item [ Member : returns int  ] clrVerbLevel ?module?
 
-=item [ Member : returns void  ] setVerbLevel vl ?module? 
-        
-=item [ Member : returns int  ] outstandingMsgCount ?vl? 
+=item [ Member : returns void  ] setVerbLevel vl ?module?
 
-=item [ Member : returns string  ] outstandingMsgs ?vl? 
+=item [ Member : returns int  ] outstandingMsgCount ?vl?
 
-=item [ Member : returns string  ] getNextMessage 
+=item [ Member : returns string  ] outstandingMsgs ?vl?
 
-=item [ Member : returns void  ] nullOutstandingMsgs 
+=item [ Member : returns string  ] getNextMessage
 
-=item [ Member : returns int  ] setLogFile fileName 
+=item [ Member : returns void  ] nullOutstandingMsgs
 
-
+=item [ Member : returns int  ] setLogFile fileName
 
 
-=back 
+
+
+=back
 
 =head1 Random Manager Functions
 
-=item [ returns float  ] rmRand 
+=item [ returns float  ] rmRand
 
-obtain a random number in the range 0.0 - 1.0   
-        
-=item [ returns int  ] rmSeed seed 
+obtain a random number in the range 0.0 - 1.0
 
-initialize the seed for the random manager   
+=item [ returns int  ] rmSeed seed
+
+initialize the seed for the random manager
 
 =head2  class ib_node_info_t
 
@@ -115,7 +115,7 @@ initialize the seed for the random manager
 =item [ Member data: returns ib_net32_t * ] -port_num_vendor_id
 
 
-=back 
+=back
 
 =head2 class ib_switch_info_t
 
@@ -176,23 +176,23 @@ initialize the seed for the random manager
 =item [ Member data: returns uint8_t * ] -state_info2
 
 LinkSpeedSupported and PortState
-        
+
 =item [ Member data: returns uint8_t * ] -mkey_lmc
 
 PortPhysState and LinkDownDefaultState
-        
+
 =item [ Member data: returns uint8_t * ] -link_speed
 
 =item [ Member data: returns uint8_t * ] -mtu_smsl
 
 LinkSpeedEnabled and LinkSpeedActive
-        
+
 =item [ Member data: returns uint8_t * ] -vl_cap
 
 =item [ Member data: returns uint8_t * ] -vl_high_limit
 
 VlCap and InitType
-        
+
 =item [ Member data: returns uint8_t * ] -vl_arb_high_cap
 
 =item [ Member data: returns uint8_t * ] -vl_arb_low_cap
@@ -218,7 +218,7 @@ VlCap and InitType
 =item [ Member data: returns uint8_t * ] -error_threshold
 
 
-=back 
+=back
 
 =head2 class ib_node_desc_t
 
@@ -226,11 +226,11 @@ VlCap and InitType
 
 =item [ Member data: returns uint8_array_t * ] -description
 
-Node String is an array of UTF-8 character that describes the node in text format 
+Node String is an array of UTF-8 character that describes the node in text format
 Note that this string is NOT NULL TERMINATED!
-        
 
-=back 
+
+=back
 
 =head2  class ib_lft_record_t
 
@@ -245,7 +245,7 @@ Note that this string is NOT NULL TERMINATED!
 =item [ Member data: returns uint8_array_t * ] -lft
 
 
-=back 
+=back
 
 =head2 class ib_pm_counters_t
 
@@ -297,7 +297,7 @@ Note that this string is NOT NULL TERMINATED!
 
 =item [ Member data: returns uint32_array_t * ] -reserved5
 
-=back 
+=back
 
 =head1 IBMgtSim Simulator Objects
 
@@ -305,13 +305,13 @@ Note that this string is NOT NULL TERMINATED!
 
 =over
 
-=item [ Member : returns IBFabric * ] getFabric 
+=item [ Member : returns IBFabric * ] getFabric
 
-=item [ Member : returns IBMSServer * ] getServer 
+=item [ Member : returns IBMSServer * ] getServer
 
-=item [ Member : returns IBMSDispatcher * ] getDispatcher 
+=item [ Member : returns IBMSDispatcher * ] getDispatcher
 
-=item [ Member : returns int  ] init topoFileName serverPortNum numWorkers 
+=item [ Member : returns int  ] init topoFileName serverPortNum numWorkers
 
 =back
 
@@ -319,76 +319,76 @@ Note that this string is NOT NULL TERMINATED!
 
 =over
 
-=item [ Member : returns IBNode * ] getIBNode 
+=item [ Member : returns IBNode * ] getIBNode
 
-get the IBNode of the IBMSNode   
-        
-=item [ Member : returns int  ] getLinkStatus outPortNum 
+get the IBNode of the IBMSNode
 
-get the link status of the given port   
-        
-=item [ Member : returns int  ] setPhyPortErrProfile portNum errProfileIn 
+=item [ Member : returns int  ] getLinkStatus outPortNum
 
-set a particular port err profile   
-        
-=item [ Member : returns int  ] getPhyPortErrProfile portNum 
+get the link status of the given port
 
-get a particular port err profile   
-        
-=item [ Member : returns int  ] setPhyPortPMCounter portNum counterSelect countersVal 
+=item [ Member : returns int  ] setPhyPortErrProfile portNum errProfileIn
 
-set a specific port counter   
-        
-=item [ Member : returns ib_pm_counters_t * ] getPhyPortPMCounter portNum counterSelect 
-get a specific port counter   
-        
-=item [ Member : returns ib_port_info_t * ] getPortInfo portNum 
+set a particular port err profile
 
-get a specific port info   
-        
-=item [ Member : returns int  ] setLinkStatus portNum newState 
+=item [ Member : returns int  ] getPhyPortErrProfile portNum
 
-set the Link status including sending trap128   
-        
-=item [ Member : returns ib_node_info_t * ] getNodeInfo 
+get a particular port err profile
 
-get the node info   
-        
-=item [ Member : returns ib_switch_info_t * ] getSwitchInfo 
+=item [ Member : returns int  ] setPhyPortPMCounter portNum counterSelect countersVal
 
-get the switch info   
-        
-=item [ Member : returns ib_pkey_table_t * ] getPKeyTblBlock portNum blockNum 
+set a specific port counter
 
-get pkey table block   
-        
-=item [ Member : returns int  ] setPKeyTblBlock portNum blockNum tbl 
+=item [ Member : returns ib_pm_counters_t * ] getPhyPortPMCounter portNum counterSelect
+get a specific port counter
 
-set pkey table block   
-        
-=item [ Member : returns int  ] setCrSpace startAddr length data 
+=item [ Member : returns ib_port_info_t * ] getPortInfo portNum
 
-set CR Space Value   
-        
-=item [ Member : returns int  ] getCrSpace startAddr length data 
+get a specific port info
 
-get CR Space Value   
-        
-=item [ Member : returns int  ] getMFTBlock blockIdx portIdx 
+=item [ Member : returns int  ] setLinkStatus portNum newState
 
-get MFT block   
-        
-=item [ Member : returns int  ] setMFTBlock blockIdx portIdx inMftBlock 
+set the Link status including sending trap128
 
-set MFT block   
-        
+=item [ Member : returns ib_node_info_t * ] getNodeInfo
+
+get the node info
+
+=item [ Member : returns ib_switch_info_t * ] getSwitchInfo
+
+get the switch info
+
+=item [ Member : returns ib_pkey_table_t * ] getPKeyTblBlock portNum blockNum
+
+get pkey table block
+
+=item [ Member : returns int  ] setPKeyTblBlock portNum blockNum tbl
+
+set pkey table block
+
+=item [ Member : returns int  ] setCrSpace startAddr length data
+
+set CR Space Value
+
+=item [ Member : returns int  ] getCrSpace startAddr length data
+
+get CR Space Value
+
+=item [ Member : returns int  ] getMFTBlock blockIdx portIdx
+
+get MFT block
+
+=item [ Member : returns int  ] setMFTBlock blockIdx portIdx inMftBlock
+
+set MFT block
+
 =back
 
 =head2 class madMcMemberRec
 
 =over
 
-=item [ Constructor: returns madMcMemberRec * ] madMcMemberRec name 
+=item [ Constructor: returns madMcMemberRec * ] madMcMemberRec name
 
 =item [ Destructor: returns void  ] rename obj {}
 
@@ -413,12 +413,12 @@ set MFT block
 =item [ Member data: returns ib_net32_t * ] -sl_flow_hop
 
 =item [ Member data: returns uint8_t * ] -scope_state
-        
-=item [ Member : returns int  ] send_set pFromNode fromPort destLid comp_mask 
 
-=item [ Member : returns int  ] send_get pFromNode fromPort destLid comp_mask 
+=item [ Member : returns int  ] send_set pFromNode fromPort destLid comp_mask
 
-=item [ Member : returns int  ] send_del pFromNode fromPort destLid comp_mask 
+=item [ Member : returns int  ] send_get pFromNode fromPort destLid comp_mask
+
+=item [ Member : returns int  ] send_del pFromNode fromPort destLid comp_mask
 
 =back
 
@@ -426,7 +426,7 @@ set MFT block
 
 =over
 
-=item [ Constructor: returns madPathRec * ] madPathRec name 
+=item [ Constructor: returns madPathRec * ] madPathRec name
 
 =item [ Destructor: returns void  ] rename obj {}
 
@@ -460,7 +460,7 @@ set MFT block
 
 =item [ Member data: returns uint8_array_t * ] -resv2
 
-=item [ Member : returns int  ] send_get pFromNode fromPort destLid comp_mask 
+=item [ Member : returns int  ] send_get pFromNode fromPort destLid comp_mask
 
 =back
 
@@ -468,7 +468,7 @@ set MFT block
 
 =over
 
-=item [ Constructor: returns madServiceRec * ] madServiceRec name 
+=item [ Constructor: returns madServiceRec * ] madServiceRec name
 
 =item [ Destructor: returns void  ] rename obj {}
 
@@ -494,11 +494,11 @@ set MFT block
 
 =item [ Member data: returns uint64_array_t * ] -service_data64
 
-=item [ Member : returns int  ] send_set pFromNode fromPort destLid comp_mask 
+=item [ Member : returns int  ] send_set pFromNode fromPort destLid comp_mask
 
-=item [ Member : returns int  ] send_get pFromNode fromPort destLid comp_mask 
+=item [ Member : returns int  ] send_get pFromNode fromPort destLid comp_mask
 
-=item [ Member : returns int  ] send_del pFromNode fromPort destLid comp_mask 
+=item [ Member : returns int  ] send_del pFromNode fromPort destLid comp_mask
 
 =back
 
@@ -506,7 +506,7 @@ set MFT block
 
 =over
 
-=item [ Constructor: returns madNotice128 * ] madNotice128 name 
+=item [ Constructor: returns madNotice128 * ] madNotice128 name
 
 =item [ Destructor: returns void  ] rename obj {}
 
@@ -525,10 +525,10 @@ set MFT block
 =item [ Member data: returns ib_net16_t * ] -sw_lid
 
 the sw lid of which link state changed - for 128 only
-        
+
 =item [ Member data: returns ib_gid_t * ] -issuer_gid
 
-=item [ Member : returns int  ] send_trap pFromNode fromPort destLid 
+=item [ Member : returns int  ] send_trap pFromNode fromPort destLid
 
 =back
 
@@ -536,7 +536,7 @@ the sw lid of which link state changed - for 128 only
 
 =over
 
-=item [ Constructor: returns madNotice129 * ] madNotice129 name 
+=item [ Constructor: returns madNotice129 * ] madNotice129 name
 
 =item [ Destructor: returns void  ] rename obj {}
 
@@ -553,16 +553,16 @@ the sw lid of which link state changed - for 128 only
 =item [ Member data: returns ib_net16_t * ] -toggle_count
 
 =item [ Member data: returns ib_net16_t * ] -pad
-        
+
 =item [ Member data: returns ib_net16_t * ] -lid
 
 lid and port number of the violation
-        
+
 =item [ Member data: returns uint8_t * ] -port_num
-        
+
 =item [ Member data: returns ib_gid_t * ] -issuer_gid
 
-=item [ Member : returns int  ] send_trap pFromNode fromPort destLid 
+=item [ Member : returns int  ] send_trap pFromNode fromPort destLid
 
 =back
 
@@ -570,7 +570,7 @@ lid and port number of the violation
 
 =over
 
-=item [ Constructor: returns madNotice144 * ] madNotice144 name 
+=item [ Constructor: returns madNotice144 * ] madNotice144 name
 
 =item [ Destructor: returns void  ] rename obj {}
 
@@ -587,23 +587,23 @@ lid and port number of the violation
 =item [ Member data: returns ib_net16_t * ] -toggle_count
 
 =item [ Member data: returns ib_net16_t * ] -pad1
-        
+
 =item [ Member data: returns ib_net16_t * ] -lid
 
 lid where capability mask changed
-        
+
 =item [ Member data: returns ib_net16_t * ] -pad2
-        
+
 =item [ Member data: returns ib_net32_t * ] -new_cap_mask
 
 new capability mask
-        
+
 =item [ Member data: returns ib_gid_t * ] -issuer_gid
 
-=item [ Member : returns int  ] send_trap pFromNode fromPort destLid 
+=item [ Member : returns int  ] send_trap pFromNode fromPort destLid
 
 
-=back 
+=back
 
 =head1 AUTHOR
 

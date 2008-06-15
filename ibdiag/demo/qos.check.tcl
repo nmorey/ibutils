@@ -1,7 +1,7 @@
 # This is the checker for QoS Flow
 
 proc setupOpensmOptionsFile {simDir} {
-	# by default we set all switches to have 
+	# by default we set all switches to have
 	# VL = SL % 8
 	# VLArb High = VLArb Low = 0.1,1.1,2.1,3.1,4.1,5.1,6.1,7.1
 	set f [open $simDir/opensm.opts w]
@@ -18,21 +18,21 @@ qos_vlarb_low  0:1,1:1,2:1,3:1,4:1,5:1,6:1,7:1
 qos_sl2vl      0,1,2,3,4,5,6,7,0,1,2,3,4,5,6,7
 
 # QoS CA options
-qos_ca_max_vls    8										 
-qos_ca_high_limit 4									 
+qos_ca_max_vls    8										
+qos_ca_high_limit 4									
 qos_ca_vlarb_high 0:1,1:1,2:1,3:1,4:1,5:1,6:1,7:1
 qos_ca_vlarb_low 	0:1,1:1,2:1,3:1,4:1,5:1,6:1,7:1
 qos_ca_sl2vl 		0,1,2,3,4,5,6,7,0,1,2,3,4,5,6,7
 
 # QoS Switch Port 0 options
-qos_sw0_max_vls    8										 
-qos_sw0_high_limit 5									 
+qos_sw0_max_vls    8										
+qos_sw0_high_limit 5									
 qos_sw0_vlarb_high 0:1,1:1,2:1,3:1,4:1,5:1,6:1,7:1
 qos_sw0_vlarb_low  0:1,1:1,2:1,3:1,4:1,5:1,6:1,7:1
 qos_sw0_sl2vl 		 0,1,2,3,4,5,6,7,0,1,2,3,4,5,6,7
 
 # QoS Switch external ports options
-qos_swe_max_vls     8										 
+qos_swe_max_vls     8										
 qos_swe_high_limit  6
 qos_swe_vlarb_high  0:1,1:1,2:1,3:1,4:1,5:1,6:1,7:1
 qos_swe_vlarb_low   0:1,1:1,2:1,3:1,4:1,5:1,6:1,7:1
@@ -44,12 +44,12 @@ qos_swe_sl2vl 		  0,1,2,3,4,5,6,7,0,1,2,3,4,5,6,7
 }
 
 ##############################################################################
-# 
+#
 # Start up the test applications
 # This is the default flow that will start OpenSM only in 0x43 verbosity
 # Return a list of process ids it started (to be killed on exit)
 #
-proc runner {simDir osmPath osmPortGuid} { 
+proc runner {simDir osmPath osmPortGuid} {
    global simCtrlSock
    global env
 
@@ -57,7 +57,7 @@ proc runner {simDir osmPath osmPortGuid} {
    set osmLog [file join $simDir osm.log]
 
    fconfigure $simCtrlSock -blocking 1 -buffering line
-   
+
    # Prepare the OpenSM config options file
 	setupOpensmOptionsFile $simDir
 
@@ -68,10 +68,10 @@ proc runner {simDir osmPath osmPortGuid} {
    set osmCmd "$osmPath -D 0x43 -d2 -t 4000 -f $osmLog -g $osmPortGuid"
    puts "-I- Starting: $osmCmd"
    set osmPid [eval "exec $osmCmd > $osmStdOutLog &"]
-   
+
    # start a tracker on the log file and process:
    startOsmLogAnalyzer $osmLog
-   
+
    return $osmPid
 }
 
@@ -89,7 +89,7 @@ proc checker {simDir osmPath osmPortGuid} {
       return 1
    }
 
-	# make sure /proc is updated ... 
+	# make sure /proc is updated ...
 	puts $simCtrlSock "updateProcFSForNode \$fabric $simDir H-1/U1 H-1/U1 1"
    set res [gets $simCtrlSock]
    puts "SIM: Updated H-1 proc file:$res"
@@ -110,7 +110,7 @@ proc checker {simDir osmPath osmPortGuid} {
    puts "SIM: [gets $simCtrlSock]"
 	puts "---------------------------------------------------------------------"
 	puts " SUBNET READY FOR DIAGNOSTICS"
-	puts "\nCut and paste the following in a new window then run ibdiagnet:" 
+	puts "\nCut and paste the following in a new window then run ibdiagnet:"
 	puts "cd $simDir"
 	puts "setenv IBMGTSIM_DIR  $simDir"
 	puts "setenv OSM_CACHE_DIR $simDir"

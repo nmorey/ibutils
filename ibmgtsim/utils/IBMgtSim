@@ -104,13 +104,13 @@ proc Help {} {
 
    -h - help.
 
-$version                             
+$version
 
   "
 }
 
 ##############################################################################
-# 
+#
 # Get a TS port guid string of the format 0000:ffff:1111:2222
 #
 proc getPortGuidStr {guid} {
@@ -125,7 +125,7 @@ proc getPortGuidStr {guid} {
 ##############################################################################
 #
 # Update Node Information file for the given node
-# 
+#
 proc updateProcFSForNode {fabric simDir nodeName smNodeName smPortNum} {
    # obtain the node
    set node [IBFabric_getNode $fabric $nodeName]
@@ -133,12 +133,12 @@ proc updateProcFSForNode {fabric simDir nodeName smNodeName smPortNum} {
       puts "-E- Fail to find node $nodeName"
       return 1
    }
-   
+
    if {[IBNode_type_get $node] == 1} {
       puts "-E- Can not create proc file for switch node:$nodeName"
       return 1
    }
-   
+
    # obtain the SM port
    set smNode [IBFabric_getNode $fabric $smNodeName]
    if {$smNode == ""} {
@@ -154,7 +154,7 @@ proc updateProcFSForNode {fabric simDir nodeName smNodeName smPortNum} {
 
    if {![regexp {^([^/]+)/U([0-9]+)$} $nodeName d1 sysName caNum]} {
       puts "-E- Node name too complex $nodeName"
-      return 1      
+      return 1
    }
 
    set caName "ca$caNum"
@@ -164,7 +164,7 @@ proc updateProcFSForNode {fabric simDir nodeName smNodeName smPortNum} {
 
    # Create the node dir
    file mkdir [file join $simDir $sysName $caName]
-   
+
    # Node Info
    set of [open [file join $simDir $sysName $caName info] w]
    puts $of "name:          InfiniHost0
@@ -183,14 +183,14 @@ FW revision:   0x300020002
       set port [IBNode_getPort $node $pn]
       if {$pn != ""} {
          set pg [IBPort_guid_get $port]
-         
+
          # the port guid we need should look like 0000:0000:0000:0000
          set portGuidStr [getPortGuidStr $pg]
          set lid [IBPort_base_lid_get $port]
-      
-         # Port1 
+
+         # Port1
          file mkdir [file join $simDir $sysName $caName port$pn]
-      
+
          # port info
          set of [open [file join $simDir $sysName $caName port$pn info] w]
          puts $of "state:         ACTIVE

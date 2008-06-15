@@ -105,12 +105,12 @@ boolean_t IBMSPortErrProfile::isDropped()
 void IBMSMadProcessor::addProcToNode(uint16_t mgtClass)
 {
   MSGREG(inf1, 'V', "Registered mad processor of class:$ on node:$", "server");
- 
+
   /* we cannot simply push in the new mad processor */
   /* need to make sure the vector has this entry */
   if (pSimNode->madProccessors.size() <= mgtClass)
     pSimNode->madProccessors.resize(mgtClass+1);
- 
+
   (pSimNode->madProccessors[mgtClass]).push_back(this);
   MSGSND(inf1, mgtClass, pSimNode->getIBNode()->name);
 }
@@ -128,7 +128,7 @@ IBMSMadProcessor::IBMSMadProcessor(
 
   if (preLocked == FALSE)
 	  pthread_mutex_lock(&pSimNode->lock);
- 
+
   for (list_uint16::iterator lI = mgtClasses.begin();
        lI != mgtClasses.end(); lI++)
     addProcToNode(*lI);
@@ -139,8 +139,8 @@ IBMSMadProcessor::IBMSMadProcessor(
 
 /* single class constructor */
 IBMSMadProcessor::IBMSMadProcessor(
-	class IBMSNode *pSNode, 
-	uint16_t mgtClass, 
+	class IBMSNode *pSNode,
+	uint16_t mgtClass,
 	boolean_t preLocked)
 {
   /* we need to have a lock here */
@@ -160,7 +160,7 @@ IBMSMadProcessor::~IBMSMadProcessor()
   MSGREG(err1, 'E', "Could not find the processor management class:$ in its node list?", "server");
   MSGREG(err2, 'E', "Could not find the processor in its node list?", "server");
   MSGREG(inf1, 'V', "Removed mad processor of class:$ from its node", "server");
- 
+
   /* need to lock the node - otherwise can race against mads ... */
   pthread_mutex_lock(&pSimNode->lock);
 
@@ -214,7 +214,7 @@ IBMSNode::IBMSNode(class IBMgtSim *pS, class IBNode *pN)
 
   phyPortCounters.insert(phyPortCounters.begin(),
                          pNode->numPorts+1, zeroCounters);
- 
+
   /* initialize default error statistics (constructed with zeros) */
   for (unsigned int pn = 0; pn <= pNode->numPorts; pn++)
   {
@@ -242,7 +242,7 @@ int IBMSNode::processMad(uint8_t inPort, ibms_mad_msg_t &madMsg)
     MSGSND(err1, mgtClass);
     return 1;
   }
- 
+
   if (madProccessors[mgtClass].empty())
   {
     MSGSND(err1, mgtClass);
@@ -278,16 +278,16 @@ int IBMSNode::setPhyPortErrProfile(
       IBMSPortErrProfile newProfile;
       phyPortErrProfiles.push_back(newProfile);
     }
- 
+
   phyPortErrProfiles[portNum] = errProfile;
   return 0;
-} 
+}
 
 /* get a particular port err profile */
 int IBMSNode::getPhyPortErrProfile(
   uint8_t portNum, IBMSPortErrProfile &errProfile)
 {
- 
+
   if (portNum > pNode->numPorts)
     return 1;
 
@@ -303,7 +303,7 @@ int IBMSNode::setPhyPortPMCounter(
   if (portNum > pNode->numPorts) return 1;
   phyPortCounters[portNum] = countersVal;
   return 0;
-}   
+}
 
 /* get a specific port counter */
 /* set a specific port counter */
@@ -312,7 +312,7 @@ IBMSNode::getPhyPortPMCounter(
   uint8_t portNum, uint32_t counterSelect)
 {
   if (portNum > pNode->numPorts) return 0;
- 
+
   return &(phyPortCounters[portNum]);
 }
 
@@ -335,7 +335,7 @@ int IBMSNode::getCrSpace (uint32_t startAddr,uint32_t length , uint32_t data[] )
     }
     else
     {
-      data[i] = (crSpace[curAddr]); 
+      data[i] = (crSpace[curAddr]);
       MSGREG(inf1, 'V', "reading CrSpace address $ got data - $ ", "ReadAddr");
       MSGSND(inf1,curAddr,data[i]);
     }
@@ -404,7 +404,7 @@ int IBMSNode::setMFTBlock(uint16_t blockIdx, uint8_t portIdx, ib_mft_table_t *in
     res = 0;
   }
   MSG_EXIT_FUNC;
-  return res; 
+  return res;
 }
 
 static void
@@ -422,9 +422,9 @@ ib_net32_inc(ib_net32_t *pVal, unsigned int add = 1)
 /*
   Get remote node by given port number.
   Handle both HCA and SW.
-                                                                  
+
   Return either 0 if step could be made or 1 if failed.
- 
+
   Updated both output pointers:
   remNode - to the Sim Node of the other side
   remIBPort - to the remote side IB Fabric Port object on the other side.
@@ -441,10 +441,10 @@ IBMSNode::getRemoteNodeByOutPort(
   MSGREG(inf1, 'V', "No Remote connection on node:$ port:$", "node");
   MSGREG(inf2, 'V', "Link is not ACTIVE on node:$ port:$ it is:$", "node");
   MSGREG(inf3, 'I', "MAD is dropped on node:$ port:$", "node");
- 
+
   if (ppRemNode) *ppRemNode = NULL;
   if (ppRemIBPort) *ppRemIBPort = NULL;
- 
+
   /* obtain the node lock */
   pthread_mutex_lock(&lock);
 
@@ -473,7 +473,7 @@ IBMSNode::getRemoteNodeByOutPort(
 
   /* is the port active */
   int linkStatus = getLinkStatus(outPortNum);
- 
+
   if (!((isVl15 && (linkStatus > IB_LINK_DOWN)) || (linkStatus == IB_LINK_ACTIVE)))
   {
     MSGSND(inf2, pNode->name, outPortNum, linkStatus);
@@ -488,23 +488,23 @@ IBMSNode::getRemoteNodeByOutPort(
     // increase the remote node rcv dropped.
     // Update port counters of dropped mad.
     ib_net16_inc(&(phyPortCounters[outPortNum].port_xmit_discard));
-   
+
     ib_net16_inc(
       &(pRemSimNode->phyPortCounters[pPort->p_remotePort->num].port_rcv_errors));
     ib_net16_inc(
       &(pRemSimNode->phyPortCounters[pPort->p_remotePort->num].port_rcv_remote_physical_errors));
-   
+
     MSGSND(inf3, pNode->name, outPortNum);
     pthread_mutex_unlock(&lock);
     return 1;
   }
- 
+
   // Update port counters of sent mad and received mads
   ib_net32_inc(&(phyPortCounters[outPortNum].port_xmit_pkts));
   ib_net32_inc(&(phyPortCounters[outPortNum].port_xmit_data), 256);
   ib_net32_inc(&(pRemSimNode->phyPortCounters[pPort->p_remotePort->num].port_rcv_pkts));
   ib_net32_inc(&(pRemSimNode->phyPortCounters[pPort->p_remotePort->num].port_rcv_data),256);
- 
+
   /* release the lock */
   pthread_mutex_unlock(&lock);
 
@@ -567,12 +567,12 @@ int IBMSNode::setLinkStatus(
   {
     return newState;
   }
-   
+
   /* In case of a switch */
   if ((newState == IB_LINK_DOWN) &&
       ((oldState == IB_LINK_INIT) ||
        (oldState == IB_LINK_ARMED) ||
-       (oldState == IB_LINK_ACTIVE)) || 
+       (oldState == IB_LINK_ACTIVE)) ||
       (oldState == IB_LINK_DOWN) &&
       ((newState == IB_LINK_INIT) ||
        (newState == IB_LINK_ARMED) ||
@@ -597,7 +597,7 @@ int IBMSNode::setLinkStatus(
       prodType = (IB_NOTICE_TYPE_URGENT | (IB_NODE_TYPE_SWITCH << 8));
       ib_notice_set_prod_type( pTrapMadData, cl_ntoh32(prodType));
     }
-       
+
     pTrapMadData->generic_type = 0x81;
     pTrapMadData->g_or_v.generic.trap_num = CL_NTOH16(128);
     pTrapMadData->issuer_lid = cl_ntoh16(nodePortsInfo[0].base_lid);
@@ -650,7 +650,7 @@ int IBMSNode::getRemoteNodeByLid(
     pthread_mutex_unlock(&lock);
     return 1;
   }
- 
+
   /* release the node lock */
   pthread_mutex_unlock(&lock);
 

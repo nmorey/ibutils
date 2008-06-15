@@ -29,7 +29,7 @@
 
 /****s* IBIS: ibvs/ibvs_t
 * NAME  ibvs_t
-*       
+*
 *
 * DESCRIPTION
 *       ibvs structure.
@@ -38,7 +38,7 @@
 */
 
 
-typedef struct _ibvs 
+typedef struct _ibvs
 {
   ibvs_state_t       state;
   osm_bind_handle_t  h_bind;
@@ -57,7 +57,7 @@ typedef struct _ibvs
 *
 *
 * SEE ALSO
-*      
+*
 *********/
 
 
@@ -108,7 +108,7 @@ ibvs_destroy(
 *               A pointer to the ibvs_t struct that is about to be released
 *
 * RETURN VALUE
-*      
+*
 * NOTES
 *       Final step of the releasing of ibvs_t
 *
@@ -136,9 +136,9 @@ ibvs_init(
 *
 * RETURN VALUE
 *       The status of the function.
-*      
+*
 * NOTES
-*       
+*
 * SEE ALSO
 *       ibvs_construct
 * *********/
@@ -164,16 +164,16 @@ ibvs_bind(
 *
 * RETURN VALUE
 *       The status of the function.
-*      
+*
 * NOTES
-*       
+*
 * SEE ALSO
 *       ibvs_construct
 *********/
 
 /****f* IBIS: ibvs/ibvs_cpu_read
 * NAME
-*     ibvs_cpu_read 
+*     ibvs_cpu_read
 *
 * DESCRIPTION
 *      Send a Vendor Specific MAD (Ext Port Access) and wait for the reply.
@@ -211,16 +211,16 @@ ibvs_cpu_read(
 *
 * RETURN VALUE
 *       The status of the function.
-*      
+*
 * NOTES
-*       
+*
 * SEE ALSO
 *       ibvs_cpu_write
 *********/
 
 /****f* IBIS: ibvs/ibvs_cpu_write
 * NAME
-*     ibvs_cpu_write 
+*     ibvs_cpu_write
 *
 * DESCRIPTION
 *      Send a Vendor Specific MAD (Ext Port Access) and wait for the reply.
@@ -256,16 +256,16 @@ ibvs_cpu_write(
 *
 * RETURN VALUE
 *       The status of the function.
-*      
+*
 * NOTES
-*       
+*
 * SEE ALSO
 *       ibvs_cpu_read
 *********/
 
 /****f* IBIS: ibvs/ibvs_i2c_read
 * NAME
-*     ibvs_i2c_read 
+*     ibvs_i2c_read
 *
 * DESCRIPTION
 *      Send a Vendor Specific MAD (Ext Port Access) and wait for the reply.
@@ -307,16 +307,16 @@ ibvs_i2c_read(
 *
 * RETURN VALUE
 *       The status of the function.
-*      
+*
 * NOTES
-*       
+*
 * SEE ALSO
 *       ibvs_i2c_write
 *********/
 
 /****f* IBIS: ibvs/ibvs_i2c_write
 * NAME
-*     ibvs_i2c_write 
+*     ibvs_i2c_write
 *
 * DESCRIPTION
 *      Send a Vendor Specific MAD (Ext Port Access) and wait for the reply.
@@ -358,9 +358,9 @@ ibvs_i2c_write(
 *
 * RETURN VALUE
 *       The status of the function.
-*      
+*
 * NOTES
-*       
+*
 * SEE ALSO
 *       ibvs_i2c_read
 *********/
@@ -368,7 +368,7 @@ ibvs_i2c_write(
 
 /****f* IBIS: ibvs/ibvs_multi_i2c_read
 * NAME
-*     ibvs_multi_i2c_read 
+*     ibvs_multi_i2c_read
 *
 * DESCRIPTION
 *      Send a Vendor Specific MAD (Ext Port Access) and wait for the reply.
@@ -414,16 +414,16 @@ ibvs_multi_i2c_read(
 *
 * RETURN VALUE
 *       The status of the function.
-*      
+*
 * NOTES
-*       
+*
 * SEE ALSO
 *       ibvs_multi_i2c_write
 *********/
 
 /****f* IBIS: ibvs/ibvs_multi_i2c_write
 * NAME
-*     ibvs_i2c_write 
+*     ibvs_i2c_write
 *
 * DESCRIPTION
 *      Send a Vendor Specific MAD (Ext Port Access) and wait for the reply.
@@ -473,16 +473,16 @@ ibvs_multi_i2c_write(
 *
 * RETURN VALUE
 *       The status of the function.
-*      
+*
 * NOTES
-*       
+*
 * SEE ALSO
 *       ibvs_multi_i2c_read
 *********/
 
 /****f* IBIS: ibvs/ibvs_gpio_read
 * NAME
-*     ibvs_gpio_read 
+*     ibvs_gpio_read
 *
 * DESCRIPTION
 *      Send a Vendor Specific MAD (Ext Port Access) and wait for the reply.
@@ -508,16 +508,16 @@ ibvs_gpio_read(
 *
 * RETURN VALUE
 *       The status of the function.
-*      
+*
 * NOTES
-*       
+*
 * SEE ALSO
 *       ibvs_gpio_write
 *********/
 
 /****f* IBIS: ibvs/ibvs_gpio_write
 * NAME
-*     ibvs_gpio_write 
+*     ibvs_gpio_write
 *
 * DESCRIPTION
 *      Send a Vendor Specific MAD (Ext Port Access) and wait for the reply.
@@ -547,9 +547,9 @@ ibvs_gpio_write(
 *
 * RETURN VALUE
 *       The status of the function.
-*      
+*
 * NOTES
-*       
+*
 * SEE ALSO
 *       ibvs_gpio_read
 *********/
@@ -579,16 +579,16 @@ ibvs_multi_sw_reset(
 *
 * RETURN VALUE
 *       The status of the function.
-*      
+*
 * NOTES
-*       
+*
 * SEE ALSO
 *       ibvs_multi_sw_reset
 *********/
 
 /****f* IBIS: ibvs/ibvs_multi_flash_open
 * NAME
-*     ibvs_multi_flash_open 
+*     ibvs_multi_flash_open
 *
 * DESCRIPTION
 *      Send a Vendor Specific MAD and wait for the reply.
@@ -616,7 +616,7 @@ ibvs_multi_flash_open(
 *       lid_list
 *               List of Destination lid of the MAD.
 *
-*       last 
+*       last
 *               The last MAD in the open stream.
 *
 *       size
@@ -630,16 +630,16 @@ ibvs_multi_flash_open(
 *
 * RETURN VALUE
 *       The status of the function.
-*      
+*
 * NOTES
-*       
+*
 * SEE ALSO
 *       ibvs_multi_flash_close
 *********/
 
 /****f* IBIS: ibvs/ibvs_multi_flash_close
 * NAME
-*     ibvs_multi_flash_close 
+*     ibvs_multi_flash_close
 *
 * DESCRIPTION
 *      Send a Vendor Specific MAD and wait for the reply.
@@ -673,16 +673,16 @@ ibvs_multi_flash_close(
 *
 * RETURN VALUE
 *       The status of the function.
-*      
+*
 * NOTES
-*       
+*
 * SEE ALSO
 *       ibvs_multi_flash_open
 *********/
 
 /****f* IBIS: ibvs/ibvs_multi_flash_set_bank
 * NAME
-*     ibvs_multi_flash_set_bank 
+*     ibvs_multi_flash_set_bank
 *
 * DESCRIPTION
 *      Send a Vendor Specific MAD and wait for the reply.
@@ -716,9 +716,9 @@ ibvs_multi_flash_set_bank(
 *
 * RETURN VALUE
 *       The status of the function.
-*      
+*
 * NOTES
-*       
+*
 * SEE ALSO
 *       ibvs_multi_flash_erase
 *********/
@@ -759,9 +759,9 @@ ibvs_multi_flash_erase(
 *
 * RETURN VALUE
 *       The status of the function.
-*      
+*
 * NOTES
-*       
+*
 * SEE ALSO
 *       ibvs_multi_flash_set_bank
 *********/
@@ -769,7 +769,7 @@ ibvs_multi_flash_erase(
 
 /****f* IBIS: ibvs/ibvs_multi_flash_read
 * NAME
-*     ibvs_multi_flash_read 
+*     ibvs_multi_flash_read
 *
 * DESCRIPTION
 *      Send a Vendor Specific MAD and wait for the reply.
@@ -807,16 +807,16 @@ ibvs_multi_flash_read(
 *
 * RETURN VALUE
 *       The status of the function.
-*      
+*
 * NOTES
-*       
+*
 * SEE ALSO
 *       ibvs_multi_flash_write
 *********/
 
 /****f* IBIS: ibvs/ibvs_multi_flash_write
 * NAME
-*     ibvs_flash_write 
+*     ibvs_flash_write
 *
 * DESCRIPTION
 *      Send a Vendor Specific MAD and wait for the reply.
@@ -854,9 +854,9 @@ ibvs_multi_flash_write(
 *
 * RETURN VALUE
 *       The status of the function.
-*      
+*
 * NOTES
-*       
+*
 * SEE ALSO
 *       ibvs_multi_flash_read
 *********/
@@ -864,7 +864,7 @@ ibvs_multi_flash_write(
 
 /****f* IBIS: ibvs/ibvs_mirror_read
 * NAME
-*     ibvs_mirror_read 
+*     ibvs_mirror_read
 *
 * DESCRIPTION
 *      Read a Mirror Vendor Specific MAD.
@@ -890,16 +890,16 @@ ibvs_mirror_read(
 *
 * RETURN VALUE
 *       The status of the function.
-*      
+*
 * NOTES
-*       
+*
 * SEE ALSO
 *       ibvs_mirror_write
 *********/
 
 /****f* IBIS: ibvs/ibvs_mirror_write
 * NAME
-*     ibvs_mirror_write 
+*     ibvs_mirror_write
 *
 * DESCRIPTION
 *      Send a Mirror Vendor Specific MAD.
@@ -921,16 +921,16 @@ ibvs_mirror_write(
 *               The Destination lid of the MAD.
 *
 *       rx_mirror
-*               From which port to mirror 
+*               From which port to mirror
 *
 *       tx_mirror
 *               To which port to mirror
 *
 * RETURN VALUE
 *       The status of the function.
-*      
+*
 * NOTES
-*       
+*
 * SEE ALSO
 *       ibvs_mirror_read
 *********/
@@ -940,7 +940,7 @@ ibvs_mirror_write(
 *     ibvs_plft_map_get
 *
 * DESCRIPTION
-*      Get Private LFT Map 
+*      Get Private LFT Map
 *
 * SYNOPSIS
 */
@@ -958,7 +958,7 @@ ibvs_plft_map_get(
 *       lid
 *               The Destination lid of the MAD.
 *
-*       upper_ports 
+*       upper_ports
 *               In non zero will return the upper ports map
 *
 *       p_vs_mad
@@ -966,15 +966,15 @@ ibvs_plft_map_get(
 *
 * RETURN VALUE
 *       The status of the get
-*      
+*
 * NOTES
-*       
+*
 * SEE ALSO
 *********/
 
 /****f* IBIS: ibvs/ibvs_general_info_get
 * NAME
-*     ibvs_general_info_get 
+*     ibvs_general_info_get
 *
 * DESCRIPTION
 *      Get General Info
@@ -999,9 +999,9 @@ ibvs_general_info_get(
 *
 * RETURN VALUE
 *       The status of the get
-*      
+*
 * NOTES
-*       
+*
 * SEE ALSO
 *********/
 

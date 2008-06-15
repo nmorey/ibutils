@@ -390,7 +390,7 @@ ibsac_query( IN ibis_t *   const p_ibis,
     osm_log( &p_ibis->log, OSM_LOG_ERROR,
              "ibsac_query: ERR 0064: "
              "ib_query failed (%s).\n", ib_get_err_str( status ) );
- 
+
     if( status == IB_REMOTE_ERROR )
     {
       osm_log( &p_ibis->log, OSM_LOG_ERROR,

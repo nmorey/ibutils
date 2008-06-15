@@ -5,8 +5,8 @@ puts "FLOW: duplicate some port guid"
 proc dupNodeGuid {fromNode toNode} {
    global errorInfo
    set newGuid [IBNode_guid_get $fromNode]
-   set toNodeName [IBNode_name_get $toNode] 
-   set fromNodeName [IBNode_name_get $fromNode] 
+   set toNodeName [IBNode_name_get $toNode]
+   set fromNodeName [IBNode_name_get $fromNode]
    puts "-I- Overriding node:$toNodeName guid to $newGuid (dup of $fromNodeName)"
 
    # IBDM ...
@@ -23,7 +23,7 @@ proc dupPortGuid {fromNodeNPort toNodeNPort} {
 
    # IBDM has a limitation of not holding "end ports"
    # instead only physical ports are available.
-   # So in case of a switch port (port num 0) we need to handle all physical ports 
+   # So in case of a switch port (port num 0) we need to handle all physical ports
    # instead...
 
    # do we have a switch as the guid to duplicate?
@@ -55,7 +55,7 @@ proc dupPortGuid {fromNodeNPort toNodeNPort} {
       set port [IBNode_getPort $node [lindex $toNodeNPort 1]]
       set targetPorts $port
    }
-   
+
    # do the copy
    foreach port $targetPorts {
       puts "-I- Overriding port:[IBPort_getName $port] guid to $newGuid (dup of $fromPortName)"
@@ -68,12 +68,12 @@ proc dupPortGuid {fromNodeNPort toNodeNPort} {
 proc getEndPortsByRandomOreder {fabric} {
    # get number of nodes:
    set nodesByName [IBFabric_NodeByName_get $fabric]
-   
+
    set nodePortNOrderList {}
    foreach nodeNameNId [IBFabric_NodeByName_get $fabric] {
       set node [lindex $nodeNameNId 1]
-      
-      # each node might be a switch (then take port 0) 
+
+      # each node might be a switch (then take port 0)
       if {[IBNode_type_get $node] == 1} {
          lappend nodePortNOrderList [list $node 0 [rmRand]]
       } else {
@@ -87,7 +87,7 @@ proc getEndPortsByRandomOreder {fabric} {
          }
       }
    }
-   
+
    set randNodes {}
    foreach nodePortNRnd [lsort -index 2 -real $nodePortNOrderList] {
       lappend randNodes [lrange $nodePortNRnd 0 1]
@@ -116,7 +116,7 @@ set swaps 1
 for {set i 1} {$i <= $swaps } {incr i} {
     set idx [expr ($i + int([rmRand]*$numEndPorts))%$numEndPorts]
     set fromNodeNPort [lindex $randEndPorts $idx]
-    set clones [expr int([rmRand]*2)] 
+    set clones [expr int([rmRand]*2)]
     for {set j 1} {$j <= $clones} {incr j} {
        set toNodeNPort [lindex $randEndPorts [expr ($idx+$j)%$numEndPorts]]
        if {[catch {dupPortGuid $fromNodeNPort $toNodeNPort} e]} {

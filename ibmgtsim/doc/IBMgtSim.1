@@ -134,7 +134,7 @@
 \&\fBIBMgtSim\fR \- Infiniband Management Simulator
 .SH "SYNOPSYS"
 .IX Header "SYNOPSYS"
-IBMgtSim [\-h] [\-V mod\-verb\-pair\-list] [\-l log\-file] [\-p server\-port] 
+IBMgtSim [\-h] [\-V mod\-verb\-pair\-list] [\-l log\-file] [\-p server\-port]
   [\-w num\-threads] [\-f flow\-tcl\-file] [\-s seed] \-t topology
 .SH "DESCRIPTION"
 .IX Header "DESCRIPTION"
@@ -173,14 +173,14 @@ The number of threads processing the mads
 Provides a fine grain control over the log file verbosity. Given list of pairs of simulator software module names and their verbosity levels \- every module is separatly controlled. The first value (missing module name) is controlling the default verbosity for all un-explicitly set modules.
 .Sp
 .RS 4
-Current Verbosity Levels:            
+Current Verbosity Levels:
 .Sp
 .Vb 13
-\& MsgShowFatal  = 0x01;                
-\& MsgShowError  = 0x02;                
-\& MsgShowWarning= 0x04;                
-\& MsgShowInfo   = 0x08;                
-\& MsgShowVerbose= 0x10;                
+\& MsgShowFatal  = 0x01;
+\& MsgShowError  = 0x02;
+\& MsgShowWarning= 0x04;
+\& MsgShowInfo   = 0x08;
+\& MsgShowVerbose= 0x10;
 \& MsgShowContext= 0x20;
 \& MsgShowSource = 0x40;
 \& MsgShowTime   = 0x80;
@@ -191,9 +191,9 @@ Current Verbosity Levels:
 \& MsgDefault    = 0x62f;
 .Ve
 .Sp
-Software Modules:           
+Software Modules:
 .Sp
-client, server, dispatcher, node, sma, lftMad, mftMad, vlArbMad, pKeyMad, portInfoMad                 
+client, server, dispatcher, node, sma, lftMad, mftMad, vlArbMad, pKeyMad, portInfoMad
 .Sp
 Examples \-V flag values might be:
 .Sp
@@ -202,7 +202,7 @@ Examples \-V flag values might be:
 .Ve
 .Sp
 .Vb 3
-\& -V '0x3 server 0x6f2 sma 0xffff' = Only fatal and error for all modules 
+\& -V '0x3 server 0x6f2 sma 0xffff' = Only fatal and error for all modules
 \&     full verbosity for the SMA module and default verbosity for the
 \&     Server module.
 .Ve

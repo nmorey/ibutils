@@ -85,14 +85,14 @@ proc startAllToAllTraffic {fabric} {
 
 	# for now we will send a service record request from the source to dest
    set pam [new_madServiceRec]
-     
+
    # send it to the SM_LID:
    madServiceRec_send_set $pam sim$node $portNum $dstLid 0
 	puts "Sent service record req src:$srcLid dst:$dstLid"
 
    # deallocate
    delete_madServiceRec $pam
- 
+
 	after 1 "startAllToAllTraffic $fabric"
    return 0
 }

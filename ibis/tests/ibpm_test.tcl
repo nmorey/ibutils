@@ -5,12 +5,12 @@
 set Usage "Usage: $argv0 portNum <rem_lid> <rem_port> <bad_lid> <bad_port>"
 
 set Help "
- 
-IBPM API Test 
+
+IBPM API Test
 
 SYNOPSYS:
  $Usage
- 
+
 DESCRIPTION:
  This simple test works at the PM lowest level interface.
  It perfoems the following checks.
@@ -31,7 +31,7 @@ clr1 - Clear local port - make sure we got 0...
 clr2 - Clear remote port - make sure we got 0...
 clr3 - Clear bad port - make sure we got an error
 
-API pmClrAllCountersMulti : 
+API pmClrAllCountersMulti :
 clr_multi1 - Clear local and remote ports - make sure we got 0...
 clr_multi2 - Clear local, remote and bad port - make sure we got 0s abnd err
 
@@ -76,7 +76,7 @@ proc assoc {key key_list} {
 		if {[lindex $kv 0] == $key} {return [lrange $kv 1 end]}
 	}
 	return ""
-} 
+}
 
 ########################################################################
 
@@ -143,8 +143,8 @@ for {set i 0} {$i < $numLoops} {incr i} {
       puts "-E- pmMultiMaxGet did not return 64"
       incr anyError
    }
-   
-   # 
+
+   #
    # API pmGetPortCounters :
    # get_cnt_1 - Use a good lid and port pair - check we did obtain some values
    set cnts [ex "pmGetPortCounters $locLid $locPort"]
@@ -152,7 +152,7 @@ for {set i 0} {$i < $numLoops} {incr i} {
       puts "-E- Failed to validate counters."
       incr anyError
    }
-   
+
    if {$doBadCases} {
       # get_cnt_2 - Use a bad  lid and port pair - check we fail
       set cnts [ex "pmGetPortCounters $badLid $badPort"]
@@ -161,8 +161,8 @@ for {set i 0} {$i < $numLoops} {incr i} {
          incr anyError
       }
    }
-   
-   # 
+
+   #
    # API pmGetPortCountersMulti :
    # get_multi1 - Use local and remote ports - check we did obtain some data.
    set cnts [ex "pmGetPortCountersMulti 2 {$locLid $remLid} {$locPort $remPort}"]
@@ -174,7 +174,7 @@ for {set i 0} {$i < $numLoops} {incr i} {
       puts "-E- Failed to validate counters:[lindex $cnts 1] "
       incr anyError
    }
-   
+
    # get_multi2 - Use local, remote and bad ports - check we obtain some data.
    # Last is bad
    set cnts [ex "pmGetPortCountersMulti 3 {$locLid $remLid $badLid} {$locPort $remPort $badPort}"]
@@ -219,7 +219,7 @@ for {set i 0} {$i < $numLoops} {incr i} {
       incr anyError
    }
 
-   # 
+   #
    # API pmClrAllCounters :
    # clr1 - Clear local port - make sure we got 0...
    set err [ex "pmClrAllCounters $locLid $locPort"]
@@ -243,16 +243,16 @@ for {set i 0} {$i < $numLoops} {incr i} {
       puts "-E- Some counters not cleared on lid:$remLid port:$remPort => [lindex $cnts 0]"
       incr anyError
    }
-   
+
    # clr3 - Clear bad port - make sure we got an error
    set err [ex "pmClrAllCounters $badLid $badPort"]
    if {$err == 0} {
       puts "-E- Failed to catch bad clear counters on lid:$badLid port:$badPort  "
       incr anyError
    }
-   
-   # 
-   # API pmClrAllCountersMulti : 
+
+   #
+   # API pmClrAllCountersMulti :
    # clr_multi1 - Clear local and remote ports - make sure we got 0...
    set err \
       [ex "pmClrAllCountersMulti 2 {$locLid $remLid} {$locPort $remPort}"]
@@ -270,7 +270,7 @@ for {set i 0} {$i < $numLoops} {incr i} {
    }
 
    # clr_multi2 - Clear local, remote and bad - make sure we got 0s abnd err
-   # 
+   #
    set err \
       [ex "pmClrAllCountersMulti 2 {$locLid $remLid $badLid} {$locPort $remPort $badPort}"]
    if {$err != 0} {
@@ -284,8 +284,8 @@ for {set i 0} {$i < $numLoops} {incr i} {
          puts "-E- Some counters not cleared on lid:$remLid port:$remPort => $cnts"
          incr anyError
       }
-   }  
-   
+   }
+
    # FLOWS:
    # flow1 - get ports on local and remote. See number packets advanced...
    set cnts \

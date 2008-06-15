@@ -37,15 +37,15 @@
 
 #include "Fabric.h"
 
-// Trace a direct route from the given SM node port 
+// Trace a direct route from the given SM node port
 int TraceDRPathRoute (IBPort *p_smNodePort, list_int drPathPortNums);
 
 // Trace a route from slid to dlid by Min Hop
-int TraceRouteByMinHops (IBFabric *p_fabric, 
+int TraceRouteByMinHops (IBFabric *p_fabric,
   unsigned int slid , unsigned int dlid);
 
 // Trace a route from slid to dlid by LFT
-int TraceRouteByLFT (IBFabric *p_fabric, 
+int TraceRouteByLFT (IBFabric *p_fabric,
                      unsigned int slid , unsigned int dlid,
                      unsigned int *hops, list_pnode *p_nodesList);
 

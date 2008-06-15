@@ -7,7 +7,7 @@ proc getAllActiveHCAPorts {fabric} {
    # go over all nodes:
    foreach nodeNameId [IBFabric_NodeByName_get $fabric] {
       set node [lindex $nodeNameId 1]
-      
+
       # we do care about non switches only
       if {[IBNode_type_get $node] != 1} {
          # go over all ports:
@@ -204,7 +204,7 @@ proc breakMCG {fabric mlid} {
    foreach nodeNameId [IBFabric_NodeByName_get $fabric] {
       set node [lindex $nodeNameId 1]
 		set swName [IBNode_name_get $node]
-      
+
 		# HACK: skip level 1 switches
 		if {[regexp {^SL1} $swName]} {continue}
 

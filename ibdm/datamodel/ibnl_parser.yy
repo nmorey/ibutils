@@ -125,7 +125,7 @@
 #endif
     gp_curSysDef = new IBSysDef(gp_fileName);
 
-    for( list< char * >::iterator snI = sysNames.begin(); 
+    for( list< char * >::iterator snI = sysNames.begin();
          snI != sysNames.end(); snI++) {
       char sname[1024];
       if (gIsTopSystem) {
@@ -138,7 +138,7 @@
 #ifdef DEBUG
       printf("%s ", sname);
 #endif
-    } 
+    }
 #ifdef DEBUG
     printf("\n");
 #endif
@@ -146,10 +146,10 @@
     // cleanup for next systems.
     sysNames.erase(sysNames.begin(), sysNames.end());
   }
-  
+
   void ibnlMakeSubInstAttribute(char *hInst, char *attr, char *value) {
 #ifdef DEBUG
-    printf("Making new sub instance attribute inst:%s %s=%s\n", 
+    printf("Making new sub instance attribute inst:%s %s=%s\n",
            hInst, attr, value);
 #endif
     if (! gp_curSysDef) {
@@ -163,7 +163,7 @@
        attrStr += "=" +  string(value);
     gp_curSysDef->setSubInstAttr(hierInstName, attrStr);
   }
-  
+
   void ibnlMakeNode(IBNodeType type, int numPorts, char *devName, char* name) {
 #ifdef DEBUG
     printf(" Making Node:%s dev:%s ports:%d\n", name, devName, numPorts);
@@ -180,9 +180,9 @@
 #endif
     char buf1[8],buf2[8] ;
     sprintf(buf1, "%d", toPort);
-    sprintf(buf2, "%d", fromPort); 
-    IBSysInstPort *p_port = 
-      new IBSysInstPort(buf2, toNode, buf1, char2width(width), 
+    sprintf(buf2, "%d", fromPort);
+    IBSysInstPort *p_port =
+      new IBSysInstPort(buf2, toNode, buf1, char2width(width),
                         char2speed(speed));
     gp_curInstDef->addPort(p_port);
   }
@@ -195,18 +195,18 @@
 #endif
     char buf[8];
     sprintf(buf,"%d",fromPort);
-    IBSysPortDef *p_sysPort = 
+    IBSysPortDef *p_sysPort =
       new IBSysPortDef(sysPortName, gp_curInstDef->getName(), buf,
                        char2width(width), char2speed(speed));
     gp_curSysDef->addSysPort(p_sysPort);
   }
-  
+
   void ibnlMakeSubsystem( char *masterName, char *instName) {
 #ifdef DEBUG
     printf(" Making SubSystem:%s of type:%s\n", instName, masterName);
 #endif
     gp_curInstDef = new IBSysInst(instName, masterName);
-    gp_curSysDef->addInst(gp_curInstDef);    
+    gp_curSysDef->addInst(gp_curInstDef);
   }
 
   void ibnlRecordModification( char *subSystem, char *modifier) {
@@ -219,11 +219,11 @@
   void ibnlMakeSubsystemToSubsystemConn(
     char *fromPort, char *width, char *speed, char *toSystem, char *toPort) {
 #ifdef DEBUG
-    printf("  Connecting S-S port:%s to SubSys:%s/%s\n", 
+    printf("  Connecting S-S port:%s to SubSys:%s/%s\n",
          fromPort, toSystem, toPort);
 #endif
-    IBSysInstPort *p_port = 
-      new IBSysInstPort(fromPort, toSystem, toPort, char2width(width), 
+    IBSysInstPort *p_port =
+      new IBSysInstPort(fromPort, toSystem, toPort, char2width(width),
                         char2speed(speed));
     gp_curInstDef->addPort(p_port);
   }
@@ -231,11 +231,11 @@
   void ibnlMakeSubsystemToPortConn(
     char *fromPort, char *width, char *speed, char *toPort) {
 #ifdef DEBUG
-    printf("  Connecting port:%s to SysPort:%s\n", 
+    printf("  Connecting port:%s to SysPort:%s\n",
          fromPort, toPort);
 #endif
-    
-    IBSysPortDef *p_sysPort = 
+
+    IBSysPortDef *p_sysPort =
       new IBSysPortDef(toPort, gp_curInstDef->getName(), fromPort,
                        char2width(width), char2speed(speed));
     gp_curSysDef->addSysPort(p_sysPort);
@@ -254,7 +254,7 @@ ONL:
 ibnl: ONL systems topsystem;
 
 systems:
-  | systems system 
+  | systems system
   ;
 
 sub_inst_attributes:
@@ -264,23 +264,23 @@ sub_inst_attributes:
 sub_inst_attribute:
   NAME '=' NAME '=' NAME { ibnlMakeSubInstAttribute($1,$3,$5); }
   | NAME '=' NAME '=' INT {
-      char buf[16]; 
+      char buf[16];
       sprintf(buf, "%d", $5);
-      ibnlMakeSubInstAttribute($1,$3,buf); 
+      ibnlMakeSubInstAttribute($1,$3,buf);
    }
   | NAME '=' NAME {ibnlMakeSubInstAttribute($1,$3,NULL); }
   ;
 
 topsystem:
-    TOPSYSTEM { gIsTopSystem = 1; } 
-    system_names { ibnlMakeSystem(gSysNames); } 
-    NL sub_inst_attributes 
-    insts 
+    TOPSYSTEM { gIsTopSystem = 1; }
+    system_names { ibnlMakeSystem(gSysNames); }
+    NL sub_inst_attributes
+    insts
   ;
 
 system:
-    SYSTEM { gIsTopSystem = 0; } 
-    system_names { ibnlMakeSystem(gSysNames); } NL insts 
+    SYSTEM { gIsTopSystem = 0; }
+    system_names { ibnlMakeSystem(gSysNames); } NL insts
   ;
 
 system_names:
@@ -295,7 +295,7 @@ system_name:
 insts:
   | insts node
   | insts subsystem
-  ;    
+  ;
 
 node:
    node_header NL node_connections
@@ -308,7 +308,7 @@ node_header:
 node_connections:
   | node_connections node_connection NL
   ;
-    
+
 node_connection:
     node_to_node_link
   | node_to_port_link
@@ -346,7 +346,7 @@ node_to_port_link:
 
 subsystem:
     subsystem_header NL subsystem_connections
-  | subsystem_header NL CFG insts_modifications NL subsystem_connections 
+  | subsystem_header NL CFG insts_modifications NL subsystem_connections
   ;
 
 subsystem_header:
@@ -360,11 +360,11 @@ insts_modifications:
 modification:
     NAME '=' NAME { ibnlRecordModification($1,$3); }
   ;
- 
+
 subsystem_connections:
   | subsystem_connections subsystem_connection NL
   ;
-    
+
 subsystem_connection:
     subsystem_to_subsystem_link
   | subsystem_to_port_link
@@ -412,7 +412,7 @@ int yyerror(char *msg)
 /* parse apollo route dump file */
 int ibnlParseSysDefs (IBSystemsCollection *p_sysColl, const char *fileName) {
   extern FILE * yyin;
-   
+
   gp_sysColl = p_sysColl;
   gp_fileName = fileName;
 
@@ -422,7 +422,7 @@ int ibnlParseSysDefs (IBSystemsCollection *p_sysColl, const char *fileName) {
 	 printf("-E- Fail to Open File:%s\n", fileName);
 	 return(1);
   }
-  if (FabricUtilsVerboseLevel & FABU_LOG_VERBOSE) 
+  if (FabricUtilsVerboseLevel & FABU_LOG_VERBOSE)
      printf("-I- Parsing:%s\n", fileName);
 
   ibnlErr = 0;

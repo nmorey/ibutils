@@ -728,7 +728,7 @@ do_action:	/* This label is used only to access EOF actions. */
 case 1:
 YY_RULE_SETUP
 #line 89 "ibnl_scanner.ll"
-{ 
+{
   yylval.ival = atoi(yytext);
 #ifdef DEBUG
   printf("INT:%d\n",yylval.ival);
@@ -824,7 +824,7 @@ YY_RULE_SETUP
     yylval.tval = IB_SW_NODE;
   } else {
     yylval.tval = IB_CA_NODE;
-  }    
+  }
 #ifdef DEBUG
   printf("%s\n", yytext);
 #endif
@@ -851,8 +851,8 @@ YY_RULE_SETUP
 #ifdef DEBUG
   printf("LINE\n");
 #endif
-  if(lineNum % 10000==0) 
-	 fprintf(stderr,"-I- Parsed %ld lines\r",lineNum);   
+  if(lineNum % 10000==0)
+	 fprintf(stderr,"-I- Parsed %ld lines\r",lineNum);
   yylval.ival = LINE;
   return(LINE);
 }

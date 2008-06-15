@@ -4,7 +4,7 @@ B<ibtoopdiff - Fabric Topology Matcher>
 
 =head1 SYNOPSYS
 
-ibtopodiff [-v][-h] -t <topo file> -d <subnet file> -s <start node name> 
+ibtopodiff [-v][-h] -t <topo file> -d <subnet file> -s <start node name>
   -p <start port num> -g <start port guid>
 
 =head1 DESCRIPTION
@@ -39,7 +39,7 @@ The guid of the matching start port
 
 Verbsoe mode
 
-=item -h|--help 
+=item -h|--help
 
 Provides this help message
 

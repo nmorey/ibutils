@@ -86,19 +86,19 @@ BEGIN_C_DECLS
 *  ibis_get_port
 *
 * DESCRIPTION
-*  The ibis_bind function should be called to attach the 
+*  The ibis_bind function should be called to attach the
 *  IBIS to the given port guid.
 *
 * SYNOPSIS
 */
-uint64_t 
+uint64_t
 ibis_get_port(void);
 /*
 * PARAMETERS
 *  NONE
 *
 * RETURN VALUE
-*  the guid of the port to attach ibis to. 
+*  the guid of the port to attach ibis to.
 *
 * SEE ALSO
 *  IBIS object
@@ -109,7 +109,7 @@ ibis_get_port(void);
 *  ibis_get_port
 *
 * DESCRIPTION
-*  The ibis_bind function should be called to attach the 
+*  The ibis_bind function should be called to attach the
 *  IBIS to the given port guid.
 *
 * SYNOPSIS
@@ -121,7 +121,7 @@ ibis_set_port(uint64_t guid);
 *  NONE
 *
 * RETURN VALUE
-*  the guid of the port to attach ibit to. 
+*  the guid of the port to attach ibit to.
 *
 * SEE ALSO
 *  IBIS object
@@ -271,7 +271,7 @@ typedef struct _ibis_port_info
 *
 * hca_guid
 *   The CA Guid of this port
-* 
+*
 * port_guid
 *   The port GUID
 *
@@ -408,7 +408,7 @@ ibis_gsi_sync_mad_batch_callback(
   IN void* p_data);
 /*
 * PARAMETERS
-*  context 
+*  context
 *     [in] The context provided during the bind.
 *
 *  p_data
@@ -432,8 +432,8 @@ ibis_gsi_sync_mad_batch_callback(
 *  by the local context.
 *
 * RETURN
-*  IB_SUCCESS if OK IB_TIMEOUT if ALL mads has timeout. 
-*  The resulting array will be cleaned up so you can count on TID and 
+*  IB_SUCCESS if OK IB_TIMEOUT if ALL mads has timeout.
+*  The resulting array will be cleaned up so you can count on TID and
 *  method to know if the result was obtained.
 *
 * SYNOPSIS
@@ -485,10 +485,10 @@ ibis_gsi_send_sync_mad_batch(
 */
 typedef struct _ibis_opt
 {
-  uint32_t          transaction_timeout; 
-  boolean_t         single_thread; 
-  boolean_t         force_log_flush; 
-  osm_log_level_t   log_flags; 
+  uint32_t          transaction_timeout;
+  boolean_t         single_thread;
+  boolean_t         force_log_flush;
+  osm_log_level_t   log_flags;
   char              log_file[1024];
   uint64_t          sm_key;
   uint64_t          m_key;
@@ -499,30 +499,30 @@ typedef struct _ibis_opt
  *
  * transaction_timeout
  *   Transaction timeout before retry in msec
- * 
+ *
  * single_thread
  *   Control the number of dispatcher threads to be created. If set to TRUE only
- *   one thread will be used. The dispatcher threads pull MADs from the incomming 
+ *   one thread will be used. The dispatcher threads pull MADs from the incomming
  *   MADs FIFO and invoke the appropriate callback for handling the MAD.
- * 
+ *
  * force_log_flush
  *   Forces log file flush every logged event.
  *
- * log_flags 
- *    The log levels to be used 
+ * log_flags
+ *    The log levels to be used
  *
  * log_file
  *   The name of the log file to be used.
  *
- * sm_key 
+ * sm_key
  *   The SM_Key to be used when sending SubnetMgt and SubnetAdmin MADs
- * 
- * m_key 
+ *
+ * m_key
  *   The M_Key to be used when sending SubnetMgt
- *  
- * v_key 
+ *
+ * v_key
  *   The Vendor Key to be used when sending Vendor Specific MADs.
- * 
+ *
  * SEE ALSO
  *********/
 

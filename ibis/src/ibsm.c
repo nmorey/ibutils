@@ -281,7 +281,7 @@ ibsm_send_mad_by_lid (
   if (status == IB_SUCCESS)
   {
     memcpy(p_data, &response_mad.data, data_size);
-  
+
     if (cl_ntoh16(response_mad.status) & 0x7fff)
     {
       status = cl_ntoh16(response_mad.status);
@@ -362,7 +362,7 @@ ibsm_send_mad_by_dr(
   if (status == IB_SUCCESS)
   {
     memcpy(p_data, &response_mad.data, data_size);
-  
+
     if (cl_ntoh16(response_mad.status) & 0x7fff)
     {
       status = cl_ntoh16(response_mad.status);

@@ -73,7 +73,7 @@ struct FatTreeTuppleLess : public binary_function <vec_byte, vec_byte, bool> {
    bool operator()(const vec_byte& x, const vec_byte& y) const {
       if (x.size() > y.size()) return false;
       if (y.size() > x.size()) return true;
-  
+
       for (unsigned int i = 0 ; i < x.size() ; i++)
       {
          if (x[i] > y[i]) return false;
@@ -211,9 +211,9 @@ public:
    bool isValid;
 
    // propagate FDB assignments going up the tree ignoring the out port
-   int assignLftUpWards(FatTreeNode *p_ftNode, uint16_t dLid, 
+   int assignLftUpWards(FatTreeNode *p_ftNode, uint16_t dLid,
 								int outPortNum, int switchPathOnly);
-   
+
    // propagate FDB assignments going down the tree
    int
    assignLftDownWards(FatTreeNode *p_ftNode, uint16_t dLid,
@@ -258,12 +258,12 @@ IBNode *FatTree::getLowestLevelSwitchNode()
          if (p_port && p_port->p_remotePort)
          {
             IBNode *p_remNode = p_port->p_remotePort->p_node;
-      
+
             if (p_remNode->type != IB_SW_NODE) continue;
 
             // is the remote node ranked?
             if (!p_remNode->rank)  continue;
-      
+
             // must be identical for all leaf switches:
             if (!leafRank)
             {
@@ -384,7 +384,7 @@ FatTree::extractCoefficients()
 
       isFirstInLevel = (level != prevLevel);
       prevLevel = level;
-  
+
       if (isFirstInLevel)
       {
          numSwInRank.push_back(1);
@@ -431,7 +431,7 @@ FatTree::extractCoefficients()
               << endl;
       }
    }
-  
+
    if (anyErr) return 1;
 
    vec_byte firstLeafTupple(N, 0);
@@ -452,7 +452,7 @@ FatTree::extractCoefficients()
          {
             numHcaPorts++;
          }
-  
+
       }
       if (numHcaPorts > maxHcasPerLeafSwitch)
          maxHcasPerLeafSwitch = numHcaPorts;
@@ -510,9 +510,9 @@ FatTree::FatTree(IBFabric *p_f)
       {
          p_port = p_node->getPort(pn);
          if (!p_port || !p_port->p_remotePort) continue;
-    
+
          IBNode *p_remNode = p_port->p_remotePort->p_node;
-    
+
          if (p_remNode->type != IB_SW_NODE)
          {
             // for HCAs we only track the conenctions
@@ -542,11 +542,11 @@ FatTree::FatTree(IBFabric *p_f)
                  << " to:" << p_remNode->name << endl;
             return;
          }
-    
+
          // do we need to allocate a new tupple?
          if (tI == TuppleByNode.end())
          {
-      
+
             // the node is new - so get a new tupple for it:
             vec_byte newTupple = tupple;
             // change the level accordingly
@@ -574,7 +574,7 @@ FatTree::FatTree(IBFabric *p_f)
             if (trackConnection(
                    p_ftNode, tupple, p_node->rank, p_remNode->rank, pn, digit))
                return;
-      
+
             bfsQueue.push_back(p_remNode);
          }
          else
@@ -599,7 +599,7 @@ FatTree::FatTree(IBFabric *p_f)
 
    // make sure the extracted tropology can be declared "fat tree"
    if (extractCoefficients()) return;
-  
+
    // build mapping between HCA index and LIDs.
    // We need to decide what will be the K of the lowest switches level.
    // It is possible that for all of them the number of HCAs is < num
@@ -655,7 +655,7 @@ FatTree::FatTree(IBFabric *p_f)
 // We use the fat tree to get ordering.
 // "main" routing is the routing from HCA to HCA.
 // "side" routing is used from all SW to all HCAs (and dynamic routing)
-// Track port utilization for the "main" routing by the "counter1" 
+// Track port utilization for the "main" routing by the "counter1"
 // Track port utilzation of the "side" routing in "counter2" field of the port
 //
 //////////////////////////////////////////////////////////////////////////////
@@ -666,11 +666,11 @@ FatTree::assignLftUpWards(FatTreeNode *p_ftNode, uint16_t dLid,
 {
    IBPort* p_port;
    IBNode *p_node = p_ftNode->p_node;
-        
+
    if (FabricUtilsVerboseLevel & FABU_LOG_VERBOSE)
       cout << "-V- assignLftUpWards invoked on node:" << p_node->name
            << " out-port:" << outPortNum
-           << " to dlid:" << dLid  
+           << " to dlid:" << dLid
 			  << " switchPathOnly:" << switchPathOnly
 			  << endl;
 
@@ -688,7 +688,7 @@ FatTree::assignLftUpWards(FatTreeNode *p_ftNode, uint16_t dLid,
 		if (p_remNode->getLFTPortForLid(dLid) != IB_LFT_UNASSIGNED)
 		{
 			if (FabricUtilsVerboseLevel & FABU_LOG_VERBOSE)
-				cout << "-V- assignLftUpWards skip already assigned remote node:" 
+				cout << "-V- assignLftUpWards skip already assigned remote node:"
 					  << p_remNode->name
 					  << " switchPathOnly:" << switchPathOnly
 					  << endl;
@@ -698,12 +698,12 @@ FatTree::assignLftUpWards(FatTreeNode *p_ftNode, uint16_t dLid,
       int bestUsage = 0;
       IBPort *p_bestPort = NULL;
       int found = 0;
-   
+
       // we only need one best port on each group
       for (list<int>::iterator lI = p_ftNode->childPorts[i].begin();
            !found && (lI != p_ftNode->childPorts[i].end());
            lI++) {
-      
+
          // can not have more then one port in group...
          int portNum = *lI;
 
@@ -733,11 +733,11 @@ FatTree::assignLftUpWards(FatTreeNode *p_ftNode, uint16_t dLid,
             bestUsage = usage;
          }
       }
-   
+
       if (p_bestPort != NULL)
       {
 			// mark utilization
-			if (switchPathOnly) 
+			if (switchPathOnly)
 				p_bestPort->counter2++;
 			else
 				p_bestPort->counter1++;
@@ -749,10 +749,10 @@ FatTree::assignLftUpWards(FatTreeNode *p_ftNode, uint16_t dLid,
             cout << "-V- assignLftUpWards setting lft on:" << p_remNode->name
                  << " to port:" << p_bestRemPort->num
                  << " to dlid:" << dLid  << endl;
-      
+
          FatTreeNode *p_remFTNode =
             getFatTreeNodeByNode(p_bestRemPort->p_node);
-         assignLftUpWards(p_remFTNode, dLid, p_bestRemPort->num, 
+         assignLftUpWards(p_remFTNode, dLid, p_bestRemPort->num,
 								  switchPathOnly);
       }
    }
@@ -781,7 +781,7 @@ FatTree::assignLftDownWards(FatTreeNode *p_ftNode, uint16_t dLid,
    if (outPortNum != 0xFF)
    {
 		// Set FDB to that LID only if not preset or we are on "main" route
-		if (!switchPathOnly || 
+		if (!switchPathOnly ||
 			 (p_node->getLFTPortForLid(dLid) == IB_LFT_UNASSIGNED)) {
 			p_node->setLFTPortForLid(dLid, outPortNum);
 			
@@ -811,7 +811,7 @@ FatTree::assignLftDownWards(FatTreeNode *p_ftNode, uint16_t dLid,
       for (list<int>::iterator lI = p_ftNode->parentPorts[i].begin();
            !found && (lI != p_ftNode->parentPorts[i].end());
            lI++) {
-      
+
          // can not have more then one port in group...
          int portNum = *lI;
          IBPort *p_port = p_node->getPort(portNum); // must be if marked parent
@@ -835,7 +835,7 @@ FatTree::assignLftDownWards(FatTreeNode *p_ftNode, uint16_t dLid,
 
 	FatTreeNode *p_remFTNode;
 	// first visit the official path!
-	if (bestGroup != -1) 
+	if (bestGroup != -1)
 	{
 		p_remFTNode = getFatTreeNodeByNode(p_bestRemPort->p_node);
 		if (!p_remFTNode)
@@ -905,7 +905,7 @@ int FatTree::route()
         tI != NodeByTupple.end();
         tI++)
    {
-   
+
       FatTreeNode *p_ftNode = &((*tI).second);
       IBNode *p_node = p_ftNode->p_node;
       // we need to track the number of ports to handle case of missing HCAs
@@ -919,7 +919,7 @@ int FatTree::route()
          numPortWithHCA++;
 
          lid = LidByIdx[hcaIdx];
-      
+
          if (FabricUtilsVerboseLevel & FABU_LOG_VERBOSE)
             cout << "-V- Start routing LID:" << lid
                  << " at HCA idx:" << hcaIdx << endl;
@@ -949,7 +949,7 @@ int FatTree::route()
         tI != NodeByTupple.end();
         tI++)
    {
-   
+
       FatTreeNode *p_ftNode = &((*tI).second);
       IBNode *p_node = p_ftNode->p_node;
 
@@ -963,7 +963,7 @@ int FatTree::route()
 			if (p_port)
 				lid = p_port->base_lid;
 		}
-		if (lid == 0) 
+		if (lid == 0)
 		{
 			cout << "-E- failed to find LID for switch:" << p_node->name << endl;
 		} else {
@@ -992,7 +992,7 @@ void FatTree::dumpHcaOrder()
       else
       {
          IBPort *p_port = p_fabric->PortByLid[lid];
-    
+
          if (! p_port)
          {
             cout << "-E- fail to find port for lid:" << lid << endl;
@@ -1021,7 +1021,7 @@ void FatTree::dump()
          prevLevel = level;
          cout << "LEVEL:" << level << endl;
       }
-  
+
       FatTreeNode const *p_ftNode = &((*tI).second);
       cout << "    " << p_ftNode->p_node->name << " tupple:" << getTuppleStr((*tI).first) << endl;
       for (unsigned int i = 0; i < p_ftNode->parentPorts.size(); i++)

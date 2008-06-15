@@ -8,7 +8,7 @@ ibdmchk has two operation modes: design and verification.
 
 DESIGN:
 
-ibdmchk [-v][-h][-u][-a <roots file>] -t <topology file> -n <SM Node> 
+ibdmchk [-v][-h][-u][-a <roots file>] -t <topology file> -n <SM Node>
   -p <SM Port> [-e] [-l <lmc>]
 
 
@@ -31,7 +31,7 @@ The B<topology file> specifying the network. See man B<ibdm-topology-file>
 
 The name of the Subnet Manager node (syntax: <Topo-File-System>/U1)
 
-=item -p|--port <SM Port> 
+=item -p|--port <SM Port>
 
 The port number by which the SM nodes is attached to the fabric.
 
@@ -41,19 +41,19 @@ The port number by which the SM nodes is attached to the fabric.
 
 Verbsoe mode
 
-=item -h|--help 
+=item -h|--help
 
 Provides this help message
 
-=item -l|--lmc <lmc> 
+=item -l|--lmc <lmc>
 
 LMC value > 0 means assigning 2^lmc lids to each port.
 
-=item -e|--enh 
+=item -e|--enh
 
 Use enhanced routing algorithm when LMC > 0 and report the resulting paths correlation (using same system/node) histogram
 
-=item -u|--updn 
+=item -u|--updn
 
 Use up/down routing algorithm instead of OpenSM min-hop.
 
@@ -63,7 +63,7 @@ A file with all the roots node names (one on each line).
 =head1 VERIFICATION MODE DESCRIPTION
 
 After the cluster is built and OpenSM is run (using flag -D 0x43) it reports the subnet and FDB tables into the files osm-subnet.lst, osm.fdbs and osm.fdbs in /var/log/ (or subnet.lst, osm.fdbs and osm.mcfdbs into /tmp in older OpenSM versions).
-Based on these files the utility checks all CA to CA connectivity. Further analysis for credit deadlock potential is performed and reported. 
+Based on these files the utility checks all CA to CA connectivity. Further analysis for credit deadlock potential is performed and reported.
 In case of an LMC > 0 it reports histograms for how many systems and nodes are common between the different paths for the same port pairs.
 
 =head1 ARGUMENTS
@@ -78,7 +78,7 @@ The LMC value used while running OpenSM. Mandatory if not the default 0.
 
 Verbsoe mode
 
-=item -h|--help 
+=item -h|--help
 
 Provides this help message
 
@@ -94,7 +94,7 @@ OpenSM dump of Ucast LFDB. Use -D 0x41 to generate it (default is /var/log/osm.f
 
 OpenSM dump of Multicast LFDB. Use -D 0x41 to generate it (default is /var/log/osm.mcfdbs or /tmp/osm.mcfdbs).
 
-=item -r|--roots <roots file> 
+=item -r|--roots <roots file>
 
 A file holding all root nodes guids (one per line).
 

@@ -1,9 +1,9 @@
-This directory holds some tcl code of simulator tests, and 
+This directory holds some tcl code of simulator tests, and
 example topology files.
 
 RunSimTest TESTS:
 ------------------
-RunSimTest requires two files: 
+RunSimTest requires two files:
 * a "simulator flow": *.sim.tcl file that is run in the simulator
 * a "checker": *.check.tcl file that extends the RunSimTest with
   a particular flow of execution and checkers for pass/fail
@@ -14,7 +14,7 @@ osmStability - check if we can get Subnet Up under many bad links
 OsmTest - simply run osmtest after subnet is up
 
 The following are ibdiagnet tests (all of them currently do not have an internal PASS/FAIL)
-ibdiagnet.check.tcl - is a common checker flow that starts the SM and calls post SM 
+ibdiagnet.check.tcl - is a common checker flow that starts the SM and calls post SM
    errors injection and then ibdiagnet
 ibdiag-drops.sim.tcl - set some bad links
 ibdiag-dup-node-guid.sim.tcl - duplicate node guid

@@ -46,8 +46,8 @@ class IBMSClient : GenClient {
 public:
   IBMSClient(char *srvHostName, unsigned short portNum):
     GenClient(srvHostName, portNum, sizeof(ibms_response_t)) {};
-  
-  int 
+
+  int
   sendSimMsg(ibms_client_msg_t &request, ibms_response_t &response)
   {
     MSGREG(err1, 'E', "Fail to obtain valid response size ($ != $)",
@@ -55,9 +55,9 @@ public:
     MSGREG(info1, 'V', "Obtained remote result:$", "server");
     int reqLen = sizeof(ibms_client_msg_t);
     int resLen;
-    
+
     sendMsg(reqLen, (char*)&request, resLen, (char*)&response);
-    
+
     if (resLen != sizeof(ibms_response_t))
     {
       MSGSND(err1, resLen,  sizeof(ibms_response_t));
@@ -74,7 +74,7 @@ class IBMSClientInMsgs : public GenServer {
   void *incommingMadContext;
 
 public:
-  IBMSClientInMsgs(unsigned short portNum, 
+  IBMSClientInMsgs(unsigned short portNum,
                    ibms_pfn_receive_cb_t cb, void *ctx):
     GenServer(portNum, sizeof(ibms_client_msg_t)) {
     incommingMadContext = ctx;
@@ -82,8 +82,8 @@ public:
   };
 
   /* handle incoming messages */
-  int proccessClientMsg(int clientSock, 
-                        int reqLen, char request[], 
+  int proccessClientMsg(int clientSock,
+                        int reqLen, char request[],
                         int &resLen, char *(pResponse[]));
 };
 
@@ -91,9 +91,9 @@ int
 IBMSClientInMsgs::proccessClientMsg(
   int clientSock,
   int reqLen,
-  char request[], 
-  int &resLen, 
-  char *(pResponse[])) 
+  char request[],
+  int &resLen,
+  char *(pResponse[]))
 {
   MSGREG(err1, 'E', "Message is not of ibms_client_msg_t size ($ != $)",
          "client");
@@ -104,14 +104,14 @@ IBMSClientInMsgs::proccessClientMsg(
     MSGSND(err1, reqLen, sizeof(ibms_client_msg_t));
     return 1;
   }
-  
+
   ibms_client_msg_t *pReq = (ibms_client_msg_t*)request;
 
   MSGSND(inf1, ibms_get_msg_str(pReq));
 
-  if (pReq->msg_type == IBMS_CLI_MSG_MAD) 
+  if (pReq->msg_type == IBMS_CLI_MSG_MAD)
   {
-    if (pfnIncommingMadCallback != NULL) 
+    if (pfnIncommingMadCallback != NULL)
     {
       pfnIncommingMadCallback( incommingMadContext, &(pReq->msg.mad));
     }
@@ -125,7 +125,7 @@ IBMSClientInMsgs::proccessClientMsg(
 
   /* we always succeed for now */
   pResp->status = 0;
- 
+
   return 0;
 }
 
@@ -138,7 +138,7 @@ typedef struct _ibms_client_conn_rec {
 /* obtain the simulator host name and port number */
 void
 __ibms_get_sim_host_n_port(
-  char *hostName, 
+  char *hostName,
   unsigned short int &simPortNum)
 {
   MSGREG(err1, 'F', "Fail to open:$","client");
@@ -151,11 +151,11 @@ __ibms_get_sim_host_n_port(
     simDir = getenv("IBMGTSIM_DIR");
   else
     simDir = "/tmp/ibmgtsim";
-  
+
   std::string serverFileName = simDir + "/ibmgtsim.server";
-  
+
   serverFile.open(serverFileName.c_str());
-  if (serverFile.fail()) 
+  if (serverFile.fail())
   {
     MSGSND(err1, serverFileName);
     exit(1);
@@ -167,11 +167,11 @@ __ibms_get_sim_host_n_port(
   // simPortNum = 42561;
 }
 
-/* connect to the server to the port guid. 
+/* connect to the server to the port guid.
    Registering incoming messages callbacks */
 ibms_conn_handle_t
-ibms_connect(uint64_t portGuid, 
-             ibms_pfn_receive_cb_t receiveCb, 
+ibms_connect(uint64_t portGuid,
+             ibms_pfn_receive_cb_t receiveCb,
              void* context)
 {
   unsigned short int serverPortNum;
@@ -179,7 +179,7 @@ ibms_connect(uint64_t portGuid,
   char hostName[32];
   unsigned short int simPortNum;
   unsigned int seed = (int)time(NULL);
-  
+
   /* get the simulator hostname and port */
   __ibms_get_sim_host_n_port(hostName, simPortNum);
 
@@ -193,21 +193,21 @@ ibms_connect(uint64_t portGuid,
   /* iterate several times to find an available socket */
   int trys = 0;
   do {
-    serverPortNum = 
+    serverPortNum =
       (unsigned short int)((1.0*rand_r(&seed)/RAND_MAX)*(65535-1024)+1024);
-    clientConn.pServer = 
+    clientConn.pServer =
       new IBMSClientInMsgs( serverPortNum ,receiveCb, context);
-    
-    if (clientConn.pServer->isAlive()) 
+
+    if (clientConn.pServer->isAlive())
       break;
     else
     {
       delete clientConn.pServer;
       clientConn.pServer = NULL;
     }
-    
+
   } while (trys++ < 50);
-  
+
   if (!clientConn.pServer)
   {
 	  printf("-E- Failed to connect to simulator!\n");
@@ -223,8 +223,8 @@ ibms_connect(uint64_t portGuid,
   request.msg.conn.port_num = 1;
   request.msg.conn.port_guid = portGuid;
   strcpy(request.msg.conn.host, thisHostName);
-  request.msg.conn.in_msg_port = serverPortNum;  
-  
+  request.msg.conn.in_msg_port = serverPortNum;
+
   if (clientConn.pClient->sendSimMsg(request, response))
   {
     MSGREG(err1, 'F', "Fail to send connect message.","client");
@@ -239,7 +239,7 @@ ibms_connect(uint64_t portGuid,
     return 0;
   }
 
-  ibms_client_conn_rec_t *pCon = 
+  ibms_client_conn_rec_t *pCon =
     (ibms_client_conn_rec_t*)malloc( sizeof(ibms_client_conn_rec_t) );
   pCon->pServer = clientConn.pServer;
   pCon->pClient = clientConn.pClient;
@@ -250,7 +250,7 @@ ibms_connect(uint64_t portGuid,
 /* bind to a specific mad messages */
 int
 ibms_bind(
-  ibms_conn_handle_t conHdl, 
+  ibms_conn_handle_t conHdl,
   ibms_bind_msg_t *pBindMsg)
 {
   ibms_client_conn_rec_t *pCon = (ibms_client_conn_rec_t*)conHdl;
@@ -260,17 +260,17 @@ ibms_bind(
   /* send second message - bind to  */
   request.msg_type = IBMS_CLI_MSG_BIND;
   request.msg.bind = *pBindMsg;
-  
+
   if (pCon->pClient->sendSimMsg(request, response))
     return 1;
-  
+
   return response.status;
 }
 
 /* set port capabilities */
 int
 ibms_set_cap(
-  ibms_conn_handle_t conHdl, 
+  ibms_conn_handle_t conHdl,
   ibms_cap_msg_t *pCapMsg)
 {
   ibms_client_conn_rec_t *pCon = (ibms_client_conn_rec_t*)conHdl;
@@ -280,17 +280,17 @@ ibms_set_cap(
   /* send second message - bind to  */
   request.msg_type = IBMS_CLI_MSG_CAP;
   request.msg.cap = *pCapMsg;
-  
+
   if (pCon->pClient->sendSimMsg(request, response))
     return 1;
-  
+
   return response.status;
 }
 
 /* send a message to the simulator */
-int 
+int
 ibms_send(
-  ibms_conn_handle_t conHdl, 
+  ibms_conn_handle_t conHdl,
   ibms_mad_msg_t *pMadMsg)
 {
   ibms_client_conn_rec_t *pCon = (ibms_client_conn_rec_t*)conHdl;
@@ -303,7 +303,7 @@ ibms_send(
 
   if (pCon->pClient->sendSimMsg(request, response))
     return 1;
-  
+
   return response.status;
 }
 
@@ -338,7 +338,7 @@ int main(int argc, char *argv[])
     servPort = atoi(argv[2]);     /* Use given port, if any */
   else
     servPort = 42561;
-  
+
   msgMgr(0x1, &std::cout);
   msgMgr().setVerbLevel(0x1);
 
@@ -362,7 +362,7 @@ int main(int argc, char *argv[])
 {
   unsigned short servPort;       /* server port */
   char *hostName;               /* Server Host Name */
-  int bytesRcvd, totalBytesRcvd; /* Bytes read in single recv() 
+  int bytesRcvd, totalBytesRcvd; /* Bytes read in single recv()
                                     and total bytes read */
   ibms_client_msg_t request;     /* the message we send */
   ibms_response_t response;    /* the message we receive back */
@@ -375,14 +375,14 @@ int main(int argc, char *argv[])
     exit(1);
   }
 
-  
+
   hostName = argv[1];
 
   if (argc == 3)
     servPort = atoi(argv[2]);     /* Use given port, if any */
   else
     servPort = 42561;
-  
+
   msgMgr(MsgShowAll, &std::cout);
 
   /* need to have our own incoming messages port - so start our own server */
@@ -398,7 +398,7 @@ int main(int argc, char *argv[])
   gethostname(request.msg.conn.host, sizeof(request.msg.conn.host)-1);
   request.msg.conn.host[sizeof(request.msg.conn.host)] = '\0';
   request.msg.conn.in_msg_port = 46281;
-  
+
   client.sendSimMsg(request, response);
 
   sleep(1);
@@ -411,13 +411,13 @@ int main(int argc, char *argv[])
   request.msg.bind.method = 0x1;
   request.msg.bind.mask = IBMS_BIND_MASK_PORT |
     IBMS_BIND_MASK_QP | IBMS_BIND_MASK_CLASS | IBMS_BIND_MASK_METH;
-  
+
   client.sendSimMsg(request, response);
 
   sleep(1);
 
-  
-  for(int i = 1; i < 10; i++) 
+
+  for(int i = 1; i < 10; i++)
   {
     memset(&request.msg.mad, 0, sizeof(request.msg.mad));
     request.msg_type = IBMS_CLI_MSG_MAD;
@@ -425,7 +425,7 @@ int main(int argc, char *argv[])
     request.msg.mad.addr.slid = 0x2;
     request.msg.mad.addr.sqpn = 0;
     request.msg.mad.addr.dqpn = 0;
-    
+
     request.msg.mad.header.mgmt_class = 0x81;
     request.msg.mad.header.method = 0x1;
     request.msg.mad.header.trans_id = i;
@@ -451,11 +451,11 @@ int main(int argc, char *argv[])
   request.msg.mad.addr.slid = 0x2;
   request.msg.mad.addr.sqpn = 0;
   request.msg.mad.addr.dqpn = 0;
-  
+
   request.msg.mad.header.mgmt_class = 0x81;
   request.msg.mad.header.method = 0x1;
   request.msg.mad.header.trans_id = 123456;
-  
+
   /* we will hard-code some direct route path */
   ib_smp_t *p_mad = (ib_smp_t *)(&request.msg.mad.header);
   p_mad->hop_count = 4;
@@ -476,7 +476,7 @@ int main(int argc, char *argv[])
   request.msg.disc.port_guid = 0x0002c90000000002ULL;
 
   client.sendSimMsg(request, response);
-  
+
   delete pServer;
 
   exit(0);

@@ -50,7 +50,7 @@
 #ifndef IBMGTSIM_HELPER_H
 #define IBMGTSIM_HELPER_H
 
-#ifndef IN 
+#ifndef IN
 #define IN
 #endif
 #ifndef OUT
@@ -68,7 +68,7 @@
 *
 * SYNOPSIS
 */
-void 
+void
 ibms_dump_msg(IN const ibms_client_msg_t *p_msg);
 /*
 * PARAMETERS
@@ -81,7 +81,7 @@ ibms_dump_msg(IN const ibms_client_msg_t *p_msg);
 * NOTES
 *
 * SEE ALSO
-* 
+*
 *********/
 
 /****f* IBMgtSim: ClientIfc/ibms_get_msg_str
@@ -93,7 +93,7 @@ ibms_dump_msg(IN const ibms_client_msg_t *p_msg);
 *
 * SYNOPSIS
 */
-std::string 
+std::string
 ibms_get_msg_str(IN const ibms_client_msg_t *p_msg);
 /*
 * PARAMETERS
@@ -106,7 +106,7 @@ ibms_get_msg_str(IN const ibms_client_msg_t *p_msg);
 * NOTES
 *
 * SEE ALSO
-* 
+*
 *********/
 
 /****f* IBMgtSim: ibms_get_mad_header_str
@@ -118,7 +118,7 @@ ibms_get_msg_str(IN const ibms_client_msg_t *p_msg);
 *
 * SYNOPSIS
 */
-std::string 
+std::string
 ibms_get_mad_header_str(ib_mad_t madHeader);
 /*
 * PARAMETERS
@@ -131,7 +131,7 @@ ibms_get_mad_header_str(ib_mad_t madHeader);
 * NOTES
 *
 * SEE ALSO
-* 
+*
 *********/
 
 /****f* IBMgtSim: ibms_get_portInfo_str
@@ -143,7 +143,7 @@ ibms_get_mad_header_str(ib_mad_t madHeader);
 *
 * SYNOPSIS
 */
-std::string 
+std::string
 ibms_get_port_info_str(ib_port_info_t*     pPortInfo);
 /*
 * PARAMETERS
@@ -156,7 +156,7 @@ ibms_get_port_info_str(ib_port_info_t*     pPortInfo);
 * NOTES
 *
 * SEE ALSO
-* 
+*
 *********/
 
 /****f* IBMgtSim: ibms_get_node_info_str
@@ -168,7 +168,7 @@ ibms_get_port_info_str(ib_port_info_t*     pPortInfo);
 *
 * SYNOPSIS
 */
-std::string 
+std::string
 ibms_get_node_info_str(ib_node_info_t*     pNodeInfo);
 /*
 * PARAMETERS
@@ -181,7 +181,7 @@ ibms_get_node_info_str(ib_node_info_t*     pNodeInfo);
 * NOTES
 *
 * SEE ALSO
-* 
+*
 *********/
 
 /****f* IBMgtSim: ClientIfc/ibms_get_resp_str
@@ -206,7 +206,7 @@ ibms_get_resp_str(IN const ibms_response_t *p_response);
 * NOTES
 *
 * SEE ALSO
-* 
+*
 *********/
 
 #endif /* IBMGTSIM_HELPER_H */

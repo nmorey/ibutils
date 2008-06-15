@@ -30,7 +30,7 @@ NODE SW 8 MT43132 U3
    7 -> U6 2
    8 -> U7 2
 
-NODE SW 8 MT43132 U4 
+NODE SW 8 MT43132 U4
    5 -> P1
    6 -> P2
    7 -> P3

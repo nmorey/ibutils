@@ -64,7 +64,7 @@
  *
  * DESCRIPTION
  *	The IBIS object provides a simplified API to a vendor specific MAD
- *  processing and SA query facilities. 
+ *  processing and SA query facilities.
  *
  * AUTHOR
  *	Eitan Zahavi, Mellanox
@@ -108,7 +108,7 @@ void ibis_construct(void);
 *
 * SYNOPSIS
 */
-void 
+void
 ibis_destroy(void);
 /*
 * PARAMETERS
@@ -135,8 +135,8 @@ ibis_destroy(void);
 *
 * SYNOPSIS
 */
-ib_api_status_t 
-ibis_init( 
+ib_api_status_t
+ibis_init(
   IN ibis_opt_t *p_opt,
   IN const osm_log_level_t log_flags
   );

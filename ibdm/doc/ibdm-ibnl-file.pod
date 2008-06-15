@@ -10,11 +10,11 @@ This man page describes the IBNL file format used to define an arbitrary IB syst
 
 =head1 1. Main Concepts
 
-The described file format for defining generic system IB connectivity uses the following terminology: 
+The described file format for defining generic system IB connectivity uses the following terminology:
 
 =over 4
 
-=item NODE 
+=item NODE
 
 The instantiation of an IB device may it be a switch or a channel adapter
 
@@ -40,22 +40,22 @@ Many systems allow multiple variations of their subsystem such as a 12X version 
 
 The exact file format is provided in section 4. This section only provides extra information regarding the specific semantics of various sections.
 
-The IBNL file is line sensitive as it requires different sections to start on a new line. The file is broken into several SYSTEM (optional) and one TOPSYSTEM sections. Each has one or more names. 
+The IBNL file is line sensitive as it requires different sections to start on a new line. The file is broken into several SYSTEM (optional) and one TOPSYSTEM sections. Each has one or more names.
 
 Connections are defined inside the SYSTEM/TOPSYSTEM section only and thus might be of two types:
 
 =over 4
 
-=item 1. Between any node or sub-system to other node or sub-system 
+=item 1. Between any node or sub-system to other node or sub-system
 
-=item 2. From any node or sub-system to a connector of the system. 
+=item 2. From any node or sub-system to a connector of the system.
 
 =back 4
 
 
-NOTE-1: The top system can define ports that might be redundant and not connected to any lower level board connector. In these cases the ports are simply omitted from the resulting system. This feature enables defining the front panel ports of a 12X/4X such that if a 12X leaf is selected only the 12X front panel ports are used. 
+NOTE-1: The top system can define ports that might be redundant and not connected to any lower level board connector. In these cases the ports are simply omitted from the resulting system. This feature enables defining the front panel ports of a 12X/4X such that if a 12X leaf is selected only the 12X front panel ports are used.
 
-NOTE-2:  Port width and speed provided at the lowest level have precedence over definitions provided at upper levels of the hierarchy. 
+NOTE-2:  Port width and speed provided at the lowest level have precedence over definitions provided at upper levels of the hierarchy.
 
 =head1 3. Guidelines for writing a System IBNL File
 
@@ -63,48 +63,48 @@ The following procedure should be followed in order to provide a new system IBNL
 
 =over 4
 
-=item a) 
+=item a)
 
-Name the file after the system name: <any sys name (no spaces)>.ibnl 
-
-
-=item b) 
-
-Define a SYSTEM section for each board included in the system 
+Name the file after the system name: <any sys name (no spaces)>.ibnl
 
 
-=item c) 
+=item b)
 
-The port names of the boards are just strings, we use the simple format of Pn where N is just a serial number but you can pick any name you want. Just make sure it is unique. 
+Define a SYSTEM section for each board included in the system
 
 
-=item d) 
+=item c)
 
-When different flavors of the boards exists like when you have a 4x and 12x option for a board name the optional boards with a modifier postfix. An example for such system that supports a LEAF board of 12x and 4x types would be to define two SYSTEMS: 
+The port names of the boards are just strings, we use the simple format of Pn where N is just a serial number but you can pick any name you want. Just make sure it is unique.
+
+
+=item d)
+
+When different flavors of the boards exists like when you have a 4x and 12x option for a board name the optional boards with a modifier postfix. An example for such system that supports a LEAF board of 12x and 4x types would be to define two SYSTEMS:
 
 
 =over 4
 
-SYSTEM LEAF,LEAF:4x,LEAF:4X 
+SYSTEM LEAF,LEAF:4x,LEAF:4X
 
 ...
 
-SYSTEM LEAF:12x,LEAF:12X 
+SYSTEM LEAF:12x,LEAF:12X
 
 ...
 
 
-NOTE-3: The instantiations of the LEAF boards in another board or the top system need not specify the postfix and are being decided upon only when the topology file is being parsed. The "SYSTEM LEAF" with no postfix will be used by default. To continue the example here is how the LEAFs are instantiated in the top system: 
+NOTE-3: The instantiations of the LEAF boards in another board or the top system need not specify the postfix and are being decided upon only when the topology file is being parsed. The "SYSTEM LEAF" with no postfix will be used by default. To continue the example here is how the LEAFs are instantiated in the top system:
 
 =over 4
 
 TOPSYSTEM MyIbSystem
 
-LEAF leaf1 
+LEAF leaf1
 
 ...
 
-LEAF leaf2 
+LEAF leaf2
 
 ...
 
@@ -114,17 +114,17 @@ The actual 4x or 12x version of the LEAF board can then be specified in the topo
 
 =over 4
 
-MyIbSystem N001 CFG: leaf2=12x 
+MyIbSystem N001 CFG: leaf2=12x
 
-In this case leaf1 will be 4x as no special modifier is defined for it (and LEAF is by default a 4x leaf). Leaf2 will be 12x as defined in the CFG section. 
+In this case leaf1 will be 4x as no special modifier is defined for it (and LEAF is by default a 4x leaf). Leaf2 will be 12x as defined in the CFG section.
 
-=item e) 
+=item e)
 
-Special considerations should be made to design the top system section when several optional board types exist. Top system section might include multiple definitions for front panel plugs like P1-4x and P1-12x (yes these are just names that should follow the writing on the front or back panels). As the different flavors of the boards are not required to define the same names for their ports including a 12x port might leave some of the top level connections dangling (not connected) and thus the front panel ports of the other flavor will be removed from the final system definition. As an example let us consider a simple board LEAF with 3 4x port flavor and one 12x port flavors. We recommend connecting it in the top level using the following scheme: 
+Special considerations should be made to design the top system section when several optional board types exist. Top system section might include multiple definitions for front panel plugs like P1-4x and P1-12x (yes these are just names that should follow the writing on the front or back panels). As the different flavors of the boards are not required to define the same names for their ports including a 12x port might leave some of the top level connections dangling (not connected) and thus the front panel ports of the other flavor will be removed from the final system definition. As an example let us consider a simple board LEAF with 3 4x port flavor and one 12x port flavors. We recommend connecting it in the top level using the following scheme:
 
 =over 4
 
-SYSTEM LEAF:4x 
+SYSTEM LEAF:4x
 
 NODE U1
 
@@ -135,9 +135,9 @@ NODE U1
 3 -4x-> 4XP3
 
 
-... 
+...
 
-SYSTEM LEAF:12x 
+SYSTEM LEAF:12x
 
 NODE U1
 
@@ -146,7 +146,7 @@ NODE U1
 ...
 
 
-TOPSYSTEM myIbSystem 
+TOPSYSTEM myIbSystem
 
 SUBSYSTEM LEAF leaf1
 
@@ -162,109 +162,109 @@ SUBSYSTEM LEAF leaf1
 
 =over 4
 
-=item f) 
+=item f)
 
-Place the file in the <prefix>/lib/IBDM/ibdm1.0/ibnl directory 
+Place the file in the <prefix>/lib/IBDM/ibdm1.0/ibnl directory
 
 
-=item g) 
+=item g)
 
 Check the new file syntax by placing it in the ibnl directory as described above, creating a simple topology (B<ibdm-topo-file> file with one such system and running B<ibdmtr> utility to parse it tracing a simple path through it.
 
-=head1 4. Formal definition in YACC Syntax: 
+=head1 4. Formal definition in YACC Syntax:
 
-INT ::= ([1-9][0-9]*|0) ; 
+INT ::= ([1-9][0-9]*|0) ;
 
-WIDTH ::= (4x|8x|12x) ; 
+WIDTH ::= (4x|8x|12x) ;
 
-SPEED ::= (2.5G|5G|10G) ; 
+SPEED ::= (2.5G|5G|10G) ;
 
-NODETYPE ::= (SW|CA|HCA) ; 
+NODETYPE ::= (SW|CA|HCA) ;
 
-NAME ::= ([\[\]\\\*/A-Za-z0-9_.:%@~]+) ; 
+NAME ::= ([\[\]\\\*/A-Za-z0-9_.:%@~]+) ;
 
-NL: 
-LINE 
-| NL LINE; 
+NL:
+LINE
+| NL LINE;
 
-ONL: 
-| NL; 
+ONL:
+| NL;
 
-ibnl: ONL systems topsystem; 
+ibnl: ONL systems topsystem;
 
-systems: 
-| systems system ; 
+systems:
+| systems system ;
 
-sub_inst_attributes: 
-| sub_inst_attributes sub_inst_attribute NL; 
+sub_inst_attributes:
+| sub_inst_attributes sub_inst_attribute NL;
 
-sub_inst_attribute: 
-NAME '=' NAME '=' NAME 
-| NAME '=' NAME '=' INT 
-| NAME '=' NAME ; 
+sub_inst_attribute:
+NAME '=' NAME '=' NAME
+| NAME '=' NAME '=' INT
+| NAME '=' NAME ;
 
-topsystem: 
-TOPSYSTEM system_names NL sub_inst_attributes insts ; 
+topsystem:
+TOPSYSTEM system_names NL sub_inst_attributes insts ;
 
-system: 
-SYSTEM system_names NL insts ; 
+system:
+SYSTEM system_names NL insts ;
 
-system_names: 
-system_name 
+system_names:
+system_name
 | system_names ',' system_name ;
 
-system_name: 
-NAME ; 
+system_name:
+NAME ;
 
-insts: 
-| insts node 
-| insts subsystem ; 
+insts:
+| insts node
+| insts subsystem ;
 
-node: 
-node_header NL node_connections ; 
+node:
+node_header NL node_connections ;
 
-node_header: 
-NODE NODETYPE INT NAME NAME ; 
+node_header:
+NODE NODETYPE INT NAME NAME ;
 
-node_connections: 
-| node_connections node_connection NL ; 
+node_connections:
+| node_connections node_connection NL ;
 
-node_connection: 
-node_to_node_link 
-| node_to_port_link ; 
+node_connection:
+node_to_node_link
+| node_to_port_link ;
 
-node_to_node_link: 
+node_to_node_link:
 INT '-' WIDTH '-' SPEED '-' '>' NAME
 | INT '-' WIDTH '-' '>' NAME INT
 | INT '-' SPEED '-' '>' NAME INT
 | INT '-' '>' NAME INT ;
 
-node_to_port_link: 
+node_to_port_link:
 INT '-' WIDTH '-' SPEED '-' '>' NAME
 | INT '-' WIDTH '-' '>' NAME
 | INT '-' SPEED '-' '>' NAME
 | INT '-' '>' NAME ;
 
-subsystem: 
-subsystem_header NL subsystem_connections ; 
+subsystem:
+subsystem_header NL subsystem_connections ;
 
-subsystem_header: 
-SUBSYSTEM NAME NAME ; 
+subsystem_header:
+SUBSYSTEM NAME NAME ;
 
-subsystem_connections: 
-| subsystem_connections subsystem_connection NL ; 
+subsystem_connections:
+| subsystem_connections subsystem_connection NL ;
 
-subsystem_connection: 
-subsystem_to_subsystem_link 
-| subsystem_to_port_link ; 
+subsystem_connection:
+subsystem_to_subsystem_link
+| subsystem_to_port_link ;
 
-subsystem_to_subsystem_link: 
-NAME '-' WIDTH '-' SPEED '-' '>' NAME NAME 
-| NAME '-' WIDTH '-' '>' NAME NAME 
-| NAME '-' SPEED '-' '>' NAME NAME 
-| NAME '-' '>' NAME NAME ; 
+subsystem_to_subsystem_link:
+NAME '-' WIDTH '-' SPEED '-' '>' NAME NAME
+| NAME '-' WIDTH '-' '>' NAME NAME
+| NAME '-' SPEED '-' '>' NAME NAME
+| NAME '-' '>' NAME NAME ;
 
-subsystem_to_port_link: 
+subsystem_to_port_link:
 NAME '-' WIDTH '-' SPEED '-' '>' NAME
 | NAME '-' WIDTH '-' '>' NAME
 | NAME '-' SPEED '-' '>' NAME

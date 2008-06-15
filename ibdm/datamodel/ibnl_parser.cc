@@ -186,7 +186,7 @@ typedef union YYSTYPE {
 #endif
     gp_curSysDef = new IBSysDef(gp_fileName);
 
-    for( list< char * >::iterator snI = sysNames.begin(); 
+    for( list< char * >::iterator snI = sysNames.begin();
          snI != sysNames.end(); snI++) {
       char sname[1024];
       if (gIsTopSystem) {
@@ -199,7 +199,7 @@ typedef union YYSTYPE {
 #ifdef DEBUG
       printf("%s ", sname);
 #endif
-    } 
+    }
 #ifdef DEBUG
     printf("\n");
 #endif
@@ -207,10 +207,10 @@ typedef union YYSTYPE {
     // cleanup for next systems.
     sysNames.erase(sysNames.begin(), sysNames.end());
   }
-  
+
   void ibnlMakeSubInstAttribute(char *hInst, char *attr, char *value) {
 #ifdef DEBUG
-    printf("Making new sub instance attribute inst:%s %s=%s\n", 
+    printf("Making new sub instance attribute inst:%s %s=%s\n",
            hInst, attr, value);
 #endif
     if (! gp_curSysDef) {
@@ -224,7 +224,7 @@ typedef union YYSTYPE {
        attrStr += "=" +  string(value);
     gp_curSysDef->setSubInstAttr(hierInstName, attrStr);
   }
-  
+
   void ibnlMakeNode(IBNodeType type, int numPorts, char *devName, char* name) {
 #ifdef DEBUG
     printf(" Making Node:%s dev:%s ports:%d\n", name, devName, numPorts);
@@ -241,9 +241,9 @@ typedef union YYSTYPE {
 #endif
     char buf1[8],buf2[8] ;
     sprintf(buf1, "%d", toPort);
-    sprintf(buf2, "%d", fromPort); 
-    IBSysInstPort *p_port = 
-      new IBSysInstPort(buf2, toNode, buf1, char2width(width), 
+    sprintf(buf2, "%d", fromPort);
+    IBSysInstPort *p_port =
+      new IBSysInstPort(buf2, toNode, buf1, char2width(width),
                         char2speed(speed));
     gp_curInstDef->addPort(p_port);
   }
@@ -256,18 +256,18 @@ typedef union YYSTYPE {
 #endif
     char buf[8];
     sprintf(buf,"%d",fromPort);
-    IBSysPortDef *p_sysPort = 
+    IBSysPortDef *p_sysPort =
       new IBSysPortDef(sysPortName, gp_curInstDef->getName(), buf,
                        char2width(width), char2speed(speed));
     gp_curSysDef->addSysPort(p_sysPort);
   }
-  
+
   void ibnlMakeSubsystem( char *masterName, char *instName) {
 #ifdef DEBUG
     printf(" Making SubSystem:%s of type:%s\n", instName, masterName);
 #endif
     gp_curInstDef = new IBSysInst(instName, masterName);
-    gp_curSysDef->addInst(gp_curInstDef);    
+    gp_curSysDef->addInst(gp_curInstDef);
   }
 
   void ibnlRecordModification( char *subSystem, char *modifier) {
@@ -280,11 +280,11 @@ typedef union YYSTYPE {
   void ibnlMakeSubsystemToSubsystemConn(
     char *fromPort, char *width, char *speed, char *toSystem, char *toPort) {
 #ifdef DEBUG
-    printf("  Connecting S-S port:%s to SubSys:%s/%s\n", 
+    printf("  Connecting S-S port:%s to SubSys:%s/%s\n",
          fromPort, toSystem, toPort);
 #endif
-    IBSysInstPort *p_port = 
-      new IBSysInstPort(fromPort, toSystem, toPort, char2width(width), 
+    IBSysInstPort *p_port =
+      new IBSysInstPort(fromPort, toSystem, toPort, char2width(width),
                         char2speed(speed));
     gp_curInstDef->addPort(p_port);
   }
@@ -292,11 +292,11 @@ typedef union YYSTYPE {
   void ibnlMakeSubsystemToPortConn(
     char *fromPort, char *width, char *speed, char *toPort) {
 #ifdef DEBUG
-    printf("  Connecting port:%s to SysPort:%s\n", 
+    printf("  Connecting port:%s to SysPort:%s\n",
          fromPort, toPort);
 #endif
-    
-    IBSysPortDef *p_sysPort = 
+
+    IBSysPortDef *p_sysPort =
       new IBSysPortDef(toPort, gp_curInstDef->getName(), fromPort,
                        char2width(width), char2speed(speed));
     gp_curSysDef->addSysPort(p_sysPort);
@@ -1054,7 +1054,7 @@ yyparse ()
 #endif
 #endif
 {
-  
+
   register int yystate;
   register int yyn;
   int yyresult;
@@ -1307,9 +1307,9 @@ yyreduce:
   case 12:
 #line 266 "ibnl_parser.yy"
     {
-      char buf[16]; 
+      char buf[16];
       sprintf(buf, "%d", (yyvsp[0].ival));
-      ibnlMakeSubInstAttribute((yyvsp[-4].sval),(yyvsp[-2].sval),buf); 
+      ibnlMakeSubInstAttribute((yyvsp[-4].sval),(yyvsp[-2].sval),buf);
    }
     break;
 
@@ -1715,7 +1715,7 @@ int yyerror(char *msg)
 /* parse apollo route dump file */
 int ibnlParseSysDefs (IBSystemsCollection *p_sysColl, const char *fileName) {
   extern FILE * yyin;
-   
+
   gp_sysColl = p_sysColl;
   gp_fileName = fileName;
 
@@ -1725,7 +1725,7 @@ int ibnlParseSysDefs (IBSystemsCollection *p_sysColl, const char *fileName) {
 	 printf("-E- Fail to Open File:%s\n", fileName);
 	 return(1);
   }
-  if (FabricUtilsVerboseLevel & FABU_LOG_VERBOSE) 
+  if (FabricUtilsVerboseLevel & FABU_LOG_VERBOSE)
      printf("-I- Parsing:%s\n", fileName);
 
   ibnlErr = 0;

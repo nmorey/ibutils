@@ -35,7 +35,7 @@
 #include "Fabric.h"
 #include <iomanip>
 
-// Trace a direct route from the given SM node port 
+// Trace a direct route from the given SM node port
 int TraceDRPathRoute (IBPort *p_smNodePort, list_int drPathPortNums) {
   IBPort *p_port = p_smNodePort;
   IBNode *p_node;
@@ -54,7 +54,7 @@ int TraceDRPathRoute (IBPort *p_smNodePort, list_int drPathPortNums) {
   }
 
   // we require it to start with zero - marking the internal hop
-  
+
   if (*pI != 0) {
 	 cout << "-E- Direct Route Ports list must start with a zero !" << endl;
 	 return(1);
@@ -63,7 +63,7 @@ int TraceDRPathRoute (IBPort *p_smNodePort, list_int drPathPortNums) {
   // The second port in the we require it to start with zero - marking the internal hop
   pI++;
   if (*pI != p_port->num) {
-	 cout << "-E- Direct Route Ports second hop must match the SM port number !" 
+	 cout << "-E- Direct Route Ports second hop must match the SM port number !"
 			<< " (got:" << *pI << ")" << endl;
 	 return(1);
   }
@@ -79,12 +79,12 @@ int TraceDRPathRoute (IBPort *p_smNodePort, list_int drPathPortNums) {
 		
 		if (p_port->p_sysPort) {
 		  // is external port:
-		  cout << "[" << setw(3) <<hop << "] FROM Host:" << p_node->p_system->name.c_str() 
+		  cout << "[" << setw(3) <<hop << "] FROM Host:" << p_node->p_system->name.c_str()
 				 << " Plug:" << p_port->p_sysPort->name.c_str() << endl;
 		  cout << "           Node:"  << p_node->name.c_str() << " Port:" << p_port->num << endl;
 		} else {
 		  // internal so provide only internal data:
-		  cout << "[" << setw(3) << hop << "] FROM Node:"  << p_node->name.c_str() << " Port:" 
+		  cout << "[" << setw(3) << hop << "] FROM Node:"  << p_node->name.c_str() << " Port:"
 				 << p_port->num << endl;
 		}
 		
@@ -95,11 +95,11 @@ int TraceDRPathRoute (IBPort *p_smNodePort, list_int drPathPortNums) {
 		p_remPort = p_port->p_remotePort;
 		if (p_remPort != NULL) {
 		  p_remNode = p_remPort->p_node;
-		  
+		
 		  // The to section:
 		  if (p_remPort->p_sysPort) {
 			 // is external port:
-			 cout << "      TO   Host:" << p_remNode->p_system->name.c_str() 
+			 cout << "      TO   Host:" << p_remNode->p_system->name.c_str()
 					<< " Plug:" << p_remPort->p_sysPort->name.c_str() << endl;
 			 cout << "           Node:"  << p_remNode->name.c_str() << " Port:" << p_remPort->num << endl;
 		  } else {
@@ -115,30 +115,30 @@ int TraceDRPathRoute (IBPort *p_smNodePort, list_int drPathPortNums) {
 				cout << "-E- Bad port number:" << outPortNum << " hop:" << hop << endl;
 				return 1;
 			 }
-			 
-			 // port not connected 
+			
+			 // port not connected
 			 if (p_remNode->Ports[outPortNum] == NULL) {
 				cout << "[" << setw(3) << hop << "] Broken Route: not connected port:" << outPortNum << endl;
 				return 1;
 			 }
-			 
+			
 			 p_nextPort = p_remNode->Ports[outPortNum];
 		  }
-		  
+		
 		  pI++;
 		  hop++;
 		}
 		p_port = p_nextPort;
   }
-  
+
   return 0;
 }
 
 typedef set< IBNode *, less< IBNode * > > set_p_node;
 
 // Trace the path between the lids based on min hop count only
-int 
-TraceRouteByMinHops (IBFabric *p_fabric, 
+int
+TraceRouteByMinHops (IBFabric *p_fabric,
 							unsigned int slid , unsigned int dlid) {
   IBPort *p_port = p_fabric->getPortByLid(slid), *p_remPort, *p_nextPort;
   IBNode *p_node, *p_remNode;
@@ -160,7 +160,7 @@ TraceRouteByMinHops (IBFabric *p_fabric,
   }
 
   cout << "--------------------------- TRACE PATH BY MIN HOPS -------------------------" << endl;
-  cout << "-I- Tracing by Min Hops from lid:" << slid 
+  cout << "-I- Tracing by Min Hops from lid:" << slid
 		 << " to lid:" << dlid << endl;
   // we traverse to target dlid
   while (p_port) {
@@ -169,12 +169,12 @@ TraceRouteByMinHops (IBFabric *p_fabric,
 		
 		if (p_port->p_sysPort) {
 		  // is external port:
-		  cout << "[" << setw(3) << hop << "] FROM Host:" << p_node->p_system->name.c_str() 
+		  cout << "[" << setw(3) << hop << "] FROM Host:" << p_node->p_system->name.c_str()
 				 << " Plug:" << p_port->p_sysPort->name.c_str() << endl;
 		  cout << "           Node:"  << p_node->name.c_str() << " Port:" << p_port->num << endl;
 		} else {
 		  // internal so provide only internal data:
-		  cout << "[" << setw(3) << hop << "] FROM Node:"  << p_node->name.c_str() << " Port:" 
+		  cout << "[" << setw(3) << hop << "] FROM Node:"  << p_node->name.c_str() << " Port:"
 				 << p_port->num << endl;
 		}
 		
@@ -185,7 +185,7 @@ TraceRouteByMinHops (IBFabric *p_fabric,
 		p_remPort = p_port->p_remotePort;
 		if (p_remPort != NULL) {
 		  p_remNode = p_remPort->p_node;
-		  
+		
         // did we already visit this node?
         set_p_node::iterator sI = visitedNodes.find(p_remNode);
         if (sI != visitedNodes.end()) {
@@ -197,7 +197,7 @@ TraceRouteByMinHops (IBFabric *p_fabric,
 		  // The to section:
 		  if (p_remPort->p_sysPort) {
 			 // is external port:
-			 cout << "      TO   Host:" << p_remNode->p_system->name.c_str() 
+			 cout << "      TO   Host:" << p_remNode->p_system->name.c_str()
 					<< " Plug:" << p_remPort->p_sysPort->name.c_str() << endl;
 			 cout << "           Node:"  << p_remNode->name.c_str() << " Port:" << p_remPort->num << endl;
 		  } else {
@@ -214,16 +214,16 @@ TraceRouteByMinHops (IBFabric *p_fabric,
 		p_port = p_nextPort;
   }
   cout << "---------------------------------------------------------------------------\n" << endl;
-  return 0;  
+  return 0;
 }
 
 // Trace a route from slid to dlid by LFT
 int TraceRouteByLFT (
-  IBFabric *p_fabric, 
+  IBFabric *p_fabric,
   unsigned int sLid , unsigned int dLid,
   unsigned int *hops,
   list_pnode *p_nodesList) {
-  
+
   IBPort *p_port = p_fabric->getPortByLid(sLid);
   IBNode *p_node;
   IBPort *p_remotePort;
@@ -235,7 +235,7 @@ int TraceRouteByLFT (
 	 cout << "-E- Provided source:" << sLid
 			<< " lid is not mapped to a port!" << endl;
 	 return(1);
-  }  
+  }
 
   if (FabricUtilsVerboseLevel & FABU_LOG_VERBOSE) {
 	 cout << "--------------------------- TRACE PATH BY FDB -----------------------------" << endl;
@@ -254,7 +254,7 @@ int TraceRouteByLFT (
 		return 1;
 	 }
 	 p_node = p_port->p_remotePort->p_node;
-	 if (FabricUtilsVerboseLevel & FABU_LOG_VERBOSE) 
+	 if (FabricUtilsVerboseLevel & FABU_LOG_VERBOSE)
 		cout << "-V- Arrived at Node:" << p_node->name
 			  << " Port:" << p_port->p_remotePort->num << endl;
   } else {
@@ -273,7 +273,7 @@ int TraceRouteByLFT (
   // traverse:
   int done = 0;
   while (!done) {
-	 // insert the node pointer to the list 
+	 // insert the node pointer to the list
 	 if (p_nodesList) {
 		p_nodesList->push_back(p_node);
 	 }
@@ -284,30 +284,30 @@ int TraceRouteByLFT (
 		cout << "-E- Unassigned LFT for lid:" << dLid << " Dead end at:" << p_node->name << endl;
 		return 1;
 	 }
-	 
+	
     // if the port number is 0 we must have reached the target
-    if (pn == 0) 
+    if (pn == 0)
     {
       uint16_t base_lid = 0;
       // get lid of any port of this node
-      for (unsigned int portNum = 0; 
+      for (unsigned int portNum = 0;
            (base_lid == 0) && (portNum <= p_node->numPorts); portNum++)
       {
         IBPort *p_port = p_node->getPort(portNum);
         if (p_port) base_lid = p_port->base_lid;
       }
       if (base_lid == 0) {
-        cout << "-E- Fail to find node:" << p_node->name 
+        cout << "-E- Fail to find node:" << p_node->name
              << " base lid?" << endl;
         return 1;
       }
-      
+
       if ((base_lid > dLid) || (base_lid + lidStep - 1 < dLid)) {
         cout << "-E- Dead end at port 0 of node:" << p_node->name << endl;
         return 1;
       }
-      
-      return 0;  
+
+      return 0;
     }
 
 	 // get the port on the other side
@@ -315,8 +315,8 @@ int TraceRouteByLFT (
 	 if (FabricUtilsVerboseLevel & FABU_LOG_VERBOSE)
 		cout << "-V- Going out on port:" << pn << endl;
 
-	 if (! (p_port && 
-			  p_port->p_remotePort && 
+	 if (! (p_port &&
+			  p_port->p_remotePort &&
 			  p_port->p_remotePort->p_node)) {
 		cout << "-E- Dead end at:" << p_node->name << endl;
 		return 1;
@@ -328,7 +328,7 @@ int TraceRouteByLFT (
 
 	 p_remotePort = p_port->p_remotePort;
 	 // check if we are done:
-	 done = ((p_remotePort->base_lid <= dLid) && 
+	 done = ((p_remotePort->base_lid <= dLid) &&
 				(p_remotePort->base_lid+lidStep - 1 >= dLid));
 
 	 p_node = p_remotePort->p_node;
@@ -339,7 +339,7 @@ int TraceRouteByLFT (
 	 }
   }
 
-  if (FabricUtilsVerboseLevel & FABU_LOG_VERBOSE) 
+  if (FabricUtilsVerboseLevel & FABU_LOG_VERBOSE)
 	 cout << "---------------------------------------------------------------------------\n" << endl;
 
   return 0;

@@ -2,7 +2,7 @@ IBIS stands for IB In-band Services.
 It provides a TCL API for sending MADs over the local IB ports.
 
 It also provides C API for sending batches of MADs and waiting for the entire
-batch completion. 
+batch completion.
 
 The detailed API is described in the doc/ibis_wrap.html directory.
 

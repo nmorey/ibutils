@@ -3,7 +3,7 @@ MsgMgr setVerbLevel $MsgShowAll
 IBMgtSimulator init /home/eitan/SW/cvsroot/IBADM/ibdm/Clusters/RhinoBased512.topo 46517 5
 puts [IBMgtSimulator getFabric]
 IBMSNode_setPhyPortErrProfile simnode:1:SL2-4/spine2/U2 1  {-drop-rate-avg 5 -drop-rate-var 7}
-puts [IBMSNode_getPhyPortErrProfile simnode:1:SL2-4/spine2/U2 1] 
+puts [IBMSNode_getPhyPortErrProfile simnode:1:SL2-4/spine2/U2 1]
 
 
 puts [IBMSNode_getPhyPortPMCounter simnode:1:SL2-4/spine2/U2 1 1]
@@ -34,7 +34,7 @@ IBMgtSimulator init /usr/share/ibmgtsim/Gnu16NodeOsmTest.topo 46517 1
 set f [IBMgtSimulator getFabric]
 set smNode [IBFabric_getNode $f H-1/U1]
 set smPort [IBNode_getPort $smNode 1]
-ibdmAssignLids $smPort 
+ibdmAssignLids $smPort
 ibdmOsmRoute $f
 foreach nodeNameNPtr [IBFabric_NodeByName_get $f] {
    activateNodePorts [lindex $nodeNameNPtr 1]

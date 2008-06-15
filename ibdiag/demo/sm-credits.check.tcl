@@ -1,12 +1,12 @@
 # This is the checker for SM Credit Loops detector code
 
 ##############################################################################
-# 
+#
 # Start up the test applications
 # This is the default flow that will start OpenSM only in 0x43 verbosity
 # Return a list of process ids it started (to be killed on exit)
 #
-proc runner {simDir osmPath osmPortGuid} { 
+proc runner {simDir osmPath osmPortGuid} {
    global simCtrlSock
    global env
    global lmc
@@ -22,10 +22,10 @@ proc runner {simDir osmPath osmPortGuid} {
    set osmCmd "$osmPath -d2 -f $osmLog -g $osmPortGuid"
 	puts "-I- Starting: $osmCmd"
    set osmPid [eval "exec $osmCmd > $osmStdOutLog &"]
-   
+
    # start a tracker on the log file and process:
    startOsmLogAnalyzer $osmLog
-   
+
    return $osmPid
 }
 
@@ -45,7 +45,7 @@ proc checker {simDir osmPath osmPortGuid} {
 	
 	puts "---------------------------------------------------------------------"
 	puts " SUBNET READY FOR DIAGNOSTICS"
-	puts "\nCut and paste the following in a new window then run ibdiagnet:" 
+	puts "\nCut and paste the following in a new window then run ibdiagnet:"
 	puts "cd $simDir"
 	puts "setenv IBMGTSIM_DIR  $simDir"
 	puts "setenv OSM_CACHE_DIR $simDir"

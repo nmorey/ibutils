@@ -40,9 +40,9 @@
 *	IB Management Simulator MAD Dispatcher: Worker Threads and MAD Queue
 *
 * DESCRIPTION
-*	The simulator stores incoming mads in a special queue that provides 
+*	The simulator stores incoming mads in a special queue that provides
 *  randomization of transport time. A group of worker threads is responsible
-*  to pop mad messages from the queue, route them to the destination nodes 
+*  to pop mad messages from the queue, route them to the destination nodes
 *  and call their mad processor.
 *
 * AUTHOR
@@ -67,10 +67,10 @@ class IBMSDispatcher {
 
   /* we track our worker threads and timer in the array of sub-threads */
   pthread_t *threads;
-  
+
   /* the queue of mads waiting for processing */
   mmap_uint64_mad madQueueByWakeup;
-  
+
   /* lock to synchronize popping up and pushing into the madQueueByWakeup */
   pthread_mutex_t madQueueByWakeupLock;
 
@@ -79,7 +79,7 @@ class IBMSDispatcher {
 
   /* lock to synchronize popping and pushing into mad dispatch list */
   pthread_mutex_t madDispatchQueueLock;
-  
+
   /* signal the timer waits on - signaled when new mads are pushed into Q */
   pthread_cond_t newMadIntoWaitQ;
 
@@ -91,45 +91,45 @@ class IBMSDispatcher {
 
   /* average delay from introducing the mad to when it appear on the queue */
   uint64_t avgDelay_usec;
-  
+
   /* deviation on the delay */
   uint64_t stdDevDelay_usec;
 
-  /* route the mad to the destination by direct route */ 
+  /* route the mad to the destination by direct route */
   int routeMadToDestByDR(madItem &item);
 
-  /* route the mad to the destination by dest lid */ 
+  /* route the mad to the destination by dest lid */
   int routeMadToDestByLid(madItem &item);
 
-  /* route a mad to the destination node. On the way can drop mads by 
+  /* route a mad to the destination node. On the way can drop mads by
      statistics and update the relevant port counters on the actual node. */
   int routeMadToDest(madItem &item);
-  
+
   /* The callback function for the threads */
   static void *workerCallback(void *context);
-  
-  /* 
-	* The timer thread main - should signal the threads 
+
+  /*
+	* The timer thread main - should signal the threads
 	* if there is an outstanding mad - or wait for next one
 	*/
   static void *timerCallback(void *context);
 
  public:
   /* constructor */
-  IBMSDispatcher(int numWorkers, 
+  IBMSDispatcher(int numWorkers,
                  uint64_t delayAvg_usec, uint64_t delayStdDev_usec);
 
   ~IBMSDispatcher();
 
   /* sets the average delay for a mad on the wire */
   int	setDelayAvg(uint64_t delayAvg_usec);
-  
+
   /* sets the deviation of the delay for a mad on the wire */
   int	setDelayStdDev(uint64_t delayStdDev_usec);
-  
+
   /* introduce a new mad to the dispatcher */
   int dispatchMad(IBMSNode *pFromNode, uint8_t fromPort, ibms_mad_msg_t &msg);
-  
+
 };
 
 #endif /* IBMS_WORKER_H */

@@ -46,9 +46,9 @@
 *  and receive mads.
 *
 *  There are basically two objects:
-*  GenServer and GenClient. They are acting as echo servers if not 
-*  specialized by providing new implementation of 
-*  GenServer::processClientMessage 
+*  GenServer and GenClient. They are acting as echo servers if not
+*  specialized by providing new implementation of
+*  GenServer::processClientMessage
 *
 * AUTHOR
 *	Eitan Zahavi, Mellanox
@@ -57,9 +57,9 @@
 
 #include <list>
 
-/* 
+/*
    The server:
-   allows multiple clients to connect and handles each one by 
+   allows multiple clients to connect and handles each one by
    a separate thread
 */
 class GenServer {
@@ -81,7 +81,7 @@ class GenServer {
   struct ServerThreadArgs {
     class GenServer *pServer;
   };
-  
+
   struct ClientThreadArgs {
     class GenServer *pServer;
     int              clientSock;
@@ -89,7 +89,7 @@ class GenServer {
 
   /* the server thread */
   pthread_t serverThreadId;
-  
+
   /* the server socket */
   int serverSock;
 
@@ -105,7 +105,7 @@ class GenServer {
  public:
   /* construct and initialize the server */
   GenServer(unsigned short portNum, int maxMsgLen);
-  
+
   /* destructor */
   virtual ~GenServer();
 
@@ -114,15 +114,15 @@ class GenServer {
 
   /* handle client request - this is the function to override . */
   virtual int proccessClientMsg(
-    int clientSock, 
-    int reqLen, char request[], 
+    int clientSock,
+    int reqLen, char request[],
     int &resLen, char *(pResponse[]) );
 
   /* virtual function called when a client is closed - under a lock */
   virtual int closingClient(int clientSock) {return(0);};
 };
 
-/* 
+/*
    The client:
    connects to a server
 */
@@ -147,10 +147,10 @@ class GenClient {
   ~GenClient();
 
   /*
-    send a message and wait for result 
-    The response buffer should be pre-allocated 
+    send a message and wait for result
+    The response buffer should be pre-allocated
   */
-  int sendMsg(int reqLen, char request[], 
+  int sendMsg(int reqLen, char request[],
               int &resLen, char response[] );
 
 };

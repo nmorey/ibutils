@@ -41,7 +41,7 @@ using namespace std;
 //
 // MESSAGE TYPE CLASS
 //
-msgType::msgType(char s, string &fmt, string ctx, string mod) 
+msgType::msgType(char s, string &fmt, string ctx, string mod)
 {
   severity = s;
   format = fmt;
@@ -52,7 +52,7 @@ msgType::msgType(char s, string &fmt, string ctx, string mod)
   int pos = 0;
   numFields = 0;
   while ((pos = 1 + format.find('$', pos)) > 0) numFields++;
-  
+
   // limit to 6 :
   if (numFields > 6)
   {
@@ -77,7 +77,7 @@ string msgManager::msg2string(
     cerr << "-E- Fail to find message type by id:" << msg.typeId << endl;
     return "";
   }
-  
+
   msgType t = (*mTypeI).second;
 
   int vl;
@@ -93,12 +93,12 @@ string msgManager::msg2string(
        (t.severity == 'I' && (vl & MsgShowInfo)) ||
        (t.severity == 'M' && (vl & MsgShowMads)) ||
        (t.severity == 'R' && (vl & MsgShowFrames)) ||
-       (t.severity == 'V' && (vl & MsgShowVerbose))) 
+       (t.severity == 'V' && (vl & MsgShowVerbose)))
   {
-    
+
     char res[1024];
     char tmp[1024];
-    
+
     res[0] = '\0';
 
     // add time if required
@@ -123,14 +123,14 @@ string msgManager::msg2string(
     // append the context if required:
     if (vl & MsgShowContext)
       strcat(res, t.context.c_str());
-    
+
     // append file and line if required:
     if (vl & MsgShowSource)
     {
       sprintf(tmp, " %s,%d", msg.inFile.c_str(), msg.lineNum);
       strcat(res, tmp);
     }
-    
+
     // close the parent system or space
     if ((vl & MsgShowContext) || (vl & MsgShowSource) || (vl & MsgShowModule))
       strcat(res,") ");
@@ -140,10 +140,10 @@ string msgManager::msg2string(
     // go over the format:
     int pos = 0, nextPos = 0;
     int numFields = 0;
-    while ((nextPos = t.format.find('$', pos)) >= 0) 
+    while ((nextPos = t.format.find('$', pos)) >= 0)
     {
       strcat(res,t.format.substr(pos,nextPos - pos).c_str());
-      switch (++numFields) 
+      switch (++numFields)
       {
       case 1: strcat(res, msg.f1.c_str()); break;
       case 2: strcat(res, msg.f2.c_str()); break;
@@ -154,7 +154,7 @@ string msgManager::msg2string(
       }
       pos = nextPos + 1;
     }
-    
+
     strcat(res, t.format.substr(pos).c_str());
     strcat(res, "\n");
 
@@ -176,7 +176,7 @@ int msgManager::outstandingMsgCount(int vl) {
   unsigned int I = pendingMsgsI;
   msgType t;
   pthread_mutex_lock(&lock);
-  while (I < log.size()) 
+  while (I < log.size())
   {
     // get the message type obj:
     t = types[(log[I]).typeId];
@@ -203,7 +203,7 @@ string msgManager::outstandingMsgs(int vl) {
   unsigned int I = pendingMsgsI;
 
   msgType t;
-  while (I < log.size()) 
+  while (I < log.size())
   {
     // get the message type obj:
     t = types[(log[I]).typeId];
@@ -226,7 +226,7 @@ string msgManager::getNextMessage() {
   string res("");
 
   pthread_mutex_lock(&lock);
-  
+
   if (pendingMsgsI == log.size() - 1)
     res = msg2string(log[pendingMsgsI++]);
 
@@ -258,7 +258,7 @@ int msgManager::reg(char s, string fmt, string ctx, string mod) {
 
 // get a new message and do something with it
 int msgManager::send(int typeId, string fn , int ln, msgStr i1 ,msgStr i2 ,msgStr i3 ,
-                 msgStr i4, msgStr i5 ,msgStr i6) 
+                 msgStr i4, msgStr i5 ,msgStr i6)
 {
 
   // create a new message
@@ -266,7 +266,7 @@ int msgManager::send(int typeId, string fn , int ln, msgStr i1 ,msgStr i2 ,msgSt
 
   // store in the log
   pthread_mutex_lock(&lock);
-  
+
   // We store all messages in the log vector - but we can void that for now
   // log.push_back(msg);
 
@@ -278,7 +278,7 @@ int msgManager::send(int typeId, string fn , int ln, msgStr i1 ,msgStr i2 ,msgSt
   // handle the new message
   if (outStreamP) {
     // default verbosity, err on fatal
-    (*outStreamP) << msg2string(msg, 0, sendFatalsToCerr); 
+    (*outStreamP) << msg2string(msg, 0, sendFatalsToCerr);
     outStreamP->flush();
   }
 
@@ -302,11 +302,11 @@ msgStr::msgStr(const unsigned long long i){char b[20];  sprintf(b, "0x%016llx", 
 msgManager &msgMgr(int vl, std::ostream *o)
 {
   static msgManager *pMgr = NULL;
-  if (pMgr == NULL) 
+  if (pMgr == NULL)
   {
     pMgr = new msgManager(vl, o);
   }
-  
+
   return (*pMgr);
 };
 
@@ -316,7 +316,7 @@ int msgMgrLeaveFunc = msgMgr().reg('R',"$ ]", "top", "msg");
 
 #ifdef MSG_MGR_TEST
 
-int main(int argc, string **argv) 
+int main(int argc, string **argv)
 {
   msgMgr( MsgShowFatal | MsgShowError | MsgShowWarning, &cerr);
   MSGREG(err1,
@@ -330,7 +330,7 @@ int main(int argc, string **argv)
   MSGSND(err1,"node","inst","type");
   static int mod1Err = msgMgr().reg('V', "This is module param:$", "main", "myModule");
   MSGREG(mod2Err,'V', "This is another module param:$", "otherModule");
-  
+
   msgMgr().setVerbLevel(MsgShowAll, "myModule");
   msgMgr().send(mod1Err,__FILE__,__LINE__,"PARAM1");
   MSGSND(mod2Err,"PARAM2");

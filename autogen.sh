@@ -71,7 +71,7 @@ aclocal -I config 2>&1 |  grep -v "arning: underquoted definition of"
 automake --add-missing --gnu --copy --force
 autoconf
 
-# visit all sub directories with autogen.sh    
+# visit all sub directories with autogen.sh
 anyErr=0
 for a in `ls */autogen.sh`; do
     echo Visiting $a

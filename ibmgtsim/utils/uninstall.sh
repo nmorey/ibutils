@@ -1,4 +1,4 @@
-#!/bin/bash 
+#!/bin/bash
 #
 # This software is available to you under a choice of one of two
 # licenses.  You may choose to be licensed under the terms of the GNU
@@ -24,27 +24,27 @@ function cleanup_ibmgtsim_files() {
     # Clean old distribution
     binApps="IBMgtSim  ibmsquit  ibmssh  mkSimNodeDir  RunSimTest"
 
-    echo "Removing Executables from : .......... $PREFIX/bin." 
-    for f in $binApps; do 
-        rm -f ${PREFIX}/bin/$f 2&>1 > /dev/null; 
+    echo "Removing Executables from : .......... $PREFIX/bin."
+    for f in $binApps; do
+        rm -f ${PREFIX}/bin/$f 2&>1 > /dev/null;
         if [ $? == 0 ]; then
-            echo " Removed : ${PREFIX}/bin/$f" 
+            echo " Removed : ${PREFIX}/bin/$f"
         fi
     done
-   
+
     echo "Removing Include Files from : ........ $PREFIX/include."
     rm -rf ${PREFIX}/include/ibmgtsim 2&>1 > /dev/null
     if [ $? == 0 ]; then
-        echo " Removed : ${PREFIX}/include/ibmgtsim" 
+        echo " Removed : ${PREFIX}/include/ibmgtsim"
     fi
-    
+
     echo "Removing Libs from : ................. $PREFIX/lib."
-    libs="libibmscli.a libibmscli.la libibmscli.so libibmscli.so.1 
+    libs="libibmscli.a libibmscli.la libibmscli.so libibmscli.so.1
           libibmscli.so.1.0.0"
-    for f in $libs; do 
-        rm -rf ${PREFIX}/lib/$f 2&>1 > /dev/null; 
+    for f in $libs; do
+        rm -rf ${PREFIX}/lib/$f 2&>1 > /dev/null;
         if [ $? == 0 ]; then
-            echo " Removed : ${PREFIX}/lib/$f" 
+            echo " Removed : ${PREFIX}/lib/$f"
         fi
     done
 }
@@ -55,7 +55,7 @@ NO_BAR=0
 while [ "$1" ]; do
 #  echo "Current parsed param is : $1"
   case $1 in
-    "--prefix") 
+    "--prefix")
           PREFIX=$2
           cleanup_ibmgtsim_files $2
           shift

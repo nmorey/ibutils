@@ -22,7 +22,7 @@ AC_MSG_NOTICE(Using IBDM from:$with_ibdm),
 with_ibdm="none")
 
 dnl if the user did not provide --with-ibdm look for it in reasonable places
-if test "x$with_ibdm" = xnone; then 
+if test "x$with_ibdm" = xnone; then
    if test -d /usr/include/ibdm; then
       with_ibdm=/usr
    elif test -d [`pwd`]/ibdm; then

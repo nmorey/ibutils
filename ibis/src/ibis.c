@@ -105,7 +105,7 @@ ibis_init(
   IbisObj.port_guid = 0;
   ibis_construct();
   status = osm_log_init( &(IbisObj.log),
-                         p_opt->force_log_flush,0x01, p_opt->log_file 
+                         p_opt->force_log_flush,0x01, p_opt->log_file
 #ifdef OSM_BUILD_OPENIB
                          , FALSE /* do not accumulate log ... */
 #endif
@@ -125,7 +125,7 @@ ibis_init(
   {
     osm_log( &IbisObj.log, OSM_LOG_ERROR,
              "ibis_init: ERR 0002: "
-             "Unable to allocate MAD pool\n"); 
+             "Unable to allocate MAD pool\n");
     goto Exit;
   }
 
@@ -150,12 +150,12 @@ ibis_init(
   {
     status = cl_disp_init(&(IbisObj.disp),0,"gsi" );
   }
-  
+
   if( status != IB_SUCCESS )
   {
     osm_log( &IbisObj.log, OSM_LOG_ERROR,
              "ibis_init: ERR 0003: "
-             "Unable to allocate GSI MADs Dispatcher\n");  
+             "Unable to allocate GSI MADs Dispatcher\n");
     goto Exit;
   }
 
@@ -169,7 +169,7 @@ ibis_init(
   {
     osm_log( &IbisObj.log, OSM_LOG_ERROR,
              "ibis_init: ERR 0003: "
-             "Unable to allocate GSI MADs Control\n");     
+             "Unable to allocate GSI MADs Control\n");
     goto Exit;
   }
 
@@ -211,7 +211,7 @@ ibis_get_ports_status(
     osm_log( &IbisObj.log, OSM_LOG_ERROR,
              "ibis_get_ports_status: ERR 0001: "
              "Unable to obtain ports information - got err code:%u.\n",
-             status);     
+             status);
     goto Exit;
   }
 

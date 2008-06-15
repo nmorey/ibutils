@@ -104,7 +104,7 @@ proc getAddressiblePorts {fabric} {
          for {set pn $pMin} {$pn <= $pMax} {incr pn} {
             set port [IBNode_getPort $node $pn]
             if {$port == ""} {continue}
-         
+
             # if the port is not connected ignore it:
             if {[IBPort_p_remotePort_get $port] != ""} {
                lappend nodePortNumPairs [list $node $pn]
@@ -216,12 +216,12 @@ proc updateAssignedLids {fabric} {
 
    set addrNodePortNumPairs [getAddressiblePorts $fabric]
    foreach nodePortNum $addrNodePortNumPairs {
-     
+
       set node [lindex $nodePortNum 0]
       set pn   [lindex $nodePortNum 1]
       set pi [IBMSNode_getPortInfo sim$node $pn]
       set lid [ib_port_info_t_base_lid_get $pi]
-     
+
       assignPortLid $node $pn $lid
    }
 
@@ -254,7 +254,7 @@ proc getFreeLid {lmc} {
 
 # get a used lid
 proc getUsedLid {} {
-   global LID_PORTS 
+   global LID_PORTS
    return [getRandomNumOfSequence [array names LID_PORTS]]
 }
 
@@ -266,7 +266,7 @@ proc setNodePortsState {node state} {
       set pi [IBMSNode_getPortInfo sim$node $pn]
       set speed_state [ib_port_info_t_state_info1_get $pi]
       ib_port_info_t_state_info1_set $pi [expr $speed_state & 0xf0 | $state]
-     
+
       # try remote side:
       set port [IBNode_getPort $node $pn]
       if {$port != ""} {
@@ -309,7 +309,7 @@ proc disconnectNode {node} {
 # state to DOWN
 proc connectNode {node} {
    global DISCONNECTED_NODES
-   setNodePortsState $node 2  
+   setNodePortsState $node 2
    if {[info exists DISCONNECTED_NODES($node)]} {
       unset DISCONNECTED_NODES($node)
    }
@@ -463,11 +463,11 @@ proc writeGuid2LidFile {fileName lmc} {
          set guid [IBNode_guid_get $node]
          set maxLidOffset 0
       }
-   
+
       set pi [IBMSNode_getPortInfo sim$node $pn]
       set lid [ib_port_info_t_base_lid_get $pi]
       set lidMax [expr $lid + $maxLidOffset]
-   
+
       # randomize what we want to do with it:
       set hackCode [getRandomNumOfSequence $randProfile]
       switch $hackCode {
@@ -510,7 +510,7 @@ proc writeGuid2LidFile {fileName lmc} {
             incr numMods
          }
          LidZero {
-            puts $f "$guid 0 0\n"     
+            puts $f "$guid 0 0\n"
             puts [format "-I- LidZero guid:$guid lid:0x%04x,0x%04x" \
                      $lid $lidMax]
             # if the node is disconnected and we create invalid guid2lid
@@ -610,7 +610,7 @@ proc bfsConnectedFromSM {fabric} {
 
          set remPort [IBPort_p_remotePort_get $port]
          if {$remPort == ""} {continue}
-      
+
          set remNode [IBPort_p_node_get $remPort]
          if {![info exists BFS_FROM_SM_VISITED($remNode)]} {
             lappend nodesQueue $remNode
@@ -657,7 +657,7 @@ proc checkLidValues {fabric lmc} {
 
       # ignore nodes that are disconnected:
       if {[info exists DISCONNECTED_NODES($node)]} {continue}
-     
+
       # check if the node is not masked by other disconnected nodes
       if {![info exists BFS_FROM_SM_VISITED($node)]} {
          puts "-I- Node [IBNode_name_get $node] is not accessible due to other disconnectes"
@@ -672,9 +672,9 @@ proc checkLidValues {fabric lmc} {
          puts "-W- Somehow we do not have a lid assigned to $key"
          continue
       }
-     
+
       set lid $PORT_LID($key)
-     
+
       # ignore lids that are unknown to the SM
       if {[info exists SM_UNKNOWN_LIDS($lid)]} {continue}
 
@@ -686,7 +686,7 @@ proc checkLidValues {fabric lmc} {
       set actLid [ib_port_info_t_base_lid_get $pi]
 
       incr numPorts
-     
+
       if {($lid != 0) && ($lid != $actLid)} {
          puts [format "-E- On Port:$key Guid:$guid Expected lid:0x%04x != 0x%04x" \
                   $lid $actLid]

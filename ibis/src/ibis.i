@@ -96,11 +96,11 @@ ibisp_is_debug(void)
 
 //
 // TYPE MAPS:
-// 
+//
 %include ibis_typemaps.i
 
 //
-// exception handling wrapper based on the MsgMgr interfaces 
+// exception handling wrapper based on the MsgMgr interfaces
 //
 %{
 
@@ -110,7 +110,7 @@ ibisp_is_debug(void)
   void ibis_set_tcl_error(char *err) {
     if (strlen(err) < 1024)
       strcpy(ibis_tcl_error_msg, err);
-    else 
+    else
       strncpy(ibis_tcl_error_msg, err, 1024);
     ibis_tcl_error = 1;
   }
@@ -122,24 +122,24 @@ ibisp_is_debug(void)
   if (!IbisObj.initialized)
   {
     Tcl_SetStringObj(
-      Tcl_GetObjResult(interp), 
+      Tcl_GetObjResult(interp),
       "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
     return TCL_ERROR;
   }
-  
+
   if (! IbisObj.port_guid)
   {
     Tcl_SetStringObj(
-      Tcl_GetObjResult(interp), 
+      Tcl_GetObjResult(interp),
       " ibis was not yet initialized. please use ibis_set_port before.", -1);
     return TCL_ERROR;
   }
 
   ibis_tcl_error = 0;
-  $function; 
-  if (ibis_tcl_error) { 
+  $function;
+  if (ibis_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
- 	 return TCL_ERROR; 
+ 	 return TCL_ERROR;
   }
 }
 
@@ -178,10 +178,10 @@ ibisp_is_debug(void)
   ibis_t    IbisObj;
   static ibis_opt_t  *ibis_opt_p;
   ibis_opt_t IbisOpts;
-  
-  /* initialize the ibis object - is not done during init so we 
+
+  /* initialize the ibis object - is not done during init so we
      can play with the options ... */
-  int ibis_ui_init(void) 
+  int ibis_ui_init(void)
   {
     ib_api_status_t status;
 #ifdef OSM_BUILD_OPENIB
@@ -265,12 +265,12 @@ ibisp_is_debug(void)
   /* simply return the active port guid ibis is binded to */
   uint64_t ibis_get_port(void)
   {
-    return (IbisObj.port_guid); 
+    return (IbisObj.port_guid);
   }
 
   /* set the port we bind to and initialize sub packages */
   int ibis_set_port(uint64_t port_guid)
-  { 
+  {
     ib_api_status_t status;
 
     if (! IbisObj.initialized) {
@@ -280,7 +280,7 @@ ibisp_is_debug(void)
     }
 
     IbisObj.port_guid = port_guid;
-    
+
     status = ibcr_bind(p_ibcr_global);
     if( status != IB_SUCCESS )
     {
@@ -304,7 +304,7 @@ ibisp_is_debug(void)
       ibvs_destroy( p_ibvs_global );
       exit(1);
     }		
-    
+
     status = ibbbm_bind(p_ibbbm_global);
     if( status != IB_SUCCESS )
     {
@@ -321,7 +321,7 @@ ibisp_is_debug(void)
       exit(1);
     }		
 
-    if (ibsac_bind(&IbisObj)) 
+    if (ibsac_bind(&IbisObj))
     {
       printf("-E- Fail to ibsac_bind.\n");
       exit(1);
@@ -345,7 +345,7 @@ ibisp_is_debug(void)
   }
 
   int ibis_set_transaction_timeout( uint32_t timeout_ms ) {
-	 osm_log(&(IbisObj.log), 
+	 osm_log(&(IbisObj.log),
 				OSM_LOG_VERBOSE,
 				" Setting timeout to:%u[msec]\n", timeout_ms);
 	 IbisOpts.transaction_timeout = timeout_ms;
@@ -364,16 +364,16 @@ ibisp_is_debug(void)
 	 Tcl_Obj *p_obj;
 
     if (!IbisObj.initialized)
-    { 
+    {
       Tcl_SetStringObj(
-        Tcl_GetObjResult(interp), 
+        Tcl_GetObjResult(interp),
         "ibis was not yet initialized. please use ibis_init before.", -1);
       return TCL_ERROR;
     }
- 
+
 	 /* command options */
     tcl_result = Tcl_GetObjResult(interp);
-	 
+	
     if ((objc < 1) || (objc > 1)) {
         Tcl_SetStringObj(tcl_result,"Wrong # args. ibis_get_local_ports_info ",-1);
         return TCL_ERROR;
@@ -394,12 +394,12 @@ ibisp_is_debug(void)
       return( TCL_ERROR );
     }
 
-	 /* 
-		 Go over all ports and build the return  value 
+	 /*
+		 Go over all ports and build the return  value
 	 */
 	 for( i = 0; i < num_ports; i++ )
     {
-      
+
       // start with 1 on host channel adapters.
       sprintf(res, "0x%016" PRIx64 " 0x%04X %s %u",
               cl_ntoh64( attr_array[i].port_guid ),
@@ -407,11 +407,11 @@ ibisp_is_debug(void)
               ib_get_port_state_str( attr_array[i].link_state ),
               attr_array[i].port_num
               );
-      
+
       p_obj = Tcl_NewStringObj(res, strlen(res));
       Tcl_ListObjAppendElement(interp, tcl_result, p_obj);
     }
-	 
+	
     return TCL_OK;
   }
 
@@ -421,7 +421,7 @@ ibisp_is_debug(void)
 
 //
 // INTERFACE DEFINITION (~copy of h file)
-// 
+//
 
 %section "IBIS Constants"
 /* These constants are provided by IBIS: */
@@ -471,7 +471,7 @@ typedef struct _ibis_opt {
   /* If TRUE - forces flash after each log message (TRUE). */
   uint8_t log_flags;
   /* The log levels to be used */
-  char log_file[1024]; 
+  char log_file[1024];
   /* The name of the log file used (read only) */
   uint64_t sm_key;
   /* The SM_Key to be used when sending SubnetMgt and SubnetAdmin MADs */
@@ -497,7 +497,7 @@ int ibis_set_transaction_timeout(uint32_t timeout_ms);
 %text %{
 ibis_get_local_ports_info
    [return list]
-   Return the list of available IB ports with GUID, LID and State.  
+   Return the list of available IB ports with GUID, LID and State.
 %}
 
 extern char * ibisSourceVersion;
@@ -509,12 +509,12 @@ extern char * ibisSourceVersion;
 
   /* Make sure that the osmv, complib and ibisp use
      same modes (debug/free) */
-  if ( osm_is_debug() != cl_is_debug()    || 
-       osm_is_debug() != ibisp_is_debug() || 
+  if ( osm_is_debug() != cl_is_debug()    ||
+       osm_is_debug() != ibisp_is_debug() ||
        ibisp_is_debug() != cl_is_debug() )
   {
     fprintf(stderr, "-E- OSMV, Complib and Ibis were compiled using different modes\n");
-    fprintf(stderr, "-E- OSMV debug:%d Complib debug:%d IBIS debug:%d \n", 
+    fprintf(stderr, "-E- OSMV debug:%d Complib debug:%d IBIS debug:%d \n",
             osm_is_debug(), cl_is_debug(), ibisp_is_debug() );
     exit(1);
   }
@@ -526,7 +526,7 @@ extern char * ibisSourceVersion;
     /* we initialize the structs etc only once. */
     if (0 == notFirstTime++) {
       Tcl_StaticPackage(interp, "ibis", Ibis_Init, NULL);
-      Tcl_PkgProvide(interp, "ibis", IBIS_VERSION); 
+      Tcl_PkgProvide(interp, "ibis", IBIS_VERSION);
       /* Default Options  */
       memset(&IbisOpts, 0,sizeof(ibis_opt_t));
       IbisOpts.transaction_timeout = 4*OSM_DEFAULT_TRANS_TIMEOUT_MILLISEC;
@@ -538,26 +538,26 @@ extern char * ibisSourceVersion;
       IbisOpts.log_flags = OSM_LOG_ERROR;
       strcpy(IbisOpts.log_file,"/tmp/ibis.log");
 
-    
+
       /* we want all exists to cleanup */
       Tcl_CreateExitHandler(ibis_exit, NULL);
-      
+
       /* ------------------ IBCR ---------------------- */
       p_ibcr_global = ibcr_construct();
-      
+
       if (p_ibcr_global == NULL) {
         printf("-E- Error from ibcr_construct.\n");
         exit(1);
       }	
-      
+
       /* ------------------ IBPM ---------------------- */
       p_ibpm_global = ibpm_construct();
-      
+
       if (p_ibpm_global == NULL) {
         printf("-E- Error from ibpm_construct.\n");
         exit(1);
       }	
-      
+
       /* ------------------ IBVS ---------------------- */
 		p_ibvs_global = ibvs_construct();
 	
@@ -572,7 +572,7 @@ extern char * ibisSourceVersion;
   		if (p_ibbbm_global == NULL) {
 			printf("-E- Error from ibbbm_construct.\n");
          exit(1);
-  		} 
+  		}
 
       /* ------------------ IBSM ---------------------- */
 		gp_ibsm = ibsm_construct();
@@ -593,7 +593,7 @@ extern char * ibisSourceVersion;
       memset(&ibsm_sm_info_obj, 0, sizeof(ib_sm_info_t));
 
       /* ------------------ IBSAC ---------------------- */
-      
+
       /* Initialize global records */
       memset(&ibsac_node_rec, 0,sizeof(ibsac_node_rec));
       memset(&ibsac_portinfo_rec, 0,sizeof(ibsac_portinfo_rec));
@@ -603,10 +603,10 @@ extern char * ibisSourceVersion;
       memset(&ibsac_path_rec, 0, sizeof(ib_path_rec_t));
       memset(&ibsac_lft_rec, 0, sizeof(ib_lft_record_t));
       memset(&ibsac_mcm_rec, 0, sizeof(ib_member_rec_t));
-      
-      /* 
+
+      /*
        * A1 Supported features:
-       * 
+       *
        * Query:                Rec/Info Types    Done
        *
        * NodeRecord            (nr, ni)           Y
@@ -627,7 +627,7 @@ extern char * ibisSourceVersion;
        * VLArbTableRecord      (vlarb)            Y
        * PKeyTableRecord       (pkr, pkt)         Y
        */
-      
+
       /* We use alternate SWIG Objects mangling */
       SWIG_AltMnglInit();
       SWIG_AltMnglRegTypeToPrefix("_sacNodeInfo_p", "ni");
@@ -650,24 +650,24 @@ extern char * ibisSourceVersion;
       SWIG_AltMnglRegTypeToPrefix("_sacVlArbRec_p", "vlarb");
       SWIG_AltMnglRegTypeToPrefix("_sacPKeyTbl_p", "pkt");
       SWIG_AltMnglRegTypeToPrefix("_sacPKeyRec_p", "pkr");
-      
+
       // register the pre-allocated objects
       SWIG_AltMnglRegObj("ni",&(ibsac_node_rec.node_info));
       SWIG_AltMnglRegObj("nr",&(ibsac_node_rec));
-      
+
       SWIG_AltMnglRegObj("pi", &(ibsac_portinfo_rec.port_info));
       SWIG_AltMnglRegObj("pir",&(ibsac_portinfo_rec));
-	 
+	
       SWIG_AltMnglRegObj("smi", &(ibsac_sminfo_rec.sm_info));
       SWIG_AltMnglRegObj("smir",&(ibsac_sminfo_rec));
-      
+
       SWIG_AltMnglRegObj("swi", &(ibsac_swinfo_rec.switch_info));
       SWIG_AltMnglRegObj("swir",&(ibsac_swinfo_rec));
 
       SWIG_AltMnglRegObj("path",&(ibsac_path_rec));
-      
+
       SWIG_AltMnglRegObj("link",&(ibsac_link_rec));
-      
+
       SWIG_AltMnglRegObj("lft",&(ibsac_lft_rec));
 
       SWIG_AltMnglRegObj("mcm",&(ibsac_mcm_rec));
@@ -675,18 +675,18 @@ extern char * ibisSourceVersion;
       SWIG_AltMnglRegObj("cpi",&(ibsac_class_port_info));
       SWIG_AltMnglRegObj("info",&(ibsac_inform_info));
       SWIG_AltMnglRegObj("svc",&(ibsac_svc_rec));
-      
+
       SWIG_AltMnglRegObj("slvt", &(ibsac_slvl_rec.slvl_tbl));
       SWIG_AltMnglRegObj("slvr", &(ibsac_slvl_rec));
-      
+
       SWIG_AltMnglRegObj("vlarb", &(ibsac_vlarb_rec));
-      
+
       SWIG_AltMnglRegObj("pkt", &(ibsac_pkey_rec.pkey_tbl));
       SWIG_AltMnglRegObj("pkr", &(ibsac_pkey_rec));
-      
+
       usleep(1000);
     }
-    
+
     /* we defined this as a native command so declare it in here */
     Tcl_CreateObjCommand(interp, "ibis_get_local_ports_info",
                          ibis_get_local_ports_info, NULL, NULL);
@@ -697,113 +697,113 @@ extern char * ibisSourceVersion;
 									 (ClientData)ibis_opt_p, 0);
 
     /* add commands for accessing the global query records */
-    Tcl_CreateObjCommand(interp,"smNodeInfoMad", 
+    Tcl_CreateObjCommand(interp,"smNodeInfoMad",
                          TclsmNodeInfoMethodCmd,
                          (ClientData)&ibsm_node_info_obj, 0);
-    
-    Tcl_CreateObjCommand(interp,"smPortInfoMad", 
+
+    Tcl_CreateObjCommand(interp,"smPortInfoMad",
                          TclsmPortInfoMethodCmd,
                          (ClientData)&ibsm_port_info_obj, 0);
-    
-    Tcl_CreateObjCommand(interp,"smSwitchInfoMad", 
+
+    Tcl_CreateObjCommand(interp,"smSwitchInfoMad",
                          TclsmSwInfoMethodCmd,
                          (ClientData)&ibsm_switch_info_obj, 0);
-    
-    Tcl_CreateObjCommand(interp,"smLftBlockMad", 
+
+    Tcl_CreateObjCommand(interp,"smLftBlockMad",
                          TclsmLftBlockMethodCmd,
                          (ClientData)&ibsm_lft_block_obj, 0);
-    
-    Tcl_CreateObjCommand(interp,"smMftBlockMad", 
+
+    Tcl_CreateObjCommand(interp,"smMftBlockMad",
                          TclsmMftBlockMethodCmd,
                          (ClientData)&ibsm_mft_block_obj, 0);
 
-    Tcl_CreateObjCommand(interp,"smGuidInfoMad", 
+    Tcl_CreateObjCommand(interp,"smGuidInfoMad",
                          TclsmGuidInfoMethodCmd,
                          (ClientData)&ibsm_guid_info_obj, 0);
 
-    Tcl_CreateObjCommand(interp,"smPkeyTableMad", 
+    Tcl_CreateObjCommand(interp,"smPkeyTableMad",
                          TclsmPkeyTableMethodCmd,
                          (ClientData)&ibsm_pkey_table_obj, 0);
 
-    Tcl_CreateObjCommand(interp,"smSlVlTableMad", 
+    Tcl_CreateObjCommand(interp,"smSlVlTableMad",
                          TclsmSlVlTableMethodCmd,
                          (ClientData)&ibsm_slvl_table_obj, 0);
 
-    Tcl_CreateObjCommand(interp,"smVlArbTableMad", 
+    Tcl_CreateObjCommand(interp,"smVlArbTableMad",
                          TclsmVlArbTableMethodCmd,
                          (ClientData)&ibsm_vl_arb_table_obj, 0);
 
-    Tcl_CreateObjCommand(interp,"smSMInfoMad", 
+    Tcl_CreateObjCommand(interp,"smSMInfoMad",
                          TclsmSMInfoMethodCmd,
                          (ClientData)&ibsm_sm_info_obj, 0);
 
-    Tcl_CreateObjCommand(interp,"smNodeDescMad", 
+    Tcl_CreateObjCommand(interp,"smNodeDescMad",
                          TclsmNodeDescMethodCmd,
                          (ClientData)&ibsm_node_desc_obj, 0);
 
-    Tcl_CreateObjCommand(interp,"smNoticeMad", 
+    Tcl_CreateObjCommand(interp,"smNoticeMad",
                          TclsmNoticeMethodCmd,
                          (ClientData)&ibsm_notice_obj, 0);
 
-	 Tcl_CreateObjCommand(interp,"sacNodeQuery", 
+	 Tcl_CreateObjCommand(interp,"sacNodeQuery",
 								 TclsacNodeRecMethodCmd,
 								 (ClientData)&ibsac_node_rec, 0);
-    
-	 Tcl_CreateObjCommand(interp,"sacPortQuery", 
+
+	 Tcl_CreateObjCommand(interp,"sacPortQuery",
 								 TclsacPortRecMethodCmd,
 								 (ClientData)&ibsac_portinfo_rec, 0);
-    
-	 Tcl_CreateObjCommand(interp,"sacSmQuery", 
+
+	 Tcl_CreateObjCommand(interp,"sacSmQuery",
 								 TclsacSmRecMethodCmd,
 								 (ClientData)&ibsac_sminfo_rec, 0);
-    
-	 Tcl_CreateObjCommand(interp,"sacSwQuery", 
+
+	 Tcl_CreateObjCommand(interp,"sacSwQuery",
 								 TclsacSwRecMethodCmd,
 								 (ClientData)&ibsac_swinfo_rec, 0);
-    
-	 Tcl_CreateObjCommand(interp,"sacLinkQuery", 
+
+	 Tcl_CreateObjCommand(interp,"sacLinkQuery",
 								 TclsacLinkRecMethodCmd,
 								 (ClientData)&ibsac_link_rec, 0);
 
-	 Tcl_CreateObjCommand(interp,"sacPathQuery", 
+	 Tcl_CreateObjCommand(interp,"sacPathQuery",
 								 TclsacPathRecMethodCmd,
 								 (ClientData)&ibsac_path_rec, 0);
 
-	 Tcl_CreateObjCommand(interp,"sacLFTQuery", 
+	 Tcl_CreateObjCommand(interp,"sacLFTQuery",
 								 TclsacLFTRecMethodCmd,
 								 (ClientData)&ibsac_lft_rec, 0);
 
-	 Tcl_CreateObjCommand(interp,"sacMCMQuery", 
+	 Tcl_CreateObjCommand(interp,"sacMCMQuery",
 								 TclsacMCMRecMethodCmd,
 								 (ClientData)&ibsac_mcm_rec, 0);
 
-	 Tcl_CreateObjCommand(interp,"sacClassPortInfoQuery", 
+	 Tcl_CreateObjCommand(interp,"sacClassPortInfoQuery",
 								 TclsacClassPortInfoMethodCmd,
 								 (ClientData)&ibsac_class_port_info, 0);
 
-	 Tcl_CreateObjCommand(interp,"sacInformInfoQuery", 
+	 Tcl_CreateObjCommand(interp,"sacInformInfoQuery",
 								 TclsacInformInfoMethodCmd,
 								 (ClientData)&ibsac_inform_info, 0);
 
-	 Tcl_CreateObjCommand(interp,"sacServiceQuery", 
+	 Tcl_CreateObjCommand(interp,"sacServiceQuery",
 								 TclsacServiceRecMethodCmd,
 								 (ClientData)&ibsac_svc_rec, 0);
 
-	 Tcl_CreateObjCommand(interp,"sacSLVlQuery", 
+	 Tcl_CreateObjCommand(interp,"sacSLVlQuery",
 								 TclsacSlVlRecMethodCmd,
 								 (ClientData)&ibsac_slvl_rec, 0);
 
-	 Tcl_CreateObjCommand(interp,"sacVlArbQuery", 
+	 Tcl_CreateObjCommand(interp,"sacVlArbQuery",
 								 TclsacVlArbRecMethodCmd,
 								 (ClientData)&ibsac_vlarb_rec, 0);
 
-	 Tcl_CreateObjCommand(interp,"sacPKeyQuery", 
+	 Tcl_CreateObjCommand(interp,"sacPKeyQuery",
 								 TclsacPKeyRecMethodCmd,
 								 (ClientData)&ibsac_pkey_rec, 0);
 
     /*
-      use an embedded Tcl code for doing init if given command line 
-      parameters: -port_num <port num> 
+      use an embedded Tcl code for doing init if given command line
+      parameters: -port_num <port num>
     */
     Tcl_GlobalEval(
       interp,
@@ -835,4 +835,4 @@ extern char * ibisSourceVersion;
       "}\n");
   }
 %}
-  
+

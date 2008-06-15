@@ -42,10 +42,10 @@
  * Build a graph linked to the SW devices for input to output
  * links. We use the appData1 available on the nodes to ref the tables.
  * Based on this graph provide analysis on loops available on the
- * fabric 
+ * fabric
  *
  */
- 
+
 #define RT_NOT_USED 0
 #define RT_USED     1
 #define RT_VISITED  2
@@ -54,24 +54,24 @@
 //////////////////////////////////////////////////////////////////////////////
 
 // Allocate the tables on the switches
-int 
+int
 CrdLoopInitRtTbls(IBFabric *p_fabric) {
   IBNode *p_node;
 
-  // Go over all SW nodes in the fabric and build a table 
+  // Go over all SW nodes in the fabric and build a table
   // of input to output ports links. Each element should track
   // effect and traversal flags.
   for( map_str_pnode::iterator nI = p_fabric->NodeByName.begin();
 		 nI != p_fabric->NodeByName.end();
 		 nI++) {
-	 
+	
 	 p_node = (*nI).second;
 	 if (p_node->type != IB_SW_NODE) continue;
 	
-	 uint8_t *p_tbl = 
+	 uint8_t *p_tbl =
 		new uint8_t[p_node->numPorts*p_node->numPorts];
 
-	 memset(p_tbl, RT_NOT_USED, 
+	 memset(p_tbl, RT_NOT_USED,
 			  sizeof(uint8_t)*p_node->numPorts*p_node->numPorts);
 
 	 if (! p_tbl) {
@@ -82,7 +82,7 @@ CrdLoopInitRtTbls(IBFabric *p_fabric) {
 	 // We use the appData1 of the node to store the routing links
 	 // info
 	 if (p_node->appData1.ptr) {
-		cout << "-W- Application Data Pointer already set for node:" 
+		cout << "-W- Application Data Pointer already set for node:"
 			  << p_node->name << endl;
 		delete [] p_tbl;
 	 } else {
@@ -96,10 +96,10 @@ CrdLoopInitRtTbls(IBFabric *p_fabric) {
 
 // Trace a route from slid to dlid by LFT
 int CrdLoopMarkRouteByLFT (
-  IBFabric *p_fabric, 
+  IBFabric *p_fabric,
   unsigned int sLid , unsigned int dLid
   ) {
-  
+
   IBPort *p_port = p_fabric->getPortByLid(sLid);
   IBNode *p_node;
   IBPort *p_remotePort;
@@ -107,13 +107,13 @@ int CrdLoopMarkRouteByLFT (
   int inPortNum = 0, outPortNum = 0;
   uint8_t *p_tbl;
   int hopCnt = 0;
-  
+
   // make sure:
   if (! p_port) {
 	 cout << "-E- Provided source:" << sLid
 			<< " lid is not mapped to a port!" << endl;
 	 return(1);
-  }  
+  }
 
   // if the port is not a switch - go to the next switch:
   if (p_port->p_node->type != IB_SW_NODE) {
@@ -147,12 +147,12 @@ int CrdLoopMarkRouteByLFT (
 		cout << "-E- Unassigned LFT for lid:" << dLid << " Dead end at:" << p_node->name << endl;
 		return 1;
 	 }
-	 
+	
 	 // get the port on the other side
 	 p_port = p_node->getPort(outPortNum);
 
-	 if (! (p_port && 
-			  p_port->p_remotePort && 
+	 if (! (p_port &&
+			  p_port->p_remotePort &&
 			  p_port->p_remotePort->p_node)) {
 		cout << "-E- Dead end at:" << p_node->name << endl;
 		return 1;
@@ -165,7 +165,7 @@ int CrdLoopMarkRouteByLFT (
 		exit(2);
 	 }
 
-	 // cout << "-V- Add usage Node:" << p_node->name 
+	 // cout << "-V- Add usage Node:" << p_node->name
 	 //		<< " In:" << inPortNum << " to:" << outPortNum <<  endl;
 
 	 p_tbl[(inPortNum - 1)*p_node->numPorts + outPortNum - 1] = RT_USED;
@@ -174,7 +174,7 @@ int CrdLoopMarkRouteByLFT (
 	 inPortNum = p_remotePort->num;
 
 	 // check if we are done:
-	 done = ((p_remotePort->base_lid <= dLid) && 
+	 done = ((p_remotePort->base_lid <= dLid) &&
 				(p_remotePort->base_lid+lidStep - 1 >= dLid));
 
 	 p_node = p_remotePort->p_node;
@@ -191,23 +191,23 @@ int CrdLoopMarkRouteByLFT (
 
 // Go over all CA to CA paths and mark the output links
 // input links connections on these paths in the routing tables.
-int 
+int
 CrdLoopPopulateRtTbls(IBFabric *p_fabric) {
   unsigned int lidStep = 1 << p_fabric->lmc;
   int anyError = 0, paths = 0;
   unsigned int i,j;
 
-  // go over all ports in the fabric 
+  // go over all ports in the fabric
   for ( i = p_fabric->minLid; i <= p_fabric->maxLid; i += lidStep) {
-	 IBPort *p_srcPort = p_fabric->PortByLid[i]; 
-	 
+	 IBPort *p_srcPort = p_fabric->PortByLid[i];
+	
 	 if (!p_srcPort || (p_srcPort->p_node->type == IB_SW_NODE)) continue;
-	 
+	
 	 unsigned int sLid = p_srcPort->base_lid;
 
 	 // go over all the rest of the ports:
 	 for ( j = p_fabric->minLid; j <= p_fabric->maxLid; j += lidStep ) {
-		IBPort *p_dstPort = p_fabric->PortByLid[j]; 
+		IBPort *p_dstPort = p_fabric->PortByLid[j];
 
 		// Avoid tracing to itself
 		if (i == j) continue;
@@ -221,15 +221,15 @@ CrdLoopPopulateRtTbls(IBFabric *p_fabric) {
 		// go over all LMC combinations:
 		for (unsigned int l = 0; l < lidStep; l++) {
 		  paths++;
-		  
+		
 		  // Trace the path but record the input to output ports used.
 		  if (CrdLoopMarkRouteByLFT(p_fabric, sLid + l, dLid + l)) {
-			 cout << "-E- Fail to find a path from:" 
+			 cout << "-E- Fail to find a path from:"
 					<< p_srcPort->p_node->name << "/" << p_srcPort->num
 					<< " to:" << p_dstPort->p_node->name << "/" << p_dstPort->num
 					<< endl;
 			 anyError++;
-		  } 
+		  }
 		} // all LMC lids
 	 } // all targets
   } // all sources
@@ -238,20 +238,20 @@ CrdLoopPopulateRtTbls(IBFabric *p_fabric) {
 	 cout << "-E- Fail to traverse:" << anyError << " CA to CA paths" << endl;
 	 return 1;
   }
-  
+
   cout << "-I- Marked " << paths << " CA to CA Paths" << endl;
   return 0;
-} 
+}
 
 //////////////////////////////////////////////////////////////////////////////
 
 // BFS from all CA's and require all inputs for an
 // output node to be marked visited to go through it.
-int 
+int
 CrdLoopBfsFromCAs(IBFabric *p_fabric) {
   int loops = 0;
   list< IBPort *> thisStepPorts, nextStepPorts;
-  
+
   // go over all CA nodes and track the input ports for next step
   IBNode *p_node;
   IBPort *p_port;
@@ -259,7 +259,7 @@ CrdLoopBfsFromCAs(IBFabric *p_fabric) {
   for( map_str_pnode::iterator nI = p_fabric->NodeByName.begin();
 		 nI != p_fabric->NodeByName.end();
 		 nI++) {
-	 
+	
 	 p_node = (*nI).second;
 	 if (p_node->type != IB_CA_NODE) continue;
 	
@@ -326,7 +326,7 @@ CrdLoopBfsFromCAs(IBFabric *p_fabric) {
 	 thisStepPorts = nextStepPorts;
   }
 
-  cout << "-I- Propagted ranking through Fabric in:" 
+  cout << "-I- Propagted ranking through Fabric in:"
 		 << loops << " BFS steps" << endl;
   return 0;
 }
@@ -334,18 +334,18 @@ CrdLoopBfsFromCAs(IBFabric *p_fabric) {
 //////////////////////////////////////////////////////////////////////////////
 
 // Dump Routing Tables:
-int 
+int
 CrdLoopDumpRtTbls(IBFabric *p_fabric) {
-  // go over all switches in the fabric 
+  // go over all switches in the fabric
   IBNode *p_node;
 
-  // Go over all SW nodes in the fabric and build a table 
+  // Go over all SW nodes in the fabric and build a table
   // of input to output ports links. Each element should track
   // effect and traversal flags.
   for( map_str_pnode::iterator nI = p_fabric->NodeByName.begin();
 		 nI != p_fabric->NodeByName.end();
 		 nI++) {
-	 
+	
 	 p_node = (*nI).second;
 	 if (p_node->type != IB_SW_NODE) continue;
 
@@ -356,30 +356,30 @@ CrdLoopDumpRtTbls(IBFabric *p_fabric) {
 
 	 // header
 	 cout << "I\\O ";
-	 for (unsigned int outPortNum = 1; outPortNum <= p_node->numPorts; 
-         outPortNum++) 
+	 for (unsigned int outPortNum = 1; outPortNum <= p_node->numPorts;
+         outPortNum++)
 		cout << setw(3) << outPortNum << " ";
 	 cout << endl;
 
 	 // Now go over all out ports and check all input port.
-	 for (unsigned int inPortNum = 1; inPortNum <= p_node->numPorts; 
+	 for (unsigned int inPortNum = 1; inPortNum <= p_node->numPorts;
          inPortNum++) {
 		cout << setw(3) << inPortNum <<  " ";
 		// go over all the out ports marked by this input port:
-		for (unsigned int outPortNum = 1; outPortNum <= p_node->numPorts; 
+		for (unsigned int outPortNum = 1; outPortNum <= p_node->numPorts;
            outPortNum++) {
 		  int idx = (inPortNum - 1)*p_node->numPorts + outPortNum - 1;
 		  if (p_tbl[idx] == RT_USED)
 			 cout << setw(3) << "USE ";
-		  else if (p_tbl[idx] == (RT_USED | RT_VISITED)) 
+		  else if (p_tbl[idx] == (RT_USED | RT_VISITED))
 			 cout << setw(3) << "VIS ";
 		  else {
-			 cout << setw(3) << "   ";			 
-		  } 
+			 cout << setw(3) << "   ";			
+		  }
 		}
 		cout << endl;
 	 }
-  }  
+  }
   return(0);
 }
 
@@ -387,17 +387,17 @@ CrdLoopDumpRtTbls(IBFabric *p_fabric) {
 
 // Trace a loop through a given node ports pair
 // We DFS fowrard and report all nodes of all the loops found.
-int 
-CrdLoopTraceLoop(IBFabric *p_fabric, 
-					  IBNode *p_endNode,  
-					  int inPortNum, 
-					  IBNode *p_startNode, 
+int
+CrdLoopTraceLoop(IBFabric *p_fabric,
+					  IBNode *p_endNode,
+					  int inPortNum,
+					  IBNode *p_startNode,
 					  int outPortNum,
 					  string path = string(""),
 					  int hops = 0,
                  int doNotPrintPath = 0
 					  ) {
-  
+
   // find the other end of the link if any
   IBPort *p_port = p_startNode->getPort(outPortNum);
 
@@ -410,13 +410,13 @@ CrdLoopTraceLoop(IBFabric *p_fabric,
   if (p_remNode->type != IB_SW_NODE) return 0;
 	
   uint8_t *p_tbl = (uint8_t*)p_remNode->appData1.ptr;
-  
-  // if it is the target end node and port 
+
+  // if it is the target end node and port
   if (p_remNode == p_endNode && p_port->p_remotePort->num == inPortNum) {
 	 // print the path
 	 cout << "--------------------------------------------" << endl;
 	 cout << "-E- Found a credit loop on:" << p_endNode->name
-			<< " from port:" << inPortNum << " to port:" 
+			<< " from port:" << inPortNum << " to port:"
 			<< outPortNum << endl;
     if (! doNotPrintPath) {
       cout << path << endl;
@@ -425,18 +425,18 @@ CrdLoopTraceLoop(IBFabric *p_fabric,
 	 return(1);
   } else {
 	 // track the number of downwards paths found.
-	 int numPaths = 0; 
+	 int numPaths = 0;
 	 static char buf[128];
 
 	 // we will track where we come from
-	 sprintf(buf, "%s %u -> ", 
+	 sprintf(buf, "%s %u -> ",
 				p_remNode->name.c_str(),p_port->p_remotePort->num);
-	 
-	 // it is possible we already visited this node since we trace a 
+	
+	 // it is possible we already visited this node since we trace a
 	 // loop that is different then our own.
 	 if (path.find(buf) != string::npos) {
-      if (! doNotPrintPath) 
-        cout << "-W- Marking a 'scroll' side loop at:" 
+      if (! doNotPrintPath)
+        cout << "-W- Marking a 'scroll' side loop at:"
              << p_remNode->name << "/" << p_port->p_remotePort->num << endl;
 		
 		// to avoid going into this scroll again
@@ -444,10 +444,10 @@ CrdLoopTraceLoop(IBFabric *p_fabric,
 		// path as a scroll:
 		return -1;
 	 }
-	 
+	
 	 // abort if hops count is bigger then 1000
 	 if (hops > 1000) {
-      if (! doNotPrintPath)       
+      if (! doNotPrintPath)
         cout << "-W- Aborting path:" << path << endl;
 		return 0;
 	 }
@@ -463,11 +463,11 @@ CrdLoopTraceLoop(IBFabric *p_fabric,
 		if (p_tbl[idx] == RT_USED) {
 		  // traverse forward
 		  sprintf(buf, "%u", pn);
-		  int foundPaths = 
+		  int foundPaths =
 			 CrdLoopTraceLoop(p_fabric, p_endNode, inPortNum,
 									p_remNode, pn, fwdPath + string(buf), hops++,
                            doNotPrintPath);
-		  
+		
 		  // we might have encountered a scroll (return value < 0)
 		  // so we sould ignore it in the global count.
 		  if (foundPaths > 0) numPaths += foundPaths;
@@ -484,8 +484,8 @@ CrdLoopTraceLoop(IBFabric *p_fabric,
 
 //////////////////////////////////////////////////////////////////////////////
 
-// Report all Switch ports that are still marked as not 
-// fully visited.  
+// Report all Switch ports that are still marked as not
+// fully visited.
 int
 CrdLoopReportLoops(IBFabric *p_fabric, int doNotPrintPath) {
   int anyError = 0;
@@ -494,30 +494,30 @@ CrdLoopReportLoops(IBFabric *p_fabric, int doNotPrintPath) {
   // that was not marked as visited.
   IBNode *p_node;
 
-  // Go over all SW nodes in the fabric and build a table 
+  // Go over all SW nodes in the fabric and build a table
   // of input to output ports links. Each element should track
   // effect and traversal flags.
   for( map_str_pnode::iterator nI = p_fabric->NodeByName.begin();
 		 nI != p_fabric->NodeByName.end();
 		 nI++) {
-	 
+	
 	 p_node = (*nI).second;
 	 if (p_node->type != IB_SW_NODE) continue;
 	
 	 uint8_t *p_tbl = (uint8_t*)p_node->appData1.ptr;
-	 
+	
 	 // Now go over all out ports and check all input port.
 	 for (unsigned int inPortNum = 1; inPortNum <= p_node->numPorts;
          inPortNum++) {
 		// go over all the out ports marked by this input port:
-		for (unsigned int outPortNum = 1; outPortNum <= p_node->numPorts; 
+		for (unsigned int outPortNum = 1; outPortNum <= p_node->numPorts;
            outPortNum++) {
 		  int idx = (inPortNum - 1)*p_node->numPorts + outPortNum - 1;
-		  
+		
 		  if (p_tbl[idx] == RT_USED) {
 			 char buf[16];
 			 sprintf(buf, " %u", outPortNum);
-			 int loops = CrdLoopTraceLoop(p_fabric, p_node, inPortNum, 
+			 int loops = CrdLoopTraceLoop(p_fabric, p_node, inPortNum,
                                        p_node, outPortNum,
 													p_node->name + string(buf),
                                        0, doNotPrintPath
@@ -526,15 +526,15 @@ CrdLoopReportLoops(IBFabric *p_fabric, int doNotPrintPath) {
 		  }
 		}
 	 }
-  } 
+  }
   if (anyError) cout << "--------------------------------------" << endl;
   return anyError;
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
-// Prepare the data model 
-int 
+// Prepare the data model
+int
 CrdLoopPrepare(IBFabric *p_fabric) {
   IBNode *p_node;
 
@@ -542,7 +542,7 @@ CrdLoopPrepare(IBFabric *p_fabric) {
   for( map_str_pnode::iterator nI = p_fabric->NodeByName.begin();
 		 nI != p_fabric->NodeByName.end();
 		 nI++) {
-	 
+	
 	 p_node = (*nI).second;
 	 if (p_node->type != IB_SW_NODE) continue;
 	
@@ -553,8 +553,8 @@ CrdLoopPrepare(IBFabric *p_fabric) {
   return 0;
 }
 
-// Cleanup the data model 
-int 
+// Cleanup the data model
+int
 CrdLoopCleanup(IBFabric *p_fabric) {
   IBNode *p_node;
 
@@ -562,7 +562,7 @@ CrdLoopCleanup(IBFabric *p_fabric) {
   for( map_str_pnode::iterator nI = p_fabric->NodeByName.begin();
 		 nI != p_fabric->NodeByName.end();
 		 nI++) {
-	 
+	
 	 p_node = (*nI).second;
 	 if (p_node->type != IB_SW_NODE) continue;
 	
@@ -580,21 +580,21 @@ CrdLoopCleanup(IBFabric *p_fabric) {
 // Top Level Subroutine:
 int
 CrdLoopAnalyze(IBFabric *p_fabric) {
-  
+
   cout << "-I- Analyzing Fabric for Credit Loops (one VL used)." << endl;
 
   CrdLoopPrepare(p_fabric);
 
   // Allocate routing tables on all switches (appData1.ptr)
   CrdLoopInitRtTbls(p_fabric);
-  
+
   // Go over all CA to CA paths and mark the output links
   // input links connections on these paths
   if (CrdLoopPopulateRtTbls(p_fabric)) {
 	 cout << "-E- Fail to populate the Routing Tables." << endl;
 	 return(1);
   }
-  
+
   // CrdLoopDumpRtTbls(p_fabric);
 
   // Start BFS from all CA's and require all inputs for an
@@ -603,9 +603,9 @@ CrdLoopAnalyze(IBFabric *p_fabric) {
 	 cout << "-E- Fail to BFS from all CA nodes through the Routing Tables." << endl;
 	 return(1);
   }
-  
-  // Report all Switch ports that are still marked as not 
-  // fully visited.  
+
+  // Report all Switch ports that are still marked as not
+  // fully visited.
   int numLoopPorts;
   int doNotPrintPath = 1;
   if ((numLoopPorts = CrdLoopReportLoops(p_fabric, doNotPrintPath))) {
@@ -617,7 +617,7 @@ CrdLoopAnalyze(IBFabric *p_fabric) {
 
   // cleanup:
   CrdLoopCleanup(p_fabric);
-  
+
   return 0;
 }
 

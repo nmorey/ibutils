@@ -13,7 +13,7 @@ Options:
 -g sim-guids-file = dump file to use. default is ./ibmgtsim.guids.txt
 
 LIMITATIONS:
-Only HCAs are supported. 
+Only HCAs are supported.
 Single HCA per guid.
 
 EOF
@@ -69,7 +69,7 @@ HW revision:   0xa1
 FW revision:   0x300020002
 EOF
 
-# Port1 
+# Port1
 mkdir -p $node_name/ca1/port1
 
 # port info
@@ -98,7 +98,7 @@ cat <<EOF > $node_name/ca1/port1/gid_table
 [  0] fe80:0000:0000:0000:$pg1
 EOF
 
-# Port2 
+# Port2
 mkdir -p $node_name/ca1/port2
 
 # port info

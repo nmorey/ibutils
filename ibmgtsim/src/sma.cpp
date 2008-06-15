@@ -83,7 +83,7 @@ ibms_dump_mad(
     break;
   default:
     MSGREG(warn1, 'W', "No handler written yet for this attribute:$", "ibms_dump_mad");
-    
+
     MSGSND(warn1, cl_ntoh16(madMsg.header.attr_id));
     break;
   }
@@ -297,7 +297,7 @@ void IBMSSma::initPortInfo()
 
     tmpPortInfo.subnet_timeout = 0;
     tmpPortInfo.resp_time_value = 0x6;
-       
+
   }
   else
   {
@@ -352,9 +352,9 @@ void IBMSSma::initPortInfo()
       ib_port_info_set_link_speed_sup( linkSpeed, &tmpPortInfo);
       // LinkSpeedEnabled and LinkSpeedActive
       tmpPortInfo.link_speed = linkSpeed | (pNodePortData->speed << 4);
-           
+
     }
-       
+
     // PortPhysState and LinkDownDefaultState
     ib_port_info_set_port_phys_state( 5, &tmpPortInfo);
     ib_port_info_set_link_down_def_state( &tmpPortInfo, 2);
@@ -367,7 +367,7 @@ void IBMSSma::initPortInfo()
 	 tmpPortInfo.mtu_cap = 4;
     tmpPortInfo.guid_cap = 32;
     tmpPortInfo.resp_time_value = 20;
-           
+
     pSimNode->nodePortsInfo.push_back( tmpPortInfo );
     i++;
   }
@@ -382,7 +382,7 @@ IBMSSma::IBMSSma(IBMSNode *pSNode, list_uint16 mgtClasses) :
   MSG_ENTER_FUNC;
 
   IBNode*     pNodeData;
- 
+
   pNodeData = pSNode->getIBNode();
   //Init NodeInfo structure of the node
   initNodeInfo();
@@ -395,7 +395,7 @@ IBMSSma::IBMSSma(IBMSNode *pSNode, list_uint16 mgtClasses) :
   initVlArbitTable();
 
   initPKeyTables();
-   
+
   MSG_EXIT_FUNC;
 };
 
@@ -417,12 +417,12 @@ int IBMSSma::nodeDescMad(ibms_mad_msg_t &respMadMsg)
   if (pSimNode->nodeInfo.node_type != 2)
   {
     desc = (pSimNode->getIBNode())->p_system->name + string(" HCA-1 (Mellanox HCA)");
-  } 
+  }
   else
   {
     desc =  (pSimNode->getIBNode())->p_system->name + string(" Infiniscale-III Mellanox Technologies");
   }
-  
+
   int descLen = desc.size();
   if (descLen > 64) descLen = 64;
   memcpy(pRespMad->data, desc.c_str(), descLen);
@@ -430,7 +430,7 @@ int IBMSSma::nodeDescMad(ibms_mad_msg_t &respMadMsg)
   MSG_EXIT_FUNC;
   return 0;
 }
-                                
+
 int IBMSSma::nodeInfoMad(ibms_mad_msg_t &respMadMsg, uint8_t inPort)
 {
   MSG_ENTER_FUNC;
@@ -444,7 +444,7 @@ int IBMSSma::nodeInfoMad(ibms_mad_msg_t &respMadMsg, uint8_t inPort)
   memcpy (pRespMad->data, &(pSimNode->nodeInfo), sizeof(pSimNode->nodeInfo));
 
   /* provide the port guid for CA ports */
-  if (pSimNode->nodeInfo.node_type != 2) 
+  if (pSimNode->nodeInfo.node_type != 2)
   {
     ib_node_info_t *p_node_info = (ib_node_info_t *)pRespMad->data;
     IBPort *pPort = pSimNode->getIBNode()->getPort(inPort);
@@ -465,10 +465,10 @@ int IBMSSma::lftMad(ibms_mad_msg_t &respMadMsg, ibms_mad_msg_t &reqMadMsg)
   uint8_t               lftBlock[64];
   uint32_t            lftIndex = 0;
   uint32_t            iter = 0;
-   
+
   pRespMad = (ib_smp_t*) &respMadMsg.header;
 
-  if ((uint16_t)(cl_ntoh16(pSimNode->switchInfo.lin_cap)/64) < 
+  if ((uint16_t)(cl_ntoh16(pSimNode->switchInfo.lin_cap)/64) <
       cl_ntoh32(reqMadMsg.header.attr_mod))
   {
     MSGREG(err0, 'E',
@@ -556,7 +556,7 @@ int IBMSSma::vlArbMad(ibms_mad_msg_t &respMadMsg, ibms_mad_msg_t &reqMadMsg, uin
   }
   pRespMad = (ib_smp_t*) &respMadMsg.header;
   pReqMad = (ib_smp_t*) &reqMadMsg.header;
-   
+
   MSGREG(inf0, 'V', "VL Arbitration entry handled for port $ and priority $ ", "vlArbMad");
   MSGSND(inf0, portIndex, priorityIndex);
 
@@ -654,7 +654,7 @@ int IBMSSma::mftMad(ibms_mad_msg_t &respMadMsg, ibms_mad_msg_t &reqMadMsg)
   uint16_t            mftTableEntryIndex = (cl_ntoh32(reqMadMsg.header.attr_mod) & IB_MCAST_BLOCK_ID_MASK_HO);
   uint8_t             mftPortEntryIndex = (cl_ntoh32(reqMadMsg.header.attr_mod) >> IB_MCAST_POSITION_SHIFT);
   ib_mft_table_t*     pMftEntryElm;
-   
+
   pRespMad = (ib_smp_t*) &respMadMsg.header;
   pReqMad = (ib_smp_t*) &reqMadMsg.header;
 
@@ -662,7 +662,7 @@ int IBMSSma::mftMad(ibms_mad_msg_t &respMadMsg, ibms_mad_msg_t &reqMadMsg)
   // 1. AM bits 0-8 =< SwitchInfo:MftCap
   // 2. ((((AM bits 28-31) + 1)*16)-1) <= NodeInfo:NumberOfPort
   if ((cl_ntoh16(pSimNode->switchInfo.mcast_cap)/IB_MCAST_BLOCK_SIZE) < mftTableEntryIndex)
-  { 
+  {
     MSGREG(err0, 'E',
            "Req. mft entry block is $ while SwitchInfo MFT Cap is $ !",
            "mftMad");
@@ -672,7 +672,7 @@ int IBMSSma::mftMad(ibms_mad_msg_t &respMadMsg, ibms_mad_msg_t &reqMadMsg)
     MSG_EXIT_FUNC;
     return status;
   }
-  
+
   if (mftPortEntryIndex * 16 > pSimNode->nodeInfo.num_ports)
   {
     MSGREG(err1, 'E',
@@ -680,7 +680,7 @@ int IBMSSma::mftMad(ibms_mad_msg_t &respMadMsg, ibms_mad_msg_t &reqMadMsg)
            "mftMad");
     MSGSND(err1, mftPortEntryIndex, pSimNode->nodeInfo.num_ports);
     status = IB_MAD_STATUS_INVALID_FIELD;
-    
+
     MSG_EXIT_FUNC;
     return status;
   }
@@ -702,7 +702,7 @@ int IBMSSma::mftMad(ibms_mad_msg_t &respMadMsg, ibms_mad_msg_t &reqMadMsg)
 		 MSG_EXIT_FUNC;
 		 return status;
 	 }
-		 
+		
     pMftEntryElm = &(pSimNode->switchMftPortsEntry[mftPortEntryIndex][mftTableEntryIndex]);
     memcpy ((void*)(pRespMad->data), (void*)(pMftEntryElm), sizeof(ib_mft_table_t));
   }
@@ -719,7 +719,7 @@ int IBMSSma::mftMad(ibms_mad_msg_t &respMadMsg, ibms_mad_msg_t &reqMadMsg)
 		 vector < ib_mft_table_t > tmpVec;
 		 pSimNode->switchMftPortsEntry.push_back(tmpVec);
 	 }
-	 
+	
 	 for (i = pSimNode->switchMftPortsEntry[mftPortEntryIndex].size(); i <= mftTableEntryIndex; i++)
 	 {
 		 ib_mft_table_t tmp;
@@ -731,7 +731,7 @@ int IBMSSma::mftMad(ibms_mad_msg_t &respMadMsg, ibms_mad_msg_t &reqMadMsg)
     memcpy ((void*)(pMftEntryElm), (void*)(pReqMad->data), sizeof(ib_mft_table_t));
 	 char buff[16];
 	sprintf(buff,"0x%04x", cl_ntoh16(pMftEntryElm->mft_entry[0]));
-	MSGSND(inf9, pSimNode->getIBNode()->name, 
+	MSGSND(inf9, pSimNode->getIBNode()->name,
 			mftPortEntryIndex, mftTableEntryIndex, buff);
     memcpy ((void*)(pRespMad->data), (void*)(pReqMad->data), sizeof(ib_mft_table_t));
   }
@@ -831,7 +831,7 @@ int IBMSSma::setPortInfoGeneral(ibms_mad_msg_t &respMadMsg,
   pNodePortInfo->local_port_num = inPort;
   pNodePortInfo->m_key = pReqPortInfo->m_key;
   pNodePortInfo->subnet_prefix = pReqPortInfo->subnet_prefix;
-           
+
   pNodePortInfo->m_key_lease_period = pReqPortInfo->m_key_lease_period;
   // TODO: check LinkWidthEnabled parameter from the SM (check very complexed)
   if (pReqPortInfo->link_width_enabled)
@@ -952,11 +952,11 @@ int IBMSSma::setIBPortBaseLid(
          "setIBPortBaseLid");
   pNode = pSimNode->getIBNode();
 
-  /* 
-     We need a special case for switch port 0 changing 
-     the reason is that there is no IBPort since they are all physical 
+  /*
+     We need a special case for switch port 0 changing
+     the reason is that there is no IBPort since they are all physical
      what we do is to search for port 1 - N and set them properly.
-     Then we find and change the port by lid table. 
+     Then we find and change the port by lid table.
   */
   if (pNode->type == IB_SW_NODE)
   {
@@ -976,25 +976,25 @@ int IBMSSma::setIBPortBaseLid(
   {
     minPortNum = maxPortNum = inPortNum;
   }
-  
+
   for (unsigned int portNum = minPortNum; portNum <= maxPortNum; portNum++)
   {
     pPort = pNode->getPort(portNum);
-    if (! pPort) 
+    if (! pPort)
     {
       MSGREG(err9, 'E', "No Port $ on node:$!", "setIBPortBaseLid");
       MSGSND(err9, portNum, pNode->name);
       return 1;
     }
-    
+
     MSGSND(inf0, pNode->name, portNum, base_lid);
-    
+
     /* keep track of the previous lid */
     uint16_t prevLid = pPort->base_lid;
-    
+
     /* assign the lid */
     pPort->base_lid = base_lid;
-    
+
     /* make sure the vector of port by lid has enough entries */
     if (pNode->p_fabric->PortByLid.size() <= base_lid)
     {
@@ -1007,15 +1007,15 @@ int IBMSSma::setIBPortBaseLid(
         pNode->p_fabric->PortByLid[portLidIndex] = NULL;
       }
     }
-    
+
     /* keep track of the max lid */
     if (  pNode->p_fabric->maxLid  < base_lid )
       pNode->p_fabric->maxLid = base_lid;
-    
+
     /* need to cleanup the previous entry */
     if (prevLid < pNode->p_fabric->PortByLid.size())
       pNode->p_fabric->PortByLid[prevLid] = NULL;
-    
+
     /* cleanup old base_lid for ports that used to have that lid ... */
     IBPort *pPrevPort = pNode->p_fabric->PortByLid[base_lid];
     if (pPrevPort && (pPrevPort != pPort))
@@ -1025,7 +1025,7 @@ int IBMSSma::setIBPortBaseLid(
       if ((pNode->type != IB_SW_NODE) || (pPrevPort->p_node != pNode))
         pPrevPort->base_lid = 0;
     }
-    
+
   }
 
   /* now set the new port by lid */
@@ -1046,7 +1046,7 @@ int IBMSSma::setPortInfoSwBasePort(ibms_mad_msg_t &respMadMsg,
   ib_smp_t*           pReqMad;
   ib_port_info_t*     pReqPortInfo;
   ib_port_info_t*     pNodePortInfo;
-  
+
 
   pReqMad = (ib_smp_t*) &reqMadMsg.header;
   pReqPortInfo = (ib_port_info_t*)(pReqMad->data);
@@ -1074,7 +1074,7 @@ int IBMSSma::setPortInfoSwBasePort(ibms_mad_msg_t &respMadMsg,
         MSGREG(inf1, 'V', "Lid does not require change by the SubnSet !", "setPortInfoSwBasePort");
         MSGSND(inf1);
     }
-    
+
   }
 
   if ((pReqPortInfo->master_sm_base_lid == 0) || (cl_ntoh16(pReqPortInfo->master_sm_base_lid) >= 0xbfff))
@@ -1138,7 +1138,7 @@ int IBMSSma::setPortInfoSwExtPort(ibms_mad_msg_t &respMadMsg,
   {
     uint8_t     nMtuReq;
     uint8_t     mtuCap;
-                                                       
+
     nMtuReq = ib_port_info_get_neighbor_mtu(pReqPortInfo);
     mtuCap = ib_port_info_get_mtu_cap(pNodePortInfo);
     if ((nMtuReq == 0) || (nMtuReq > 5) || (nMtuReq > mtuCap))
@@ -1175,9 +1175,9 @@ int IBMSSma::setPortInfoSwExtPort(ibms_mad_msg_t &respMadMsg,
   }
 
   // TODO check if legal
-  pNodePortInfo->vl_enforce = 
+  pNodePortInfo->vl_enforce =
 	 pNodePortInfo->vl_enforce & 0xf0 | pReqPortInfo->vl_enforce & 0xf;
-  
+
   MSG_EXIT_FUNC;
   return status;
 }
@@ -1207,8 +1207,8 @@ int IBMSSma::setPortInfoHca(ibms_mad_msg_t &respMadMsg,
     MSG_EXIT_FUNC;
     return status;
   }
-  else 
-  { 
+  else
+  {
     if (pNodePortInfo->base_lid != pReqPortInfo->base_lid)
     {
       setIBPortBaseLid(pSimNode, portNum, cl_ntoh16(pReqPortInfo->base_lid));
@@ -1294,7 +1294,7 @@ int IBMSSma::setPortInfo(ibms_mad_msg_t &respMadMsg,
 {
   MSG_ENTER_FUNC;
   ib_net16_t          status = 0;
-   
+
   status = setPortInfoGeneral(respMadMsg, reqMadMsg, inPort, portInfoElm, portNum);
   if (status)
   {
@@ -1310,7 +1310,7 @@ int IBMSSma::setPortInfo(ibms_mad_msg_t &respMadMsg,
     //TODO add different handling for: Enhanced Port0
     //MSGREG(inf4, 'V', "PortInfo SubnSet of Switch Enhanced Port0 !", "setPortInfo");
     //MSGSND(inf4);
-               
+
     //  2) Base Port0
     if (portNum == 0)
     {
@@ -1382,7 +1382,7 @@ int IBMSSma::portInfoMad(ibms_mad_msg_t &respMadMsg, ibms_mad_msg_t &reqMadMsg, 
 
       portInfoElm.local_port_num = inPort;
       memcpy (pRespMad->data, &(portInfoElm), sizeof(portInfoElm));
-    }                                                               
+    }
   }
   else
   {
@@ -1410,7 +1410,7 @@ int IBMSSma::pKeyMad(ibms_mad_msg_t &respMadMsg, ibms_mad_msg_t &reqMadMsg, uint
     //HCA
     portNum = inPort;
     if (portNum == 0) portNum = 1;
-       
+
   }
   else if (pSimNode->nodeInfo.node_type == IB_NODE_TYPE_SWITCH)
   {   //Switch
@@ -1531,7 +1531,7 @@ int IBMSSma::processMad(uint8_t inPort, ibms_mad_msg_t &madMsg)
       MSG_EXIT_FUNC;
       return IB_MAD_STATUS_UNSUP_METHOD_ATTR;
     }
-       
+
     status = nodeDescMad(respMadMsg);
     break;
   case IB_MAD_ATTR_NODE_INFO:
@@ -1545,7 +1545,7 @@ int IBMSSma::processMad(uint8_t inPort, ibms_mad_msg_t &madMsg)
       MSG_EXIT_FUNC;
       return IB_MAD_STATUS_UNSUP_METHOD_ATTR;
     }
-       
+
     status = nodeInfoMad(respMadMsg, inPort);
     break;
   case IB_MAD_ATTR_PORT_INFO:
@@ -1599,13 +1599,13 @@ int IBMSSma::processMad(uint8_t inPort, ibms_mad_msg_t &madMsg)
     MSG_EXIT_FUNC;
     return status;
     break;
-  }                       
+  }
 
   //ib_mad_init_response( respMadMsg, respMadMsg, status);
   {
     ib_smp_t*   pRespSmp = (ib_smp_t*)(&respMadMsg.header);
     ib_smp_t*   pReqSmp = (ib_smp_t*)(&madMsg.header);
-       
+
     respMadMsg.addr = madMsg.addr;
     respMadMsg.addr.slid = madMsg.addr.dlid;
     respMadMsg.addr.dlid = madMsg.addr.slid;
@@ -1625,7 +1625,7 @@ int IBMSSma::processMad(uint8_t inPort, ibms_mad_msg_t &madMsg)
 
   //send response
   ibms_dump_mad( respMadMsg, SND);
-  pSimNode->getSim()->getDispatcher()->dispatchMad(pSimNode, inPort, 
+  pSimNode->getSim()->getDispatcher()->dispatchMad(pSimNode, inPort,
                                                    respMadMsg);
 
   MSG_EXIT_FUNC;

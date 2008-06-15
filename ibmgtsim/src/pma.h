@@ -57,19 +57,19 @@ class IBMSPma : IBMSMadProcessor {
   int pmaMadValidation(ibms_mad_msg_t &madMsg);
 
   /* ----------------------------
-        Attributes Handling 
+        Attributes Handling
      ----------------------------*/
-  int pmaPortCounters(ib_pm_counters_t &respMadMsg, 
-                      ib_pm_counters_t &reqMadMsg, 
+  int pmaPortCounters(ib_pm_counters_t &respMadMsg,
+                      ib_pm_counters_t &reqMadMsg,
                       uint8_t         inPort);
 
 
- public:  
+ public:
   /* Top level of handling the PMA MAD. Might result with a call to the
      outstandingMads->push() with a result                     */
   int processMad(uint8_t inPort, ibms_mad_msg_t &madMsg);
 
-  /* Constructor - should initial the specific class elements 
+  /* Constructor - should initial the specific class elements
      in the node. */
   IBMSPma(IBMSNode *pSNode, uint16_t mgtClass);
 

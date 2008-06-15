@@ -5,13 +5,13 @@ puts "FLOW: have some bad lid assignments - either 0 or duplicated ..."
 proc getNodesByRandomOreder {fabric} {
    # get number of nodes:
    set nodesByName [IBFabric_NodeByName_get $fabric]
-   
+
    set nodeNOrderList {}
    foreach nodeNameNId [IBFabric_NodeByName_get $fabric] {
       set node [lindex $nodeNameNId 1]
       lappend nodeNOrderList [list $node [rmRand]]
    }
-   
+
    set randNodes {}
    foreach nodeNRnd [lsort -index 1 -real $nodeNOrderList] {
       lappend randNodes [lindex $nodeNRnd 0]
@@ -22,7 +22,7 @@ proc getNodesByRandomOreder {fabric} {
 # randomly select a bad lid assignment flow and do it:
 proc injectLidErrorOnNode {node} {
    # first decide which error to inject:
-   set errTypes {zeroLid dupLid} 
+   set errTypes {zeroLid dupLid}
    set errType [lindex $errTypes [expr int([rmRand]*[llength $errTypes])]]
 
    switch $errType {

@@ -120,7 +120,7 @@ typedef struct _ibms_mad_addr
 #include <complib/cl_packoff.h>
 /*
 * FIELDS
-*	sl 
+*	sl
 *
 *	pkey_index
 *
@@ -218,8 +218,8 @@ typedef struct _ibms_mad_msg
 #include <complib/cl_packoff.h>
 /*
 * FIELDS
-*	mad_hdr 
-*		MAD header 
+*	mad_hdr
+*		MAD header
 *
 *	payload
 *		MAD data
@@ -260,7 +260,7 @@ typedef struct _ibms_bind_msg
 /*
 * FIELDS
 * port
-* 
+*
 * qpn
 *
 * mgmt_class
@@ -296,9 +296,9 @@ typedef struct _ibms_cap_msg
 #include <complib/cl_packoff.h>
 /*
 * FIELDS
-* capabilities 
+* capabilities
 *   each bit might be set or cleared to mark a capability exists or not.
-* 
+*
 * mask
 *   each bit might be 1 or 0 to mark the scope of the operation
 *

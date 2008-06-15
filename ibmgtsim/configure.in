@@ -22,8 +22,8 @@ AM_MAINTAINER_MODE
 dnl Required for cases make defines a MAKE=make ??? Why
 AC_PROG_MAKE_SET
 
-dnl save the cflags befor calling AC_PROG_CXX and reevert after 
-dnl to avoid the -g -O2 
+dnl save the cflags befor calling AC_PROG_CXX and reevert after
+dnl to avoid the -g -O2
 save_cflags="$CFLAGS"
 save_cxxflags="$CXXFLAGS"
 
@@ -85,13 +85,13 @@ AC_ARG_ENABLE(debug,
 esac],[debug=false])
 AM_CONDITIONAL(DEBUG, test x$debug = xtrue)
 
-dnl Define an input config option to allow the simulator know where 
-dnl the IBDM is installed. This should point to one directory above 
+dnl Define an input config option to allow the simulator know where
+dnl the IBDM is installed. This should point to one directory above
 dnl the include/ibdm directory holding Fabric.h
 OPENIB_APP_IBDM
 
-dnl Define an input config option to allow the simulator know where 
-dnl the OSM is installed. This should point to one directory above 
+dnl Define an input config option to allow the simulator know where
+dnl the OSM is installed. This should point to one directory above
 dnl the include directory holding opensm/osm_build_id.h
 OPENIB_APP_OSM
 

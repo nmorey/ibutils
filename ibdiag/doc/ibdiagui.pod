@@ -8,8 +8,8 @@ ibdiagui [-c <count>] [-v] [-r] [-o <out-dir>]
      [-t <topo-file>] [-s <sys-name>] [-i <dev-index>] [-p <port-num>]
      [-pm] [-pc] [-P <PM counter>=<Trash Limit>]
      [-lw <1x|4x|12x>] [-ls <2.5|5|10>]
-    
- 
+
+
 =head1 DESCRIPTION
 
   ibdiagui is a GUI wrapper for ibdiagnet.

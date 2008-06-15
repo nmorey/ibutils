@@ -44,7 +44,7 @@
 #include "simmsg.h"
 #include <inttypes.h>
 
-#ifndef PRIx64 
+#ifndef PRIx64
 # if __WORDSIZE == 64
 #  define __PRI64_PREFIX   "l"
 #  define __PRIPTR_PREFIX  "l"
@@ -57,7 +57,7 @@
 
 std::string
 __ibms_dump_conn_msg(
-  IN const ibms_client_msg_t *p_msg) 
+  IN const ibms_client_msg_t *p_msg)
 {
   char buff[32];
   char msg[512];
@@ -76,7 +76,7 @@ __ibms_dump_conn_msg(
 
 std::string
 __ibms_dump_disconn_msg(
-  IN const ibms_client_msg_t *p_msg) 
+  IN const ibms_client_msg_t *p_msg)
 {
   char buff[32];
   char msg[512];
@@ -120,7 +120,7 @@ __ibms_dump_bind_msg(
     if (p_msg->msg.bind.only_input)
       sprintf(msg, "%s Direction:IN",msg);
     else
-      sprintf(msg, "%s Direction:IN/OUT", msg); 
+      sprintf(msg, "%s Direction:IN/OUT", msg);
   return msg;
 }
 
@@ -142,20 +142,20 @@ __ibms_dump_mad_msg(
           " METHOD:0x%02X"
           " STATUS:0x%04X"
           " TID:0x%016"PRIx64"",
-          p_msg->msg.mad.addr.slid, 
+          p_msg->msg.mad.addr.slid,
           p_msg->msg.mad.addr.dlid,
           p_msg->msg.mad.addr.sqpn,
           p_msg->msg.mad.addr.dqpn,
-          p_msg->msg.mad.addr.pkey_index,  
+          p_msg->msg.mad.addr.pkey_index,
           p_msg->msg.mad.addr.sl,
-          p_msg->msg.mad.header.mgmt_class, 
+          p_msg->msg.mad.header.mgmt_class,
           p_msg->msg.mad.header.method,
           p_msg->msg.mad.header.status,
           p_msg->msg.mad.header.trans_id);
   return msg;
 }
 
-std::string 
+std::string
 ibms_get_msg_str(
   IN const ibms_client_msg_t *p_msg)
 {
@@ -183,7 +183,7 @@ ibms_get_msg_str(
   return msgStr;
 }
 
-std::string 
+std::string
 ibms_get_mad_header_str(ib_mad_t madHeader)
 {
     char msg[1024];
@@ -212,7 +212,7 @@ ibms_get_mad_header_str(ib_mad_t madHeader)
     return (std::string)msg;
 };
 
-std::string 
+std::string
 ibms_get_node_info_str(ib_node_info_t*     pNodeInfo)
 {
     char msg[1024];
@@ -229,7 +229,7 @@ ibms_get_node_info_str(ib_node_info_t*     pNodeInfo)
     return (std::string)msg;
 }
 
-std::string 
+std::string
 ibms_get_port_info_str(ib_port_info_t*     pPortInfo)
 {
     char msg[1024];
@@ -253,7 +253,7 @@ ibms_get_port_info_str(ib_port_info_t*     pPortInfo)
     return (std::string)msg;
 };
 
-void 
+void
 ibms_dump_msg(
   IN const ibms_client_msg_t *p_msg)
 {

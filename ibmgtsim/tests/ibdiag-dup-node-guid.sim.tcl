@@ -5,8 +5,8 @@ puts "FLOW: duplicate some node guid"
 proc dupNodeGuid {fromNode toNode} {
    global errorInfo
    set newGuid [IBNode_guid_get $fromNode]
-   set toNodeName [IBNode_name_get $toNode] 
-   set fromNodeName [IBNode_name_get $fromNode] 
+   set toNodeName [IBNode_name_get $toNode]
+   set fromNodeName [IBNode_name_get $fromNode]
    puts "-I- Overriding node:$toNodeName guid to $newGuid (dup of $fromNodeName)"
 
    # IBDM ...
@@ -22,13 +22,13 @@ proc dupNodeGuid {fromNode toNode} {
 proc getNodesByRandomOreder {fabric} {
    # get number of nodes:
    set nodesByName [IBFabric_NodeByName_get $fabric]
-   
+
    set nodeNOrderList {}
    foreach nodeNameNId [IBFabric_NodeByName_get $fabric] {
       set node [lindex $nodeNameNId 1]
       lappend nodeNOrderList [list $node [rmRand]]
    }
-   
+
    set randNodes {}
    foreach nodeNRnd [lsort -index 1 -real $nodeNOrderList] {
       lappend randNodes [lindex $nodeNRnd 0]

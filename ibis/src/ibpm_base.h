@@ -65,20 +65,20 @@ typedef struct _ib_pm_port_counter
   uint8_t reserved1;
   uint8_t port_select;
   ib_net16_t counter_select;
-  ib_net16_t symbol_error_counter; 
+  ib_net16_t symbol_error_counter;
   uint8_t link_error_recovery_counter;
-  uint8_t link_down_counter; 
-  ib_net16_t port_rcv_errors; 
+  uint8_t link_down_counter;
+  ib_net16_t port_rcv_errors;
   ib_net16_t port_rcv_remote_physical_errors;
-  ib_net16_t port_rcv_switch_relay_errors; 
-  ib_net16_t port_xmit_discard; 
+  ib_net16_t port_rcv_switch_relay_errors;
+  ib_net16_t port_xmit_discard;
   /* uint4_t excessive_buffer_overrun_errors;
      uint4_t local_link_integrity_errors; */
   uint8_t port_xmit_constraint_errors;
   uint8_t port_rcv_constraint_errors;
   uint8_t reserved2;
   uint8_t lli_errors_exc_buf_errors;
-  ib_net16_t reserved3; 
+  ib_net16_t reserved3;
   ib_net16_t vl15_dropped;
   ib_net32_t port_xmit_data;
   ib_net32_t port_rcv_data;

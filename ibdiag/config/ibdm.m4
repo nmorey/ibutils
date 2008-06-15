@@ -1,6 +1,6 @@
 dnl This macro checks for the existance of ibdm library and defines the
 dnl corresponding path variable
-dnl 
+dnl
 dnl Synopsys:
 dnl    CHECK_IBDM_TCLLIB()
 dnl

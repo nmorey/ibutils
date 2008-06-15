@@ -36,7 +36,7 @@
 #include <stdlib.h>
 
 /* set the random number seed */
-int 
+int
 RandomMgr::setRandomSeed( int seed ) {
   pthread_mutex_lock( &lock );
   if (randomSeed)
@@ -48,9 +48,9 @@ RandomMgr::setRandomSeed( int seed ) {
   pthread_mutex_unlock( &lock );
   return 0;
 }
-  
+
 /* get a random floating point number 0.0 - 1.0 */
-float 
+float
 RandomMgr::random() {
   float res;
   pthread_mutex_lock( &lock );

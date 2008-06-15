@@ -62,14 +62,14 @@
 
 /****s* IBIS: ibpm/ibpm_t
  * NAME  ibpm_t
- *       
+ *
  *
  * DESCRIPTION
  *       ibpm structure.
  *
  * SYNOPSIS
  */
-typedef struct _ibpm 
+typedef struct _ibpm
 {
   ibpm_state_t         state;
   osm_bind_handle_t    h_bind;
@@ -81,7 +81,7 @@ typedef struct _ibpm
  *            The ibpm state: INIT, READ or BUSY
  *
  * SEE ALSO
- *      
+ *
  *********/
 
 
@@ -132,7 +132,7 @@ ibpm_destroy(
  *               A pointer to the ibpm_t struct that is about to be released
  *
  * RETURN VALUE
- *      
+ *
  * NOTES
  *       Final step of the releasing of ibpm_t
  *
@@ -160,9 +160,9 @@ ibpm_init(
  *
  * RETURN VALUE
  *       The status of the function.
- *      
+ *
  * NOTES
- *       
+ *
  * SEE ALSO
  *       ibpm_construct
  * *********/
@@ -188,16 +188,16 @@ ibpm_bind(
  *
  * RETURN VALUE
  *       The status of the function.
- *      
+ *
  * NOTES
- *       
+ *
  * SEE ALSO
  *       ibpm_construct
  *********/
 
 /****f* IBIS: ibpm/ibpm_get_counters
  * NAME
- *     ibpm_get_counters  
+ *     ibpm_get_counters
  *
  * DESCRIPTION
  *      Send a PM MAD (port counters) and wait for the reply.
@@ -227,9 +227,9 @@ ibpm_get_counters(
  *
  * RETURN VALUE
  *       The status of the function.
- *      
+ *
  * NOTES
- *       
+ *
  * SEE ALSO
  *       ibpm_clr_all_counters
  *********/
@@ -237,7 +237,7 @@ ibpm_get_counters(
 
 /****f* IBIS: ibpm/ibpm_get_multi_counters
  * NAME
- *     ibpm_get_multi_counters  
+ *     ibpm_get_multi_counters
  *
  * DESCRIPTION
  *      Sends a number of PM MADs (port counters) and wait for the reply.
@@ -271,16 +271,16 @@ ibpm_get_multi_counters(
  *
  * RETURN VALUE
  *       The status of the function.
- *      
+ *
  * NOTES
- *       
+ *
  * SEE ALSO
  *       ibpm_get_counters
  *********/
 
 /****f* IBIS: ibpm/ibpm_get_multi_counters_extended
  * NAME
- *     ibpm_get_multi_counters_extended  
+ *     ibpm_get_multi_counters_extended
  *
  * DESCRIPTION
  *      Sends a number of PM MADs (port counters) and wait for the reply.
@@ -314,16 +314,16 @@ ibpm_get_multi_counters_extended(
  *
  * RETURN VALUE
  *       The status of the function.
- *      
+ *
  * NOTES
- *       
+ *
  * SEE ALSO
  *       ibpm_get_counters
  *********/
 
 /****f* IBIS: ibpm/ibpm_clr_all_counters
  * NAME
- *     ibpm_clr_all_counters  
+ *     ibpm_clr_all_counters
  *
  * DESCRIPTION
  *      Send a PM MAD (port counters) that resets all the counters..
@@ -350,16 +350,16 @@ ibpm_clr_all_counters(
 
  * RETURN VALUE
  *       The status of the function.
- *      
+ *
  * NOTES
- *       
+ *
  * SEE ALSO
  *       ibpm_get_counters
  *********/
 
 /****f* IBIS: ibpm/ibpm_clr_all_multi_counters
  * NAME
- *     ibpm_clr_all_multi_counters  
+ *     ibpm_clr_all_multi_counters
  *
  * DESCRIPTION
  *      Send a number of PM MADs (port counters) that resets all the counters..
@@ -390,9 +390,9 @@ ibpm_clr_all_multi_counters(
  *
  * RETURN VALUE
  *       The status of the function.
- *      
+ *
  * NOTES
- *       
+ *
  * SEE ALSO
  *       ibpm_get_multi_counters
  *********/

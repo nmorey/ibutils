@@ -951,7 +951,7 @@ proc zoomToObjByIbdmId {type obj} {
       }
       node {
          set name [IBNode_name_get $obj]
-         set items [$C find withtag ${name}&&node]      
+         set items [$C find withtag ${name}&&node]
       }
       sysport {
          set sys [IBSysPort_p_system_get $obj]
@@ -1105,7 +1105,7 @@ proc guiHighLightByGuid {objType guid} {
             set name [IBSystem_name_get $sys]
          } elseif {$port != ""} {
             set node [IBPort_p_node_get $port]
-            set sys [IBNode_p_system_get $node]      
+            set sys [IBNode_p_system_get $node]
             set name [IBSystem_name_get $sys]
          } else {
             SetStatus "-W- Fail to find system by guid:$guid"
@@ -1493,7 +1493,7 @@ proc PropsPort {port} {
       set PROPS(port,sysp) \
          "[IBSystem_name_get $sys]/[IBSysPort_name_get $sysPort]"
    } else {
-      set PROPS(port,sysp) "NONE"  
+      set PROPS(port,sysp) "NONE"
    }
 }
 
@@ -1860,7 +1860,7 @@ proc LogObjSelect {log type w x y} {
          set y [guiHighLightByGuid sysport $val]
          if {$x != "" || $y != ""} {
             SetStatus "-I- Find by GUID succeeded"
-         }    
+         }
       }
    }
 }
@@ -1909,7 +1909,7 @@ proc initPropsGui {p} {
             sys System         {PropsUpdate system  $PROPS(sysport,sys,id)  1}
             port "Node Port"   {PropsUpdate port    $PROPS(sysport,port,id) 1}
             rem "Connected to" {PropsUpdate sysport $PROPS(sysport,rem,id)  1}
-            width Width ""   
+            width Width ""
             speed Speed ""
             anno Annotation ""
          }
@@ -2490,7 +2490,7 @@ proc initMenuBar {m} {
 
    pack $m.file $m.refresh $m.find $m.opts -side left
 
-   pack $m.help -side right  
+   pack $m.help -side right
 }
 
 #--------------------------------------------------------
@@ -2636,11 +2636,11 @@ proc initMainFrame {f} {
 
 proc setLogColors {} {
    global L
-   $L tag configure errors   -foreground [getColor txtErr]  
-   $L tag configure warnings -foreground [getColor txtWarn] 
-   $L tag configure infos    -foreground [getColor txtInfo] 
+   $L tag configure errors   -foreground [getColor txtErr]
+   $L tag configure warnings -foreground [getColor txtWarn]
+   $L tag configure infos    -foreground [getColor txtInfo]
    $L tag configure NAME   -background   [getColor txtName]
-   $L tag configure LID    -background   [getColor txtLid] 
+   $L tag configure LID    -background   [getColor txtLid]
    $L tag configure GUID   -background   [getColor txtGuid]
    $L tag configure ROUTE  -background   [getColor txtRoute]
 }

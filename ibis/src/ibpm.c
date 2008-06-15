@@ -199,7 +199,7 @@ __ibpm_prep_port_counter_mad(
   /* NOTE: we do not send the mads - just prepare them */
   OSM_LOG_EXIT(&(IbisObj.log));
 }
- 
+
 /**********************************************************************
  **********************************************************************/
 ib_api_status_t

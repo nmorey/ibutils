@@ -9,12 +9,12 @@ proc duplicatePortGuid {fromPort toPort } {
 proc getNodesByRandomOreder {fabric} {
    # get number of nodes:
    set nodesByName [IBFabric_NodeByName_get $fabric]
-   
+
    set nodeNameNOrderList {}
    foreach nodeNameNId [IBFabric_NodeByName_get $fabric] {
       lappend nodeNameNOrderList [list [lindex $nodeNameNId 1] [rmRand]]
    }
-   
+
    set randNodes {}
    foreach nodeNameNOrder [lsort -index 1 -real $nodeNameNOrderList] {
       lappend randNodes [lindex $nodeNameNOrder 0]
@@ -32,7 +32,7 @@ set numNodes [llength $randNodes]
 set numNodesUsed 0
 set idx 0
 while {($numNodesUsed < $numNodes / 10) && ($numNodesUsed < 12) && ($idx < $numNodes)} {
-   set node [lindex $randNodes $idx] 
+   set node [lindex $randNodes $idx]
    # ignore the root node:
    if {[IBNode_name_get $node] != "H-1/U1"} {
       if {[IBNode_type_get $node] != 1} {

@@ -13,17 +13,17 @@ proc sendJoinLeavForPort {port {isLeave 0}} {
    # we must provide our own port gid
    madMcMemberRec_port_gid_set $mcm \
       "0xfe80000000000000:[string range [IBPort_guid_get $port] 2 end]"
-   
+
    # must require full membership:
    madMcMemberRec_scope_state_set $mcm 0x1
- 
+
    # we need port number and sim node for the mad send:
    set portNum [IBPort_num_get $port]
    set node [IBPort_p_node_get $port]
-   
+
    # we need the comp_mask to include the mgid, port gid and join state:
    set compMask [format "0x%X" [expr (1<<16) | 3]]
-                  
+
    # send it assuming the SM_LID is always 1:
    if {$isLeave} {
       puts "-I- Leaving port $port"
@@ -35,7 +35,7 @@ proc sendJoinLeavForPort {port {isLeave 0}} {
 
    # deallocate
    delete_madMcMemberRec $mcm
-   
+
    return 0
 }
 
@@ -46,7 +46,7 @@ proc getAllActiveHCAPorts {fabric} {
    # go over all nodes:
    foreach nodeNameId [IBFabric_NodeByName_get $fabric] {
       set node [lindex $nodeNameId 1]
-      
+
       # we do care about non switches only
       if {[IBNode_type_get $node] != 1} {
          # go over all ports:
@@ -71,7 +71,7 @@ proc randomJoinAllHCAPorts {fabric maxDelay_ms} {
    foreach port $hcaPorts {
       lappend orederedPorts [list $port [rmRand]]
    }
-   
+
    # sort:
    set orederedPorts [lsort -index 1 -real $orederedPorts]
    set numHcasJoined 0
@@ -79,11 +79,11 @@ proc randomJoinAllHCAPorts {fabric maxDelay_ms} {
    # Now do the joins - waiting random time between them:
    foreach portNOrder $orederedPorts {
       set port [lindex $portNOrder 0]
-      
+
       if {![sendJoinLeavForPort $port]} {
          incr numHcasJoined
       }
-      
+
       after [expr int([rmRand]*$maxDelay_ms)]
    }
    return $numHcasJoined
@@ -100,7 +100,7 @@ proc randomJoinLeavePorts {fabric maxDelay_ms} {
    foreach port $hcaPorts {
       lappend orederedPorts [list $port [rmRand]]
    }
-   
+
    # sort:
    set orederedPorts [lsort -index 1 -real $orederedPorts]
    set numPorts [llength $orederedPorts]
@@ -112,7 +112,7 @@ proc randomJoinLeavePorts {fabric maxDelay_ms} {
       set portIdx [expr int([rmRand] * $numPorts)]
       set portNOrder [lindex $orederedPorts $portIdx]
       set port [lindex $portNOrder 0]
-      
+
       if {[rmRand] > 0.5} {
          sendJoinLeavForPort $port $isLeave
       } else {
@@ -124,7 +124,7 @@ proc randomJoinLeavePorts {fabric maxDelay_ms} {
          if {![info exists JOINED_PORTS($port)]} {
             set JOINED_PORTS($port) 0
          }
-         
+
          set JOINED_PORTS($port)
          if {$JOINED_PORTS($port)} {
             sendJoinLeavForPort $port $isLeave

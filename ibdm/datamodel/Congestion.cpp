@@ -133,17 +133,17 @@ CongCleanup(IBFabric *p_fabric)
       cout << "-E- Congestion Tracker not previously initialized" << endl;
       return(1);
    }
- 
+
    // remove the entry should delete the entire structure:
    CongFabrics.erase(cI);
    return(0);
 }
 
-// analyze a single stage. We propagte a floating point fraction of 
+// analyze a single stage. We propagte a floating point fraction of
 // link BW with each src,dst pair such that cong apear only on first
 // link a contention run through
 
-int 
+int
 CongZero(IBFabric *p_fabric)
 {
 	map_int_float dst_frac;
@@ -166,7 +166,7 @@ CongZero(IBFabric *p_fabric)
 		if (!rank) going_up = 0;
 
 		for (map_str_pnode::iterator nI = p_fabric->NodeByName.begin();
-			  nI != p_fabric->NodeByName.end(); 
+			  nI != p_fabric->NodeByName.end();
 			  nI++) {
 			IBNode *p_node = (*nI).second;
 
@@ -176,19 +176,19 @@ CongZero(IBFabric *p_fabric)
 			for (unsigned int pn = 1; pn <= p_node->numPorts; pn++) {
 				IBPort *p_port = p_node->getPort(pn);
 				
-				// do we have a port on the other side ? 
+				// do we have a port on the other side ?
 				if (!p_port || !p_port->p_remotePort) continue;
 				
-				// if we go up ignore the port if not going up 
-				if (going_up && 
+				// if we go up ignore the port if not going up
+				if (going_up &&
 					 ( (p_port->p_remotePort->p_node->type == IB_CA_NODE) ||
 						(p_port->p_remotePort->p_node->rank >= rank) ) )
 					continue;
 				
 				// if we go down ignore the port if not going down
-				if (!going_up && 
+				if (!going_up &&
 					 (p_port->p_remotePort->p_node->type == IB_SW_NODE) &&
-					 (p_port->p_remotePort->p_node->rank <= -rank)) 
+					 (p_port->p_remotePort->p_node->rank <= -rank))
 					continue;
 
 				numPortsInLevel++;
@@ -253,9 +253,9 @@ CongZero(IBFabric *p_fabric)
 
 			} // ports in right direction
 		} // all nodes
-		if (FabricUtilsVerboseLevel & FABU_LOG_VERBOSE) 
+		if (FabricUtilsVerboseLevel & FABU_LOG_VERBOSE)
 			cout << "-V- Scanned rank:" << rank << " ports:" << numPortsInLevel << endl;
-	} // ranks 
+	} // ranks
 
    congData.stageWorstCases.push_back(congData.stageWorstCase);
 
@@ -283,7 +283,7 @@ CongTrackPath(IBFabric *p_fabric, uint16_t srcLid, uint16_t dstLid)
       cout << "-E- Fail to find port by source LID:" << srcLid << endl;
       return(1);
    }
- 
+
    IBPort *p_dstPort = p_fabric->getPortByLid(dstLid);
    if (! p_dstPort)
    {
@@ -372,7 +372,7 @@ CongTrackPath(IBFabric *p_fabric, uint16_t srcLid, uint16_t dstLid)
               << " Dead end at:" << p_node->name << endl;
          return 1;
       }
-  
+
       // if the port number is 0 we must have reached the target node.
       // simply try see that p_remotePort of last step == p_dstPort
       if (pn == 0)
@@ -390,23 +390,23 @@ CongTrackPath(IBFabric *p_fabric, uint16_t srcLid, uint16_t dstLid)
 
       if (FabricUtilsVerboseLevel & FABU_LOG_VERBOSE)
          cout << "-V- Going out on port:" << pn << endl;
-  
+
       if (! (p_port &&
              p_port->p_remotePort &&
              p_port->p_remotePort->p_node)) {
          cout << "-E- Dead end at:" << p_node->name << endl;
          return 1;
       }
-  
+
       if (FabricUtilsVerboseLevel & FABU_LOG_VERBOSE)
          cout << "-V- Arrived at Node:" << p_port->p_remotePort->p_node->name
               << " Port:" << p_port->p_remotePort->num << endl;
-  
+
       p_remotePort = p_port->p_remotePort;
 
       // check if we are done:
       done = (p_remotePort == p_dstPort);
-  
+
       p_node = p_remotePort->p_node;
       if (hopCnt++ > 256)
       {
@@ -444,7 +444,7 @@ CongReport(IBFabric *p_fabric, ostringstream &out)
       stageWorstCaseHist[*lI]++;
       if (worstWorstPath < *lI) worstWorstPath = (*lI);
    }
- 
+
    out << "---------------------------------------------------------------------------\n" << endl;
    out << "-I- Traced total:" << congData.numPaths << " paths" << endl;
 
@@ -490,7 +490,7 @@ CongDump(IBFabric *p_fabric, ostringstream &out)
         pI != congData.portPaths.end();
         pI++)
    {
-      out << "PORT:" << (*pI).first->getName() 
+      out << "PORT:" << (*pI).first->getName()
 			 << " NUM:" << congData.portNumPaths[(*pI).first] << endl;
       for ( list_src_dst::iterator lI = (*pI).second.begin();
             lI != (*pI).second.end();

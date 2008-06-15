@@ -24,7 +24,7 @@ proc Help {} {
 # basically this code filters out the two swig functions:
 # SWIG_GetPointerObj
 # SWIG_SetPointerObj
-# from the given file and also adds one line just before the last 
+# from the given file and also adds one line just before the last
 # return statement
 
 proc LoadFile {fn} {
@@ -46,7 +46,7 @@ proc LoadFile {fn} {
 # remove the given proc from the file
 proc remProc {code procName procRetType} {
 	
-	# find the idx of the start of the procedure 
+	# find the idx of the start of the procedure
 	if {! [regexp -indices -line "SWIGSTATIC\[\\s\n\]*$procRetType\[\\s\n\]*$procName" \
 				 $code sidx]} {
 		error "-E- Fail to find proc:$procName"
@@ -71,7 +71,7 @@ proc addAtLastReturn {code text} {
 }
 
 proc addVoidParam {code procName procRetType} {
- 	# find the idx of the start of the procedure 
+ 	# find the idx of the start of the procedure
 	if {! [regexp -indices "SWIGSTATIC\[\\s\n\]*$procRetType\[\\s\n\]*${procName}\\(\\)" \
 				 $code sidx]} {
 		error "-E- Fail to find proc:$procName"
@@ -79,13 +79,13 @@ proc addVoidParam {code procName procRetType} {
 	return [string replace $code [lindex $sidx 1] [lindex $sidx 1] " void )"]
 }
 
-# MAIN 
+# MAIN
 
 set removeGetObj 0
 set removeSetObj 0
 set removeMakePtr 0
 set userPrompt 0
-set outFileName "" 
+set outFileName ""
 
 # parse command line args
 while {[llength $argv]} {

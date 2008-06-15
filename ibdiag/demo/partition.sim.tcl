@@ -4,7 +4,7 @@ puts "Running Simulation flow for Partitions test case"
 # Group 1 : 0x8001
 # Group 2 : 0x8002
 # Group 3 : 0x8001 0x8002 0x8003
-# 
+#
 # NOTE: default partition set by the SM ...
 
 # find all active HCA ports
@@ -14,7 +14,7 @@ proc getAllActiveHCAPorts {fabric} {
    # go over all nodes:
    foreach nodeNameId [IBFabric_NodeByName_get $fabric] {
       set node [lindex $nodeNameId 1]
-      
+
       # we do care about non switches only
       if {[IBNode_type_get $node] != 1} {
          # go over all ports:
@@ -33,17 +33,17 @@ proc getAllActiveHCAPorts {fabric} {
 # then set the active HCA ports PKey tables (based on node name % 3)
 # Note that the H-1/P1 has to have a slightly different PKey table
 # with 0xffff such that all nodes can query the SA:
-# we track the assignments in the arrays: 
+# we track the assignments in the arrays:
 # PORT_PKEY_GROUP(port) -> group
 # PORT_GROUP_PKEY_IDX(port) -> index of pkey (if set or -1)
 proc setAllHcaPortsPKeyTable {fabric} {
-   global PORT_PKEY_GROUP 
+   global PORT_PKEY_GROUP
    global GROUP_PKEY
 
    set G1 [list 0x8001]
    set G2 [list 0x8002]
    set G3 [list 0x8001 0x8002 0x8003]
-   
+
    set GROUP_PKEY(1) 0x8001
    set GROUP_PKEY(2) 0x8002
    set GROUP_PKEY(3) "0x8002 0x8001"
@@ -150,7 +150,7 @@ proc dumpHcaPKeyGroupFile {simDir} {
 # dump out the current set of pkey tables:
 proc dumpPKeyTables {fabric} {
 	set f [open "pkeys.txt" w]
-   set hcaPorts [getAllActiveHCAPorts $fabric] 
+   set hcaPorts [getAllActiveHCAPorts $fabric]
    foreach port $hcaPorts {
       set portNum [IBPort_num_get $port]
       set node [IBPort_p_node_get $port]

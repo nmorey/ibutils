@@ -55,16 +55,16 @@
 class IBMgtSim {
   /* Stores the entire topology */
   class IBFabric *pFabric;
-  
+
   /* Server to handle client connections */
   class IBMSServer *pServer;
-  
+
   /* Dispatcher for MAD messages */
   class IBMSDispatcher *pDispatcher;
-  
+
   /* allocate guids to the nodes */
   int allocateFabricNodeGuids();
- 
+
   /* initialize simulator nodes */
   int populateFabricNodes();
 
@@ -77,9 +77,9 @@ class IBMgtSim {
  public:
   /* constructor */
   IBMgtSim() {
-    pFabric = NULL; 
-    pServer = NULL; 
-    pDispatcher = NULL; 
+    pFabric = NULL;
+    pServer = NULL;
+    pDispatcher = NULL;
     randomSeed = 0;
     pthread_mutex_init( &lock, NULL );
   };
@@ -88,7 +88,7 @@ class IBMgtSim {
   inline class IBFabric *getFabric() { return pFabric;};
   inline class IBMSServer *getServer() { return pServer; };
   inline class IBMSDispatcher *getDispatcher() { return pDispatcher; };
-  
+
   /* Initialize the fabric server and dispatcher */
   int init(string topoFileName, int serverPortNum, int numWorkers);
 
@@ -97,7 +97,7 @@ class IBMgtSim {
 
   /* set the random number seed */
   int setRandomSeed( int seed );
-  
+
   /* get a random floating point number 0.0 - 1.0 */
   float random();
 };

@@ -9,7 +9,7 @@ ibdiagnet [-c <count>] [-v] [-r] [-o <out-dir>]
   [-pm] [-pc] [-P <<PM>=<Value>>]
   [-lw <1x|4x|12x>] [-ls <2.5|5|10>]
   [-skip <ibdiag_check/s>] [-load_db <db_file>]
-  
+
 =head1 DESCRIPTION
 
 ibdiagnet scans the fabric using directed route packets and extracts all the available information regarding its connectivity and devices.
@@ -19,30 +19,30 @@ It then produces the following files in the output directory (which defined by t
 
 =over
 
-=item F<ibdiagnet.log> - 
+=item F<ibdiagnet.log> -
 
 A dump of all the application reports generate according to the provided flags
 
-=item F<ibdiagnet.lst> - 
+=item F<ibdiagnet.lst> -
 
 List of all the nodes, ports and links in the fabric
 
-=item F<ibdiagnet.fdbs> - 
+=item F<ibdiagnet.fdbs> -
 
 A dump of the unicast forwarding tables of the fabric switches
 
-=item F<ibdiagnet.mcfdbs> - 
+=item F<ibdiagnet.mcfdbs> -
 
 A dump of the multicast forwarding tables of the fabric switches
 
 =item F<ibdiagnet.masks> -
 
-In case of duplicate port/node Guids, these file include the map between masked Guid and real Guids 
+In case of duplicate port/node Guids, these file include the map between masked Guid and real Guids
 
-=item F<ibdiagnet.sm> - 
+=item F<ibdiagnet.sm> -
 
 List of all the SM (state and priority) in the fabric
-  
+
 =item F<ibdiagnet.pm> -
 
 A dump of the pm Counters values, of the fabric links
@@ -64,27 +64,27 @@ A dump of the internal subnet database. This file can be loaded in later runs us
 In addition to generating the files above, the discovery phase also checks for duplicate node/port GUIDs in the IB fabric. If such an error is detected, it is displayed on the standard output. After the discovery phase is completed, directed route packets are sent multiple times (according to the -c option) to detect possible problematic paths on which packets may be lost. Such paths are explored, and a report of the suspected bad links is displayed on the standard output.
 
 After scanning the fabric, if the -r option is provided, a full report of the fabric qualities is displayed.
-This report includes: 
+This report includes:
 
-=over 
+=over
 
-=item * 
+=item *
 B<SM report>
 
-=item * 
+=item *
 B<Number of nodes and systems>
 
-=item * 
+=item *
 B<Hop-count information>
 
-=over 
+=over
 
 =item
 maximal hop-count, an example path, and a hop-count histogram
 
 =back
 
-=item * 
+=item *
 B<All CA-to-CA paths traced>
 
 =item *
@@ -103,12 +103,12 @@ B<IPoIB report>
 
 Note: In case the IB fabric includes only one CA, then CA-to-CA paths are not reported.
 Furthermore, if a topology file is provided, ibdiagnet uses the names defined in it for the output reports.
-      
+
 =head1 OPTIONS
 
 =over
 
-=item B<-c <count>>      : 
+=item B<-c <count>>      :
 
 =over
 
@@ -117,7 +117,7 @@ Min number of packets to be sent across each link (default = 10)
 	
 =back
 
-=item B<-v>              : 
+=item B<-v>              :
 
 =over
 
@@ -135,7 +135,7 @@ Provides a report of the fabric qualities
 
 =back
 
-=item B<-t <topo-file>>  : 
+=item B<-t <topo-file>>  :
 
 =over
 
@@ -153,7 +153,7 @@ Specifies the local system name. Meaningful only if a topology file is specified
 
 =back
 
-=item B<-i <dev-index>>  : 
+=item B<-i <dev-index>>  :
 
 =over
 
@@ -162,7 +162,7 @@ Specifies the index of the device of the port used to connect to the IB fabric (
 
 =back
 
-=item B<-p <port-num>>   : 
+=item B<-p <port-num>>   :
 
 =over
 
@@ -256,7 +256,7 @@ Note: Some of the checks require actual subnet discovery, and therefore would no
 
 =back
 
-=item B<-h|--help>       : 
+=item B<-h|--help>       :
 
 =over
 
@@ -292,19 +292,19 @@ Prints the tool's environment variables and their values
 =item 1 -
 Failed to fully discover the fabric
 
-=item 2 - 
+=item 2 -
 Failed to parse command line options
 
-=item 3 - 
+=item 3 -
 Failed to intract with IB fabric
 
-=item 4 - 
+=item 4 -
 Failed to use local device or local port
 
-=item 5 - 
+=item 5 -
 Failed to use Topology File
 
-=item 6 - 
+=item 6 -
 Failed to load requierd Package
 
 =back

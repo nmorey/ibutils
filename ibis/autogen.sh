@@ -31,7 +31,7 @@ function compare_versions() {
   exit(1);
 }
 EOF
-  echo "$1 $2 " | awk -f /tmp/$$.awk 
+  echo "$1 $2 " | awk -f /tmp/$$.awk
   status=$?
   rm /tmp/$$.awk
   return $status

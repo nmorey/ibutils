@@ -6,11 +6,11 @@ puts "FLOW: have some multicats groups with some partial connectivity too"
 proc getEndPortsByRandomOrder {fabric} {
    # get number of nodes:
    set nodesByName [IBFabric_NodeByName_get $fabric]
-   
+
    set portNOrderLIst {}
    foreach nodeNameNId [IBFabric_NodeByName_get $fabric] {
       set node [lindex $nodeNameNId 1]
-      
+
       if {[IBNode_type_get $node] != 1} {
          # only connected ports please:
          set numPorts [IBNode_numPorts_get $node]
@@ -22,7 +22,7 @@ proc getEndPortsByRandomOrder {fabric} {
          }
       }
    }
-   
+
    set randPorts {}
    foreach portNRnd [lsort -index 1 -real $portNOrderLIst] {
       lappend randPorts [lrange $portNRnd 0 1]
@@ -34,22 +34,22 @@ proc getEndPortsByRandomOrder {fabric} {
 proc getRandomSwitchNodesList {fabric} {
    # get number of nodes:
    set nodesByName [IBFabric_NodeByName_get $fabric]
-   
+
    set nodeNOrderList {}
    foreach nodeNameNId [IBFabric_NodeByName_get $fabric] {
       set node [lindex $nodeNameNId 1]
-      
+
       # only switches please
       if {[IBNode_type_get $node] == 1} {
          lappend nodeNOrderList [list $node [rmRand]]
       }
    }
-   
+
    set randNodes {}
    foreach nodeNRnd [lsort -index 1 -real $nodeNOrderList] {
       lappend randNodes [lindex $nodeNRnd 0]
    }
-   return $randNodes   
+   return $randNodes
 }
 
 # send a single port join request
@@ -64,23 +64,23 @@ proc sendJoinForPort {mgid port} {
    # we must provide our own port gid
    madMcMemberRec_port_gid_set $mcm \
       "0xfe80000000000000:[string range [IBPort_guid_get $port] 2 end]"
-   
+
    # must require full membership:
    madMcMemberRec_scope_state_set $mcm 0x1
- 
+
    # we need port number and sim node for the mad send:
    set portNum [IBPort_num_get $port]
    set node [IBPort_p_node_get $port]
-   
+
    # we need the comp_mask to include the mgid, port gid and join state:
    set compMask "0x00000000000130c7"
-                  
+
    # send it assuming the SM_LID is always 1:
    madMcMemberRec_send_set $mcm sim$node $portNum 1 $compMask
 
    # deallocate
    delete_madMcMemberRec $mcm
-   
+
    return 0
 }
 
@@ -88,10 +88,10 @@ proc sendJoinForPort {mgid port} {
 # delete the first entry foudn and return
 proc removeMCastRouteEntry {fabric} {
    set nodes [getRandomSwitchNodesList $fabric]
-   
+
    while {[llength $nodes]} {
       set node [lindex $nodes 0]
-      
+
       set mftBlock [IBMSNode_getMFTBlock sim$node 0 0]
       if {[llength $mftBlock] == 32} {
          set idx [lsearch -regexp $mftBlock {0x0*[1-9a-fA-F]+0*}]
@@ -119,8 +119,8 @@ proc postSmSettings {fabric} {
 
    # now we need several mgrps:
    set mgids {
-      0xff12401bffff0000:00000000ffffffff 
-      0xff12401bffff0000:0000000000000001 
+      0xff12401bffff0000:00000000ffffffff
+      0xff12401bffff0000:0000000000000001
       0xff12401bffff0000:0000000000000002
    }
 
