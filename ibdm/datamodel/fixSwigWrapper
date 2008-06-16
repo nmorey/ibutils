@@ -39,7 +39,7 @@ proc Usage {} {
 	global argv0
 	puts "Usage: $argv0 \[-r <prompt>\] \[-g\] \[-s\] \[-p\] -o <out-file>"
 }
-			
+
 proc Help {} {
 	puts "\nfixSwigWrapper : Applies extended behaviour to a swig_wrap.c\n"
 	Usage
@@ -50,7 +50,6 @@ proc Help {} {
 	puts "-g : Cleanup SWIG_GetPointerObj"
 	puts "-s : Cleanup SWIG_SetPointerObj"
 	puts "-p : Cleanup SWIG_MakePtr\n\n"
-	puts "\nAuthor: $Author: eitan $\nRevision: $Revision: 1.3 $"
 	exit 1
 }
 
@@ -76,15 +75,21 @@ proc LoadFile {fn} {
 	return $res
 }
 
+proc remTrailingBlanks {code} {
+	regsub -line -all {[ 	]+$} $code {} code
+	return $code
+}
+
+
 # remove the given proc from the file
 proc remProc {code procName procRetType} {
-	
+
 	# find the idx of the start of the procedure
 	if {! [regexp -indices -line "SWIGSTATIC\[\\s\n\]*$procRetType\[\\s\n\]*$procName" \
 				 $code sidx]} {
 		error "-E- Fail to find proc:$procName"
 	}
-	
+
 	# assume the end of the procedure has a nice indented \}
 	if {! [regexp -start [lindex $sidx 0] -indices "\n\}" $code eidx]} {
 		error "-E- Fail to find proc:$procName end"
@@ -98,8 +103,8 @@ proc addAtLastReturn {code text} {
 	set idx [string last {return TCL_OK} $code]
 	if {$idx <= 0} {
 		error "-E- Fail to find last return"
-	}	
-	
+	}
+
 	return [string replace $code $idx $idx $text]
 }
 
@@ -110,6 +115,7 @@ set removeGetObj 0
 set removeSetObj 0
 set removeMakePtr 0
 set userPrompt 0
+set removeTrailingBlanks 1
 set outFileName ""
 
 # parse command line args
@@ -165,6 +171,13 @@ if {[catch {set swigCode [LoadFile swig_wrap.c]} e]} {
 
 if {$removeGetObj} {
 	if {[catch {set swigCode [remProc $swigCode SWIG_GetPointerObj "char \\*"]} e]} {
+		puts "-E- $e"
+		exit 1
+	}
+}
+
+if {$removeTrailingBlanks} {
+	if {[catch {set swigCode [remTrailingBlanks $swigCode]} e]} {
 		puts "-E- $e"
 		exit 1
 	}
