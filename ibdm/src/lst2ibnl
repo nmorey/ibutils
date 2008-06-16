@@ -336,12 +336,12 @@ proc getopt { argslist optstring optret argret } {
 	global optind optindc
 	upvar $optret retvar
 	upvar $argret optarg
-	
+
 	# default settings for a normal return
 	set optarg ""
 	set retvar ""
 	set retval 0
-	
+
 	# check if we are in a single char mode or support long
 	# option string
 	if {[string match "* *" $optstring]} {
@@ -349,10 +349,10 @@ proc getopt { argslist optstring optret argret } {
 	} else {
 		set longOptMode 0
 	}
-	
+
 	# check if we're past the end of the args list
 	if { $optind < [ llength $argslist ] } then {
-		
+
 		# if we got -- or an option that doesn't begin with -, return (skipping
 		# the --).  otherwise process the option arg.
 		switch -glob -- [ set arg [ lindex $argslist $optind ]] {
@@ -365,7 +365,7 @@ proc getopt { argslist optstring optret argret } {
             set retvar $optarg
             set retval -1
 			}
-			
+
 			"-*" {
 				# opt needs to return the name of the option
 				regexp -- {-([^:]+):?} $arg d1 opt
@@ -415,7 +415,7 @@ proc getopt { argslist optstring optret argret } {
 			}
 		}
 	}
-	
+
 	return $retval
 }
 

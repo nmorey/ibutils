@@ -138,7 +138,7 @@ proc checker {simDir osmPath osmPortGuid} {
       puts $simCtrlSock "randomRegisterFormInformInfo fabric:1"
       set  returnVal [gets $simCtrlSock]
       puts "SIM: -I- $returnVal"
-		
+
       # start Random Flow:
       set iterations 240
       puts "-I- Starting the random stress flow with $iterations..."
@@ -184,7 +184,7 @@ proc checker {simDir osmPath osmPortGuid} {
 
       # wait ~200msec per joining port - to enable the SM to complete connecting them
 		after [expr $numHcasJoined * 200]
-		
+
       # use ibdiagnet instead of relying on opensm reports...
       if {0} {
          set ibdmchkLog [file join $simDir ibdmchk.log]
@@ -211,7 +211,7 @@ proc checker {simDir osmPath osmPortGuid} {
          puts "-I- Error: $e"
 			return 1
       }
-		
+
       # make sure all HCAs are now joined:
       set res [exec grep "Multicast Group:0xC000 has:" $ibdiagnetLog]
       if {![regexp {Multicast Group:0xC000 has:[0-9]+ switches and:([0-9]+) HCAs} $res d1 hcas]} {

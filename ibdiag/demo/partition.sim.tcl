@@ -93,7 +93,7 @@ proc removeGroupPKeyAccrosForHcaPort {fabric hostNodeName portNum groupNum} {
 		return "ERR:no remote port accross $hostNodeName port $portNum"
 	}
 
-	set swPortNum [IBPort_num_get $remPort]	
+	set swPortNum [IBPort_num_get $remPort]
 	set remNode [IBPort_p_node_get $remPort]
 	set swName  [IBNode_name_get $remNode]
 

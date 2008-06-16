@@ -121,7 +121,7 @@ if HAS_SWIG
 $(srcdir)/ibms_wrap.cpp: @MAINTAINER_MODE_TRUE@ $(SWIG_IFC_FILES)
 	swig -I$(srcdir) $(IBDM_INC) -c++ -dhtml -tcl8 -o swig_wrap.c $(srcdir)/sim.i
 	$(srcdir)/../utils/fixSwigWrapper -g -s -p -o $@
-	rm -f swig_wrap.c	
+	rm -f swig_wrap.c
 
 $(srcdir)/ibmssh_wrap.cpp: @MAINTAINER_MODE_TRUE@ $(SWIG_IFC_FILES)
 	swig -I$(srcdir) $(IBDM_INC) -c++ -dhtml -tcl8  -ltclsh.i -o swig_wrap.c $(srcdir)/sim.i

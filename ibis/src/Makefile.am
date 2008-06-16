@@ -122,7 +122,7 @@ ibis_wrap.c: @MAINTAINER_MODE_TRUE@ $(SWIG_IFC_FILES)
 	swig -I$(srcdir) -dhtml -tcl8 -o swig_wrap.c $(srcdir)/ibis.i
 	$(srcdir)/fixSwigWrapper -g -s -p -o ibis_wrap.c
 	if test ibis_wrap.c -ef $(srcdir)/ibis_wrap.c; then cp ibis_wrap.c $(srcdir)/ibis_wrap.c; fi
-	rm -f swig_wrap.c	
+	rm -f swig_wrap.c
 
 ibissh_wrap.cpp: @MAINTAINER_MODE_TRUE@ $(SWIG_IFC_FILES)
 	swig -I$(srcdir) -dhtml -tcl8  -ltclsh.i -o swig_wrap.c $(srcdir)/ibis.i

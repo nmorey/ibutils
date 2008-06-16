@@ -38,7 +38,7 @@ proc checker {simDir osmPath osmPortGuid} {
    global simCtrlSock
    global nodePortGroupList
 	global GROUP_HOSTS
-		
+
    # wait for the SM up or dead
    set osmLog [file join $simDir osm.log]
    if {[osmWaitForUpOrDead $osmLog]} {

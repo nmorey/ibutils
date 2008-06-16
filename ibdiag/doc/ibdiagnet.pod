@@ -114,7 +114,7 @@ Furthermore, if a topology file is provided, ibdiagnet uses the names defined in
 
 =item
 Min number of packets to be sent across each link (default = 10)
-	
+
 =back
 
 =item B<-v>              :

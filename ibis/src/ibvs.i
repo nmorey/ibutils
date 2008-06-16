@@ -84,7 +84,7 @@ ibvs_get_vs_str(
       } else if (is_read) {
         sprintf(buff, "{vendor_key 0x%016" PRIx64 "} ",
                 cl_ntoh64(p_vs_mads[i].vendor_key));
-        for (j=0; j < size; j++) {	
+        for (j=0; j < size; j++) {
           sprintf(buff,"%s {data%u 0x%x} ",
                   buff, j, cl_ntoh32(p_vs_mads[i].data[j+first_data_idx]));
         }
@@ -125,7 +125,7 @@ int
 ibvs_cpu_read_global(
   uint16_t lid,
   uint8_t size,
-  uint8_t cpu_traget_size,	
+  uint8_t cpu_traget_size,
   uint32_t address,
   char **pp_new_cpu_str)
 {
@@ -140,7 +140,7 @@ ibvs_cpu_read_global(
      *pp_new_cpu_str =
        ibvs_get_vs_str(FALSE, TRUE, 1, IBVS_DATA_MAX, VS_CPU_DATA_OFFSET, vs_mads);
    }
-	
+
    return(status);
 }
 
@@ -148,13 +148,13 @@ int
 ibvs_cpu_write_global(
   uint16_t lid,
   uint8_t size,
-  uint8_t cpu_traget_size,		
+  uint8_t cpu_traget_size,
   uint32_t data[],
   uint32_t address)
 {
 
 	ib_api_status_t status;
-	
+
 	status =
      ibvs_cpu_write(p_ibvs_global,lid,size,cpu_traget_size,data,address);
    if (status)
@@ -167,7 +167,7 @@ ibvs_i2c_read_global(
   uint16_t lid,
   uint8_t port_num,
   uint8_t device_id,
-  uint8_t size,	
+  uint8_t size,
   uint32_t address,
   char **pp_new_i2c_str)
 {
@@ -193,7 +193,7 @@ ibvs_multi_i2c_read_global(
   uint16_t lid_list[],
   uint8_t port_num,
   uint8_t device_id,
-  uint8_t size,	
+  uint8_t size,
   uint32_t address,
   char **pp_new_i2c_str)
 {
@@ -218,7 +218,7 @@ ibvs_multi_i2c_write_global(
   uint16_t lid_list[],
   uint8_t port_num,
   uint8_t device_id,
-  uint8_t size,	
+  uint8_t size,
   uint32_t address,
   uint32_t data[],
   char **pp_new_i2c_str)
@@ -229,7 +229,7 @@ ibvs_multi_i2c_write_global(
 
     status =
 	ibvs_multi_i2c_write(p_ibvs_global,num,lid_list,port_num,size,device_id,data,address,vs_mads);
-	
+
     if (status) {
 	ibis_set_tcl_error("ERROR : Failed writing multiple i2c");
     } else {
@@ -245,7 +245,7 @@ ibvs_i2c_write_global(
   uint16_t lid,
   uint8_t port_num,
   uint8_t device_id,
-  uint8_t size,		
+  uint8_t size,
   uint32_t address,
   uint32_t data[])
 {
@@ -262,10 +262,10 @@ int
 ibvs_gpio_read_global(
   IN uint16_t lid,
   OUT	char **pp_new_gpio_str)
-{		
+{
 	ib_api_status_t status;
    ib_vs_t         vs_mads[1];
-	
+
 	status = ibvs_gpio_read(p_ibvs_global,lid,vs_mads);
    if (status) {
      ibis_set_tcl_error("ERROR : Fail to read gpio");
@@ -281,15 +281,15 @@ ibvs_gpio_write_global(
   IN uint16_t lid,
   IN uint64_t gpio_mask,
   IN uint64_t gpio_data)
-{		
+{
 	ib_api_status_t status;
-	
+
 	status = ibvs_gpio_write(p_ibvs_global,lid,gpio_mask,gpio_data );
    if (status)
      ibis_set_tcl_error("ERROR : Fail to write gpio");
 	return(status);
 }
-	
+
 int
 ibvs_multi_sw_reset_global(
   uint8_t num,
@@ -300,7 +300,7 @@ ibvs_multi_sw_reset_global(
 	status = ibvs_multi_sw_reset(p_ibvs_global,num,lid_list);
    if (status)
      ibis_set_tcl_error("ERROR : Fail to reset");
-		
+
 	return(status);
 }
 
@@ -350,7 +350,7 @@ ibvs_multi_flash_close_global(
      *pp_new_flash_str =
        ibvs_get_vs_str(TRUE, TRUE, num, 4, VS_FLASH_DATA_OFFSET, vs_mads);
    }
-	
+
 	return(status);
 }
 
@@ -374,7 +374,7 @@ ibvs_multi_flash_set_bank_global(
      *pp_new_flash_str =
        ibvs_get_vs_str(TRUE, TRUE, num, 4, VS_FLASH_DATA_OFFSET, vs_mads);
    }
-	
+
 	return(status);
 }
 
@@ -397,7 +397,7 @@ ibvs_multi_flash_erase_global(
      *pp_new_flash_str =
        ibvs_get_vs_str(TRUE, TRUE, num, 4, VS_FLASH_DATA_OFFSET, vs_mads);
    }
-	
+
 	return(status);
 }
 
@@ -405,7 +405,7 @@ int
 ibvs_multi_flash_read_global(
   uint8_t num,
   uint16_t lid_list[],
-  uint8_t size,	
+  uint8_t size,
   uint32_t address,
   char **pp_new_flash_str)
 {
@@ -430,7 +430,7 @@ int
 ibvs_multi_flash_write_global(
   uint8_t num,
   uint16_t lid_list[],
-  uint8_t size,	
+  uint8_t size,
   uint32_t address,
   uint32_t data[])
 {
@@ -450,7 +450,7 @@ int
 ibvs_mirror_read_global(
   IN uint16_t lid,
   OUT	char **pp_new_mirror_str)
-{		
+{
    ib_api_status_t status;
    ib_vs_t         vs_mads[1];
 
@@ -469,7 +469,7 @@ ibvs_mirror_write_global(
   IN uint16_t lid,
   IN uint32_t rx_mirror,
   IN uint32_t tx_mirror)
-{		
+{
    ib_api_status_t status;
 
    status = ibvs_mirror_write(p_ibvs_global,lid,rx_mirror,tx_mirror );
@@ -483,7 +483,7 @@ ibvs_plft_map_get_global(
   IN uint16_t lid,
   IN uint8_t upper_ports,
   OUT	char **pp_new_plft_map_str)
-{		
+{
    ib_api_status_t status;
    ib_vs_t         vs_mads[1];
 	char *          buff;
@@ -656,13 +656,13 @@ ibvs_general_info_get_global(
   loc_buf = (char *)malloc((strlen(str_tcl)+1)*sizeof(char));
   strcpy(loc_buf,str_tcl);
 
-  str = strtok_r(loc_buf," ", &str_token);			
-  for (i=0;i<IBVS_MULTI_MAX;i++) {		
+  str = strtok_r(loc_buf," ", &str_token);
+  for (i=0;i<IBVS_MULTI_MAX;i++) {
     if (str == NULL) {
       break;
     }
     temp[i] = atoi(str);
-    str = strtok_r(NULL," ",&str_token);	
+    str = strtok_r(NULL," ",&str_token);
   }
   $target = temp;
   free(loc_buf);
@@ -681,13 +681,13 @@ ibvs_general_info_get_global(
     str_tcl = Tcl_GetStringFromObj($source,NULL);
     loc_buf = (char *)malloc((strlen(str_tcl)+1)*sizeof(char));
     strcpy(loc_buf,str_tcl);
-    str = strtok_r(loc_buf," ", &str_token);			
-    for (i=0;i<IBVS_DATA_MAX;i++) {		
+    str = strtok_r(loc_buf," ", &str_token);
+    for (i=0;i<IBVS_DATA_MAX;i++) {
 	if (str == NULL) {
 	    break;
 	}
-	temp[i] = (uint32_t)strtoll(str, (char **)NULL, 0);	
-	str = strtok_r(NULL," ",&str_token);	
+	temp[i] = (uint32_t)strtoll(str, (char **)NULL, 0);
+	str = strtok_r(NULL," ",&str_token);
     }
     $target = temp;
     free(loc_buf);
@@ -825,7 +825,7 @@ They all return 0 on succes.
   uint8_t size,
   uint32_t address,
   uint32_vs_data_arr_t data[]);
-	
+
 %name(vsMirrorRead) int ibvs_mirror_read_global(
   uint16_t lid,
   char **pp_new_gpio_str);
@@ -836,7 +836,7 @@ They all return 0 on succes.
   uint32_t tx_mirror);
 
 %apply char **p_out_str {char **pp_gen_info_str};
-	
+
 %name(vsGetGeneralInfo) int ibvs_general_info_get_global(
 	uint16_t lid,
 	char **pp_gen_info_str);

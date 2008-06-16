@@ -263,13 +263,13 @@ ibpm_clr_all_multi_counters_global(
     loc_buf = (char *)malloc((strlen(str_tcl)+1)*sizeof(char));
     strcpy(loc_buf,str_tcl);
 
-    str = strtok_r(loc_buf," ", &str_token);			
-    for (i=0;i<IBPM_MULTI_MAX;i++) {		
+    str = strtok_r(loc_buf," ", &str_token);
+    for (i=0;i<IBPM_MULTI_MAX;i++) {
 	if (str == NULL) {
 	    break;
 	}
 	temp[i] = atoi(str);
-	str = strtok_r(NULL," ",&str_token);	
+	str = strtok_r(NULL," ",&str_token);
     }
     $target = temp;
     free(loc_buf);
@@ -289,13 +289,13 @@ ibpm_clr_all_multi_counters_global(
   loc_buf = (char *)malloc((strlen(str_tcl)+1)*sizeof(char));
   strcpy(loc_buf,str_tcl);
 
-  str = strtok_r(loc_buf," ", &str_token);			
-  for (i=0;i<IBPM_MULTI_MAX;i++) {		
+  str = strtok_r(loc_buf," ", &str_token);
+  for (i=0;i<IBPM_MULTI_MAX;i++) {
     if (str == NULL) {
       break;
     }
     temp[i] = atoi(str);
-    str = strtok_r(NULL," ",&str_token);	
+    str = strtok_r(NULL," ",&str_token);
   }
 
   $target = temp;
@@ -339,4 +339,4 @@ They all return 0 on succes.
 %name(pmClrAllCounters) int ibpm_clr_all_counters_global(uint16_t lid,uint8_t port_select);
 
 %name(pmClrAllCountersMulti) int ibpm_clr_all_multi_counters_global( uint8_t num,uint16_pm_arr_t lid_list[],uint8_pm_arr_t port_select_list[]);
-	
+

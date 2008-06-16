@@ -202,8 +202,8 @@ ibisp_is_debug(void)
       printf("-E- fail to init ibcr_init.\n");
       ibcr_destroy( p_ibcr_global );
       exit(1);
-    }	
-	
+    }
+
     status = ibpm_init(p_ibpm_global);
     if( status != IB_SUCCESS )
     {
@@ -218,7 +218,7 @@ ibisp_is_debug(void)
       printf("-E- Fail to init ibvs_init.\n");
       ibvs_destroy( p_ibvs_global );
       exit(1);
-    }	
+    }
 
     status = ibbbm_init(p_ibbbm_global);
     if( status != IB_SUCCESS )
@@ -226,7 +226,7 @@ ibisp_is_debug(void)
       printf("-E- Fail to init ibbbm_init.\n");
       ibbbm_destroy( p_ibbbm_global );
       exit(1);
-    }	
+    }
 
     status = ibsm_init(gp_ibsm);
     if( status != IB_SUCCESS )
@@ -234,7 +234,7 @@ ibisp_is_debug(void)
       printf("-E- Fail to init ibbbm_init.\n");
       ibsm_destroy( gp_ibsm );
       exit(1);
-    }	
+    }
 
     return 0;
   }
@@ -303,7 +303,7 @@ ibisp_is_debug(void)
       printf("-E- Fail to ibvs_bind.\n");
       ibvs_destroy( p_ibvs_global );
       exit(1);
-    }		
+    }
 
     status = ibbbm_bind(p_ibbbm_global);
     if( status != IB_SUCCESS )
@@ -311,7 +311,7 @@ ibisp_is_debug(void)
       printf("-E- Fail to ibbbm_bind.\n");
       ibbbm_destroy( p_ibbbm_global );
       exit(1);
-    }		
+    }
 
     status = ibsm_bind(gp_ibsm);
     if( status != IB_SUCCESS )
@@ -319,7 +319,7 @@ ibisp_is_debug(void)
       printf("-E- Fail to ibsm_bind.\n");
       ibsm_destroy( gp_ibsm );
       exit(1);
-    }		
+    }
 
     if (ibsac_bind(&IbisObj))
     {
@@ -373,7 +373,7 @@ ibisp_is_debug(void)
 
 	 /* command options */
     tcl_result = Tcl_GetObjResult(interp);
-	
+
     if ((objc < 1) || (objc > 1)) {
         Tcl_SetStringObj(tcl_result,"Wrong # args. ibis_get_local_ports_info ",-1);
         return TCL_ERROR;
@@ -411,7 +411,7 @@ ibisp_is_debug(void)
       p_obj = Tcl_NewStringObj(res, strlen(res));
       Tcl_ListObjAppendElement(interp, tcl_result, p_obj);
     }
-	
+
     return TCL_OK;
   }
 
@@ -548,7 +548,7 @@ extern char * ibisSourceVersion;
       if (p_ibcr_global == NULL) {
         printf("-E- Error from ibcr_construct.\n");
         exit(1);
-      }	
+      }
 
       /* ------------------ IBPM ---------------------- */
       p_ibpm_global = ibpm_construct();
@@ -556,19 +556,19 @@ extern char * ibisSourceVersion;
       if (p_ibpm_global == NULL) {
         printf("-E- Error from ibpm_construct.\n");
         exit(1);
-      }	
+      }
 
       /* ------------------ IBVS ---------------------- */
 		p_ibvs_global = ibvs_construct();
-	
+
   		if (p_ibvs_global == NULL) {
 			printf("-E- Error from ibvs_construct.\n");
          exit(1);
-  		}	
+  		}
 
       /* ------------------ IBBBM ---------------------- */
 		p_ibbbm_global = ibbbm_construct();
-	
+
   		if (p_ibbbm_global == NULL) {
 			printf("-E- Error from ibbbm_construct.\n");
          exit(1);
@@ -576,7 +576,7 @@ extern char * ibisSourceVersion;
 
       /* ------------------ IBSM ---------------------- */
 		gp_ibsm = ibsm_construct();
-	
+
   		if (gp_ibsm == NULL) {
 			printf("-E- Error from ibsm_construct.\n");
          exit(1);
@@ -657,7 +657,7 @@ extern char * ibisSourceVersion;
 
       SWIG_AltMnglRegObj("pi", &(ibsac_portinfo_rec.port_info));
       SWIG_AltMnglRegObj("pir",&(ibsac_portinfo_rec));
-	
+
       SWIG_AltMnglRegObj("smi", &(ibsac_sminfo_rec.sm_info));
       SWIG_AltMnglRegObj("smir",&(ibsac_sminfo_rec));
 

@@ -75,7 +75,7 @@ ibbbm_write_vpd_global(
 {
 
 	ib_api_status_t status;
-	
+
 	status = ibbbm_write_vpd(p_ibbbm_global,lid,vpd_device_selector,bytes_num,offset,p_data);
 	;
 	ibis_set_tcl_error("-E- Failed to write VPD");
@@ -111,7 +111,7 @@ ibbbm_read_bsn_vpd_global(
 	status = ibbbm_read_vpd(p_ibbbm_global,lid,IBBBM_BSN_VPD_DEV_SEL,IBBBM_BSN_VPD_SIZE,IBBBM_BSN_VPD_OFFSET,p_bbm_vpd_mad);
 	;
 	ibis_set_tcl_error("-E- Failed to read BSN");
-		
+
 	return(status);
 }
 
@@ -124,11 +124,11 @@ ibbbm_read_mod_vpd_global(
 	ib_bbm_vpd_t *p_bbm_vpd_mad;
 
 	p_bbm_vpd_mad = (ib_bbm_vpd_t *)p_bbm_mod_vpd_mad;
-	
+
 	status = ibbbm_read_vpd(p_ibbbm_global,lid,IBBBM_MOD_VPD_DEV_SEL,IBBBM_MOD_VPD_SIZE,IBBBM_MOD_VPD_OFFSET,p_bbm_vpd_mad);
 	;
 	ibis_set_tcl_error("-E- Failed to read Module VPD");
-		
+
 	return(status);
 }
 
@@ -163,7 +163,7 @@ ibbbm_read_fw_ver_vpd_global(
 	;
 
    ibis_set_tcl_error("-E- Failed to read FW Version.");
-		
+
 	return(status);
 }
 
@@ -218,7 +218,7 @@ ibbbm_read_fw_ver_vpd_global(
 	 for (i=0;i<IBBBM_MOD_VPD_PWR_SIZE;i++) {
          	sprintf(buff,"%s {power%u 0x%x} ",buff,i+1,cl_ntoh32($source->power_sup_record[i]));
          };
-	 	
+
          Tcl_SetStringObj($target, buff, strlen(buff));
   } else {
          Tcl_SetStringObj($target, "", 0);
@@ -250,13 +250,13 @@ ibbbm_read_fw_ver_vpd_global(
 	 for (i=0;i<IBBBM_CHA_VPD_PWR_SIZE;i++) {
          	sprintf(buff,"%s {power%u 0x%x} ",buff,i+1,cl_ntoh32($source->power_sup_record[i]));
          };
-	
+
 	 sprintf(buff,"%s {fan_count 0x%x} ",buff,$source->fan_count);
 
    	 for (i=0;i<IBBBM_CHA_VPD_FAN_SIZE;i++) {
          	sprintf(buff,"%s {fan%u 0x%x} ",buff,i+1,cl_ntoh16($source->fan_record[i]));
          };
-		
+
          Tcl_SetStringObj($target, buff, strlen(buff));
   } else {
          Tcl_SetStringObj($target, "", 0);
@@ -277,10 +277,10 @@ ibbbm_read_fw_ver_vpd_global(
 			($source->vpd_device_selector),
 		        cl_ntoh16($source->bytes_num),
 			cl_ntoh16($source->offset));
-	 for (j=0;j<IBBBM_BSN_VPD_SIZE;j++) {	
+	 for (j=0;j<IBBBM_BSN_VPD_SIZE;j++) {
 		sprintf(buff,"%s {bsn%u 0x%x} ",buff,j,$source->bsn[j]);
 	 };
-	
+
          Tcl_SetStringObj($target, buff, strlen(buff));
   } else {
          Tcl_SetStringObj($target, "", 0);
@@ -301,10 +301,10 @@ ibbbm_read_fw_ver_vpd_global(
 			($source->vpd_device_selector),
 		        cl_ntoh16($source->bytes_num),
 			cl_ntoh16($source->offset));
-	 for (j=0;j<IBBBM_VSD_VPD_SIZE;j++) {	
+	 for (j=0;j<IBBBM_VSD_VPD_SIZE;j++) {
 		sprintf(buff,"%s {vsd%u 0x%x} ",buff,j,$source->vsd[j]);
 	 };
-	
+
          Tcl_SetStringObj($target, buff, strlen(buff));
   } else {
          Tcl_SetStringObj($target, "", 0);
@@ -327,7 +327,7 @@ ibbbm_read_fw_ver_vpd_global(
 			$source->maj_fw_ver,
 			$source->min_fw_ver,
 			$source->sub_min_fw_ver);
-	
+
          Tcl_SetStringObj($target, buff, strlen(buff));
   } else {
          Tcl_SetStringObj($target, "", 0);
@@ -366,4 +366,4 @@ They all return 0 on succes.
 %name(bbmChaRead) int ibbbm_read_cha_vpd_global(uint16_t lid, ib_bbm_cha_vpd_t *p_bbm_cha_vpd_mad);
 
 %name(bbmFWVerRead) int ibbbm_read_fw_ver_vpd_global(uint16_t lid, ib_bbm_fw_ver_vpd_t *p_bbm_fw_ver_vpd_mad);
-	
+

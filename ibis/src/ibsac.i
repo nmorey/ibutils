@@ -130,12 +130,12 @@
 	 char *p_res_str = NULL, *tmp;
 	 Tcl_Obj *p_tclObj;
 	 int nameLength;
-	
+
 	 status = ibsac_query(
 		&IbisObj, IB_MAD_ATTR_NODE_RECORD, self, comp_mask, method,
 		&num_recs, &p_result_madw
 		);
-	
+
 	 for( i = 0; i < num_recs; i++ )
 	 {
 		/* we need to create a new node info and copy */
@@ -143,7 +143,7 @@
 
 		/* copy into it */
 		*p_rec = *(osmv_get_query_node_rec( p_result_madw, i ));
-		
+
 		/* register it as a new object */
 		SWIG_AltMnglRegObj("nr",p_rec);
 		SWIG_AltMnglRegObj("ni",&(p_rec->node_info));
@@ -163,16 +163,16 @@
 			 p_res_str = (char *)malloc(nameLength + 2);
 			 p_res_str[0] = '\0';
 		  }
-		
+
 		  strcat(p_res_str, tmp);
 		  strcat(p_res_str, " ");
 		}
 		Tcl_DecrRefCount(p_tclObj);
 	 }
-	
+
 	 if( p_result_madw != NULL )
 		osm_mad_pool_put( &IbisObj.mad_pool, p_result_madw );
-	
+
 	 return(p_res_str);
   }
 
@@ -188,12 +188,12 @@
 	 char *p_res_str = NULL, *tmp;
 	 Tcl_Obj *p_tclObj;
 	 int nameLength;
-	
+
 	 status = ibsac_query(
 		&IbisObj, IB_MAD_ATTR_PORTINFO_RECORD, self, comp_mask, method,
 		&num_recs, &p_result_madw
 		);
-	
+
 	 for( i = 0; i < num_recs; i++ )
 	 {
 		/* we need to create a new node info and copy */
@@ -201,7 +201,7 @@
 
 		/* copy into it */
 		*p_rec = *(osmv_get_query_portinfo_rec( p_result_madw, i ));
-		
+
 		/* register it as a new object */
 		SWIG_AltMnglRegObj("pir",p_rec);
 		SWIG_AltMnglRegObj("pi",&(p_rec->port_info));
@@ -221,16 +221,16 @@
 			 p_res_str = (char *)malloc(nameLength + 2);
 			 p_res_str[0] = '\0';
 		  }
-		
+
 		  strcat(p_res_str, tmp);
 		  strcat(p_res_str, " ");
 		}
 		Tcl_DecrRefCount(p_tclObj);
 	 }
-	
+
 	 if( p_result_madw != NULL )
 		osm_mad_pool_put( &IbisObj.mad_pool, p_result_madw );
-	
+
 	 return(p_res_str);
   }
 
@@ -246,20 +246,20 @@
 	 char *p_res_str = NULL, *tmp;
 	 Tcl_Obj *p_tclObj;
 	 int nameLength;
-	
+
 	 status = ibsac_query(
 		&IbisObj, IB_MAD_ATTR_SMINFO_RECORD, self, comp_mask, method,
 		&num_recs, &p_result_madw
 		);
-	
+
 	 for( i = 0; i < num_recs; i++ )
 	 {
 		/* we need to create a new node info and copy */
 		p_rec = (ib_sminfo_record_t *)malloc(sizeof(ib_sminfo_record_t));
-		
+
 		/* copy into it */
 		*p_rec = *((ib_sminfo_record_t*)osmv_get_query_result( p_result_madw, i ));
-		
+
 		/* register it as a new object */
 		SWIG_AltMnglRegObj("smir",p_rec);
 		SWIG_AltMnglRegObj("smi",&(p_rec->sm_info));
@@ -279,16 +279,16 @@
 			 p_res_str = (char *)malloc(nameLength + 2);
 			 p_res_str[0] = '\0';
 		  }
-		
+
 		  strcat(p_res_str, tmp);
 		  strcat(p_res_str, " ");
 		}
 		Tcl_DecrRefCount(p_tclObj);
 	 }
-	
+
 	 if( p_result_madw != NULL )
 		osm_mad_pool_put( &IbisObj.mad_pool, p_result_madw );
-	
+
 	 return(p_res_str);
   }
 
@@ -304,20 +304,20 @@
 	 char *p_res_str = NULL, *tmp;
 	 Tcl_Obj *p_tclObj;
 	 int nameLength;
-	
+
 	 status = ibsac_query(
 		&IbisObj, CL_NTOH16(0x0014), self, comp_mask, method,
 		&num_recs, &p_result_madw
 		);
-	
+
 	 for( i = 0; i < num_recs; i++ )
 	 {
 		/* we need to create a new node info and copy */
 		p_rec = (ib_switch_info_record_t *)malloc(sizeof(ib_switch_info_record_t));
-		
+
 		/* copy into it */
 		*p_rec = *((ib_switch_info_record_t*)osmv_get_query_result( p_result_madw, i ));
-		
+
 		/* register it as a new object */
 		SWIG_AltMnglRegObj("swir",p_rec);
 		SWIG_AltMnglRegObj("swi",&(p_rec->switch_info));
@@ -337,16 +337,16 @@
 			 p_res_str = (char *)malloc(nameLength + 2);
 			 p_res_str[0] = '\0';
 		  }
-		
+
 		  strcat(p_res_str, tmp);
 		  strcat(p_res_str, " ");
 		}
 		Tcl_DecrRefCount(p_tclObj);
 	 }
-	
+
 	 if( p_result_madw != NULL )
 		osm_mad_pool_put( &IbisObj.mad_pool, p_result_madw );
-	
+
 	 return(p_res_str);
   }
 
@@ -362,20 +362,20 @@
 	 char *p_res_str = NULL, *tmp;
 	 Tcl_Obj *p_tclObj;
 	 int nameLength;
-	
+
 	 status = ibsac_query(
 		&IbisObj, IB_MAD_ATTR_PATH_RECORD, self, comp_mask, method,
 		&num_recs, &p_result_madw
 		);
-	
+
 	 for( i = 0; i < num_recs; i++ )
 	 {
 		/* we need to create a new node info and copy */
 		p_rec = (ib_path_rec_t *)malloc(sizeof(ib_path_rec_t));
-		
+
 		/* copy into it */
 		*p_rec = *((ib_path_rec_t*)osmv_get_query_result( p_result_madw, i ));
-		
+
 		/* register it as a new object */
 		SWIG_AltMnglRegObj("path",p_rec);
 
@@ -394,16 +394,16 @@
 			 p_res_str = (char *)malloc(nameLength + 2);
 			 p_res_str[0] = '\0';
 		  }
-		
+
 		  strcat(p_res_str, tmp);
 		  strcat(p_res_str, " ");
 		}
 		Tcl_DecrRefCount(p_tclObj);
 	 }
-	
+
 	 if( p_result_madw != NULL )
 		osm_mad_pool_put( &IbisObj.mad_pool, p_result_madw );
-	
+
 	 return(p_res_str);
   }
 
@@ -419,20 +419,20 @@
 	 char *p_res_str = NULL, *tmp;
 	 Tcl_Obj *p_tclObj;
 	 int nameLength;
-	
+
 	 status = ibsac_query(
 		&IbisObj, IB_MAD_ATTR_LINK_RECORD, self, comp_mask, method,
 		&num_recs, &p_result_madw
 		);
-	
+
 	 for( i = 0; i < num_recs; i++ )
 	 {
 		/* we need to create a new node info and copy */
 		p_rec = (ib_link_record_t *)malloc(sizeof(ib_link_record_t));
-		
+
 		/* copy into it */
 		*p_rec = *((ib_link_record_t*)osmv_get_query_result( p_result_madw, i ));
-		
+
 		/* register it as a new object */
 		SWIG_AltMnglRegObj("link",p_rec);
 
@@ -451,16 +451,16 @@
 			 p_res_str = (char *)malloc(nameLength + 2);
 			 p_res_str[0] = '\0';
 		  }
-		
+
 		  strcat(p_res_str, tmp);
 		  strcat(p_res_str, " ");
 		}
 		Tcl_DecrRefCount(p_tclObj);
 	 }
-	
+
 	 if( p_result_madw != NULL )
 		osm_mad_pool_put( &IbisObj.mad_pool, p_result_madw );
-	
+
 	 return(p_res_str);
   }
 
@@ -476,20 +476,20 @@
 	 char *p_res_str = NULL, *tmp;
 	 Tcl_Obj *p_tclObj;
 	 int nameLength;
-	
+
 	 status = ibsac_query(
 		&IbisObj, IB_MAD_ATTR_LFT_RECORD, self, comp_mask, method,
 		&num_recs, &p_result_madw
 		);
-	
+
 	 for( i = 0; i < num_recs; i++ )
 	 {
 		/* we need to create a new node info and copy */
 		p_rec = (ib_lft_record_t *)malloc(sizeof(ib_lft_record_t));
-		
+
 		/* copy into it */
 		*p_rec = *((ib_lft_record_t*)osmv_get_query_result( p_result_madw, i ));
-		
+
 		/* register it as a new object */
 		SWIG_AltMnglRegObj("lft",p_rec);
 
@@ -508,16 +508,16 @@
 			 p_res_str = (char *)malloc(nameLength + 2);
 			 p_res_str[0] = '\0';
 		  }
-		
+
 		  strcat(p_res_str, tmp);
 		  strcat(p_res_str, " ");
 		}
 		Tcl_DecrRefCount(p_tclObj);
 	 }
-	
+
 	 if( p_result_madw != NULL )
 		osm_mad_pool_put( &IbisObj.mad_pool, p_result_madw );
-	
+
 	 return(p_res_str);
   }
 
@@ -533,20 +533,20 @@
 	 char *p_res_str = NULL, *tmp;
 	 Tcl_Obj *p_tclObj;
 	 int nameLength;
-	
+
 	 status = ibsac_query(
 		&IbisObj, IB_MAD_ATTR_MCMEMBER_RECORD, self, comp_mask, method,
 		&num_recs, &p_result_madw
 		);
-	
+
 	 for( i = 0; i < num_recs; i++ )
 	 {
 		/* we need to create a new node info and copy */
 		p_rec = (ib_member_rec_t *)malloc(sizeof(ib_member_rec_t));
-		
+
 		/* copy into it */
 		*p_rec = *((ib_member_rec_t*)osmv_get_query_result( p_result_madw, i ));
-		
+
 		/* register it as a new object */
 		SWIG_AltMnglRegObj("mcm",p_rec);
 
@@ -565,16 +565,16 @@
 			 p_res_str = (char *)malloc(nameLength + 2);
 			 p_res_str[0] = '\0';
 		  }
-		
+
 		  strcat(p_res_str, tmp);
 		  strcat(p_res_str, " ");
 		}
 		Tcl_DecrRefCount(p_tclObj);
 	 }
-	
+
 	 if( p_result_madw != NULL )
 		osm_mad_pool_put( &IbisObj.mad_pool, p_result_madw );
-	
+
 	 return(p_res_str);
   }
 
@@ -590,20 +590,20 @@
 	 char *p_res_str = NULL, *tmp;
 	 Tcl_Obj *p_tclObj;
 	 int nameLength;
-	
+
 	 status = ibsac_query(
 		&IbisObj, IB_MAD_ATTR_CLASS_PORT_INFO, self, comp_mask, method,
 		&num_recs, &p_result_madw
 		);
-	
+
 	 for( i = 0; i < num_recs; i++ )
 	 {
 		/* we need to create a new node info and copy */
 		p_rec = (ib_class_port_info_t *)malloc(sizeof(ib_class_port_info_t));
-		
+
 		/* copy into it */
 		*p_rec = *((ib_class_port_info_t*)osmv_get_query_result( p_result_madw, i ));
-		
+
 		/* register it as a new object */
 		SWIG_AltMnglRegObj("cpi",p_rec);
 
@@ -622,16 +622,16 @@
 			 p_res_str = (char *)malloc(nameLength + 2);
 			 p_res_str[0] = '\0';
 		  }
-		
+
 		  strcat(p_res_str, tmp);
 		  strcat(p_res_str, " ");
 		}
 		Tcl_DecrRefCount(p_tclObj);
 	 }
-	
+
 	 if( p_result_madw != NULL )
 		osm_mad_pool_put( &IbisObj.mad_pool, p_result_madw );
-	
+
 	 return(p_res_str);
   }
 
@@ -647,20 +647,20 @@
 	 char *p_res_str = NULL, *tmp;
 	 Tcl_Obj *p_tclObj;
 	 int nameLength;
-	
+
 	 status = ibsac_query(
 		&IbisObj,  IB_MAD_ATTR_INFORM_INFO, self, comp_mask, method,
 		&num_recs, &p_result_madw
 		);
-	
+
 	 for( i = 0; i < num_recs; i++ )
 	 {
 		/* we need to create a new node info and copy */
 		p_rec = (ib_inform_info_t *)malloc(sizeof(ib_inform_info_t));
-		
+
 		/* copy into it */
 		*p_rec = *((ib_inform_info_t*)osmv_get_query_result( p_result_madw, i ));
-		
+
 		/* register it as a new object */
 		SWIG_AltMnglRegObj("info",p_rec);
 
@@ -679,16 +679,16 @@
 			 p_res_str = (char *)malloc(nameLength + 2);
 			 p_res_str[0] = '\0';
 		  }
-		
+
 		  strcat(p_res_str, tmp);
 		  strcat(p_res_str, " ");
 		}
 		Tcl_DecrRefCount(p_tclObj);
 	 }
-	
+
 	 if( p_result_madw != NULL )
 		osm_mad_pool_put( &IbisObj.mad_pool, p_result_madw );
-	
+
 	 return(p_res_str);
   }
 
@@ -705,20 +705,20 @@
 	 char *p_res_str = NULL, *tmp;
 	 Tcl_Obj *p_tclObj;
 	 int nameLength;
-	
+
 	 status = ibsac_query(
 		&IbisObj,  IB_MAD_ATTR_SERVICE_RECORD, self, comp_mask, method,
 		&num_recs, &p_result_madw
 		);
-	
+
 	 for( i = 0; i < num_recs; i++ )
 	 {
 		/* we need to create a new node info and copy */
 		p_rec = (ib_service_record_t *)malloc(sizeof(ib_service_record_t));
-		
+
 		/* copy into it */
 		*p_rec = *((ib_service_record_t*)osmv_get_query_result( p_result_madw, i ));
-		
+
 		/* register it as a new object */
 		SWIG_AltMnglRegObj("svc",p_rec);
 
@@ -737,16 +737,16 @@
 			 p_res_str = (char *)malloc(nameLength + 2);
 			 p_res_str[0] = '\0';
 		  }
-		
+
 		  strcat(p_res_str, tmp);
 		  strcat(p_res_str, " ");
 		}
 		Tcl_DecrRefCount(p_tclObj);
 	 }
-	
+
 	 if( p_result_madw != NULL )
 		osm_mad_pool_put( &IbisObj.mad_pool, p_result_madw );
-	
+
 	 return(p_res_str);
   }
 
@@ -762,20 +762,20 @@
 	 char *p_res_str = NULL, *tmp;
 	 Tcl_Obj *p_tclObj;
 	 int nameLength;
-	
+
 	 status = ibsac_query(
 		&IbisObj, IB_MAD_ATTR_SLVL_RECORD, self, comp_mask, method,
 		&num_recs, &p_result_madw
 		);
-	
+
 	 for( i = 0; i < num_recs; i++ )
 	 {
 		/* we need to create a new node info and copy */
 		p_rec = (ib_slvl_table_record_t *)malloc(sizeof(ib_slvl_table_record_t));
-		
+
 		/* copy into it */
 		*p_rec = *((ib_slvl_table_record_t*)osmv_get_query_result( p_result_madw, i ));
-		
+
 		/* register it as a new object */
 		SWIG_AltMnglRegObj("slvr",p_rec);
 		SWIG_AltMnglRegObj("slvt",&(p_rec->slvl_tbl));
@@ -795,16 +795,16 @@
 			 p_res_str = (char *)malloc(nameLength + 2);
 			 p_res_str[0] = '\0';
 		  }
-		
+
 		  strcat(p_res_str, tmp);
 		  strcat(p_res_str, " ");
 		}
 		Tcl_DecrRefCount(p_tclObj);
 	 }
-	
+
 	 if( p_result_madw != NULL )
 		osm_mad_pool_put( &IbisObj.mad_pool, p_result_madw );
-	
+
 	 return(p_res_str);
   }
 
@@ -820,20 +820,20 @@
 	 char *p_res_str = NULL, *tmp;
 	 Tcl_Obj *p_tclObj;
 	 int nameLength;
-	
+
 	 status = ibsac_query(
 		&IbisObj, IB_MAD_ATTR_VLARB_RECORD, self, comp_mask, method,
 		&num_recs, &p_result_madw
 		);
-	
+
 	 for( i = 0; i < num_recs; i++ )
 	 {
 		/* we need to create a new node info and copy */
 		p_rec = (ib_vl_arb_table_record_t *)malloc(sizeof(ib_vl_arb_table_record_t));
-		
+
 		/* copy into it */
 		*p_rec = *((ib_vl_arb_table_record_t*)osmv_get_query_result( p_result_madw, i ));
-		
+
 		/* register it as a new object */
 		SWIG_AltMnglRegObj("vlarb",p_rec);
 
@@ -852,16 +852,16 @@
 			 p_res_str = (char *)malloc(nameLength + 2);
 			 p_res_str[0] = '\0';
 		  }
-		
+
 		  strcat(p_res_str, tmp);
 		  strcat(p_res_str, " ");
 		}
 		Tcl_DecrRefCount(p_tclObj);
 	 }
-	
+
 	 if( p_result_madw != NULL )
 		osm_mad_pool_put( &IbisObj.mad_pool, p_result_madw );
-	
+
 	 return(p_res_str);
   }
 
@@ -877,20 +877,20 @@
 	 char *p_res_str = NULL, *tmp;
 	 Tcl_Obj *p_tclObj;
 	 int nameLength;
-	
+
 	 status = ibsac_query(
 		&IbisObj, IB_MAD_ATTR_PKEY_TBL_RECORD, self, comp_mask, method,
 		&num_recs, &p_result_madw
 		);
-	
+
 	 for( i = 0; i < num_recs; i++ )
 	 {
 		/* we need to create a new node info and copy */
 		p_rec = (ib_pkey_table_record_t *)malloc(sizeof(ib_pkey_table_record_t));
-		
+
 		/* copy into it */
 		*p_rec = *((ib_pkey_table_record_t*)osmv_get_query_result( p_result_madw, i ));
-		
+
 		/* register it as a new object */
 		SWIG_AltMnglRegObj("pkr",p_rec);
 		SWIG_AltMnglRegObj("pkt",&(p_rec->pkey_tbl));
@@ -910,16 +910,16 @@
 			 p_res_str = (char *)malloc(nameLength + 2);
 			 p_res_str[0] = '\0';
 		  }
-		
+
 		  strcat(p_res_str, tmp);
 		  strcat(p_res_str, " ");
 		}
 		Tcl_DecrRefCount(p_tclObj);
 	 }
-	
+
 	 if( p_result_madw != NULL )
 		osm_mad_pool_put( &IbisObj.mad_pool, p_result_madw );
-	
+
 	 return(p_res_str);
   }
 
@@ -1022,7 +1022,7 @@
 
   Example:
   ib_node_info_t_port_guid_get ni:1
-														
+
   Objects:
      Given an object identifier one can convert it to a Tcl "Object"
 	  using the following command:
@@ -1070,7 +1070,7 @@ typedef struct _ib_node_info
 
 %addmethods sacNodeInfo {
   void delete() {
-	 SWIG_AltMnglUnregObj(self);	
+	 SWIG_AltMnglUnregObj(self);
     free(self);
   }
 }
@@ -1094,7 +1094,7 @@ typedef struct _ib_node_record_t
   void delete() {
 	 /* we need to de-register both the node info and node record */
 	 SWIG_AltMnglUnregObj(&(self->node_info));
-	 SWIG_AltMnglUnregObj(self);	
+	 SWIG_AltMnglUnregObj(self);
     free(self);
   }
 }
@@ -1105,23 +1105,23 @@ typedef struct _ib_node_record_t
 
 #define IB_PIR_COMPMASK_LID				  "0x1"
 #define IB_PIR_COMPMASK_PORTNUM			  "0x2"
-#define IB_PIR_COMPMASK_RESV1				  "0x4"	
-#define IB_PIR_COMPMASK_MKEY				  "0x8"	
-#define IB_PIR_COMPMASK_GIDPRE			  0x10	
-#define IB_PIR_COMPMASK_BASELID			  0x20	
-#define IB_PIR_COMPMASK_SMLID				  0x40	
-#define IB_PIR_COMPMASK_CAPMASK			  0x80	
-#define IB_PIR_COMPMASK_DIAGCODE			  0x100	
-#define IB_PIR_COMPMASK_MKEYLEASEPRD	  0x200	
-#define IB_PIR_COMPMASK_LOCALPORTNUM	  0x400	
-#define IB_PIR_COMPMASK_LNKWIDTHSUPPORT  0x800	
+#define IB_PIR_COMPMASK_RESV1				  "0x4"
+#define IB_PIR_COMPMASK_MKEY				  "0x8"
+#define IB_PIR_COMPMASK_GIDPRE			  0x10
+#define IB_PIR_COMPMASK_BASELID			  0x20
+#define IB_PIR_COMPMASK_SMLID				  0x40
+#define IB_PIR_COMPMASK_CAPMASK			  0x80
+#define IB_PIR_COMPMASK_DIAGCODE			  0x100
+#define IB_PIR_COMPMASK_MKEYLEASEPRD	  0x200
+#define IB_PIR_COMPMASK_LOCALPORTNUM	  0x400
+#define IB_PIR_COMPMASK_LNKWIDTHSUPPORT  0x800
 #define IB_PIR_COMPMASK_LNKWIDTHACTIVE	  0x1000
 #define IB_PIR_COMPMASK_LINKWIDTHENABLED 0x2000
 #define IB_PIR_COMPMASK_LNKSPEEDSUPPORT  0x4000
-#define IB_PIR_COMPMASK_PORTSTATE		  0x10000	
-#define IB_PIR_COMPMASK_PORTPHYSTATE	  0x20000	
-#define IB_PIR_COMPMASK_LINKDWNDFLTSTATE 0x40000	
-#define IB_PIR_COMPMASK_MKEYPROTBITS	  0x80000	
+#define IB_PIR_COMPMASK_PORTSTATE		  0x10000
+#define IB_PIR_COMPMASK_PORTPHYSTATE	  0x20000
+#define IB_PIR_COMPMASK_LINKDWNDFLTSTATE 0x40000
+#define IB_PIR_COMPMASK_MKEYPROTBITS	  0x80000
 #define IB_PIR_COMPMASK_LMC				  0x100000
 #define IB_PIR_COMPMASK_LINKSPEEDACTIVE  0x200000
 #define IB_PIR_COMPMASK_LINKSPEEDENABLE  0x400000
@@ -1133,23 +1133,23 @@ typedef struct _ib_node_record_t
 #define IB_PIR_COMPMASK_VLARBHIGHCAP	  0x10000000
 #define IB_PIR_COMPMASK_VLARBLOWCAP		  0x20000000
 #define IB_PIR_COMPMASK_INITTYPEREPLY	  0x40000000
-#define IB_PIR_COMPMASK_MTUCAP			  0x80000000		
-#define IB_PIR_COMPMASK_VLSTALLCNT		  "0x100000000"		
-#define IB_PIR_COMPMASK_HOQLIFE			  "0x200000000"		
-#define IB_PIR_COMPMASK_OPVLS		    	  "0x400000000"		
-#define IB_PIR_COMPMASK_PARENFIN		     "0x800000000"	
+#define IB_PIR_COMPMASK_MTUCAP			  0x80000000
+#define IB_PIR_COMPMASK_VLSTALLCNT		  "0x100000000"
+#define IB_PIR_COMPMASK_HOQLIFE			  "0x200000000"
+#define IB_PIR_COMPMASK_OPVLS		    	  "0x400000000"
+#define IB_PIR_COMPMASK_PARENFIN		     "0x800000000"
 #define IB_PIR_COMPMASK_PARENFOUT		  "0x1000000000"
-#define IB_PIR_COMPMASK_FILTERRAWIN		  "0x2000000000"	
-#define IB_PIR_COMPMASK_FILTERRAWOUT	  "0x4000000000"	
-#define IB_PIR_COMPMASK_MKEYVIO			  "0x8000000000"	
-#define IB_PIR_COMPMASK_PKEYVIO			  "0x10000000000"	
-#define IB_PIR_COMPMASK_QKEYVIO			  "0x20000000000"	
-#define IB_PIR_COMPMASK_GUIDCAP			  "0x40000000000"	
-#define IB_PIR_COMPMASK_RESV2			     "0x80000000000"	
-#define IB_PIR_COMPMASK_SUBNTO			  "0x100000000000"	
-#define IB_PIR_COMPMASK_RESV3			     "0x200000000000"	
-#define IB_PIR_COMPMASK_RESPTIME		     "0x400000000000"	
-#define IB_PIR_COMPMASK_LOCALPHYERR		  "0x800000000000"	
+#define IB_PIR_COMPMASK_FILTERRAWIN		  "0x2000000000"
+#define IB_PIR_COMPMASK_FILTERRAWOUT	  "0x4000000000"
+#define IB_PIR_COMPMASK_MKEYVIO			  "0x8000000000"
+#define IB_PIR_COMPMASK_PKEYVIO			  "0x10000000000"
+#define IB_PIR_COMPMASK_QKEYVIO			  "0x20000000000"
+#define IB_PIR_COMPMASK_GUIDCAP			  "0x40000000000"
+#define IB_PIR_COMPMASK_RESV2			     "0x80000000000"
+#define IB_PIR_COMPMASK_SUBNTO			  "0x100000000000"
+#define IB_PIR_COMPMASK_RESV3			     "0x200000000000"
+#define IB_PIR_COMPMASK_RESPTIME		     "0x400000000000"
+#define IB_PIR_COMPMASK_LOCALPHYERR		  "0x800000000000"
 #define IB_PIR_COMPMASK_OVERRUNERR		  "0x1000000000000"
 
 typedef struct _ib_port_info
@@ -1189,7 +1189,7 @@ typedef struct _ib_port_info
 
 %addmethods sacPortInfo {
   void delete() {
-	 SWIG_AltMnglUnregObj(self);	
+	 SWIG_AltMnglUnregObj(self);
     free(self);
   }
 }
@@ -1239,7 +1239,7 @@ typedef struct _ib_sm_info
 
 %addmethods sacSmInfo {
   void delete() {
-	 SWIG_AltMnglUnregObj(self);	
+	 SWIG_AltMnglUnregObj(self);
     free(self);
   }
 }
@@ -1303,7 +1303,7 @@ typedef struct _ib_switch_info
 
 %addmethods sacSwInfo {
   void delete() {
-	 SWIG_AltMnglUnregObj(self);	
+	 SWIG_AltMnglUnregObj(self);
     free(self);
   }
 }
@@ -1388,8 +1388,8 @@ typedef struct _ib_link_record
 #define  IB_PR_COMPMASK_PKTLIFETIMESELEC  0x100000
 #define  IB_PR_COMPMASK_PFTLIFETIME       0x200000
 
-typedef struct _ib_path_rec			
-{												
+typedef struct _ib_path_rec
+{
         ib_net64_t service_id;
         ib_gid_t dgid;
         ib_gid_t sgid;
@@ -1579,7 +1579,7 @@ typedef struct _ibsac_inform_info
 		uint8_t			node_type_msb;
 		ib_net16_t		node_type_lsb;
 	 } generic;
-	
+
 	 struct _sac_inform_vend
 	 {
 		ib_net16_t		dev_id;
@@ -1588,7 +1588,7 @@ typedef struct _ibsac_inform_info
 		uint8_t			vendor_id_msb;
 		ib_net16_t		vendor_id_lsb;
 	 } vend;
-	
+
   } g_or_v;
 
 } sacInformInfo;

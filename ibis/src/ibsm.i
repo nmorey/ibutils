@@ -723,7 +723,7 @@ typedef struct _ibsm_notice
 		ib_net16_t	prod_type_lsb;
 		ib_net16_t	trap_num;
 	 }	generic;
-	
+
 	 struct _sm_notice_vend
 	 {
 		uint8_t		vend_id_msb;

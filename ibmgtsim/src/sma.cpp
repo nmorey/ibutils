@@ -702,7 +702,7 @@ int IBMSSma::mftMad(ibms_mad_msg_t &respMadMsg, ibms_mad_msg_t &reqMadMsg)
 		 MSG_EXIT_FUNC;
 		 return status;
 	 }
-		
+
     pMftEntryElm = &(pSimNode->switchMftPortsEntry[mftPortEntryIndex][mftTableEntryIndex]);
     memcpy ((void*)(pRespMad->data), (void*)(pMftEntryElm), sizeof(ib_mft_table_t));
   }
@@ -719,7 +719,7 @@ int IBMSSma::mftMad(ibms_mad_msg_t &respMadMsg, ibms_mad_msg_t &reqMadMsg)
 		 vector < ib_mft_table_t > tmpVec;
 		 pSimNode->switchMftPortsEntry.push_back(tmpVec);
 	 }
-	
+
 	 for (i = pSimNode->switchMftPortsEntry[mftPortEntryIndex].size(); i <= mftTableEntryIndex; i++)
 	 {
 		 ib_mft_table_t tmp;

@@ -245,14 +245,14 @@ int main (int argc, char **argv) {
 		FabricUtilsVerboseLevel |= FABU_LOG_VERBOSE;
 		printf(" Verbose Mode\n");
 		break;
-		
+
 	 case 'l':
 		/*
 		  Specifies lmc
 		*/
 		lmc = atoi(optarg);
 		break;
-			
+
 	 case 'f':
 		/*
 		  Specifies FDB
@@ -333,7 +333,7 @@ int main (int argc, char **argv) {
   while(next_option != -1);
 
   int status = 0;
-  IBFabric fabric;	
+  IBFabric fabric;
 
   /* based on the topology file we decide what mode we are: */
   if (TopoFile.size()) {
@@ -365,7 +365,7 @@ int main (int argc, char **argv) {
 			 << "/" << SmPortNum << endl;
 	  exit(1);
 	}
-	
+
 	// assign lids
 	if (SubnMgtAssignLids(p_smPort,lmc)) {
 	  cout << "-E- Fail to assign LIDs." << endl;
@@ -410,7 +410,7 @@ int main (int argc, char **argv) {
    }
 
 	if (!EnhancedRouting) {
-	
+
 	  if (SubnMgtOsmRoute(&fabric)) {
 		 cout << "-E- Fail to update LFT Tables." << endl;
 		 exit(1);
@@ -458,7 +458,7 @@ int main (int argc, char **argv) {
 	  }
 	  if (anyMissingFile)
 		  exit(1);
-			
+
     printf(" IBDMCHK OpenSM Routing Verification Mode:\n");
     printf(" FDB File = %s\n", fdbFile.c_str());
     printf(" MCFDB File = %s\n", mcFdbFile.c_str());

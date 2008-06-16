@@ -3081,7 +3081,7 @@ proc CheckPartitions {} {
     foreach nodeGuidPortNum [array names G data:PortGuid.*:*] {
 	regexp {PortGuid.([^:]+):([^:]+)} $nodeGuidPortNum d1 nodeGuid portNum
 	set portGuid $G($nodeGuidPortNum)
-	
+
 	# we need to examine the NodeInfo to see CA and how many PKey blocks
 	if {[catch {set nodeInfo $G(data:NodeInfo.$nodeGuid)}]} {
 	    inform "-W-ibdiagnet:PKeys.noNodeInfo" $nodeGuid
@@ -3097,7 +3097,7 @@ proc CheckPartitions {} {
 	set numPKeys [GetWordAfterFlag $nodeInfo -partition_cap]
 	set pkeys [GetPortPkeys $drPath $portNum $numPKeys]
 	set G(data:CAPortPKeys:$nodeGuid:$portNum) $pkeys
-	
+
 	# we might have direct enforcement by the neighbor switch
 	set neighNodeNPort $Neighbor($nodeGuid:$portNum)
 	set remPKeys {}
@@ -3112,7 +3112,7 @@ proc CheckPartitions {} {
 		set opvl_enforce [GetWordAfterFlag $portInfo -vl_enforce]
 		set outEnforce [expr $opvl_enforce & 0x4]
 		set inEnforce  [expr $opvl_enforce & 0x8]
-		
+
 		set remDrPath $G(data:dr.path.to.node.$remNodeGuid)
 		if {$outEnforce || $inEnforce} {
 		    if {! ($outEnforce && $inEnforce)} {
@@ -3132,7 +3132,7 @@ proc CheckPartitions {} {
 		}
 	    }
 	}
-	
+
 	# filter pkeys by remote port if exist
 	if {[info exists REM_PKEY]} {unset REM_PKEY}
 	if {[llength $remPKeys]} {
@@ -3141,17 +3141,17 @@ proc CheckPartitions {} {
 		set REM_PKEY($base) [expr $pkey & 0x8000]
 	    }
 	}
-	
+
 	foreach pkey $pkeys {
 	    set base [expr $pkey & 0x7fff]
-	
+
 	    if {$pkey != 0} {
 		if {$base != $pkey} {
 		    set isPartial 0
 		} else {
 		    set isPartial 1
 		}
-		
+
 		# see that remote pkeys do not filter
 		if {[llength $remPKeys]} {
 		    if {![info exists REM_PKEY($base)]} {
@@ -3192,7 +3192,7 @@ proc CheckPartitions {} {
 	foreach portGuidNPartial $PKEY_HOSTS($pkey) {
 	    set portGuid [lindex $portGuidNPartial 0]
 	    set isPartial [lindex $portGuidNPartial 1]
-	
+
 	    set drPath $G(data:dr.path.to.guid.$portGuid)
 	    set nodeName [DrPath2Name $drPath -port [GetEntryPort $drPath] -fullName]
 	    if {$isPartial} {
@@ -3233,7 +3233,7 @@ proc GetPortPkeysByDRPortNumAndDirection {drPath portNum dir} {
 	set opvl_enforce [GetWordAfterFlag $portInfo -vl_enforce]
 	set outEnforce [expr $opvl_enforce & 0x4]
 	set inEnforce  [expr $opvl_enforce & 0x8]
-	
+
 	if {$outEnforce || $inEnforce} {
 	    if {! ($outEnforce && $inEnforce)} {
 		set nodeName [DrPath2Name $drPath -port [GetEntryPort $drPath] -fullName]
@@ -3245,7 +3245,7 @@ proc GetPortPkeysByDRPortNumAndDirection {drPath portNum dir} {
 	} else {
 	    return "Not-Enforced"
 	}
-	
+
 	# the switch info to see how many pkeys:
 	if {[catch {set numPKeys [SmMadGetByDr SwitchInfo -enforce_cap "$drPath"]}]} {
 	    inform "-W-ibdiagnet:PKeys.noSwitchInfo" $nodeGuid $drPath
@@ -3494,7 +3494,7 @@ proc CheckIPoIB {} {
 	foreach {pkey IPVersion} $IPoIB_MCGS($mcg) {break}
 
 	inform "-I-ibdiagnet:ipoib.subnet" $IPVersion $pkey $gMtu $gRate $gSL $gPKey $gQKey
-	
+
 	if {[expr 0x7fff & $gPKey] != $pkey} {
 	    inform "-W-ibdiagnet:ipoib.bad.pkey" $gPKey $pkey
 	}
@@ -3512,7 +3512,7 @@ proc CheckIPoIB {} {
 	foreach nodeNPort $pkeyMembers {
 	    foreach {nodeGuid portNum} $nodeNPort {break}
 	    set portInfo $G(data:PortInfo.$nodeGuid:$portNum)
-	
+
 	    set rateNGbps [GetPortInfoRateCodeAndGbps $portInfo]
 	    if {[llength $rateNGbps] != 2} {
 		set drPath $G(data:dr.path.to.node.$nodeGuid)
@@ -3779,7 +3779,7 @@ proc CheckPathQoS {paths} {
 		set BLOCKED_SL($sl1) 1
 		lappend outOfRangeVLsSLs $sl1
 	    }
-	
+
 	    if {[lsearch -exact $blockedVLs $vl0] >= 0} {
 		set BLOCKED_SL($sl0) 1
 		lappend blockedSLs $sl0
@@ -3800,7 +3800,7 @@ proc CheckPathQoS {paths} {
 
 	# obtain next path
 	set drPath [lrange $dstPath 0 $idx]
-	
+
 	if {$idx + 1 == [llength $dstPath]} {
 	    set done 1
 	    continue
@@ -4665,7 +4665,7 @@ proc lstInfo { type DirectPath port } {
     global G MASK SM
     set DirectPath [join $DirectPath]
     set Info ""
-    set Vals ""	
+    set Vals ""
     ## The lists of parameters
     switch -exact -- $type {
 	"csv_mode" {
@@ -5029,7 +5029,7 @@ proc writePMFile {} {
     if {[info exists G(argv:csv.dump)]} {
         close $FileID_1
     }
-    return 0	
+    return 0
 }
 
 ##############################
@@ -5049,7 +5049,7 @@ proc writeTopologyFileAndIBNLs {} {
 	if {![file exists $ibnlDir]} {
 	    file mkdir $ibnlDir
 	}
-	
+
 	# we might be teh only reason to get a topology ...
 	if {![info exists G(IBfabric:merged)] } {
 	    set f [new_IBFabric]

@@ -51,7 +51,7 @@ proc checker {simDir osmPath osmPortGuid} {
 	# randomize lid errors:
 	puts $simCtrlSock "setLidAssignmentErrors \$fabric $lmc"
 	puts "SIM: [gets $simCtrlSock]"
-	
+
 	puts "---------------------------------------------------------------------"
 	puts " SUBNET READY FOR DIAGNOSTICS"
 	puts "\nCut and paste the following in a new window then run ibdiagnet:"
@@ -61,6 +61,6 @@ proc checker {simDir osmPath osmPortGuid} {
 	puts "setenv OSM_TMP_DIR   $simDir"
 	puts " "
 	puts " press Enter when done"
-	gets stdin	
+	gets stdin
    return 0
 }

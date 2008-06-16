@@ -1171,7 +1171,7 @@ proc inform { msgCode args } {
 	}
 
 
-	
+
 	"-E-loading:cannot.use.current.tcl.package" {
 	    append msgText "The current Tcl version is: Tcl$msgF(version). "
 	    append msgText "$G(var:tool.name) requires Tcl8.4 or newer."
@@ -1331,7 +1331,7 @@ proc inform { msgCode args } {
 	    append msgText "Output file $msgF(file0) is write protected.%n"
 	    append msgText "Writing info into $msgF(file1)."
 	}
-	
+
 
 	"-E-discover:broken.func" {
 	    append msgText "Could not complete discovering the fabric.%n"
@@ -1464,7 +1464,7 @@ proc inform { msgCode args } {
 	    append msgText "The topology defined in $G(argv:topo.file) "
 	    append msgText "perfectly matches the discovered fabric."
 	}
-	
+
 
 
 
@@ -1685,8 +1685,8 @@ proc inform { msgCode args } {
 	"-I-write.topology:writing" {
 	    append msgText "Writing Topology File $G(argv:write.topology)"
 	}
-	
-	
+
+
 
 	"-E-ibdiagnet:report.fab.qualities.errors" {
 	    set noExiting 1
@@ -1753,7 +1753,7 @@ proc inform { msgCode args } {
 	    set priority [lindex $args 1]
 	    append msgText "$nodeName  priority:$priority"
 	}
-	
+
         "-E-ibdiagnet:no.lst.file" {
 	    set noExiting 1
 	    append msgText "Fail to find \"$msgF(fileName)\""
@@ -1937,7 +1937,7 @@ proc inform { msgCode args } {
 	    append msgText "   PKey:$base Hosts:$hosts full:$full partial:$part"
 	}
 
-	
+
 	"-E-ibdiagnet:ipoib.ilegalRate" {
 	    set name [lindex $args 0]
 	    append msgText "Illegal speed/width on port:$name"

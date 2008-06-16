@@ -68,7 +68,7 @@ proc checker {simDir osmPath osmPortGuid} {
 	puts $simCtrlSock "updateProcFSForNode \$fabric $simDir H-1/U1 H-1/U1 1"
    set res [gets $simCtrlSock]
    puts "SIM: Updated H-1 proc file:$res"
-	
+
 	puts " All hosts now joining their IPoIB Subnets"
 	puts $simCtrlSock "joinPortsByPartition \$fabric {0x8001 0x8002 0x8003}"
    puts "SIM: [gets $simCtrlSock]"
@@ -93,7 +93,7 @@ proc checker {simDir osmPath osmPortGuid} {
 	puts "1) try: ibdiagnet -r"
 	puts "2) try: ibdiagpath -n H-2,H-41 -t $topologyFile"
 	puts " press Enter when done"
-	gets stdin		
+	gets stdin
 	puts "---------------------------------------------------------------------"
 	puts " Let the SM fix the issue:"
 	puts $simCtrlSock "setSwitchChangeBit \$fabric $swName"
@@ -107,7 +107,7 @@ proc checker {simDir osmPath osmPortGuid} {
 	}
 	puts "Repeat the previous commands to see everything is back to normal"
 	puts " press Enter when done"
-	gets stdin		
+	gets stdin
 	puts "---------------------------------------------------------------------"
 	puts $simCtrlSock "causeDeadEndOnPath \$fabric H-4/U1 1 H-23/U1 1"
 	set ret [gets $simCtrlSock]
@@ -119,7 +119,7 @@ proc checker {simDir osmPath osmPortGuid} {
 	puts "1) try: ibdiagnet -r"
 	puts "2) try: ibdiagpath -n H-4,H-23 -t $topologyFile"
 	puts " press Enter when done"
-	gets stdin		
+	gets stdin
 	puts "---------------------------------------------------------------------"
 	puts " Let the SM fix the issue:"
 	puts $simCtrlSock "setSwitchChangeBit \$fabric $swName"
@@ -133,7 +133,7 @@ proc checker {simDir osmPath osmPortGuid} {
 	}
 	puts "Repeat the previous commands to see everything is back to normal"
 	puts " press Enter when done"
-	gets stdin		
+	gets stdin
 	puts "---------------------------------------------------------------------"
 	puts $simCtrlSock "causeLoopOnPath \$fabric H-8/U1 1 H-22/U1 1"
 	set ret [gets $simCtrlSock]
@@ -145,7 +145,7 @@ proc checker {simDir osmPath osmPortGuid} {
 	puts "1) try: ibdiagnet -r"
 	puts "2) try: ibdiagpath -n H-8,H-22 -t $topologyFile"
 	puts " press Enter when done"
-	gets stdin		
+	gets stdin
 	puts "---------------------------------------------------------------------"
 	puts " Let the SM fix the issue:"
 	puts $simCtrlSock "setSwitchChangeBit \$fabric $swName"
@@ -166,6 +166,6 @@ proc checker {simDir osmPath osmPortGuid} {
 	puts "See what errors are reported using ibdiagnet:"
 	puts "1) try: ibdiagnet -r"
 	puts " press Enter when done"
-	gets stdin	
+	gets stdin
    return 0
 }

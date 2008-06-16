@@ -44,7 +44,7 @@ proc setPortWidth {fabric nodeName portNum width} {
 		4x {set code 2}
 		8x {set code 4}
 		12x {set code 8}
-		default {	
+		default {
 			return "ERR: unknown width:$width"
 		}
 	}

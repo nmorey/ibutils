@@ -66,7 +66,7 @@ void SWIG_SetPointerObj(Tcl_Obj *objPtr, void *_ptr, char *type) {
 	 if (getName(objPtr, _ptr, type)) {
 		cerr << "-E- Fail to convert object to string\n";
 	 }
-	 return;	
+	 return;
   }
 
   static char _hex[16] =
@@ -162,7 +162,7 @@ char *SWIG_GetPointerObj(Tcl_Interp *interp, Tcl_Obj *objPtr, void **ptr, char *
 			 for (i = 0; i < SWIG_CACHESIZE; i++)
 				SwigCache[i].stat = 0;
 		  }
-	
+
 		  /* First check cache for matches.  Uses last cache value as starting point */
 		  cache = &SwigCache[SwigLastCache];
 		  for (i = 0; i < SWIG_CACHESIZE; i++) {
@@ -206,13 +206,13 @@ char *SWIG_GetPointerObj(Tcl_Interp *interp, Tcl_Obj *objPtr, void **ptr, char *
 				  strcpy(temp_type,tp->name);
 				  strncat(temp_type,_t+len,255-tp->len);
 				  if (strcmp(_c,temp_type) == 0) {
-		
+
 					 strcpy(SwigCache[SwigCacheIndex].mapped,_c);
 					 strcpy(SwigCache[SwigCacheIndex].name,_t);
 					 SwigCache[SwigCacheIndex].stat = 1;
 					 SwigCache[SwigCacheIndex].tp = tp;
 					 SwigCacheIndex = SwigCacheIndex & SWIG_CACHEMASK;
-		
+
 					 /* Get pointer value */
 					 *ptr = (void *) _p;
 					 if (tp->cast) *ptr = (*(tp->cast))(*ptr);
@@ -243,7 +243,7 @@ char *SWIG_GetPointerObj(Tcl_Interp *interp, Tcl_Obj *objPtr, void **ptr, char *
 		*ptr = (void *) 0;
 		return (char *) 0;
     }
-    *ptr = (void *) 0;	
+    *ptr = (void *) 0;
     return _c;
   }
 }

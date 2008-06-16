@@ -65,7 +65,7 @@ AC_ARG_WITH(osm-libs,
 AC_MSG_NOTICE(Using OSM libs from:$with_osm_libs),
 with_osm_libs="none")
 
-osm_lib_dir="none"	
+osm_lib_dir="none"
 
 if test "x$libcheck" = "xtrue"; then
    dnl if the user did not provide --with-osm look for it in reasonable places

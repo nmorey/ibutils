@@ -18,21 +18,21 @@ qos_vlarb_low  0:1,1:1,2:1,3:1,4:1,5:1,6:1,7:1
 qos_sl2vl      0,1,2,3,4,5,6,7,0,1,2,3,4,5,6,7
 
 # QoS CA options
-qos_ca_max_vls    8										
-qos_ca_high_limit 4									
+qos_ca_max_vls    8
+qos_ca_high_limit 4
 qos_ca_vlarb_high 0:1,1:1,2:1,3:1,4:1,5:1,6:1,7:1
 qos_ca_vlarb_low 	0:1,1:1,2:1,3:1,4:1,5:1,6:1,7:1
 qos_ca_sl2vl 		0,1,2,3,4,5,6,7,0,1,2,3,4,5,6,7
 
 # QoS Switch Port 0 options
-qos_sw0_max_vls    8										
-qos_sw0_high_limit 5									
+qos_sw0_max_vls    8
+qos_sw0_high_limit 5
 qos_sw0_vlarb_high 0:1,1:1,2:1,3:1,4:1,5:1,6:1,7:1
 qos_sw0_vlarb_low  0:1,1:1,2:1,3:1,4:1,5:1,6:1,7:1
 qos_sw0_sl2vl 		 0,1,2,3,4,5,6,7,0,1,2,3,4,5,6,7
 
 # QoS Switch external ports options
-qos_swe_max_vls     8										
+qos_swe_max_vls     8
 qos_swe_high_limit  6
 qos_swe_vlarb_high  0:1,1:1,2:1,3:1,4:1,5:1,6:1,7:1
 qos_swe_vlarb_low   0:1,1:1,2:1,3:1,4:1,5:1,6:1,7:1
@@ -82,7 +82,7 @@ proc runner {simDir osmPath osmPortGuid} {
 proc checker {simDir osmPath osmPortGuid} {
    global env
    global simCtrlSock
-		
+
    # wait for the SM up or dead
    set osmLog [file join $simDir osm.log]
    if {[osmWaitForUpOrDead $osmLog]} {

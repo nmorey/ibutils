@@ -27,14 +27,14 @@ proc setSwitchChangeBit {fabric nodeName} {
 	global IB_SW_NODE
 
    set node [IBFabric_getNode $fabric $nodeName]
-	if {$node == ""} {	
+	if {$node == ""} {
 		return "ERR: Fail to find node:$nodeName"
 	}
-	
+
 	if {[IBNode_type_get $node] != $IB_SW_NODE} {
 		return "ERR: Given node:$nodeName is not a switch"
 	}
-		
+
 	set swi [IBMSNode_getSwitchInfo sim$node]
 	set lifeState [ib_switch_info_t_life_state_get $swi]
 	set lifeState [expr ($lifeState & 0xf8) | 4 ]
@@ -119,7 +119,7 @@ proc causeDeadEndOnPath {fabric srcName srcPortNum dstName dstPortNum} {
 	if {$dstNode == ""} {
 		return "ERR: could not find the dst node:$dstName"
 	}
-	
+
 	set dstPort [IBNode_getPort $dstNode $dstPortNum]
 	if {$dstPort == ""} {
 		return "ERR: could not find the dst node:$dstName port:$dstPortNum"
@@ -130,12 +130,12 @@ proc causeDeadEndOnPath {fabric srcName srcPortNum dstName dstPortNum} {
 	if {$srcNode == ""} {
 		return "ERR: could not find the src node:$srcName"
 	}
-	
+
 	set srcPort [IBNode_getPort $srcNode $srcPortNum]
 	if {$srcPort == ""} {
 		return "ERR: could not find the src node:$srcName port:$srcPortNum"
 	}
-	
+
 	set sLid [IBPort_base_lid_get $srcPort]
 
 	if {[ibdmTraceRouteByLFT $fabric $sLid $dLid hops nodeList]} {
@@ -155,7 +155,7 @@ proc causeLoopOnPath {fabric srcName srcPortNum dstName dstPortNum} {
 	if {$dstNode == ""} {
 		return "ERR: could not find the dst node:$dstName"
 	}
-	
+
 	set dstPort [IBNode_getPort $dstNode $dstPortNum]
 	if {$dstPort == ""} {
 		return "ERR: could not find the dst node:$dstName port:$dstPortNum"
@@ -166,12 +166,12 @@ proc causeLoopOnPath {fabric srcName srcPortNum dstName dstPortNum} {
 	if {$srcNode == ""} {
 		return "ERR: could not find the src node:$srcName"
 	}
-	
+
 	set srcPort [IBNode_getPort $srcNode $srcPortNum]
 	if {$srcPort == ""} {
 		return "ERR: could not find the src node:$srcName port:$srcPortNum"
 	}
-	
+
 	set sLid [IBPort_base_lid_get $srcPort]
 
 	if {[ibdmTraceRouteByLFT $fabric $sLid $dLid hops nodeList]} {
@@ -186,7 +186,7 @@ proc causeLoopOnPath {fabric srcName srcPortNum dstName dstPortNum} {
 	set sw1OutPortNum [IBNode_getLFTPortForLid $sw1Node $dLid]
 	set sw1OutPort    [IBNode_getPort $sw1Node $sw1OutPortNum]
 	set sw2InPort     [IBPort_p_remotePort_get $sw1OutPort]
-	
+
 	set swName [IBNode_name_get $sw2Node]
 	IBNode_setLFTPortForLid $sw2Node $dLid [IBPort_num_get $sw2InPort]
 	return "Loop path from $srcName/$srcPortNum to $dstName/$dstPortNum at switch:$swName"

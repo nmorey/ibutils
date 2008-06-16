@@ -76,7 +76,7 @@ int TraceDRPathRoute (IBPort *p_smNodePort, list_int drPathPortNums) {
   while (p_port && (hop < drPathPortNums.size())) {
 		// get the node
 		p_node = p_port->p_node;
-		
+
 		if (p_port->p_sysPort) {
 		  // is external port:
 		  cout << "[" << setw(3) <<hop << "] FROM Host:" << p_node->p_system->name.c_str()
@@ -87,15 +87,15 @@ int TraceDRPathRoute (IBPort *p_smNodePort, list_int drPathPortNums) {
 		  cout << "[" << setw(3) << hop << "] FROM Node:"  << p_node->name.c_str() << " Port:"
 				 << p_port->num << endl;
 		}
-		
+
 		// we calc next step port:
 		p_nextPort = NULL;
-		
+
 		// start going to the other side:
 		p_remPort = p_port->p_remotePort;
 		if (p_remPort != NULL) {
 		  p_remNode = p_remPort->p_node;
-		
+
 		  // The to section:
 		  if (p_remPort->p_sysPort) {
 			 // is external port:
@@ -115,16 +115,16 @@ int TraceDRPathRoute (IBPort *p_smNodePort, list_int drPathPortNums) {
 				cout << "-E- Bad port number:" << outPortNum << " hop:" << hop << endl;
 				return 1;
 			 }
-			
+
 			 // port not connected
 			 if (p_remNode->Ports[outPortNum] == NULL) {
 				cout << "[" << setw(3) << hop << "] Broken Route: not connected port:" << outPortNum << endl;
 				return 1;
 			 }
-			
+
 			 p_nextPort = p_remNode->Ports[outPortNum];
 		  }
-		
+
 		  pI++;
 		  hop++;
 		}
@@ -166,7 +166,7 @@ TraceRouteByMinHops (IBFabric *p_fabric,
   while (p_port) {
 		// get the node
 		p_node = p_port->p_node;
-		
+
 		if (p_port->p_sysPort) {
 		  // is external port:
 		  cout << "[" << setw(3) << hop << "] FROM Host:" << p_node->p_system->name.c_str()
@@ -177,15 +177,15 @@ TraceRouteByMinHops (IBFabric *p_fabric,
 		  cout << "[" << setw(3) << hop << "] FROM Node:"  << p_node->name.c_str() << " Port:"
 				 << p_port->num << endl;
 		}
-		
+
 		// we calc next step port:
 		p_nextPort = NULL;
-		
+
 		// start going to the other side:
 		p_remPort = p_port->p_remotePort;
 		if (p_remPort != NULL) {
 		  p_remNode = p_remPort->p_node;
-		
+
         // did we already visit this node?
         set_p_node::iterator sI = visitedNodes.find(p_remNode);
         if (sI != visitedNodes.end()) {
@@ -284,7 +284,7 @@ int TraceRouteByLFT (
 		cout << "-E- Unassigned LFT for lid:" << dLid << " Dead end at:" << p_node->name << endl;
 		return 1;
 	 }
-	
+
     // if the port number is 0 we must have reached the target
     if (pn == 0)
     {

@@ -58,7 +58,7 @@ proc checker {simDir osmPath osmPortGuid} {
    set res [gets $simCtrlSock]
    puts "SIM: Updated H-3 proc file:$res"
 
-	
+
 	puts "---------------------------------------------------------------------\n"
 	puts " THIS FLOW REQUIRES MANUALy RUNNING OpenSM.\n"
 	puts " 1. GOOD CASE:"

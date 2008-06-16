@@ -123,7 +123,7 @@ int main (int argc, char **argv) {
 		FabricUtilsVerboseLevel |= FABU_LOG_VERBOSE;
 		printf(" Verbose Mode\n");
 		break;
-		
+
 	 case 'a':
 		/*
 		  Analyze Loops
@@ -131,7 +131,7 @@ int main (int argc, char **argv) {
 		AnalyzeLoops = 1;
 		printf(" Analyze Credit Loops\n");
 		break;
-			
+
 	 case 'e':
 		/*
 		  Enhanced Routing
@@ -179,7 +179,7 @@ int main (int argc, char **argv) {
 		show_help();
 		return 0;
 		break;
-			
+
 	 case -1:
 		break; /* done with option */
 	 default: /* something wrong */
@@ -208,7 +208,7 @@ int main (int argc, char **argv) {
   printf(" LMC ............ %u\n", lmc);
   printf("-------------------------------------------------\n");
 
-  IBFabric fabric;	
+  IBFabric fabric;
 
   if (CablingFile.size()) {
     if (fabric.parseCables(CablingFile)) {
@@ -235,7 +235,7 @@ int main (int argc, char **argv) {
 			 << "/" << SmPortNum << endl;
 	  exit(1);
 	}
-	
+
 	// assign lids
 	if (SubnMgtAssignLids(p_smPort,lmc)) {
 	  cout << "-E- Fail to assign LIDs." << endl;
@@ -249,7 +249,7 @@ int main (int argc, char **argv) {
 	}
 
 	if (!EnhancedRouting) {
-	
+
 	  if (SubnMgtOsmRoute(&fabric)) {
 		 cout << "-E- Fail to update LFT Tables." << endl;
 		 exit(1);

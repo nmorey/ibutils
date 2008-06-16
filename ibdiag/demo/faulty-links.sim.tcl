@@ -50,7 +50,7 @@ proc getAddressiblePortLids {fabric} {
          for {set pn $pMin} {$pn <= $pMax} {incr pn} {
             set port [IBNode_getPort $node $pn]
             if {$port == ""} {continue}
-				
+
             # if the port is not connected ignore it:
             if {[IBPort_p_remotePort_get $port] != ""} {
 					set lid [IBPort_base_lid_get $port]
@@ -78,7 +78,7 @@ proc startAllToAllTraffic {fabric} {
 
 	set srcLid [getRandomNumOfSequence $LIDS]
 	set dstLid [getRandomNumOfSequence $LIDS]
-	
+
 	set port $HCA_PORT_BY_LID($srcLid)
 	set node [IBPort_p_node_get $port]
 	set portNum [IBPort_num_get $port]

@@ -76,7 +76,7 @@ proc setVlArbAccross {fabric nodeName portNum VLA} {
 	if {[IBMSNode_setVLArbLTable sim$remNode $remPortNum 1 $VLA]} {
 		return "ERR: failed to update LOW VLArb on node:$remNodeName port:$remPortNum"
 	}
-		
+
 	set old [IBMSNode_getVLArbLTable sim$remNode $remPortNum 3]
 	puts "-I- Old LOW VLA on node:$remNodeName port:$remPortNum was:$old"
 	if {[IBMSNode_setVLArbLTable sim$remNode $remPortNum 3 $VLA]} {

@@ -82,9 +82,9 @@
 	  MAPPING IBDM OBJECTS TO TCL and BACK:
 	  The idea is that we have specifc rules for naming
 	  Node, Port, System and SystemPort for a specific Fabric.
-	
+
 	  All Fabrics are stored by id in a global vector.
-	
+
 	  So the object names will follow:
 	  <type>:<fabricIdx>/<name>
 
@@ -153,7 +153,7 @@
 	 char name[128];
 	 IBFabric *p_fabric;
 	 string uiType;
-	
+
 	 if (!strcmp(type, "IBNode *")) {
 		IBNode *p_node = (IBNode *)ptr;
 		p_fabric = p_node->p_fabric;
@@ -207,7 +207,7 @@
 	 *ptr = NULL;
 
 	 strcpy(buf, Tcl_GetStringFromObj(objPtr,0));
-	
+
 	 /* the format is always: <type>:<idx>[:<name>] */
 
 	 /* first separate the type */
@@ -232,23 +232,23 @@
 		*slashIdx = '\0';
 		name = ++slashIdx;
 	 }
-	
+
 	 /* Ok so now get the fabic pointer */
 	 fabricIdx = atoi(fabIdxStr);
-	
+
 	 IBFabric *p_fabric = ibdmGetFabricPtrByIdx(fabricIdx);
 	 if (! p_fabric) {
 		*ptr = NULL;
 		return TCL_ERROR;
 	 }
-	
+
 	 if (!strcmp(type, "fabric")) {
 		*ptr = p_fabric;
 	 } else if (!strcmp(type, "node")) {
 		IBNode *p_node = p_fabric->getNode(string(name));
 		if (! p_node) {
 		  printf("-E- Fail to get node:%s\n", name);
-		  return TCL_ERROR;		
+		  return TCL_ERROR;
 		}
 		*ptr = p_node;
 	 } else if (!strcmp(type, "port")) {
@@ -256,14 +256,14 @@
 		if (!slashIdx) {
 		  printf("-E- Bad formatted ibdm node object:%s\n",
 					Tcl_GetStringFromObj(objPtr,0));
-		  return TCL_ERROR;		
+		  return TCL_ERROR;
 		}
 		*slashIdx = '\0';
 		int portNum = atoi(++slashIdx);
 		IBNode *p_node = p_fabric->getNode(string(name));
 		if (! p_node) {
 		  printf("-E- Fail to get node:%s\n", name);
-		  return TCL_ERROR;		
+		  return TCL_ERROR;
 		}
 		IBPort *p_port = p_node->getPort(portNum);
 		if (! p_port) {
@@ -276,7 +276,7 @@
 		IBSystem *p_system = p_fabric->getSystem(string(name));
 		if (! p_system) {
 		  printf("-E- Fail to get system:%s\n", name);
-		  return TCL_ERROR;		
+		  return TCL_ERROR;
 		}
 		*ptr = p_system;
 	 } else if (!strcmp(type, "sysport")) {
@@ -291,17 +291,17 @@
 		IBSystem *p_system = p_fabric->getSystem(string(name));
 		if (! p_system) {
 		  printf("-E- Fail to get system:%s\n", name);
-		  return TCL_ERROR;		
+		  return TCL_ERROR;
 		}
 		IBSysPort *p_sysPort = p_system->getSysPort(string(++colonIdx));
 		if (! p_sysPort) {
 		  printf("-E- Fail to get system:%s port:%s\n", name, colonIdx);
-		  return TCL_ERROR;		
+		  return TCL_ERROR;
 		}
 		*ptr = p_sysPort;
 	 } else {
 		printf("-E- Unrecognized Object Type:%s\n", type);
-		return TCL_ERROR;	
+		return TCL_ERROR;
 	 }
 	 return TCL_OK;
   }
@@ -376,9 +376,9 @@
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString($source) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   $target = ($type)ptr;
 }
 
@@ -408,41 +408,41 @@
 	 char err[256];
 	 sprintf(err, "-E- basetype is $basetype but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("$basetype", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is $basetype but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("$basetype", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is $basetype but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("$basetype", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is $basetype but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("$basetype", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is $basetype but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype '$basetype' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 
@@ -460,7 +460,7 @@
 		} else {
 		  Tcl_AppendElement(interp, Tcl_GetString(p_tclObj));
 		}
-		Tcl_DecrRefCount(p_tclObj);	
+		Tcl_DecrRefCount(p_tclObj);
 	 }
   }
 }
@@ -860,12 +860,12 @@
     if (ibdmGetObjPtrByTclName(p_tclObj, &ptr) != TCL_OK) {
       printf("-E- fail to find ibdm obj by id:%s", buf );
       Tcl_DecrRefCount(p_tclObj);
-      return TCL_ERROR;	
+      return TCL_ERROR;
     }
     Tcl_DecrRefCount(p_tclObj);
     tmpNodeList.push_back((IBNode *)ptr);
   }
-	
+
   $target = &tmpNodeList;
 }
 
@@ -924,7 +924,7 @@ int ibdmUseCoutLog();
      set nodes [ibdm_get_nodes]
      set node  [lindex $nodes 0]
      IBNode_numPorts_get $node
-														
+
   Objects:
      Given an object pointer one can convert it to a Tcl "Object"
 	  using the following command:
@@ -1024,14 +1024,14 @@ class IBNode {
 
   int getHops (IBPort *p_port, unsigned int lid);
   // Get the min number of hops defined for the given port or all
-	
+
   IBPort *getFirstMinHopPort(unsigned int lid);
   // Scan the node ports and find the first port
   // with min hop to the lid
 
   void setLFTPortForLid (unsigned int lid, unsigned int portNum);
   // Set the Linear Forwarding Table:
-	
+
   int getLFTPortForLid (unsigned int lid);
   // Get the LFT for a given lid
 
@@ -1078,7 +1078,7 @@ class IBSystem {
 %readonly
   map_str_pnode NodeByName;   // Provide the node pointer by its name
   map_str_psysport PortByName;// A map provising pointer to the SysPort by name
-%readwrite	
+%readwrite
 
   IBSystem(string n, IBFabric *p_fab, string t);
   // Constractor
@@ -1128,7 +1128,7 @@ class IBFabric {
 						  IBNodeType type,
 						  unsigned int numPorts);
   // get the node by its name (create one of does not exist)
-		
+
   IBNode *getNode (string name);
   // get the node by its name
 
@@ -1158,7 +1158,7 @@ class IBFabric {
                  );
 
   // Add a cable connection
-	
+
   int parseCables (string fn);
   // Parse the cables file and build the fabric
 
@@ -1189,7 +1189,7 @@ class IBFabric {
 
   inline void setLidPort (unsigned int lid, IBPort *p_port);
   // set a lid port
-	
+
   inline IBPort *getPortByLid (unsigned int lid);
   // get a port by lid
 

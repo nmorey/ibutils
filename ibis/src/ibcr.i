@@ -113,7 +113,7 @@ ibcr_destroy_global(void)
 {
 	ibcr_destroy(p_ibcr_global);
 	return (0);
-}	
+}
 
 int
 ibcr_num_of_multi_max(void)
@@ -151,7 +151,7 @@ ibcr_write_global(
 	ib_api_status_t status;
 
 	status = ibcr_write(p_ibcr_global,lid,data,address);
-	
+
    if (status) {
      ibis_set_tcl_error("ERROR : Fail to write CR space");
    }
@@ -160,7 +160,7 @@ ibcr_write_global(
 
 int
 ibcr_multi_read_global(
-  uint8_t num,	
+  uint8_t num,
   uint16_t lid_list[],
   uint32_t address,
   char **pp_new_cr_str)
@@ -170,7 +170,7 @@ ibcr_multi_read_global(
 
 	status =
      ibcr_multi_read(p_ibcr_global,num,lid_list,address,cr_space_mads_arr);
-	
+
    if (status) {
      ibis_set_tcl_error("ERROR : Fail to read all targets CR space");
    } else {
@@ -181,7 +181,7 @@ ibcr_multi_read_global(
 
 int
 ibcr_multi_write_global(
-  uint8_t num,	
+  uint8_t num,
   uint16_t lid_list[],
   uint32_t data,
   uint32_t address)
@@ -218,13 +218,13 @@ ibcr_multi_write_global(
     strcpy(loc_buf,str_tcl);
 
 
-    str = strtok_r(loc_buf," ", &str_token);			
-    for (i=0;i<IBCR_MULTI_MAX;i++) {		
+    str = strtok_r(loc_buf," ", &str_token);
+    for (i=0;i<IBCR_MULTI_MAX;i++) {
 	if (str == NULL) {
 	    break;
 	}
 	temp[i] = strtoul(str, NULL, 0);
-	str = strtok_r(NULL," ",&str_token);	
+	str = strtok_r(NULL," ",&str_token);
     }
     $target = temp;
     free(loc_buf);
@@ -285,7 +285,7 @@ They all return 0 on succes.
 %init %{
 
  {
-	
+
 	}
 %}
 

@@ -21,7 +21,7 @@ Required arguments description.
 =over
 
 =item Topology file describing the network. See man ibdm-topology-file.
-	
+
 =back
 
 =item -c|--cables <file>
@@ -33,7 +33,7 @@ Required arguments description.
 =back
 
 <Sys1Type> <Sys1Name> <Port1Name> <Sys2Type> <Sys2Name> <Port2Name>
-	
+
 =item -s|--sm-node <name>
 
 =over

@@ -301,7 +301,7 @@ class IBNode {
 
   // Get the min number of hops defined for the given port or all
   int getHops (IBPort *p_port, unsigned int lid);
-	
+
   // Report Hop Table of the given node
   void repHopTable ();
   // Scan the node ports and find the first port
@@ -310,7 +310,7 @@ class IBNode {
 
   // Set the Linear Forwarding Table:
   void setLFTPortForLid (unsigned int lid, unsigned int portNum);
-	
+
   // Get the LFT for a given lid
   int getLFTPortForLid (unsigned int lid);
 
@@ -441,7 +441,7 @@ class IBFabric {
 						  IBSystem *p_sys,
 						  IBNodeType type,
 						  unsigned int numPorts);
-		
+
   // get port by guid:
   IBPort *getPortByGuid (uint64_t guid);
 
@@ -466,7 +466,7 @@ class IBFabric {
   int addCable (string t1, string n1, string p1,
                 string t2, string n2, string p2,
                 IBLinkWidth width, IBLinkSpeed speed);
-	
+
   // Parse the cables file and build the fabric
   int parseCables (string fn);
 
@@ -499,11 +499,11 @@ class IBFabric {
 	 if ( PortByLid.empty() || (PortByLid.size() < lid + 1))
 		for (unsigned int i = PortByLid.size(); i < lid + 1; i++)
 		  PortByLid.push_back(NULL);
-	
+
 	 PortByLid[lid] = p_port;
     if (maxLid < lid) maxLid = lid;
   };
-	
+
   // get a port by lid
   inline IBPort *getPortByLid (unsigned int lid) {
 	 if ( PortByLid.empty() || (PortByLid.size() < lid + 1))

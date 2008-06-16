@@ -343,7 +343,7 @@ proc checker {simDir osmPath osmPortGuid} {
       puts "-E- $res ports have miss-placed pkeys"
 		return 1
    }
-	
+
    #Inject a changebit - to force heavy sweep
    puts $simCtrlSock "setOneSwitchChangeBit \$fabric"
    puts "SIM: [gets $simCtrlSock]"

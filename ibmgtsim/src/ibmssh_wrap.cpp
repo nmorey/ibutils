@@ -337,9 +337,9 @@ SWIGEXPORT(int,Ibdm_Init)(Tcl_Interp *);
 	  MAPPING IBDM OBJECTS TO TCL and BACK:
 	  The idea is that we have specifc rules for naming
 	  Node, Port, System and SystemPort for a specific Fabric.
-	
+
 	  All Fabrics are stored by id in a global vector.
-	
+
 	  So the object names will follow:
 	  <type>:<fabricIdx>/<name>
 
@@ -408,7 +408,7 @@ SWIGEXPORT(int,Ibdm_Init)(Tcl_Interp *);
 	 char name[128];
 	 IBFabric *p_fabric;
 	 string uiType;
-	
+
 	 if (!strcmp(type, "IBNode *")) {
 		IBNode *p_node = (IBNode *)ptr;
 		p_fabric = p_node->p_fabric;
@@ -462,7 +462,7 @@ SWIGEXPORT(int,Ibdm_Init)(Tcl_Interp *);
 	 *ptr = NULL;
 
 	 strcpy(buf, Tcl_GetStringFromObj(objPtr,0));
-	
+
 	 /* the format is always: <type>:<idx>[:<name>] */
 
 	 /* first separate the type */
@@ -487,23 +487,23 @@ SWIGEXPORT(int,Ibdm_Init)(Tcl_Interp *);
 		*slashIdx = '\0';
 		name = ++slashIdx;
 	 }
-	
+
 	 /* Ok so now get the fabic pointer */
 	 fabricIdx = atoi(fabIdxStr);
-	
+
 	 IBFabric *p_fabric = ibdmGetFabricPtrByIdx(fabricIdx);
 	 if (! p_fabric) {
 		*ptr = NULL;
 		return TCL_ERROR;
 	 }
-	
+
 	 if (!strcmp(type, "fabric")) {
 		*ptr = p_fabric;
 	 } else if (!strcmp(type, "node")) {
 		IBNode *p_node = p_fabric->getNode(string(name));
 		if (! p_node) {
 		  printf("-E- Fail to get node:%s\n", name);
-		  return TCL_ERROR;		
+		  return TCL_ERROR;
 		}
 		*ptr = p_node;
 	 } else if (!strcmp(type, "port")) {
@@ -511,14 +511,14 @@ SWIGEXPORT(int,Ibdm_Init)(Tcl_Interp *);
 		if (!slashIdx) {
 		  printf("-E- Bad formatted ibdm node object:%s\n",
 					Tcl_GetStringFromObj(objPtr,0));
-		  return TCL_ERROR;		
+		  return TCL_ERROR;
 		}
 		*slashIdx = '\0';
 		int portNum = atoi(++slashIdx);
 		IBNode *p_node = p_fabric->getNode(string(name));
 		if (! p_node) {
 		  printf("-E- Fail to get node:%s\n", name);
-		  return TCL_ERROR;		
+		  return TCL_ERROR;
 		}
 		IBPort *p_port = p_node->getPort(portNum);
 		if (! p_port) {
@@ -531,7 +531,7 @@ SWIGEXPORT(int,Ibdm_Init)(Tcl_Interp *);
 		IBSystem *p_system = p_fabric->getSystem(string(name));
 		if (! p_system) {
 		  printf("-E- Fail to get system:%s\n", name);
-		  return TCL_ERROR;		
+		  return TCL_ERROR;
 		}
 		*ptr = p_system;
 	 } else if (!strcmp(type, "sysport")) {
@@ -546,17 +546,17 @@ SWIGEXPORT(int,Ibdm_Init)(Tcl_Interp *);
 		IBSystem *p_system = p_fabric->getSystem(string(name));
 		if (! p_system) {
 		  printf("-E- Fail to get system:%s\n", name);
-		  return TCL_ERROR;		
+		  return TCL_ERROR;
 		}
 		IBSysPort *p_sysPort = p_system->getSysPort(string(++colonIdx));
 		if (! p_sysPort) {
 		  printf("-E- Fail to get system:%s port:%s\n", name, colonIdx);
-		  return TCL_ERROR;		
+		  return TCL_ERROR;
 		}
 		*ptr = p_sysPort;
 	 } else {
 		printf("-E- Unrecognized Object Type:%s\n", type);
-		return TCL_ERROR;	
+		return TCL_ERROR;
 	 }
 	 return TCL_OK;
   }
@@ -665,7 +665,7 @@ extern char * ibdmSourceVersion;
 	 char name[128];
 	 IBFabric *p_fabric;
 	 string uiType;
-	
+
 	 if (!strcmp(type, "IBMSNode *")) {
 		IBNode *p_node = ((IBMSNode *)ptr)->getIBNode();
 		p_fabric = p_node->p_fabric;
@@ -699,7 +699,7 @@ extern char * ibdmSourceVersion;
 	 *ptr = NULL;
 
 	 strcpy(buf, Tcl_GetStringFromObj(objPtr,0));
-	
+
 	 /* the format is always: <type>:<idx>[:<name>] */
 
 	 /* first separate the type */
@@ -712,7 +712,7 @@ extern char * ibdmSourceVersion;
 
 	 type = buf;
 	 fabIdxStr = ++colonIdx;
-	
+
 	 /* now separate the fabric section if type is not fabric */
 	 if (strcmp(type, "fabric")) {
 		slashIdx = index(fabIdxStr,':');
@@ -727,28 +727,28 @@ extern char * ibdmSourceVersion;
 
 	 /* OK so now get the fabric pointer */
 	 fabricIdx = atoi(fabIdxStr);
-	
+
 	 IBFabric *p_fabric = ibdmGetFabricPtrByIdx(fabricIdx);
 	 if (! p_fabric) {
 		*ptr = NULL;
 		return TCL_ERROR;
 	 }
-	
+
     if (!strcmp(type, "simnode")) {
 		IBNode *p_node = p_fabric->getNode(string(name));
       if (!p_node) {
 		  printf("-E- Fail to get node:%s\n", name);
-		  return TCL_ERROR;		
+		  return TCL_ERROR;
 		}
       IBMSNode *pSimNode = ibmsGetIBNodeSimNode(p_node);
 		if (! pSimNode) {
 		  printf("-E- Fail to get node:%s\n", name);
-		  return TCL_ERROR;		
+		  return TCL_ERROR;
 		}
 		*ptr = pSimNode;
 	 } else {
 		printf("-E- Unrecognized Object Type:%s\n", type);
-		return TCL_ERROR;	
+		return TCL_ERROR;
 	 }
 	 return TCL_OK;
   }
@@ -805,7 +805,7 @@ extern char * ibdmSourceVersion;
     char buf[256];
 
 	 strcpy(buf, Tcl_GetStringFromObj(objPtr,0));
-	
+
 	 /* the format is always: <type>:<idx>[:<name>] */
 
 	 /* first separate the type */
@@ -1024,7 +1024,7 @@ static int  _wrap_const_IB_INFORM_INFO_COMP_RESP_TIME = 0x200;
 static int  _wrap_const_IB_INFORM_INFO_COMP_NODE_TYPE = 0x800;
 
   void ibmssh_exit(ClientData clientData ) {
-	
+
   }
 extern char * ibmsSourceVersion;
 
@@ -1204,9 +1204,9 @@ static int _wrap_delete_IBFabric(ClientData clientData, Tcl_Interp *interp, int 
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBFabric *)ptr;
 }
 {
@@ -1229,41 +1229,41 @@ static int _wrap_delete_IBFabric(ClientData clientData, Tcl_Interp *interp, int 
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBFabric ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBFabric ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -1298,9 +1298,9 @@ static int _wrap_ibdmAssignLids(ClientData clientData, Tcl_Interp *interp, int o
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBPort *)ptr;
 }
 {
@@ -1323,41 +1323,41 @@ static int _wrap_ibdmAssignLids(ClientData clientData, Tcl_Interp *interp, int o
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBPort ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBPort ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
     if (objc >2) {
@@ -1395,9 +1395,9 @@ static int _wrap_ibdmCalcMinHopTables(ClientData clientData, Tcl_Interp *interp,
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBFabric *)ptr;
 }
 {
@@ -1420,41 +1420,41 @@ static int _wrap_ibdmCalcMinHopTables(ClientData clientData, Tcl_Interp *interp,
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBFabric ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBFabric ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -1490,9 +1490,9 @@ static int _wrap_ibdmCalcUpDnMinHopTbls(ClientData clientData, Tcl_Interp *inter
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBFabric *)ptr;
 }
 {
@@ -1515,41 +1515,41 @@ static int _wrap_ibdmCalcUpDnMinHopTbls(ClientData clientData, Tcl_Interp *inter
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBFabric ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBFabric ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
     if ((_arg1 = Tcl_GetStringFromObj(objv[2], &templength)) == NULL) return TCL_ERROR;
@@ -1584,9 +1584,9 @@ static int _wrap_ibdmOsmRoute(ClientData clientData, Tcl_Interp *interp, int obj
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBFabric *)ptr;
 }
 {
@@ -1609,41 +1609,41 @@ static int _wrap_ibdmOsmRoute(ClientData clientData, Tcl_Interp *interp, int obj
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBFabric ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBFabric ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -1677,9 +1677,9 @@ static int _wrap_ibdmEnhancedRoute(ClientData clientData, Tcl_Interp *interp, in
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBFabric *)ptr;
 }
 {
@@ -1702,41 +1702,41 @@ static int _wrap_ibdmEnhancedRoute(ClientData clientData, Tcl_Interp *interp, in
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBFabric ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBFabric ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -1772,9 +1772,9 @@ static int _wrap_ibdmFatTreeRoute(ClientData clientData, Tcl_Interp *interp, int
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBFabric *)ptr;
 }
 {
@@ -1797,41 +1797,41 @@ static int _wrap_ibdmFatTreeRoute(ClientData clientData, Tcl_Interp *interp, int
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBFabric ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBFabric ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -1870,12 +1870,12 @@ static int _wrap_ibdmFatTreeRoute(ClientData clientData, Tcl_Interp *interp, int
     if (ibdmGetObjPtrByTclName(p_tclObj, &ptr) != TCL_OK) {
       printf("-E- fail to find ibdm obj by id:%s", buf );
       Tcl_DecrRefCount(p_tclObj);
-      return TCL_ERROR;	
+      return TCL_ERROR;
     }
     Tcl_DecrRefCount(p_tclObj);
     tmpNodeList.push_back((IBNode *)ptr);
   }
-	
+
   _arg1 = &tmpNodeList;
 }
 {
@@ -1909,9 +1909,9 @@ static int _wrap_ibdmFatTreeAnalysis(ClientData clientData, Tcl_Interp *interp, 
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBFabric *)ptr;
 }
 {
@@ -1934,41 +1934,41 @@ static int _wrap_ibdmFatTreeAnalysis(ClientData clientData, Tcl_Interp *interp, 
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBFabric ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBFabric ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -2002,9 +2002,9 @@ static int _wrap_ibdmVerifyCAtoCARoutes(ClientData clientData, Tcl_Interp *inter
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBFabric *)ptr;
 }
 {
@@ -2027,41 +2027,41 @@ static int _wrap_ibdmVerifyCAtoCARoutes(ClientData clientData, Tcl_Interp *inter
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBFabric ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBFabric ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -2095,9 +2095,9 @@ static int _wrap_ibdmVerifyAllPaths(ClientData clientData, Tcl_Interp *interp, i
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBFabric *)ptr;
 }
 {
@@ -2120,41 +2120,41 @@ static int _wrap_ibdmVerifyAllPaths(ClientData clientData, Tcl_Interp *interp, i
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBFabric ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBFabric ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -2188,9 +2188,9 @@ static int _wrap_ibdmAnalyzeLoops(ClientData clientData, Tcl_Interp *interp, int
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBFabric *)ptr;
 }
 {
@@ -2213,41 +2213,41 @@ static int _wrap_ibdmAnalyzeLoops(ClientData clientData, Tcl_Interp *interp, int
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBFabric ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBFabric ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -2281,9 +2281,9 @@ static int _wrap_ibdmFindSymmetricalTreeRoots(ClientData clientData, Tcl_Interp 
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBFabric *)ptr;
 }
 {
@@ -2306,41 +2306,41 @@ static int _wrap_ibdmFindSymmetricalTreeRoots(ClientData clientData, Tcl_Interp 
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBFabric ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBFabric ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -2391,9 +2391,9 @@ static int _wrap_ibdmFindRootNodesByMinHop(ClientData clientData, Tcl_Interp *in
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBFabric *)ptr;
 }
 {
@@ -2416,41 +2416,41 @@ static int _wrap_ibdmFindRootNodesByMinHop(ClientData clientData, Tcl_Interp *in
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBFabric ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBFabric ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -2503,9 +2503,9 @@ static int _wrap_ibdmRankFabricByRoots(ClientData clientData, Tcl_Interp *interp
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBFabric *)ptr;
 }
 {
@@ -2528,41 +2528,41 @@ static int _wrap_ibdmRankFabricByRoots(ClientData clientData, Tcl_Interp *interp
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBFabric ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBFabric ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -2601,12 +2601,12 @@ static int _wrap_ibdmRankFabricByRoots(ClientData clientData, Tcl_Interp *interp
     if (ibdmGetObjPtrByTclName(p_tclObj, &ptr) != TCL_OK) {
       printf("-E- fail to find ibdm obj by id:%s", buf );
       Tcl_DecrRefCount(p_tclObj);
-      return TCL_ERROR;	
+      return TCL_ERROR;
     }
     Tcl_DecrRefCount(p_tclObj);
     tmpNodeList.push_back((IBNode *)ptr);
   }
-	
+
   _arg1 = &tmpNodeList;
 }
 {
@@ -2642,9 +2642,9 @@ static int _wrap_ibdmReportNonUpDownCa2CaPaths(ClientData clientData, Tcl_Interp
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBFabric *)ptr;
 }
 {
@@ -2667,41 +2667,41 @@ static int _wrap_ibdmReportNonUpDownCa2CaPaths(ClientData clientData, Tcl_Interp
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBFabric ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBFabric ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -2740,12 +2740,12 @@ static int _wrap_ibdmReportNonUpDownCa2CaPaths(ClientData clientData, Tcl_Interp
     if (ibdmGetObjPtrByTclName(p_tclObj, &ptr) != TCL_OK) {
       printf("-E- fail to find ibdm obj by id:%s", buf );
       Tcl_DecrRefCount(p_tclObj);
-      return TCL_ERROR;	
+      return TCL_ERROR;
     }
     Tcl_DecrRefCount(p_tclObj);
     tmpNodeList.push_back((IBNode *)ptr);
   }
-	
+
   _arg1 = &tmpNodeList;
 }
 {
@@ -2779,9 +2779,9 @@ static int _wrap_ibdmCheckMulticastGroups(ClientData clientData, Tcl_Interp *int
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBFabric *)ptr;
 }
 {
@@ -2804,41 +2804,41 @@ static int _wrap_ibdmCheckMulticastGroups(ClientData clientData, Tcl_Interp *int
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBFabric ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBFabric ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -2874,9 +2874,9 @@ static int _wrap_ibdmCheckFabricMCGrpsForCreditLoopPotential(ClientData clientDa
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBFabric *)ptr;
 }
 {
@@ -2899,41 +2899,41 @@ static int _wrap_ibdmCheckFabricMCGrpsForCreditLoopPotential(ClientData clientDa
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBFabric ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBFabric ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -2972,12 +2972,12 @@ static int _wrap_ibdmCheckFabricMCGrpsForCreditLoopPotential(ClientData clientDa
     if (ibdmGetObjPtrByTclName(p_tclObj, &ptr) != TCL_OK) {
       printf("-E- fail to find ibdm obj by id:%s", buf );
       Tcl_DecrRefCount(p_tclObj);
-      return TCL_ERROR;	
+      return TCL_ERROR;
     }
     Tcl_DecrRefCount(p_tclObj);
     tmpNodeList.push_back((IBNode *)ptr);
   }
-	
+
   _arg1 = &tmpNodeList;
 }
 {
@@ -3013,9 +3013,9 @@ static int _wrap_ibdmLinkCoverageAnalysis(ClientData clientData, Tcl_Interp *int
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBFabric *)ptr;
 }
 {
@@ -3038,41 +3038,41 @@ static int _wrap_ibdmLinkCoverageAnalysis(ClientData clientData, Tcl_Interp *int
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBFabric ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBFabric ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -3111,12 +3111,12 @@ static int _wrap_ibdmLinkCoverageAnalysis(ClientData clientData, Tcl_Interp *int
     if (ibdmGetObjPtrByTclName(p_tclObj, &ptr) != TCL_OK) {
       printf("-E- fail to find ibdm obj by id:%s", buf );
       Tcl_DecrRefCount(p_tclObj);
-      return TCL_ERROR;	
+      return TCL_ERROR;
     }
     Tcl_DecrRefCount(p_tclObj);
     tmpNodeList.push_back((IBNode *)ptr);
   }
-	
+
   _arg1 = &tmpNodeList;
 }
 {
@@ -3152,9 +3152,9 @@ static int _wrap_ibdmTraceDRPathRoute(ClientData clientData, Tcl_Interp *interp,
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBPort *)ptr;
 }
 {
@@ -3177,41 +3177,41 @@ static int _wrap_ibdmTraceDRPathRoute(ClientData clientData, Tcl_Interp *interp,
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBPort ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBPort ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
     if ((rettype = SWIG_GetPointerObj(interp,objv[2],(void **) &_arg1,"_list_int_p"))) {
@@ -3253,9 +3253,9 @@ static int _wrap_ibdmTraceRouteByMinHops(ClientData clientData, Tcl_Interp *inte
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBFabric *)ptr;
 }
 {
@@ -3278,41 +3278,41 @@ static int _wrap_ibdmTraceRouteByMinHops(ClientData clientData, Tcl_Interp *inte
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBFabric ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBFabric ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
     if (Tcl_GetIntFromObj(interp,objv[2],&tempint) == TCL_ERROR) return TCL_ERROR;
@@ -3357,9 +3357,9 @@ static int _wrap_ibdmTraceRouteByLFT(ClientData clientData, Tcl_Interp *interp, 
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBFabric *)ptr;
 }
 {
@@ -3382,41 +3382,41 @@ static int _wrap_ibdmTraceRouteByLFT(ClientData clientData, Tcl_Interp *interp, 
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBFabric ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBFabric ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
     if (Tcl_GetIntFromObj(interp,objv[2],&tempint) == TCL_ERROR) return TCL_ERROR;
@@ -3496,9 +3496,9 @@ static int _wrap_ibdmMatchFabrics(ClientData clientData, Tcl_Interp *interp, int
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBFabric *)ptr;
 }
 {
@@ -3521,41 +3521,41 @@ static int _wrap_ibdmMatchFabrics(ClientData clientData, Tcl_Interp *interp, int
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBFabric ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBFabric ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -3565,9 +3565,9 @@ static int _wrap_ibdmMatchFabrics(ClientData clientData, Tcl_Interp *interp, int
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[2]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg1 = (IBFabric *)ptr;
 }
 {
@@ -3590,41 +3590,41 @@ static int _wrap_ibdmMatchFabrics(ClientData clientData, Tcl_Interp *interp, int
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBFabric ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBFabric ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
     if ((_arg2 = Tcl_GetStringFromObj(objv[3], &templength)) == NULL) return TCL_ERROR;
@@ -3675,9 +3675,9 @@ static int _wrap_ibdmBuildMergedFabric(ClientData clientData, Tcl_Interp *interp
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBFabric *)ptr;
 }
 {
@@ -3700,41 +3700,41 @@ static int _wrap_ibdmBuildMergedFabric(ClientData clientData, Tcl_Interp *interp
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBFabric ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBFabric ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -3744,9 +3744,9 @@ static int _wrap_ibdmBuildMergedFabric(ClientData clientData, Tcl_Interp *interp
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[2]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg1 = (IBFabric *)ptr;
 }
 {
@@ -3769,41 +3769,41 @@ static int _wrap_ibdmBuildMergedFabric(ClientData clientData, Tcl_Interp *interp
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBFabric ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBFabric ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -3813,9 +3813,9 @@ static int _wrap_ibdmBuildMergedFabric(ClientData clientData, Tcl_Interp *interp
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[3]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg2 = (IBFabric *)ptr;
 }
 {
@@ -3838,41 +3838,41 @@ static int _wrap_ibdmBuildMergedFabric(ClientData clientData, Tcl_Interp *interp
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBFabric ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBFabric ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -3906,9 +3906,9 @@ static int _wrap_ibdmCongInit(ClientData clientData, Tcl_Interp *interp, int obj
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBFabric *)ptr;
 }
 {
@@ -3931,41 +3931,41 @@ static int _wrap_ibdmCongInit(ClientData clientData, Tcl_Interp *interp, int obj
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBFabric ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBFabric ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -3999,9 +3999,9 @@ static int _wrap_ibdmCongCleanup(ClientData clientData, Tcl_Interp *interp, int 
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBFabric *)ptr;
 }
 {
@@ -4024,41 +4024,41 @@ static int _wrap_ibdmCongCleanup(ClientData clientData, Tcl_Interp *interp, int 
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBFabric ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBFabric ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -4092,9 +4092,9 @@ static int _wrap_ibdmCongClear(ClientData clientData, Tcl_Interp *interp, int ob
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBFabric *)ptr;
 }
 {
@@ -4117,41 +4117,41 @@ static int _wrap_ibdmCongClear(ClientData clientData, Tcl_Interp *interp, int ob
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBFabric ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBFabric ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -4189,9 +4189,9 @@ static int _wrap_ibdmCongTrace(ClientData clientData, Tcl_Interp *interp, int ob
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBFabric *)ptr;
 }
 {
@@ -4214,41 +4214,41 @@ static int _wrap_ibdmCongTrace(ClientData clientData, Tcl_Interp *interp, int ob
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBFabric ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBFabric ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -4295,9 +4295,9 @@ static int _wrap_ibdmCongReport(ClientData clientData, Tcl_Interp *interp, int o
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBFabric *)ptr;
 }
 {
@@ -4320,41 +4320,41 @@ static int _wrap_ibdmCongReport(ClientData clientData, Tcl_Interp *interp, int o
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBFabric ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBFabric ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -4397,9 +4397,9 @@ static int _wrap_ibdmCongDump(ClientData clientData, Tcl_Interp *interp, int obj
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBFabric *)ptr;
 }
 {
@@ -4422,41 +4422,41 @@ static int _wrap_ibdmCongDump(ClientData clientData, Tcl_Interp *interp, int obj
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBFabric ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBFabric ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -4546,9 +4546,9 @@ static int _wrap_IBPort_p_remotePort_set(ClientData clientData, Tcl_Interp *inte
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBPort *)ptr;
 }
 {
@@ -4571,41 +4571,41 @@ static int _wrap_IBPort_p_remotePort_set(ClientData clientData, Tcl_Interp *inte
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBPort ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBPort ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -4615,9 +4615,9 @@ static int _wrap_IBPort_p_remotePort_set(ClientData clientData, Tcl_Interp *inte
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[2]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg1 = (IBPort *)ptr;
 }
 {
@@ -4640,41 +4640,41 @@ static int _wrap_IBPort_p_remotePort_set(ClientData clientData, Tcl_Interp *inte
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBPort ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBPort ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -4712,9 +4712,9 @@ static int _wrap_IBPort_p_remotePort_get(ClientData clientData, Tcl_Interp *inte
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBPort *)ptr;
 }
 {
@@ -4737,41 +4737,41 @@ static int _wrap_IBPort_p_remotePort_get(ClientData clientData, Tcl_Interp *inte
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBPort ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBPort ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -4810,9 +4810,9 @@ static int _wrap_IBPort_p_sysPort_set(ClientData clientData, Tcl_Interp *interp,
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBPort *)ptr;
 }
 {
@@ -4835,41 +4835,41 @@ static int _wrap_IBPort_p_sysPort_set(ClientData clientData, Tcl_Interp *interp,
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBPort ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBPort ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -4879,9 +4879,9 @@ static int _wrap_IBPort_p_sysPort_set(ClientData clientData, Tcl_Interp *interp,
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[2]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg1 = (IBSysPort *)ptr;
 }
 {
@@ -4904,41 +4904,41 @@ static int _wrap_IBPort_p_sysPort_set(ClientData clientData, Tcl_Interp *interp,
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSysPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBSysPort ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSysPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSysPort ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSysPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSysPort ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSysPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSysPort ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSysPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBSysPort ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -4976,9 +4976,9 @@ static int _wrap_IBPort_p_sysPort_get(ClientData clientData, Tcl_Interp *interp,
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBPort *)ptr;
 }
 {
@@ -5001,41 +5001,41 @@ static int _wrap_IBPort_p_sysPort_get(ClientData clientData, Tcl_Interp *interp,
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBPort ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBPort ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -5074,9 +5074,9 @@ static int _wrap_IBPort_p_node_set(ClientData clientData, Tcl_Interp *interp, in
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBPort *)ptr;
 }
 {
@@ -5099,41 +5099,41 @@ static int _wrap_IBPort_p_node_set(ClientData clientData, Tcl_Interp *interp, in
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBPort ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBPort ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -5143,9 +5143,9 @@ static int _wrap_IBPort_p_node_set(ClientData clientData, Tcl_Interp *interp, in
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[2]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg1 = (IBNode *)ptr;
 }
 {
@@ -5168,41 +5168,41 @@ static int _wrap_IBPort_p_node_set(ClientData clientData, Tcl_Interp *interp, in
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBNode ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBNode ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -5240,9 +5240,9 @@ static int _wrap_IBPort_p_node_get(ClientData clientData, Tcl_Interp *interp, in
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBPort *)ptr;
 }
 {
@@ -5265,41 +5265,41 @@ static int _wrap_IBPort_p_node_get(ClientData clientData, Tcl_Interp *interp, in
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBPort ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBPort ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -5339,9 +5339,9 @@ static int _wrap_IBPort_num_set(ClientData clientData, Tcl_Interp *interp, int o
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBPort *)ptr;
 }
 {
@@ -5364,41 +5364,41 @@ static int _wrap_IBPort_num_set(ClientData clientData, Tcl_Interp *interp, int o
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBPort ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBPort ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
     if (Tcl_GetIntFromObj(interp,objv[2],&tempint) == TCL_ERROR) return TCL_ERROR;
@@ -5435,9 +5435,9 @@ static int _wrap_IBPort_num_get(ClientData clientData, Tcl_Interp *interp, int o
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBPort *)ptr;
 }
 {
@@ -5460,41 +5460,41 @@ static int _wrap_IBPort_num_get(ClientData clientData, Tcl_Interp *interp, int o
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBPort ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBPort ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -5531,9 +5531,9 @@ static int _wrap_IBPort_base_lid_set(ClientData clientData, Tcl_Interp *interp, 
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBPort *)ptr;
 }
 {
@@ -5556,41 +5556,41 @@ static int _wrap_IBPort_base_lid_set(ClientData clientData, Tcl_Interp *interp, 
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBPort ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBPort ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
     if (Tcl_GetIntFromObj(interp,objv[2],&tempint) == TCL_ERROR) return TCL_ERROR;
@@ -5627,9 +5627,9 @@ static int _wrap_IBPort_base_lid_get(ClientData clientData, Tcl_Interp *interp, 
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBPort *)ptr;
 }
 {
@@ -5652,41 +5652,41 @@ static int _wrap_IBPort_base_lid_get(ClientData clientData, Tcl_Interp *interp, 
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBPort ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBPort ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -5723,9 +5723,9 @@ static int _wrap_IBPort_width_set(ClientData clientData, Tcl_Interp *interp, int
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBPort *)ptr;
 }
 {
@@ -5748,41 +5748,41 @@ static int _wrap_IBPort_width_set(ClientData clientData, Tcl_Interp *interp, int
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBPort ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBPort ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -5823,9 +5823,9 @@ static int _wrap_IBPort_width_get(ClientData clientData, Tcl_Interp *interp, int
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBPort *)ptr;
 }
 {
@@ -5848,41 +5848,41 @@ static int _wrap_IBPort_width_get(ClientData clientData, Tcl_Interp *interp, int
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBPort ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBPort ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -5921,9 +5921,9 @@ static int _wrap_IBPort_speed_set(ClientData clientData, Tcl_Interp *interp, int
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBPort *)ptr;
 }
 {
@@ -5946,41 +5946,41 @@ static int _wrap_IBPort_speed_set(ClientData clientData, Tcl_Interp *interp, int
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBPort ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBPort ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -6021,9 +6021,9 @@ static int _wrap_IBPort_speed_get(ClientData clientData, Tcl_Interp *interp, int
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBPort *)ptr;
 }
 {
@@ -6046,41 +6046,41 @@ static int _wrap_IBPort_speed_get(ClientData clientData, Tcl_Interp *interp, int
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBPort ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBPort ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -6119,9 +6119,9 @@ static int _wrap_IBPort_counter1_set(ClientData clientData, Tcl_Interp *interp, 
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBPort *)ptr;
 }
 {
@@ -6144,41 +6144,41 @@ static int _wrap_IBPort_counter1_set(ClientData clientData, Tcl_Interp *interp, 
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBPort ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBPort ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
     if (Tcl_GetIntFromObj(interp,objv[2],&tempint) == TCL_ERROR) return TCL_ERROR;
@@ -6215,9 +6215,9 @@ static int _wrap_IBPort_counter1_get(ClientData clientData, Tcl_Interp *interp, 
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBPort *)ptr;
 }
 {
@@ -6240,41 +6240,41 @@ static int _wrap_IBPort_counter1_get(ClientData clientData, Tcl_Interp *interp, 
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBPort ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBPort ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -6311,9 +6311,9 @@ static int _wrap_new_IBPort(ClientData clientData, Tcl_Interp *interp, int objc,
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBNode *)ptr;
 }
 {
@@ -6336,41 +6336,41 @@ static int _wrap_new_IBPort(ClientData clientData, Tcl_Interp *interp, int objc,
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBNode ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBNode ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
     if (Tcl_GetIntFromObj(interp,objv[2],&tempint) == TCL_ERROR) return TCL_ERROR;
@@ -6410,9 +6410,9 @@ static int _wrap_IBPort_guid_get(ClientData clientData, Tcl_Interp *interp, int 
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBPort *)ptr;
 }
 {
@@ -6435,41 +6435,41 @@ static int _wrap_IBPort_guid_get(ClientData clientData, Tcl_Interp *interp, int 
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBPort ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBPort ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -6511,9 +6511,9 @@ static int _wrap_IBPort_guid_set(ClientData clientData, Tcl_Interp *interp, int 
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBPort *)ptr;
 }
 {
@@ -6536,41 +6536,41 @@ static int _wrap_IBPort_guid_set(ClientData clientData, Tcl_Interp *interp, int 
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBPort ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBPort ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -6608,9 +6608,9 @@ static int _wrap_IBPort_getName(ClientData clientData, Tcl_Interp *interp, int o
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBPort *)ptr;
 }
 {
@@ -6633,41 +6633,41 @@ static int _wrap_IBPort_getName(ClientData clientData, Tcl_Interp *interp, int o
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBPort ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBPort ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -6711,9 +6711,9 @@ static int _wrap_IBPort_connect(ClientData clientData, Tcl_Interp *interp, int o
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBPort *)ptr;
 }
 {
@@ -6736,41 +6736,41 @@ static int _wrap_IBPort_connect(ClientData clientData, Tcl_Interp *interp, int o
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBPort ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBPort ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -6780,9 +6780,9 @@ static int _wrap_IBPort_connect(ClientData clientData, Tcl_Interp *interp, int o
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[2]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg1 = (IBPort *)ptr;
 }
 {
@@ -6805,41 +6805,41 @@ static int _wrap_IBPort_connect(ClientData clientData, Tcl_Interp *interp, int o
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBPort ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBPort ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
     if (objc >3) {
@@ -6885,9 +6885,9 @@ static int _wrap_IBPort_disconnect(ClientData clientData, Tcl_Interp *interp, in
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBPort *)ptr;
 }
 {
@@ -6910,41 +6910,41 @@ static int _wrap_IBPort_disconnect(ClientData clientData, Tcl_Interp *interp, in
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBPort ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBPort ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -7249,9 +7249,9 @@ static int _wrap_IBNode_name_set(ClientData clientData, Tcl_Interp *interp, int 
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBNode *)ptr;
 }
 {
@@ -7274,41 +7274,41 @@ static int _wrap_IBNode_name_set(ClientData clientData, Tcl_Interp *interp, int 
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBNode ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBNode ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -7353,9 +7353,9 @@ static int _wrap_IBNode_name_get(ClientData clientData, Tcl_Interp *interp, int 
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBNode *)ptr;
 }
 {
@@ -7378,41 +7378,41 @@ static int _wrap_IBNode_name_get(ClientData clientData, Tcl_Interp *interp, int 
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBNode ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBNode ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -7453,9 +7453,9 @@ static int _wrap_IBNode_type_set(ClientData clientData, Tcl_Interp *interp, int 
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBNode *)ptr;
 }
 {
@@ -7478,41 +7478,41 @@ static int _wrap_IBNode_type_set(ClientData clientData, Tcl_Interp *interp, int 
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBNode ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBNode ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
     if (Tcl_GetIntFromObj(interp,objv[2],&tempint) == TCL_ERROR) return TCL_ERROR;
@@ -7549,9 +7549,9 @@ static int _wrap_IBNode_type_get(ClientData clientData, Tcl_Interp *interp, int 
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBNode *)ptr;
 }
 {
@@ -7574,41 +7574,41 @@ static int _wrap_IBNode_type_get(ClientData clientData, Tcl_Interp *interp, int 
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBNode ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBNode ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -7645,9 +7645,9 @@ static int _wrap_IBNode_devId_set(ClientData clientData, Tcl_Interp *interp, int
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBNode *)ptr;
 }
 {
@@ -7670,41 +7670,41 @@ static int _wrap_IBNode_devId_set(ClientData clientData, Tcl_Interp *interp, int
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBNode ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBNode ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -7747,9 +7747,9 @@ static int _wrap_IBNode_devId_get(ClientData clientData, Tcl_Interp *interp, int
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBNode *)ptr;
 }
 {
@@ -7772,41 +7772,41 @@ static int _wrap_IBNode_devId_get(ClientData clientData, Tcl_Interp *interp, int
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBNode ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBNode ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -7847,9 +7847,9 @@ static int _wrap_IBNode_revId_set(ClientData clientData, Tcl_Interp *interp, int
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBNode *)ptr;
 }
 {
@@ -7872,41 +7872,41 @@ static int _wrap_IBNode_revId_set(ClientData clientData, Tcl_Interp *interp, int
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBNode ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBNode ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -7949,9 +7949,9 @@ static int _wrap_IBNode_revId_get(ClientData clientData, Tcl_Interp *interp, int
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBNode *)ptr;
 }
 {
@@ -7974,41 +7974,41 @@ static int _wrap_IBNode_revId_get(ClientData clientData, Tcl_Interp *interp, int
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBNode ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBNode ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -8049,9 +8049,9 @@ static int _wrap_IBNode_vendId_set(ClientData clientData, Tcl_Interp *interp, in
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBNode *)ptr;
 }
 {
@@ -8074,41 +8074,41 @@ static int _wrap_IBNode_vendId_set(ClientData clientData, Tcl_Interp *interp, in
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBNode ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBNode ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -8151,9 +8151,9 @@ static int _wrap_IBNode_vendId_get(ClientData clientData, Tcl_Interp *interp, in
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBNode *)ptr;
 }
 {
@@ -8176,41 +8176,41 @@ static int _wrap_IBNode_vendId_get(ClientData clientData, Tcl_Interp *interp, in
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBNode ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBNode ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -8250,9 +8250,9 @@ static int _wrap_IBNode_attributes_set(ClientData clientData, Tcl_Interp *interp
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBNode *)ptr;
 }
 {
@@ -8275,41 +8275,41 @@ static int _wrap_IBNode_attributes_set(ClientData clientData, Tcl_Interp *interp
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBNode ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBNode ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -8354,9 +8354,9 @@ static int _wrap_IBNode_attributes_get(ClientData clientData, Tcl_Interp *interp
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBNode *)ptr;
 }
 {
@@ -8379,41 +8379,41 @@ static int _wrap_IBNode_attributes_get(ClientData clientData, Tcl_Interp *interp
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBNode ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBNode ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -8454,9 +8454,9 @@ static int _wrap_IBNode_rank_set(ClientData clientData, Tcl_Interp *interp, int 
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBNode *)ptr;
 }
 {
@@ -8479,41 +8479,41 @@ static int _wrap_IBNode_rank_set(ClientData clientData, Tcl_Interp *interp, int 
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBNode ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBNode ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -8556,9 +8556,9 @@ static int _wrap_IBNode_rank_get(ClientData clientData, Tcl_Interp *interp, int 
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBNode *)ptr;
 }
 {
@@ -8581,41 +8581,41 @@ static int _wrap_IBNode_rank_get(ClientData clientData, Tcl_Interp *interp, int 
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBNode ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBNode ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -8654,9 +8654,9 @@ static int _wrap_IBNode_p_system_get(ClientData clientData, Tcl_Interp *interp, 
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBNode *)ptr;
 }
 {
@@ -8679,41 +8679,41 @@ static int _wrap_IBNode_p_system_get(ClientData clientData, Tcl_Interp *interp, 
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBNode ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBNode ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -8751,9 +8751,9 @@ static int _wrap_IBNode_p_fabric_get(ClientData clientData, Tcl_Interp *interp, 
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBNode *)ptr;
 }
 {
@@ -8776,41 +8776,41 @@ static int _wrap_IBNode_p_fabric_get(ClientData clientData, Tcl_Interp *interp, 
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBNode ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBNode ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -8848,9 +8848,9 @@ static int _wrap_IBNode_numPorts_get(ClientData clientData, Tcl_Interp *interp, 
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBNode *)ptr;
 }
 {
@@ -8873,41 +8873,41 @@ static int _wrap_IBNode_numPorts_get(ClientData clientData, Tcl_Interp *interp, 
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBNode ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBNode ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -8942,9 +8942,9 @@ static int _wrap_IBNode_Ports_get(ClientData clientData, Tcl_Interp *interp, int
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBNode *)ptr;
 }
 {
@@ -8967,41 +8967,41 @@ static int _wrap_IBNode_Ports_get(ClientData clientData, Tcl_Interp *interp, int
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBNode ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBNode ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -9026,7 +9026,7 @@ static int _wrap_IBNode_Ports_get(ClientData clientData, Tcl_Interp *interp, int
 		} else {
 		  Tcl_AppendElement(interp, Tcl_GetString(p_tclObj));
 		}
-		Tcl_DecrRefCount(p_tclObj);	
+		Tcl_DecrRefCount(p_tclObj);
 	 }
   }
 }
@@ -9052,9 +9052,9 @@ static int _wrap_IBNode_MinHopsTable_get(ClientData clientData, Tcl_Interp *inte
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBNode *)ptr;
 }
 {
@@ -9077,41 +9077,41 @@ static int _wrap_IBNode_MinHopsTable_get(ClientData clientData, Tcl_Interp *inte
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBNode ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBNode ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -9156,9 +9156,9 @@ static int _wrap_IBNode_LFT_get(ClientData clientData, Tcl_Interp *interp, int o
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBNode *)ptr;
 }
 {
@@ -9181,41 +9181,41 @@ static int _wrap_IBNode_LFT_get(ClientData clientData, Tcl_Interp *interp, int o
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBNode ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBNode ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -9256,9 +9256,9 @@ static int _wrap_IBNode_guid_get(ClientData clientData, Tcl_Interp *interp, int 
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBNode *)ptr;
 }
 {
@@ -9281,41 +9281,41 @@ static int _wrap_IBNode_guid_get(ClientData clientData, Tcl_Interp *interp, int 
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBNode ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBNode ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -9357,9 +9357,9 @@ static int _wrap_IBNode_guid_set(ClientData clientData, Tcl_Interp *interp, int 
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBNode *)ptr;
 }
 {
@@ -9382,41 +9382,41 @@ static int _wrap_IBNode_guid_set(ClientData clientData, Tcl_Interp *interp, int 
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBNode ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBNode ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -9465,9 +9465,9 @@ static int _wrap_new_IBNode(ClientData clientData, Tcl_Interp *interp, int objc,
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[2]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg1 = (IBFabric *)ptr;
 }
 {
@@ -9490,41 +9490,41 @@ static int _wrap_new_IBNode(ClientData clientData, Tcl_Interp *interp, int objc,
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBFabric ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBFabric ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -9534,9 +9534,9 @@ static int _wrap_new_IBNode(ClientData clientData, Tcl_Interp *interp, int objc,
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[3]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg2 = (IBSystem *)ptr;
 }
 {
@@ -9559,41 +9559,41 @@ static int _wrap_new_IBNode(ClientData clientData, Tcl_Interp *interp, int objc,
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBSystem ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSystem ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSystem ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSystem ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBSystem ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
     if (Tcl_GetIntFromObj(interp,objv[4],&tempint) == TCL_ERROR) return TCL_ERROR;
@@ -9634,9 +9634,9 @@ static int _wrap_delete_IBNode(ClientData clientData, Tcl_Interp *interp, int ob
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBNode *)ptr;
 }
 {
@@ -9659,41 +9659,41 @@ static int _wrap_delete_IBNode(ClientData clientData, Tcl_Interp *interp, int ob
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBNode ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBNode ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -9729,9 +9729,9 @@ static int _wrap_IBNode_makePort(ClientData clientData, Tcl_Interp *interp, int 
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBNode *)ptr;
 }
 {
@@ -9754,41 +9754,41 @@ static int _wrap_IBNode_makePort(ClientData clientData, Tcl_Interp *interp, int 
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBNode ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBNode ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
     if (Tcl_GetIntFromObj(interp,objv[2],&tempint) == TCL_ERROR) return TCL_ERROR;
@@ -9830,9 +9830,9 @@ static int _wrap_IBNode_getPort(ClientData clientData, Tcl_Interp *interp, int o
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBNode *)ptr;
 }
 {
@@ -9855,41 +9855,41 @@ static int _wrap_IBNode_getPort(ClientData clientData, Tcl_Interp *interp, int o
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBNode ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBNode ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
     if (Tcl_GetIntFromObj(interp,objv[2],&tempint) == TCL_ERROR) return TCL_ERROR;
@@ -9932,9 +9932,9 @@ static int _wrap_IBNode_setHops(ClientData clientData, Tcl_Interp *interp, int o
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBNode *)ptr;
 }
 {
@@ -9957,41 +9957,41 @@ static int _wrap_IBNode_setHops(ClientData clientData, Tcl_Interp *interp, int o
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBNode ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBNode ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -10001,9 +10001,9 @@ static int _wrap_IBNode_setHops(ClientData clientData, Tcl_Interp *interp, int o
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[2]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg1 = (IBPort *)ptr;
 }
 {
@@ -10026,41 +10026,41 @@ static int _wrap_IBNode_setHops(ClientData clientData, Tcl_Interp *interp, int o
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBPort ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBPort ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
     if (Tcl_GetIntFromObj(interp,objv[3],&tempint) == TCL_ERROR) return TCL_ERROR;
@@ -10101,9 +10101,9 @@ static int _wrap_IBNode_getHops(ClientData clientData, Tcl_Interp *interp, int o
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBNode *)ptr;
 }
 {
@@ -10126,41 +10126,41 @@ static int _wrap_IBNode_getHops(ClientData clientData, Tcl_Interp *interp, int o
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBNode ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBNode ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -10170,9 +10170,9 @@ static int _wrap_IBNode_getHops(ClientData clientData, Tcl_Interp *interp, int o
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[2]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg1 = (IBPort *)ptr;
 }
 {
@@ -10195,41 +10195,41 @@ static int _wrap_IBNode_getHops(ClientData clientData, Tcl_Interp *interp, int o
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBPort ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBPort ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
     if (Tcl_GetIntFromObj(interp,objv[3],&tempint) == TCL_ERROR) return TCL_ERROR;
@@ -10268,9 +10268,9 @@ static int _wrap_IBNode_getFirstMinHopPort(ClientData clientData, Tcl_Interp *in
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBNode *)ptr;
 }
 {
@@ -10293,41 +10293,41 @@ static int _wrap_IBNode_getFirstMinHopPort(ClientData clientData, Tcl_Interp *in
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBNode ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBNode ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
     if (Tcl_GetIntFromObj(interp,objv[2],&tempint) == TCL_ERROR) return TCL_ERROR;
@@ -10369,9 +10369,9 @@ static int _wrap_IBNode_setLFTPortForLid(ClientData clientData, Tcl_Interp *inte
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBNode *)ptr;
 }
 {
@@ -10394,41 +10394,41 @@ static int _wrap_IBNode_setLFTPortForLid(ClientData clientData, Tcl_Interp *inte
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBNode ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBNode ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
     if (Tcl_GetIntFromObj(interp,objv[2],&tempint) == TCL_ERROR) return TCL_ERROR;
@@ -10468,9 +10468,9 @@ static int _wrap_IBNode_getLFTPortForLid(ClientData clientData, Tcl_Interp *inte
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBNode *)ptr;
 }
 {
@@ -10493,41 +10493,41 @@ static int _wrap_IBNode_getLFTPortForLid(ClientData clientData, Tcl_Interp *inte
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBNode ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBNode ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
     if (Tcl_GetIntFromObj(interp,objv[2],&tempint) == TCL_ERROR) return TCL_ERROR;
@@ -10563,9 +10563,9 @@ static int _wrap_IBNode_repHopTable(ClientData clientData, Tcl_Interp *interp, i
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBNode *)ptr;
 }
 {
@@ -10588,41 +10588,41 @@ static int _wrap_IBNode_repHopTable(ClientData clientData, Tcl_Interp *interp, i
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBNode ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBNode ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBNode  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBNode ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -10985,9 +10985,9 @@ static int _wrap_IBSysPort_name_set(ClientData clientData, Tcl_Interp *interp, i
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBSysPort *)ptr;
 }
 {
@@ -11010,41 +11010,41 @@ static int _wrap_IBSysPort_name_set(ClientData clientData, Tcl_Interp *interp, i
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSysPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBSysPort ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSysPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSysPort ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSysPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSysPort ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSysPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSysPort ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSysPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBSysPort ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -11089,9 +11089,9 @@ static int _wrap_IBSysPort_name_get(ClientData clientData, Tcl_Interp *interp, i
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBSysPort *)ptr;
 }
 {
@@ -11114,41 +11114,41 @@ static int _wrap_IBSysPort_name_get(ClientData clientData, Tcl_Interp *interp, i
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSysPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBSysPort ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSysPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSysPort ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSysPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSysPort ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSysPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSysPort ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSysPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBSysPort ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -11188,9 +11188,9 @@ static int _wrap_IBSysPort_p_remoteSysPort_set(ClientData clientData, Tcl_Interp
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBSysPort *)ptr;
 }
 {
@@ -11213,41 +11213,41 @@ static int _wrap_IBSysPort_p_remoteSysPort_set(ClientData clientData, Tcl_Interp
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSysPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBSysPort ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSysPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSysPort ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSysPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSysPort ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSysPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSysPort ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSysPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBSysPort ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -11257,9 +11257,9 @@ static int _wrap_IBSysPort_p_remoteSysPort_set(ClientData clientData, Tcl_Interp
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[2]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg1 = (IBSysPort *)ptr;
 }
 {
@@ -11282,41 +11282,41 @@ static int _wrap_IBSysPort_p_remoteSysPort_set(ClientData clientData, Tcl_Interp
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSysPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBSysPort ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSysPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSysPort ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSysPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSysPort ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSysPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSysPort ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSysPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBSysPort ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -11354,9 +11354,9 @@ static int _wrap_IBSysPort_p_remoteSysPort_get(ClientData clientData, Tcl_Interp
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBSysPort *)ptr;
 }
 {
@@ -11379,41 +11379,41 @@ static int _wrap_IBSysPort_p_remoteSysPort_get(ClientData clientData, Tcl_Interp
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSysPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBSysPort ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSysPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSysPort ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSysPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSysPort ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSysPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSysPort ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSysPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBSysPort ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -11452,9 +11452,9 @@ static int _wrap_IBSysPort_p_system_set(ClientData clientData, Tcl_Interp *inter
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBSysPort *)ptr;
 }
 {
@@ -11477,41 +11477,41 @@ static int _wrap_IBSysPort_p_system_set(ClientData clientData, Tcl_Interp *inter
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSysPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBSysPort ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSysPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSysPort ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSysPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSysPort ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSysPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSysPort ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSysPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBSysPort ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -11521,9 +11521,9 @@ static int _wrap_IBSysPort_p_system_set(ClientData clientData, Tcl_Interp *inter
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[2]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg1 = (IBSystem *)ptr;
 }
 {
@@ -11546,41 +11546,41 @@ static int _wrap_IBSysPort_p_system_set(ClientData clientData, Tcl_Interp *inter
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBSystem ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSystem ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSystem ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSystem ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBSystem ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -11618,9 +11618,9 @@ static int _wrap_IBSysPort_p_system_get(ClientData clientData, Tcl_Interp *inter
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBSysPort *)ptr;
 }
 {
@@ -11643,41 +11643,41 @@ static int _wrap_IBSysPort_p_system_get(ClientData clientData, Tcl_Interp *inter
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSysPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBSysPort ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSysPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSysPort ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSysPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSysPort ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSysPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSysPort ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSysPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBSysPort ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -11716,9 +11716,9 @@ static int _wrap_IBSysPort_p_nodePort_set(ClientData clientData, Tcl_Interp *int
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBSysPort *)ptr;
 }
 {
@@ -11741,41 +11741,41 @@ static int _wrap_IBSysPort_p_nodePort_set(ClientData clientData, Tcl_Interp *int
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSysPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBSysPort ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSysPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSysPort ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSysPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSysPort ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSysPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSysPort ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSysPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBSysPort ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -11785,9 +11785,9 @@ static int _wrap_IBSysPort_p_nodePort_set(ClientData clientData, Tcl_Interp *int
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[2]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg1 = (IBPort *)ptr;
 }
 {
@@ -11810,41 +11810,41 @@ static int _wrap_IBSysPort_p_nodePort_set(ClientData clientData, Tcl_Interp *int
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBPort ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBPort ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -11882,9 +11882,9 @@ static int _wrap_IBSysPort_p_nodePort_get(ClientData clientData, Tcl_Interp *int
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBSysPort *)ptr;
 }
 {
@@ -11907,41 +11907,41 @@ static int _wrap_IBSysPort_p_nodePort_get(ClientData clientData, Tcl_Interp *int
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSysPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBSysPort ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSysPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSysPort ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSysPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSysPort ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSysPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSysPort ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSysPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBSysPort ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -11986,9 +11986,9 @@ static int _wrap_new_IBSysPort(ClientData clientData, Tcl_Interp *interp, int ob
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[2]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg1 = (IBSystem *)ptr;
 }
 {
@@ -12011,41 +12011,41 @@ static int _wrap_new_IBSysPort(ClientData clientData, Tcl_Interp *interp, int ob
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBSystem ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSystem ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSystem ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSystem ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBSystem ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -12082,9 +12082,9 @@ static int _wrap_delete_IBSysPort(ClientData clientData, Tcl_Interp *interp, int
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBSysPort *)ptr;
 }
 {
@@ -12107,41 +12107,41 @@ static int _wrap_delete_IBSysPort(ClientData clientData, Tcl_Interp *interp, int
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSysPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBSysPort ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSysPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSysPort ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSysPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSysPort ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSysPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSysPort ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSysPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBSysPort ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -12179,9 +12179,9 @@ static int _wrap_IBSysPort_connect(ClientData clientData, Tcl_Interp *interp, in
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBSysPort *)ptr;
 }
 {
@@ -12204,41 +12204,41 @@ static int _wrap_IBSysPort_connect(ClientData clientData, Tcl_Interp *interp, in
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSysPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBSysPort ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSysPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSysPort ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSysPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSysPort ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSysPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSysPort ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSysPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBSysPort ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -12248,9 +12248,9 @@ static int _wrap_IBSysPort_connect(ClientData clientData, Tcl_Interp *interp, in
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[2]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg1 = (IBSysPort *)ptr;
 }
 {
@@ -12273,41 +12273,41 @@ static int _wrap_IBSysPort_connect(ClientData clientData, Tcl_Interp *interp, in
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSysPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBSysPort ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSysPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSysPort ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSysPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSysPort ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSysPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSysPort ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSysPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBSysPort ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
     if (objc >3) {
@@ -12353,9 +12353,9 @@ static int _wrap_IBSysPort_disconnect(ClientData clientData, Tcl_Interp *interp,
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBSysPort *)ptr;
 }
 {
@@ -12378,41 +12378,41 @@ static int _wrap_IBSysPort_disconnect(ClientData clientData, Tcl_Interp *interp,
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSysPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBSysPort ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSysPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSysPort ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSysPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSysPort ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSysPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSysPort ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSysPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBSysPort ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -12673,9 +12673,9 @@ static int _wrap_IBSystem_name_set(ClientData clientData, Tcl_Interp *interp, in
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBSystem *)ptr;
 }
 {
@@ -12698,41 +12698,41 @@ static int _wrap_IBSystem_name_set(ClientData clientData, Tcl_Interp *interp, in
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBSystem ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSystem ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSystem ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSystem ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBSystem ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -12777,9 +12777,9 @@ static int _wrap_IBSystem_name_get(ClientData clientData, Tcl_Interp *interp, in
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBSystem *)ptr;
 }
 {
@@ -12802,41 +12802,41 @@ static int _wrap_IBSystem_name_get(ClientData clientData, Tcl_Interp *interp, in
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBSystem ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSystem ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSystem ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSystem ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBSystem ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -12876,9 +12876,9 @@ static int _wrap_IBSystem_type_set(ClientData clientData, Tcl_Interp *interp, in
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBSystem *)ptr;
 }
 {
@@ -12901,41 +12901,41 @@ static int _wrap_IBSystem_type_set(ClientData clientData, Tcl_Interp *interp, in
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBSystem ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSystem ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSystem ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSystem ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBSystem ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -12980,9 +12980,9 @@ static int _wrap_IBSystem_type_get(ClientData clientData, Tcl_Interp *interp, in
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBSystem *)ptr;
 }
 {
@@ -13005,41 +13005,41 @@ static int _wrap_IBSystem_type_get(ClientData clientData, Tcl_Interp *interp, in
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBSystem ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSystem ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSystem ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSystem ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBSystem ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -13079,9 +13079,9 @@ static int _wrap_IBSystem_p_fabric_set(ClientData clientData, Tcl_Interp *interp
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBSystem *)ptr;
 }
 {
@@ -13104,41 +13104,41 @@ static int _wrap_IBSystem_p_fabric_set(ClientData clientData, Tcl_Interp *interp
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBSystem ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSystem ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSystem ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSystem ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBSystem ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -13148,9 +13148,9 @@ static int _wrap_IBSystem_p_fabric_set(ClientData clientData, Tcl_Interp *interp
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[2]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg1 = (IBFabric *)ptr;
 }
 {
@@ -13173,41 +13173,41 @@ static int _wrap_IBSystem_p_fabric_set(ClientData clientData, Tcl_Interp *interp
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBFabric ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBFabric ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -13245,9 +13245,9 @@ static int _wrap_IBSystem_p_fabric_get(ClientData clientData, Tcl_Interp *interp
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBSystem *)ptr;
 }
 {
@@ -13270,41 +13270,41 @@ static int _wrap_IBSystem_p_fabric_get(ClientData clientData, Tcl_Interp *interp
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBSystem ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSystem ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSystem ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSystem ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBSystem ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -13342,9 +13342,9 @@ static int _wrap_IBSystem_NodeByName_get(ClientData clientData, Tcl_Interp *inte
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBSystem *)ptr;
 }
 {
@@ -13367,41 +13367,41 @@ static int _wrap_IBSystem_NodeByName_get(ClientData clientData, Tcl_Interp *inte
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBSystem ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSystem ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSystem ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSystem ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBSystem ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -13453,9 +13453,9 @@ static int _wrap_IBSystem_PortByName_get(ClientData clientData, Tcl_Interp *inte
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBSystem *)ptr;
 }
 {
@@ -13478,41 +13478,41 @@ static int _wrap_IBSystem_PortByName_get(ClientData clientData, Tcl_Interp *inte
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBSystem ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSystem ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSystem ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSystem ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBSystem ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -13572,9 +13572,9 @@ static int _wrap_new_IBSystem(ClientData clientData, Tcl_Interp *interp, int obj
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[2]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg1 = (IBFabric *)ptr;
 }
 {
@@ -13597,41 +13597,41 @@ static int _wrap_new_IBSystem(ClientData clientData, Tcl_Interp *interp, int obj
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBFabric ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBFabric ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -13674,9 +13674,9 @@ static int _wrap_delete_IBSystem(ClientData clientData, Tcl_Interp *interp, int 
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBSystem *)ptr;
 }
 {
@@ -13699,41 +13699,41 @@ static int _wrap_delete_IBSystem(ClientData clientData, Tcl_Interp *interp, int 
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBSystem ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSystem ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSystem ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSystem ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBSystem ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -13767,9 +13767,9 @@ static int _wrap_IBSystem_guid_get(ClientData clientData, Tcl_Interp *interp, in
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBSystem *)ptr;
 }
 {
@@ -13792,41 +13792,41 @@ static int _wrap_IBSystem_guid_get(ClientData clientData, Tcl_Interp *interp, in
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBSystem ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSystem ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSystem ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSystem ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBSystem ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -13868,9 +13868,9 @@ static int _wrap_IBSystem_guid_set(ClientData clientData, Tcl_Interp *interp, in
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBSystem *)ptr;
 }
 {
@@ -13893,41 +13893,41 @@ static int _wrap_IBSystem_guid_set(ClientData clientData, Tcl_Interp *interp, in
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBSystem ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSystem ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSystem ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSystem ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBSystem ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -13966,9 +13966,9 @@ static int _wrap_IBSystem_makeSysPort(ClientData clientData, Tcl_Interp *interp,
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBSystem *)ptr;
 }
 {
@@ -13991,41 +13991,41 @@ static int _wrap_IBSystem_makeSysPort(ClientData clientData, Tcl_Interp *interp,
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBSystem ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSystem ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSystem ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSystem ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBSystem ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -14070,9 +14070,9 @@ static int _wrap_IBSystem_getSysPortNodePortByName(ClientData clientData, Tcl_In
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBSystem *)ptr;
 }
 {
@@ -14095,41 +14095,41 @@ static int _wrap_IBSystem_getSysPortNodePortByName(ClientData clientData, Tcl_In
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBSystem ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSystem ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSystem ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSystem ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBSystem ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -14174,9 +14174,9 @@ static int _wrap_IBSystem_getSysPort(ClientData clientData, Tcl_Interp *interp, 
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBSystem *)ptr;
 }
 {
@@ -14199,41 +14199,41 @@ static int _wrap_IBSystem_getSysPort(ClientData clientData, Tcl_Interp *interp, 
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBSystem ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSystem ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSystem ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSystem ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBSystem ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -14515,9 +14515,9 @@ static int _wrap_IBFabric_NodeByName_get(ClientData clientData, Tcl_Interp *inte
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBFabric *)ptr;
 }
 {
@@ -14540,41 +14540,41 @@ static int _wrap_IBFabric_NodeByName_get(ClientData clientData, Tcl_Interp *inte
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBFabric ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBFabric ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -14626,9 +14626,9 @@ static int _wrap_IBFabric_SystemByName_get(ClientData clientData, Tcl_Interp *in
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBFabric *)ptr;
 }
 {
@@ -14651,41 +14651,41 @@ static int _wrap_IBFabric_SystemByName_get(ClientData clientData, Tcl_Interp *in
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBFabric ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBFabric ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -14737,9 +14737,9 @@ static int _wrap_IBFabric_PortByLid_get(ClientData clientData, Tcl_Interp *inter
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBFabric *)ptr;
 }
 {
@@ -14762,41 +14762,41 @@ static int _wrap_IBFabric_PortByLid_get(ClientData clientData, Tcl_Interp *inter
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBFabric ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBFabric ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -14821,7 +14821,7 @@ static int _wrap_IBFabric_PortByLid_get(ClientData clientData, Tcl_Interp *inter
 		} else {
 		  Tcl_AppendElement(interp, Tcl_GetString(p_tclObj));
 		}
-		Tcl_DecrRefCount(p_tclObj);	
+		Tcl_DecrRefCount(p_tclObj);
 	 }
   }
 }
@@ -14847,9 +14847,9 @@ static int _wrap_IBFabric_NodeByGuid_get(ClientData clientData, Tcl_Interp *inte
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBFabric *)ptr;
 }
 {
@@ -14872,41 +14872,41 @@ static int _wrap_IBFabric_NodeByGuid_get(ClientData clientData, Tcl_Interp *inte
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBFabric ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBFabric ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -14959,9 +14959,9 @@ static int _wrap_IBFabric_SystemByGuid_get(ClientData clientData, Tcl_Interp *in
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBFabric *)ptr;
 }
 {
@@ -14984,41 +14984,41 @@ static int _wrap_IBFabric_SystemByGuid_get(ClientData clientData, Tcl_Interp *in
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBFabric ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBFabric ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -15071,9 +15071,9 @@ static int _wrap_IBFabric_PortByGuid_get(ClientData clientData, Tcl_Interp *inte
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBFabric *)ptr;
 }
 {
@@ -15096,41 +15096,41 @@ static int _wrap_IBFabric_PortByGuid_get(ClientData clientData, Tcl_Interp *inte
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBFabric ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBFabric ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -15185,9 +15185,9 @@ static int _wrap_IBFabric_minLid_set(ClientData clientData, Tcl_Interp *interp, 
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBFabric *)ptr;
 }
 {
@@ -15210,41 +15210,41 @@ static int _wrap_IBFabric_minLid_set(ClientData clientData, Tcl_Interp *interp, 
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBFabric ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBFabric ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
     if (Tcl_GetIntFromObj(interp,objv[2],&tempint) == TCL_ERROR) return TCL_ERROR;
@@ -15281,9 +15281,9 @@ static int _wrap_IBFabric_minLid_get(ClientData clientData, Tcl_Interp *interp, 
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBFabric *)ptr;
 }
 {
@@ -15306,41 +15306,41 @@ static int _wrap_IBFabric_minLid_get(ClientData clientData, Tcl_Interp *interp, 
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBFabric ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBFabric ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -15377,9 +15377,9 @@ static int _wrap_IBFabric_maxLid_set(ClientData clientData, Tcl_Interp *interp, 
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBFabric *)ptr;
 }
 {
@@ -15402,41 +15402,41 @@ static int _wrap_IBFabric_maxLid_set(ClientData clientData, Tcl_Interp *interp, 
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBFabric ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBFabric ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
     if (Tcl_GetIntFromObj(interp,objv[2],&tempint) == TCL_ERROR) return TCL_ERROR;
@@ -15473,9 +15473,9 @@ static int _wrap_IBFabric_maxLid_get(ClientData clientData, Tcl_Interp *interp, 
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBFabric *)ptr;
 }
 {
@@ -15498,41 +15498,41 @@ static int _wrap_IBFabric_maxLid_get(ClientData clientData, Tcl_Interp *interp, 
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBFabric ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBFabric ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -15569,9 +15569,9 @@ static int _wrap_IBFabric_lmc_set(ClientData clientData, Tcl_Interp *interp, int
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBFabric *)ptr;
 }
 {
@@ -15594,41 +15594,41 @@ static int _wrap_IBFabric_lmc_set(ClientData clientData, Tcl_Interp *interp, int
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBFabric ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBFabric ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
     if (Tcl_GetIntFromObj(interp,objv[2],&tempint) == TCL_ERROR) return TCL_ERROR;
@@ -15665,9 +15665,9 @@ static int _wrap_IBFabric_lmc_get(ClientData clientData, Tcl_Interp *interp, int
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBFabric *)ptr;
 }
 {
@@ -15690,41 +15690,41 @@ static int _wrap_IBFabric_lmc_get(ClientData clientData, Tcl_Interp *interp, int
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBFabric ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBFabric ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -15764,9 +15764,9 @@ static int _wrap_IBFabric_makeNode(ClientData clientData, Tcl_Interp *interp, in
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBFabric *)ptr;
 }
 {
@@ -15789,41 +15789,41 @@ static int _wrap_IBFabric_makeNode(ClientData clientData, Tcl_Interp *interp, in
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBFabric ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBFabric ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -15839,9 +15839,9 @@ static int _wrap_IBFabric_makeNode(ClientData clientData, Tcl_Interp *interp, in
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[3]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg2 = (IBSystem *)ptr;
 }
 {
@@ -15864,41 +15864,41 @@ static int _wrap_IBFabric_makeNode(ClientData clientData, Tcl_Interp *interp, in
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBSystem ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSystem ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSystem ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBSystem ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBSystem  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBSystem ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
     if (Tcl_GetIntFromObj(interp,objv[4],&tempint) == TCL_ERROR) return TCL_ERROR;
@@ -15941,9 +15941,9 @@ static int _wrap_IBFabric_getNode(ClientData clientData, Tcl_Interp *interp, int
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBFabric *)ptr;
 }
 {
@@ -15966,41 +15966,41 @@ static int _wrap_IBFabric_getNode(ClientData clientData, Tcl_Interp *interp, int
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBFabric ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBFabric ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -16046,9 +16046,9 @@ static int _wrap_IBFabric_getNodesByType(ClientData clientData, Tcl_Interp *inte
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBFabric *)ptr;
 }
 {
@@ -16071,41 +16071,41 @@ static int _wrap_IBFabric_getNodesByType(ClientData clientData, Tcl_Interp *inte
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBFabric ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBFabric ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
     if (Tcl_GetIntFromObj(interp,objv[2],&tempint) == TCL_ERROR) return TCL_ERROR;
@@ -16160,9 +16160,9 @@ static int _wrap_IBFabric_makeGenericSystem(ClientData clientData, Tcl_Interp *i
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBFabric *)ptr;
 }
 {
@@ -16185,41 +16185,41 @@ static int _wrap_IBFabric_makeGenericSystem(ClientData clientData, Tcl_Interp *i
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBFabric ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBFabric ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -16265,9 +16265,9 @@ static int _wrap_IBFabric_makeSystem(ClientData clientData, Tcl_Interp *interp, 
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBFabric *)ptr;
 }
 {
@@ -16290,41 +16290,41 @@ static int _wrap_IBFabric_makeSystem(ClientData clientData, Tcl_Interp *interp, 
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBFabric ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBFabric ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -16375,9 +16375,9 @@ static int _wrap_IBFabric_getSystem(ClientData clientData, Tcl_Interp *interp, i
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBFabric *)ptr;
 }
 {
@@ -16400,41 +16400,41 @@ static int _wrap_IBFabric_getSystem(ClientData clientData, Tcl_Interp *interp, i
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBFabric ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBFabric ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -16480,9 +16480,9 @@ static int _wrap_IBFabric_getSystemByGuid(ClientData clientData, Tcl_Interp *int
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBFabric *)ptr;
 }
 {
@@ -16505,41 +16505,41 @@ static int _wrap_IBFabric_getSystemByGuid(ClientData clientData, Tcl_Interp *int
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBFabric ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBFabric ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -16583,9 +16583,9 @@ static int _wrap_IBFabric_getNodeByGuid(ClientData clientData, Tcl_Interp *inter
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBFabric *)ptr;
 }
 {
@@ -16608,41 +16608,41 @@ static int _wrap_IBFabric_getNodeByGuid(ClientData clientData, Tcl_Interp *inter
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBFabric ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBFabric ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -16686,9 +16686,9 @@ static int _wrap_IBFabric_getPortByGuid(ClientData clientData, Tcl_Interp *inter
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBFabric *)ptr;
 }
 {
@@ -16711,41 +16711,41 @@ static int _wrap_IBFabric_getPortByGuid(ClientData clientData, Tcl_Interp *inter
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBFabric ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBFabric ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -16796,9 +16796,9 @@ static int _wrap_IBFabric_addCable(ClientData clientData, Tcl_Interp *interp, in
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBFabric *)ptr;
 }
 {
@@ -16821,41 +16821,41 @@ static int _wrap_IBFabric_addCable(ClientData clientData, Tcl_Interp *interp, in
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBFabric ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBFabric ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -16938,9 +16938,9 @@ static int _wrap_IBFabric_parseCables(ClientData clientData, Tcl_Interp *interp,
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBFabric *)ptr;
 }
 {
@@ -16963,41 +16963,41 @@ static int _wrap_IBFabric_parseCables(ClientData clientData, Tcl_Interp *interp,
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBFabric ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBFabric ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -17039,9 +17039,9 @@ static int _wrap_IBFabric_parseTopology(ClientData clientData, Tcl_Interp *inter
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBFabric *)ptr;
 }
 {
@@ -17064,41 +17064,41 @@ static int _wrap_IBFabric_parseTopology(ClientData clientData, Tcl_Interp *inter
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBFabric ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBFabric ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -17174,9 +17174,9 @@ static int _wrap_IBFabric_addLink(ClientData clientData, Tcl_Interp *interp, int
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBFabric *)ptr;
 }
 {
@@ -17199,41 +17199,41 @@ static int _wrap_IBFabric_addLink(ClientData clientData, Tcl_Interp *interp, int
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBFabric ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBFabric ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -17357,9 +17357,9 @@ static int _wrap_IBFabric_parseSubnetLinks(ClientData clientData, Tcl_Interp *in
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBFabric *)ptr;
 }
 {
@@ -17382,41 +17382,41 @@ static int _wrap_IBFabric_parseSubnetLinks(ClientData clientData, Tcl_Interp *in
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBFabric ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBFabric ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -17458,9 +17458,9 @@ static int _wrap_IBFabric_parseFdbFile(ClientData clientData, Tcl_Interp *interp
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBFabric *)ptr;
 }
 {
@@ -17483,41 +17483,41 @@ static int _wrap_IBFabric_parseFdbFile(ClientData clientData, Tcl_Interp *interp
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBFabric ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBFabric ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -17559,9 +17559,9 @@ static int _wrap_IBFabric_parseMCFdbFile(ClientData clientData, Tcl_Interp *inte
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBFabric *)ptr;
 }
 {
@@ -17584,41 +17584,41 @@ static int _wrap_IBFabric_parseMCFdbFile(ClientData clientData, Tcl_Interp *inte
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBFabric ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBFabric ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -17661,9 +17661,9 @@ static int _wrap_IBFabric_setLidPort(ClientData clientData, Tcl_Interp *interp, 
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBFabric *)ptr;
 }
 {
@@ -17686,41 +17686,41 @@ static int _wrap_IBFabric_setLidPort(ClientData clientData, Tcl_Interp *interp, 
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBFabric ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBFabric ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
     if (Tcl_GetIntFromObj(interp,objv[2],&tempint) == TCL_ERROR) return TCL_ERROR;
@@ -17732,9 +17732,9 @@ static int _wrap_IBFabric_setLidPort(ClientData clientData, Tcl_Interp *interp, 
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[3]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg2 = (IBPort *)ptr;
 }
 {
@@ -17757,41 +17757,41 @@ static int _wrap_IBFabric_setLidPort(ClientData clientData, Tcl_Interp *interp, 
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBPort ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBPort ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBPort  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBPort ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -17827,9 +17827,9 @@ static int _wrap_IBFabric_getPortByLid(ClientData clientData, Tcl_Interp *interp
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBFabric *)ptr;
 }
 {
@@ -17852,41 +17852,41 @@ static int _wrap_IBFabric_getPortByLid(ClientData clientData, Tcl_Interp *interp
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBFabric ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBFabric ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
     if (Tcl_GetIntFromObj(interp,objv[2],&tempint) == TCL_ERROR) return TCL_ERROR;
@@ -17929,9 +17929,9 @@ static int _wrap_IBFabric_dumpTopology(ClientData clientData, Tcl_Interp *interp
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBFabric *)ptr;
 }
 {
@@ -17954,41 +17954,41 @@ static int _wrap_IBFabric_dumpTopology(ClientData clientData, Tcl_Interp *interp
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
-	}	
+	 return TCL_ERROR;
+	}
   } else if (!strcmp("IBFabric ", "IBSystem ")) {
 	if (strcmp(buf, "system")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBSysPort ")) {
 	if (strcmp(buf, "sysport")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBNode ")) {
 	if (strcmp(buf, "node")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else if (!strcmp("IBFabric ", "IBPort ")) {
 	if (strcmp(buf, "port")) {
 	 char err[256];
 	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
 	}
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBFabric ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
     if ((_arg1 = Tcl_GetStringFromObj(objv[2], &templength)) == NULL) return TCL_ERROR;
@@ -27263,9 +27263,9 @@ static int _wrap_IBMSNode_getIBNode(ClientData clientData, Tcl_Interp *interp, i
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBMSNode *)ptr;
 }
 {
@@ -27288,13 +27288,13 @@ static int _wrap_IBMSNode_getIBNode(ClientData clientData, Tcl_Interp *interp, i
       char err[256];
       sprintf(err, "-E- basetype is IBMSNode  but received obj of type %s", buf);
       Tcl_SetStringObj(tcl_result, err, strlen(err));
-      return TCL_ERROR;	
+      return TCL_ERROR;
     }
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBMSNode ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -27334,9 +27334,9 @@ static int _wrap_IBMSNode_getLinkStatus(ClientData clientData, Tcl_Interp *inter
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBMSNode *)ptr;
 }
 {
@@ -27359,13 +27359,13 @@ static int _wrap_IBMSNode_getLinkStatus(ClientData clientData, Tcl_Interp *inter
       char err[256];
       sprintf(err, "-E- basetype is IBMSNode  but received obj of type %s", buf);
       Tcl_SetStringObj(tcl_result, err, strlen(err));
-      return TCL_ERROR;	
+      return TCL_ERROR;
     }
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBMSNode ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -27408,9 +27408,9 @@ static int _wrap_IBMSNode_setPhyPortErrProfile(ClientData clientData, Tcl_Interp
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBMSNode *)ptr;
 }
 {
@@ -27433,13 +27433,13 @@ static int _wrap_IBMSNode_setPhyPortErrProfile(ClientData clientData, Tcl_Interp
       char err[256];
       sprintf(err, "-E- basetype is IBMSNode  but received obj of type %s", buf);
       Tcl_SetStringObj(tcl_result, err, strlen(err));
-      return TCL_ERROR;	
+      return TCL_ERROR;
     }
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBMSNode ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -27500,9 +27500,9 @@ static int _wrap_IBMSNode_getPhyPortErrProfile(ClientData clientData, Tcl_Interp
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBMSNode *)ptr;
 }
 {
@@ -27525,13 +27525,13 @@ static int _wrap_IBMSNode_getPhyPortErrProfile(ClientData clientData, Tcl_Interp
       char err[256];
       sprintf(err, "-E- basetype is IBMSNode  but received obj of type %s", buf);
       Tcl_SetStringObj(tcl_result, err, strlen(err));
-      return TCL_ERROR;	
+      return TCL_ERROR;
     }
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBMSNode ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -27586,9 +27586,9 @@ static int _wrap_IBMSNode_setPhyPortPMCounter(ClientData clientData, Tcl_Interp 
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBMSNode *)ptr;
 }
 {
@@ -27611,13 +27611,13 @@ static int _wrap_IBMSNode_setPhyPortPMCounter(ClientData clientData, Tcl_Interp 
       char err[256];
       sprintf(err, "-E- basetype is IBMSNode  but received obj of type %s", buf);
       Tcl_SetStringObj(tcl_result, err, strlen(err));
-      return TCL_ERROR;	
+      return TCL_ERROR;
     }
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBMSNode ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -27669,9 +27669,9 @@ static int _wrap_IBMSNode_getPhyPortPMCounter(ClientData clientData, Tcl_Interp 
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBMSNode *)ptr;
 }
 {
@@ -27694,13 +27694,13 @@ static int _wrap_IBMSNode_getPhyPortPMCounter(ClientData clientData, Tcl_Interp 
       char err[256];
       sprintf(err, "-E- basetype is IBMSNode  but received obj of type %s", buf);
       Tcl_SetStringObj(tcl_result, err, strlen(err));
-      return TCL_ERROR;	
+      return TCL_ERROR;
     }
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBMSNode ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -27745,9 +27745,9 @@ static int _wrap_IBMSNode_getPortInfo(ClientData clientData, Tcl_Interp *interp,
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBMSNode *)ptr;
 }
 {
@@ -27770,13 +27770,13 @@ static int _wrap_IBMSNode_getPortInfo(ClientData clientData, Tcl_Interp *interp,
       char err[256];
       sprintf(err, "-E- basetype is IBMSNode  but received obj of type %s", buf);
       Tcl_SetStringObj(tcl_result, err, strlen(err));
-      return TCL_ERROR;	
+      return TCL_ERROR;
     }
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBMSNode ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -27819,9 +27819,9 @@ static int _wrap_IBMSNode_setLinkStatus(ClientData clientData, Tcl_Interp *inter
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBMSNode *)ptr;
 }
 {
@@ -27844,13 +27844,13 @@ static int _wrap_IBMSNode_setLinkStatus(ClientData clientData, Tcl_Interp *inter
       char err[256];
       sprintf(err, "-E- basetype is IBMSNode  but received obj of type %s", buf);
       Tcl_SetStringObj(tcl_result, err, strlen(err));
-      return TCL_ERROR;	
+      return TCL_ERROR;
     }
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBMSNode ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -27893,9 +27893,9 @@ static int _wrap_IBMSNode_getNodeInfo(ClientData clientData, Tcl_Interp *interp,
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBMSNode *)ptr;
 }
 {
@@ -27918,13 +27918,13 @@ static int _wrap_IBMSNode_getNodeInfo(ClientData clientData, Tcl_Interp *interp,
       char err[256];
       sprintf(err, "-E- basetype is IBMSNode  but received obj of type %s", buf);
       Tcl_SetStringObj(tcl_result, err, strlen(err));
-      return TCL_ERROR;	
+      return TCL_ERROR;
     }
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBMSNode ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -27959,9 +27959,9 @@ static int _wrap_IBMSNode_getSwitchInfo(ClientData clientData, Tcl_Interp *inter
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBMSNode *)ptr;
 }
 {
@@ -27984,13 +27984,13 @@ static int _wrap_IBMSNode_getSwitchInfo(ClientData clientData, Tcl_Interp *inter
       char err[256];
       sprintf(err, "-E- basetype is IBMSNode  but received obj of type %s", buf);
       Tcl_SetStringObj(tcl_result, err, strlen(err));
-      return TCL_ERROR;	
+      return TCL_ERROR;
     }
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBMSNode ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -28029,9 +28029,9 @@ static int _wrap_IBMSNode_getPKeyTblBlock(ClientData clientData, Tcl_Interp *int
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBMSNode *)ptr;
 }
 {
@@ -28054,13 +28054,13 @@ static int _wrap_IBMSNode_getPKeyTblBlock(ClientData clientData, Tcl_Interp *int
       char err[256];
       sprintf(err, "-E- basetype is IBMSNode  but received obj of type %s", buf);
       Tcl_SetStringObj(tcl_result, err, strlen(err));
-      return TCL_ERROR;	
+      return TCL_ERROR;
     }
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBMSNode ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -28124,9 +28124,9 @@ static int _wrap_IBMSNode_setPKeyTblBlock(ClientData clientData, Tcl_Interp *int
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBMSNode *)ptr;
 }
 {
@@ -28149,13 +28149,13 @@ static int _wrap_IBMSNode_setPKeyTblBlock(ClientData clientData, Tcl_Interp *int
       char err[256];
       sprintf(err, "-E- basetype is IBMSNode  but received obj of type %s", buf);
       Tcl_SetStringObj(tcl_result, err, strlen(err));
-      return TCL_ERROR;	
+      return TCL_ERROR;
     }
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBMSNode ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -28225,9 +28225,9 @@ static int _wrap_IBMSNode_getVLArbLTable(ClientData clientData, Tcl_Interp *inte
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBMSNode *)ptr;
 }
 {
@@ -28250,13 +28250,13 @@ static int _wrap_IBMSNode_getVLArbLTable(ClientData clientData, Tcl_Interp *inte
       char err[256];
       sprintf(err, "-E- basetype is IBMSNode  but received obj of type %s", buf);
       Tcl_SetStringObj(tcl_result, err, strlen(err));
-      return TCL_ERROR;	
+      return TCL_ERROR;
     }
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBMSNode ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -28320,9 +28320,9 @@ static int _wrap_IBMSNode_setVLArbLTable(ClientData clientData, Tcl_Interp *inte
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBMSNode *)ptr;
 }
 {
@@ -28345,13 +28345,13 @@ static int _wrap_IBMSNode_setVLArbLTable(ClientData clientData, Tcl_Interp *inte
       char err[256];
       sprintf(err, "-E- basetype is IBMSNode  but received obj of type %s", buf);
       Tcl_SetStringObj(tcl_result, err, strlen(err));
-      return TCL_ERROR;	
+      return TCL_ERROR;
     }
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBMSNode ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -28450,9 +28450,9 @@ static int _wrap_IBMSNode_getSL2VLTable(ClientData clientData, Tcl_Interp *inter
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBMSNode *)ptr;
 }
 {
@@ -28475,13 +28475,13 @@ static int _wrap_IBMSNode_getSL2VLTable(ClientData clientData, Tcl_Interp *inter
       char err[256];
       sprintf(err, "-E- basetype is IBMSNode  but received obj of type %s", buf);
       Tcl_SetStringObj(tcl_result, err, strlen(err));
-      return TCL_ERROR;	
+      return TCL_ERROR;
     }
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBMSNode ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -28547,9 +28547,9 @@ static int _wrap_IBMSNode_setSL2VLTable(ClientData clientData, Tcl_Interp *inter
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBMSNode *)ptr;
 }
 {
@@ -28572,13 +28572,13 @@ static int _wrap_IBMSNode_setSL2VLTable(ClientData clientData, Tcl_Interp *inter
       char err[256];
       sprintf(err, "-E- basetype is IBMSNode  but received obj of type %s", buf);
       Tcl_SetStringObj(tcl_result, err, strlen(err));
-      return TCL_ERROR;	
+      return TCL_ERROR;
     }
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBMSNode ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -28627,7 +28627,7 @@ static int _wrap_IBMSNode_setSL2VLTable(ClientData clientData, Tcl_Interp *inter
 	  if (i % 2) {
 		  entry = (value & 0xf) | (entry & 0xf0) ;
 	  } else {
-		  entry = ((value & 0xf) << 4) | (entry & 0xf);		
+		  entry = ((value & 0xf) << 4) | (entry & 0xf);
 	  }
 	  tmp.raw_vl_by_sl[i/2] = entry;
   }
@@ -28673,9 +28673,9 @@ static int _wrap_IBMSNode_setCrSpace(ClientData clientData, Tcl_Interp *interp, 
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBMSNode *)ptr;
 }
 {
@@ -28698,13 +28698,13 @@ static int _wrap_IBMSNode_setCrSpace(ClientData clientData, Tcl_Interp *interp, 
       char err[256];
       sprintf(err, "-E- basetype is IBMSNode  but received obj of type %s", buf);
       Tcl_SetStringObj(tcl_result, err, strlen(err));
-      return TCL_ERROR;	
+      return TCL_ERROR;
     }
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBMSNode ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -28757,9 +28757,9 @@ static int _wrap_IBMSNode_getCrSpace(ClientData clientData, Tcl_Interp *interp, 
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBMSNode *)ptr;
 }
 {
@@ -28782,13 +28782,13 @@ static int _wrap_IBMSNode_getCrSpace(ClientData clientData, Tcl_Interp *interp, 
       char err[256];
       sprintf(err, "-E- basetype is IBMSNode  but received obj of type %s", buf);
       Tcl_SetStringObj(tcl_result, err, strlen(err));
-      return TCL_ERROR;	
+      return TCL_ERROR;
     }
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBMSNode ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -28844,9 +28844,9 @@ static int _wrap_IBMSNode_getMFTBlock(ClientData clientData, Tcl_Interp *interp,
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBMSNode *)ptr;
 }
 {
@@ -28869,13 +28869,13 @@ static int _wrap_IBMSNode_getMFTBlock(ClientData clientData, Tcl_Interp *interp,
       char err[256];
       sprintf(err, "-E- basetype is IBMSNode  but received obj of type %s", buf);
       Tcl_SetStringObj(tcl_result, err, strlen(err));
-      return TCL_ERROR;	
+      return TCL_ERROR;
     }
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBMSNode ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -28940,9 +28940,9 @@ static int _wrap_IBMSNode_setMFTBlock(ClientData clientData, Tcl_Interp *interp,
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg0 = (IBMSNode *)ptr;
 }
 {
@@ -28965,13 +28965,13 @@ static int _wrap_IBMSNode_setMFTBlock(ClientData clientData, Tcl_Interp *interp,
       char err[256];
       sprintf(err, "-E- basetype is IBMSNode  but received obj of type %s", buf);
       Tcl_SetStringObj(tcl_result, err, strlen(err));
-      return TCL_ERROR;	
+      return TCL_ERROR;
     }
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBMSNode ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -30216,9 +30216,9 @@ static int _wrap_madMcMemberRec_send_set(ClientData clientData, Tcl_Interp *inte
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[2]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg1 = (IBMSNode *)ptr;
 }
 {
@@ -30241,13 +30241,13 @@ static int _wrap_madMcMemberRec_send_set(ClientData clientData, Tcl_Interp *inte
       char err[256];
       sprintf(err, "-E- basetype is IBMSNode  but received obj of type %s", buf);
       Tcl_SetStringObj(tcl_result, err, strlen(err));
-      return TCL_ERROR;	
+      return TCL_ERROR;
     }
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBMSNode ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -30320,9 +30320,9 @@ static int _wrap_madMcMemberRec_send_get(ClientData clientData, Tcl_Interp *inte
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[2]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg1 = (IBMSNode *)ptr;
 }
 {
@@ -30345,13 +30345,13 @@ static int _wrap_madMcMemberRec_send_get(ClientData clientData, Tcl_Interp *inte
       char err[256];
       sprintf(err, "-E- basetype is IBMSNode  but received obj of type %s", buf);
       Tcl_SetStringObj(tcl_result, err, strlen(err));
-      return TCL_ERROR;	
+      return TCL_ERROR;
     }
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBMSNode ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -30424,9 +30424,9 @@ static int _wrap_madMcMemberRec_send_del(ClientData clientData, Tcl_Interp *inte
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[2]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg1 = (IBMSNode *)ptr;
 }
 {
@@ -30449,13 +30449,13 @@ static int _wrap_madMcMemberRec_send_del(ClientData clientData, Tcl_Interp *inte
       char err[256];
       sprintf(err, "-E- basetype is IBMSNode  but received obj of type %s", buf);
       Tcl_SetStringObj(tcl_result, err, strlen(err));
-      return TCL_ERROR;	
+      return TCL_ERROR;
     }
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBMSNode ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -32111,9 +32111,9 @@ static int _wrap_madPathRec_send_get(ClientData clientData, Tcl_Interp *interp, 
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[2]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg1 = (IBMSNode *)ptr;
 }
 {
@@ -32136,13 +32136,13 @@ static int _wrap_madPathRec_send_get(ClientData clientData, Tcl_Interp *interp, 
       char err[256];
       sprintf(err, "-E- basetype is IBMSNode  but received obj of type %s", buf);
       Tcl_SetStringObj(tcl_result, err, strlen(err));
-      return TCL_ERROR;	
+      return TCL_ERROR;
     }
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBMSNode ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -33689,9 +33689,9 @@ static int _wrap_madServiceRec_send_set(ClientData clientData, Tcl_Interp *inter
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[2]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg1 = (IBMSNode *)ptr;
 }
 {
@@ -33714,13 +33714,13 @@ static int _wrap_madServiceRec_send_set(ClientData clientData, Tcl_Interp *inter
       char err[256];
       sprintf(err, "-E- basetype is IBMSNode  but received obj of type %s", buf);
       Tcl_SetStringObj(tcl_result, err, strlen(err));
-      return TCL_ERROR;	
+      return TCL_ERROR;
     }
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBMSNode ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -33793,9 +33793,9 @@ static int _wrap_madServiceRec_send_get(ClientData clientData, Tcl_Interp *inter
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[2]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg1 = (IBMSNode *)ptr;
 }
 {
@@ -33818,13 +33818,13 @@ static int _wrap_madServiceRec_send_get(ClientData clientData, Tcl_Interp *inter
       char err[256];
       sprintf(err, "-E- basetype is IBMSNode  but received obj of type %s", buf);
       Tcl_SetStringObj(tcl_result, err, strlen(err));
-      return TCL_ERROR;	
+      return TCL_ERROR;
     }
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBMSNode ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -33897,9 +33897,9 @@ static int _wrap_madServiceRec_send_del(ClientData clientData, Tcl_Interp *inter
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[2]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg1 = (IBMSNode *)ptr;
 }
 {
@@ -33922,13 +33922,13 @@ static int _wrap_madServiceRec_send_del(ClientData clientData, Tcl_Interp *inter
       char err[256];
       sprintf(err, "-E- basetype is IBMSNode  but received obj of type %s", buf);
       Tcl_SetStringObj(tcl_result, err, strlen(err));
-      return TCL_ERROR;	
+      return TCL_ERROR;
     }
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBMSNode ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -34989,9 +34989,9 @@ static int _wrap_madNotice128_send_trap(ClientData clientData, Tcl_Interp *inter
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[2]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg1 = (IBMSNode *)ptr;
 }
 {
@@ -35014,13 +35014,13 @@ static int _wrap_madNotice128_send_trap(ClientData clientData, Tcl_Interp *inter
       char err[256];
       sprintf(err, "-E- basetype is IBMSNode  but received obj of type %s", buf);
       Tcl_SetStringObj(tcl_result, err, strlen(err));
-      return TCL_ERROR;	
+      return TCL_ERROR;
     }
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBMSNode ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -36192,9 +36192,9 @@ static int _wrap_madNotice129_send_trap(ClientData clientData, Tcl_Interp *inter
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[2]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg1 = (IBMSNode *)ptr;
 }
 {
@@ -36217,13 +36217,13 @@ static int _wrap_madNotice129_send_trap(ClientData clientData, Tcl_Interp *inter
       char err[256];
       sprintf(err, "-E- basetype is IBMSNode  but received obj of type %s", buf);
       Tcl_SetStringObj(tcl_result, err, strlen(err));
-      return TCL_ERROR;	
+      return TCL_ERROR;
     }
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBMSNode ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -37493,9 +37493,9 @@ static int _wrap_madNotice144_send_trap(ClientData clientData, Tcl_Interp *inter
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[2]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg1 = (IBMSNode *)ptr;
 }
 {
@@ -37518,13 +37518,13 @@ static int _wrap_madNotice144_send_trap(ClientData clientData, Tcl_Interp *inter
       char err[256];
       sprintf(err, "-E- basetype is IBMSNode  but received obj of type %s", buf);
       Tcl_SetStringObj(tcl_result, err, strlen(err));
-      return TCL_ERROR;	
+      return TCL_ERROR;
     }
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBMSNode ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -38883,9 +38883,9 @@ static int _wrap_madGenericInform_send_set(ClientData clientData, Tcl_Interp *in
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[2]) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   _arg1 = (IBMSNode *)ptr;
 }
 {
@@ -38908,13 +38908,13 @@ static int _wrap_madGenericInform_send_set(ClientData clientData, Tcl_Interp *in
       char err[256];
       sprintf(err, "-E- basetype is IBMSNode  but received obj of type %s", buf);
       Tcl_SetStringObj(tcl_result, err, strlen(err));
-      return TCL_ERROR;	
+      return TCL_ERROR;
     }
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype 'IBMSNode ' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 {
@@ -39348,7 +39348,7 @@ SWIGEXPORT(int,Ibdm_Init)(Tcl_Interp *interp) {
 
   /* mixing declarations .... */
   {
-	 Tcl_PkgProvide(interp,"ibms", "1.0");	
+	 Tcl_PkgProvide(interp,"ibms", "1.0");
 #ifdef OSM_BUILD_OPENIB
     Tcl_CreateExitHandler(ibmssh_exit, NULL);
 #endif
@@ -39985,7 +39985,7 @@ SWIGEXPORT(int,Ibdm_Init)(Tcl_Interp *interp) {
 	 SWIG_RegisterMapping("__ib_lft_record","_ib_lft_record_t",0);
 	 SWIG_RegisterMapping("__ib_lft_record","_struct__ib_lft_record",0);
 	 SWIG_RegisterMapping("_class_IBMgtSim","_IBMgtSim",0);
-	
+	 
    if (Tcl_PkgRequire(interp,"tclreadline",0,0) != NULL) {
      Tcl_Eval(interp,
 				  "if {$tcl_interactive} {namespace eval tclreadline {proc prompt1 {} {return \"ibms >\"} }; ::tclreadline::Loop ibms.log }"

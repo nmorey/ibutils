@@ -128,7 +128,7 @@ int main (int argc, char **argv) {
 		FabricUtilsVerboseLevel |= FABU_LOG_VERBOSE;
 		printf(" Verbose Mode\n");
 		break;
-		
+
 	 case 's':
 		/*
 		  Specifies Start System

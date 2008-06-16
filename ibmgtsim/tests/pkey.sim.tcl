@@ -192,7 +192,7 @@ proc setAllHcaPortsPKeyTable {fabric} {
 
 		# we track the pkey index of the assigned pkey (or -1)
 		set PORT_GROUP_PKEY_IDX($port) [lsearch $pkeys $pkey]
-		
+
       set blockNum 0
       foreach block $blocks {
          # now set the PKey tables
@@ -252,7 +252,7 @@ proc verifyCorrectPKeyIndexForAllHcaPorts {fabric} {
       set partcap [ib_node_info_t_partition_cap_get $ni]
 		set grp  $PORT_PKEY_GROUP($port)
 		set pkey $GROUP_PKEY($grp)
-		
+
 		set pkey_idx $PORT_GROUP_PKEY_IDX($port)
 		if {$pkey_idx == -1} {
 			puts "-I- Ignoring non-definitive port [IBPort_getName $port]"
@@ -274,7 +274,7 @@ proc verifyCorrectPKeyIndexForAllHcaPorts {fabric} {
 			puts "    pkeys:$block"
          incr anyErr
       } else {
-         puts "-I- [IBPort_getName $port] found pkey:$pkey at block:$blockIdx idx:$idx "			
+         puts "-I- [IBPort_getName $port] found pkey:$pkey at block:$blockIdx idx:$idx "
 		}
    }
    # all HCA active ports
@@ -350,7 +350,7 @@ proc setOneSwitchChangeBit {fabric} {
 				set new [expr ($old & 0xf0) | 0x2]
 				ib_port_info_t_state_info1_set $pi $new
 			}
-			
+
          set swi [IBMSNode_getSwitchInfo sim$node]
          set lifeState [ib_switch_info_t_life_state_get $swi]
          set lifeState [expr ($lifeState & 0xf8) | 4 ]

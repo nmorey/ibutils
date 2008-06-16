@@ -55,7 +55,7 @@ A dump of the pm Counters values, of the fabric links
 
 =item
 Names of the source and destination ports (as defined in the topology file; source may be omitted -> local port is assumed to be the source)
-	
+
 =back
 
 =item B<-l <[src-lid,]dst-lid>> :
@@ -64,7 +64,7 @@ Names of the source and destination ports (as defined in the topology file; sour
 
 =item
 Source and destination LIDs (source may be omitted -> local port is assumed to be the source)
-	
+
 =back
 
 =item B<-d <p1,p2,p3,...>> :
@@ -73,7 +73,7 @@ Source and destination LIDs (source may be omitted -> local port is assumed to b
 
 =item
 directed route from the local node (which is the source) and the destination node
-	
+
 =back
 
 =item B<-c <count>> :
@@ -82,7 +82,7 @@ directed route from the local node (which is the source) and the destination nod
 
 =item
 The minimal number of packets to be sent across each link (default = 100)
-	
+
 =back
 
 =item B<-v> :

@@ -64,10 +64,10 @@ CrdLoopInitRtTbls(IBFabric *p_fabric) {
   for( map_str_pnode::iterator nI = p_fabric->NodeByName.begin();
 		 nI != p_fabric->NodeByName.end();
 		 nI++) {
-	
+
 	 p_node = (*nI).second;
 	 if (p_node->type != IB_SW_NODE) continue;
-	
+
 	 uint8_t *p_tbl =
 		new uint8_t[p_node->numPorts*p_node->numPorts];
 
@@ -147,7 +147,7 @@ int CrdLoopMarkRouteByLFT (
 		cout << "-E- Unassigned LFT for lid:" << dLid << " Dead end at:" << p_node->name << endl;
 		return 1;
 	 }
-	
+
 	 // get the port on the other side
 	 p_port = p_node->getPort(outPortNum);
 
@@ -200,9 +200,9 @@ CrdLoopPopulateRtTbls(IBFabric *p_fabric) {
   // go over all ports in the fabric
   for ( i = p_fabric->minLid; i <= p_fabric->maxLid; i += lidStep) {
 	 IBPort *p_srcPort = p_fabric->PortByLid[i];
-	
+
 	 if (!p_srcPort || (p_srcPort->p_node->type == IB_SW_NODE)) continue;
-	
+
 	 unsigned int sLid = p_srcPort->base_lid;
 
 	 // go over all the rest of the ports:
@@ -221,7 +221,7 @@ CrdLoopPopulateRtTbls(IBFabric *p_fabric) {
 		// go over all LMC combinations:
 		for (unsigned int l = 0; l < lidStep; l++) {
 		  paths++;
-		
+
 		  // Trace the path but record the input to output ports used.
 		  if (CrdLoopMarkRouteByLFT(p_fabric, sLid + l, dLid + l)) {
 			 cout << "-E- Fail to find a path from:"
@@ -259,14 +259,14 @@ CrdLoopBfsFromCAs(IBFabric *p_fabric) {
   for( map_str_pnode::iterator nI = p_fabric->NodeByName.begin();
 		 nI != p_fabric->NodeByName.end();
 		 nI++) {
-	
+
 	 p_node = (*nI).second;
 	 if (p_node->type != IB_CA_NODE) continue;
-	
+
 	 // get the remote input port
 	 for (unsigned int pn = 1; pn <= p_node->numPorts; pn++) {
 		p_port = p_node->getPort(pn);
-		
+
 		if (p_port && p_port->p_remotePort) {
 		  // add to the list
 		  thisStepPorts.push_back(p_port->p_remotePort);
@@ -284,7 +284,7 @@ CrdLoopBfsFromCAs(IBFabric *p_fabric) {
 	 while (! thisStepPorts.empty()) {
 		p_port = thisStepPorts.front();
 		thisStepPorts.pop_front();
-		
+
 		p_node = p_port->p_node ;
 
 		if (p_node->type != IB_SW_NODE) continue;
@@ -345,7 +345,7 @@ CrdLoopDumpRtTbls(IBFabric *p_fabric) {
   for( map_str_pnode::iterator nI = p_fabric->NodeByName.begin();
 		 nI != p_fabric->NodeByName.end();
 		 nI++) {
-	
+
 	 p_node = (*nI).second;
 	 if (p_node->type != IB_SW_NODE) continue;
 
@@ -374,7 +374,7 @@ CrdLoopDumpRtTbls(IBFabric *p_fabric) {
 		  else if (p_tbl[idx] == (RT_USED | RT_VISITED))
 			 cout << setw(3) << "VIS ";
 		  else {
-			 cout << setw(3) << "   ";			
+			 cout << setw(3) << "   ";
 		  }
 		}
 		cout << endl;
@@ -408,7 +408,7 @@ CrdLoopTraceLoop(IBFabric *p_fabric,
 
   // we never go through CAs
   if (p_remNode->type != IB_SW_NODE) return 0;
-	
+
   uint8_t *p_tbl = (uint8_t*)p_remNode->appData1.ptr;
 
   // if it is the target end node and port
@@ -431,34 +431,34 @@ CrdLoopTraceLoop(IBFabric *p_fabric,
 	 // we will track where we come from
 	 sprintf(buf, "%s %u -> ",
 				p_remNode->name.c_str(),p_port->p_remotePort->num);
-	
+
 	 // it is possible we already visited this node since we trace a
 	 // loop that is different then our own.
 	 if (path.find(buf) != string::npos) {
       if (! doNotPrintPath)
         cout << "-W- Marking a 'scroll' side loop at:"
              << p_remNode->name << "/" << p_port->p_remotePort->num << endl;
-		
+
 		// to avoid going into this scroll again
 		// we encode a return code that should mark the
 		// path as a scroll:
 		return -1;
 	 }
-	
+
 	 // abort if hops count is bigger then 1000
 	 if (hops > 1000) {
       if (! doNotPrintPath)
         cout << "-W- Aborting path:" << path << endl;
 		return 0;
 	 }
-		
+
 	 // add yourself to the path
 	 string fwdPath = path + string("\n") + string(buf);
 
 	 // go over all out ports not aleady marked routed from this in port
 	 for (unsigned int pn = 1; pn <= p_remNode->numPorts; pn++) {
 		int idx = (p_port->p_remotePort->num - 1)*p_remNode->numPorts + pn - 1;
-		
+
 		// do we have a used but not visited connection:
 		if (p_tbl[idx] == RT_USED) {
 		  // traverse forward
@@ -467,7 +467,7 @@ CrdLoopTraceLoop(IBFabric *p_fabric,
 			 CrdLoopTraceLoop(p_fabric, p_endNode, inPortNum,
 									p_remNode, pn, fwdPath + string(buf), hops++,
                            doNotPrintPath);
-		
+
 		  // we might have encountered a scroll (return value < 0)
 		  // so we sould ignore it in the global count.
 		  if (foundPaths > 0) numPaths += foundPaths;
@@ -500,12 +500,12 @@ CrdLoopReportLoops(IBFabric *p_fabric, int doNotPrintPath) {
   for( map_str_pnode::iterator nI = p_fabric->NodeByName.begin();
 		 nI != p_fabric->NodeByName.end();
 		 nI++) {
-	
+
 	 p_node = (*nI).second;
 	 if (p_node->type != IB_SW_NODE) continue;
-	
+
 	 uint8_t *p_tbl = (uint8_t*)p_node->appData1.ptr;
-	
+
 	 // Now go over all out ports and check all input port.
 	 for (unsigned int inPortNum = 1; inPortNum <= p_node->numPorts;
          inPortNum++) {
@@ -513,7 +513,7 @@ CrdLoopReportLoops(IBFabric *p_fabric, int doNotPrintPath) {
 		for (unsigned int outPortNum = 1; outPortNum <= p_node->numPorts;
            outPortNum++) {
 		  int idx = (inPortNum - 1)*p_node->numPorts + outPortNum - 1;
-		
+
 		  if (p_tbl[idx] == RT_USED) {
 			 char buf[16];
 			 sprintf(buf, " %u", outPortNum);
@@ -542,10 +542,10 @@ CrdLoopPrepare(IBFabric *p_fabric) {
   for( map_str_pnode::iterator nI = p_fabric->NodeByName.begin();
 		 nI != p_fabric->NodeByName.end();
 		 nI++) {
-	
+
 	 p_node = (*nI).second;
 	 if (p_node->type != IB_SW_NODE) continue;
-	
+
 	 if (p_node->appData1.ptr) {
 		p_node->appData1.ptr = NULL;
 	 }
@@ -562,10 +562,10 @@ CrdLoopCleanup(IBFabric *p_fabric) {
   for( map_str_pnode::iterator nI = p_fabric->NodeByName.begin();
 		 nI != p_fabric->NodeByName.end();
 		 nI++) {
-	
+
 	 p_node = (*nI).second;
 	 if (p_node->type != IB_SW_NODE) continue;
-	
+
 	 if (p_node->appData1.ptr) {
 		uint8_t *p_tbl = (uint8_t *)p_node->appData1.ptr;
 		delete [] p_tbl;

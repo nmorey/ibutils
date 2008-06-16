@@ -694,7 +694,7 @@ FatTree::assignLftUpWards(FatTreeNode *p_ftNode, uint16_t dLid,
 					  << endl;
 			continue;
 		}
-		
+
       int bestUsage = 0;
       IBPort *p_bestPort = NULL;
       int found = 0;
@@ -784,9 +784,9 @@ FatTree::assignLftDownWards(FatTreeNode *p_ftNode, uint16_t dLid,
 		if (!switchPathOnly ||
 			 (p_node->getLFTPortForLid(dLid) == IB_LFT_UNASSIGNED)) {
 			p_node->setLFTPortForLid(dLid, outPortNum);
-			
+
 			p_port = p_node->getPort(outPortNum);
-			
+
 			// mark the usage of this port
 			if (p_port) {
 				if (switchPathOnly) {
@@ -860,14 +860,14 @@ FatTree::assignLftDownWards(FatTreeNode *p_ftNode, uint16_t dLid,
       for (list<int>::iterator lI = p_ftNode->parentPorts[i].begin();
            !found && (lI != p_ftNode->parentPorts[i].end());
            lI++) {
-			
+
          // can not have more then one port in group...
          int portNum = *lI;
          IBPort *p_port = p_node->getPort(portNum); // must be if marked parent
          IBPort *p_remPort = p_port->p_remotePort;
          if (p_remPort == NULL) continue;
          int usage = p_remPort->counter1 + p_remPort->counter2;
-			
+
          if ((p_bestRemPort == NULL) || (usage < bestUsage))
          {
             p_bestRemPort = p_remPort;
@@ -954,7 +954,7 @@ int FatTree::route()
       IBNode *p_node = p_ftNode->p_node;
 
 		if (p_node->type != IB_SW_NODE) continue;
-		
+
 		// find the LID of the switch:
 		int lid = 0;
 	   for (unsigned int pn = 1; (lid == 0) && (pn <= p_node->numPorts); pn++)
@@ -973,7 +973,7 @@ int FatTree::route()
 			assignLftDownWards(p_ftNode, lid, 0, 0);
 		}
 	}
-	
+
    return(0);
 }
 

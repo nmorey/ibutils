@@ -172,19 +172,19 @@ CongZero(IBFabric *p_fabric)
 
 			// we treat nodes with rank equals to absolute rank index
 			if (p_node->rank != abs(rank)) continue;
-			
+
 			for (unsigned int pn = 1; pn <= p_node->numPorts; pn++) {
 				IBPort *p_port = p_node->getPort(pn);
-				
+
 				// do we have a port on the other side ?
 				if (!p_port || !p_port->p_remotePort) continue;
-				
+
 				// if we go up ignore the port if not going up
 				if (going_up &&
 					 ( (p_port->p_remotePort->p_node->type == IB_CA_NODE) ||
 						(p_port->p_remotePort->p_node->rank >= rank) ) )
 					continue;
-				
+
 				// if we go down ignore the port if not going down
 				if (!going_up &&
 					 (p_port->p_remotePort->p_node->type == IB_SW_NODE) &&
@@ -243,11 +243,11 @@ CongZero(IBFabric *p_fabric)
 						  lI != (*pI).second.end();
 						  lI++) {
 						int dst = (*lI).second;
-						
+
 						dst_frac[dst] = dst_frac[dst] / sumFracs;
 					}
 				}
-				
+
 				// clear the list for the future ...
 				(*pI).second.clear();
 

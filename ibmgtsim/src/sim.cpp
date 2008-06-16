@@ -181,7 +181,7 @@ int IBMgtSim::populateFabricNodes()
 int IBMgtSim::init(string topoFileName, int serverPortNum, int numWorkers)
 {
   /* parse the given fabric */
-  pFabric = new IBFabric;	
+  pFabric = new IBFabric;
 
   if (pFabric->parseTopology(topoFileName)) {
     cout << "-E- Fail to parse topology file:" << topoFileName << endl;
@@ -286,7 +286,7 @@ int main(int argc, char **argv)
       verbosity = MsgShowAll;
 		printf(" Verbose Mode\n");
 		break;
-		
+
 	 case 'p':
 		/*
 		  Specific Server Port
@@ -315,7 +315,7 @@ int main(int argc, char **argv)
 		show_help();
 		return 0;
 		break;
-			
+
 	 case -1:
 		break; /* done with option */
 	 default: /* something wrong */

@@ -79,7 +79,7 @@ B<Variables/Pointers:>
    set nodes [ibdm_get_nodes]
    set node  [lindex $nodes 0]
    IBNode_numPorts_get $node
- 													
+
 B<Objects:>
    Given an object pointer one can convert it to a Tcl "Object"
    using the following command:

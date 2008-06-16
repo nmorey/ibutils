@@ -711,12 +711,12 @@ proc setOneSwitchChangeBit {fabric} {
 	if {$smNode == ""} {
 		return "-E- Fail to find SM node H-1/U1"
 	}
-		
+
    set smPort [IBNode_getPort $smNode 1]
 	if {$smPort == ""} {
 		return "-E- Fail to find SM Port H-1/U1/P1"
 	}
-	
+
    set remPort [IBPort_p_remotePort_get $smPort]
 	if {$remPort  == ""} {
 		return "-E- Fail to find SM Port H-1/U1/P1 remote port"
@@ -724,9 +724,9 @@ proc setOneSwitchChangeBit {fabric} {
 
    set node [IBPort_p_node_get $remPort]
 	if {[IBNode_type_get $node] != $IB_SW_NODE} {
-		return "-E- Fail to find SM Port H-1/U1/P1 remote node is not a switch!"		
+		return "-E- Fail to find SM Port H-1/U1/P1 remote node is not a switch!"
 	}
-		
+
 	set swi [IBMSNode_getSwitchInfo sim$node]
 	set lifeState [ib_switch_info_t_life_state_get $swi]
 	set lifeState [expr ($lifeState & 0xf8) | 4 ]

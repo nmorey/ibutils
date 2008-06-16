@@ -245,7 +245,7 @@ IBMSDispatcher::timerCallback(void *context)
   pthread_mutex_lock( &pDisp->madQueueByWakeupLock );
 
   while (! pDisp->exit_now ) {
-	
+
 	  gettimeofday(&now, NULL);
 	  mmap_uint64_mad::iterator mI = pDisp->madQueueByWakeup.begin();
 	  if (mI != pDisp->madQueueByWakeup.end())

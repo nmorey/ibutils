@@ -42,7 +42,7 @@ proc checker {simDir osmPath osmPortGuid} {
    if {[osmWaitForUpOrDeadWithTimeout $osmLog 1000000]} {
       return 1
    }
-	
+
 	puts "---------------------------------------------------------------------"
 	puts " SUBNET READY FOR DIAGNOSTICS"
 	puts "\nCut and paste the following in a new window then run ibdiagnet:"

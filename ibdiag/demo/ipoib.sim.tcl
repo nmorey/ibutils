@@ -57,7 +57,7 @@ proc setAllHcaPortsPKeyTable {fabric} {
       set portNum [IBPort_num_get $port]
       set node [IBPort_p_node_get $port]
 		set nodeName [IBNode_name_get $node]
-		
+
 		# the H-1/P1 has a special treatment: we want it to have access to
 		# all the MCGs
 		if {$nodeName == "H-1/U1"} {
@@ -227,7 +227,7 @@ proc joinPortsByPartition {fabric} {
 				return "ERR: How come we got group $group ?"
 			}
 		}
-		
+
 		foreach pkey $pkeys {
 			set mgid [format "0xff12401b%04x0000:00000000ffffffff" $pkey]
 			joinPortToMGID $port $mgid

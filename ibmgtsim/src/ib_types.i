@@ -72,7 +72,7 @@
     char buf[256];
 
 	 strcpy(buf, Tcl_GetStringFromObj(objPtr,0));
-	
+
 	 /* the format is always: <type>:<idx>[:<name>] */
 
 	 /* first separate the type */
@@ -255,7 +255,7 @@
 	  if (i % 2) {
 		  entry = (value & 0xf) | (entry & 0xf0) ;
 	  } else {
-		  entry = ((value & 0xf) << 4) | (entry & 0xf);		
+		  entry = ((value & 0xf) << 4) | (entry & 0xf);
 	  }
 	  tmp.raw_vl_by_sl[i/2] = entry;
   }

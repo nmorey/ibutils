@@ -68,7 +68,7 @@ proc checker {simDir osmPath osmPortGuid} {
 	puts $simCtrlSock "updateProcFSForNode \$fabric $simDir H-1/U1 H-1/U1 1"
    set res [gets $simCtrlSock]
    puts "SIM: Updated H-1 proc file:$res"
-	
+
 	puts " All hosts now joining their IPoIB Subnets"
 	puts $simCtrlSock "joinPortsByPartition \$fabric {0x8001 0x8002 0x8003}"
    puts "SIM: [gets $simCtrlSock]"
@@ -86,6 +86,6 @@ proc checker {simDir osmPath osmPortGuid} {
 	puts "1) try: ibdiagnet -r -o $simDir"
 	puts "2) try: ibdiagpath -l 1,128"
 	puts " press Enter when done"
-	gets stdin	
+	gets stdin
    return 0
 }

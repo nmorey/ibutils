@@ -19,7 +19,7 @@ MTS800 SW_L2_2
    P8 -4x-5G-> Gnu L1_2 M/P4
 
 MTS800 SW_L2_3
-   P1 -4x-5G-> Cougar H-9 P1	
+   P1 -4x-5G-> Cougar H-9 P1
    P2 -4x-5G-> Cougar H-10 P1
    P3 -4x-5G-> Cougar H-11 P1
    P4 -4x-5G-> Cougar H-12 P1
@@ -35,7 +35,7 @@ MTS800 SW_L2_4
    P4	 -4x-5G-> Cougar H-16 P1
    P5 -4x-5G-> Gnu L1_1 M/P7
    P6 -4x-5G-> Gnu L1_1 M/P8
-   	
+
 MTS800 SW_L2_5
    P1 -4x-5G-> Cougar H-17 P1
    P2 -4x-5G-> Cougar H-18 P1

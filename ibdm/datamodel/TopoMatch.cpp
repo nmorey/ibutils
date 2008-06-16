@@ -402,7 +402,7 @@ TopoBFSAndMatchFromPorts(
       {
         IBPort *p_dPort = p_node1->getPort(pn);
         IBPort *p_sPort = p_node2->getPort(pn);
-		
+
         if (! TopoMatchPorts(p_sPort, p_dPort, 1, diag))
         {
           anyMissmatch++;

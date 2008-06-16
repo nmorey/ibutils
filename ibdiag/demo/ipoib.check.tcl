@@ -79,7 +79,7 @@ proc getFirstHostOfEachGroup {} {
             lappend hosts [lindex $png 0]
          }
       }
-		
+
 		set GROUP_HOSTS($p) $hosts
 		puts "Group \#$p has [llength $hosts] hosts: [lrange $hosts 0 2] ..."
 	}
@@ -151,7 +151,7 @@ proc checker {simDir osmPath osmPortGuid} {
    global simCtrlSock
    global nodePortGroupList
 	global GROUP_HOSTS
-		
+
    # wait for the SM up or dead
    set osmLog [file join $simDir osm.log]
    if {[osmWaitForUpOrDead $osmLog]} {

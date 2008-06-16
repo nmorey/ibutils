@@ -95,7 +95,7 @@
 	 char name[128];
 	 IBFabric *p_fabric;
 	 string uiType;
-	
+
 	 if (!strcmp(type, "IBMSNode *")) {
 		IBNode *p_node = ((IBMSNode *)ptr)->getIBNode();
 		p_fabric = p_node->p_fabric;
@@ -129,7 +129,7 @@
 	 *ptr = NULL;
 
 	 strcpy(buf, Tcl_GetStringFromObj(objPtr,0));
-	
+
 	 /* the format is always: <type>:<idx>[:<name>] */
 
 	 /* first separate the type */
@@ -142,7 +142,7 @@
 
 	 type = buf;
 	 fabIdxStr = ++colonIdx;
-	
+
 	 /* now separate the fabric section if type is not fabric */
 	 if (strcmp(type, "fabric")) {
 		slashIdx = index(fabIdxStr,':');
@@ -157,28 +157,28 @@
 
 	 /* OK so now get the fabric pointer */
 	 fabricIdx = atoi(fabIdxStr);
-	
+
 	 IBFabric *p_fabric = ibdmGetFabricPtrByIdx(fabricIdx);
 	 if (! p_fabric) {
 		*ptr = NULL;
 		return TCL_ERROR;
 	 }
-	
+
     if (!strcmp(type, "simnode")) {
 		IBNode *p_node = p_fabric->getNode(string(name));
       if (!p_node) {
 		  printf("-E- Fail to get node:%s\n", name);
-		  return TCL_ERROR;		
+		  return TCL_ERROR;
 		}
       IBMSNode *pSimNode = ibmsGetIBNodeSimNode(p_node);
 		if (! pSimNode) {
 		  printf("-E- Fail to get node:%s\n", name);
-		  return TCL_ERROR;		
+		  return TCL_ERROR;
 		}
 		*ptr = pSimNode;
 	 } else {
 		printf("-E- Unrecognized Object Type:%s\n", type);
-		return TCL_ERROR;	
+		return TCL_ERROR;
 	 }
 	 return TCL_OK;
   }
@@ -211,9 +211,9 @@
 	 char err[128];
 	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString($source) );
 	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
-	
+
   $target = ($type)ptr;
 }
 
@@ -243,13 +243,13 @@
       char err[256];
       sprintf(err, "-E- basetype is $basetype but received obj of type %s", buf);
       Tcl_SetStringObj(tcl_result, err, strlen(err));
-      return TCL_ERROR;	
+      return TCL_ERROR;
     }
   } else {
 	 char err[256];
 	 sprintf(err, "-E- basetype '$basetype' is unknown");
 	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;	
+	 return TCL_ERROR;
   }
 }
 
@@ -483,7 +483,7 @@ class IBMSNode {
 
 %{
   void ibmssh_exit(ClientData clientData ) {
-	
+
   }
 %}
 
@@ -496,7 +496,7 @@ extern char * ibmsSourceVersion;
 
   /* mixing declarations .... */
   {
-	 Tcl_PkgProvide(interp,"ibms", "1.0");	
+	 Tcl_PkgProvide(interp,"ibms", "1.0");
 #ifdef OSM_BUILD_OPENIB
     Tcl_CreateExitHandler(ibmssh_exit, NULL);
 #endif

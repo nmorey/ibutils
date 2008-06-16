@@ -465,7 +465,7 @@ ibcr_destroy_global(void)
 {
 	ibcr_destroy(p_ibcr_global);
 	return (0);
-}	
+}
 
 int
 ibcr_num_of_multi_max(void)
@@ -503,7 +503,7 @@ ibcr_write_global(
 	ib_api_status_t status;
 
 	status = ibcr_write(p_ibcr_global,lid,data,address);
-	
+
    if (status) {
      ibis_set_tcl_error("ERROR : Fail to write CR space");
    }
@@ -512,7 +512,7 @@ ibcr_write_global(
 
 int
 ibcr_multi_read_global(
-  uint8_t num,	
+  uint8_t num,
   uint16_t lid_list[],
   uint32_t address,
   char **pp_new_cr_str)
@@ -522,7 +522,7 @@ ibcr_multi_read_global(
 
 	status =
      ibcr_multi_read(p_ibcr_global,num,lid_list,address,cr_space_mads_arr);
-	
+
    if (status) {
      ibis_set_tcl_error("ERROR : Fail to read all targets CR space");
    } else {
@@ -533,7 +533,7 @@ ibcr_multi_read_global(
 
 int
 ibcr_multi_write_global(
-  uint8_t num,	
+  uint8_t num,
   uint16_t lid_list[],
   uint32_t data,
   uint32_t address)
@@ -814,7 +814,7 @@ ibvs_get_vs_str(
       } else if (is_read) {
         sprintf(buff, "{vendor_key 0x%016" PRIx64 "} ",
                 cl_ntoh64(p_vs_mads[i].vendor_key));
-        for (j=0; j < size; j++) {	
+        for (j=0; j < size; j++) {
           sprintf(buff,"%s {data%u 0x%x} ",
                   buff, j, cl_ntoh32(p_vs_mads[i].data[j+first_data_idx]));
         }
@@ -855,7 +855,7 @@ int
 ibvs_cpu_read_global(
   uint16_t lid,
   uint8_t size,
-  uint8_t cpu_traget_size,	
+  uint8_t cpu_traget_size,
   uint32_t address,
   char **pp_new_cpu_str)
 {
@@ -870,7 +870,7 @@ ibvs_cpu_read_global(
      *pp_new_cpu_str =
        ibvs_get_vs_str(FALSE, TRUE, 1, IBVS_DATA_MAX, VS_CPU_DATA_OFFSET, vs_mads);
    }
-	
+
    return(status);
 }
 
@@ -878,13 +878,13 @@ int
 ibvs_cpu_write_global(
   uint16_t lid,
   uint8_t size,
-  uint8_t cpu_traget_size,		
+  uint8_t cpu_traget_size,
   uint32_t data[],
   uint32_t address)
 {
 
 	ib_api_status_t status;
-	
+
 	status =
      ibvs_cpu_write(p_ibvs_global,lid,size,cpu_traget_size,data,address);
    if (status)
@@ -897,7 +897,7 @@ ibvs_i2c_read_global(
   uint16_t lid,
   uint8_t port_num,
   uint8_t device_id,
-  uint8_t size,	
+  uint8_t size,
   uint32_t address,
   char **pp_new_i2c_str)
 {
@@ -923,7 +923,7 @@ ibvs_multi_i2c_read_global(
   uint16_t lid_list[],
   uint8_t port_num,
   uint8_t device_id,
-  uint8_t size,	
+  uint8_t size,
   uint32_t address,
   char **pp_new_i2c_str)
 {
@@ -948,7 +948,7 @@ ibvs_multi_i2c_write_global(
   uint16_t lid_list[],
   uint8_t port_num,
   uint8_t device_id,
-  uint8_t size,	
+  uint8_t size,
   uint32_t address,
   uint32_t data[],
   char **pp_new_i2c_str)
@@ -959,7 +959,7 @@ ibvs_multi_i2c_write_global(
 
     status =
 	ibvs_multi_i2c_write(p_ibvs_global,num,lid_list,port_num,size,device_id,data,address,vs_mads);
-	
+
     if (status) {
 	ibis_set_tcl_error("ERROR : Failed writing multiple i2c");
     } else {
@@ -975,7 +975,7 @@ ibvs_i2c_write_global(
   uint16_t lid,
   uint8_t port_num,
   uint8_t device_id,
-  uint8_t size,		
+  uint8_t size,
   uint32_t address,
   uint32_t data[])
 {
@@ -992,10 +992,10 @@ int
 ibvs_gpio_read_global(
   IN uint16_t lid,
   OUT	char **pp_new_gpio_str)
-{		
+{
 	ib_api_status_t status;
    ib_vs_t         vs_mads[1];
-	
+
 	status = ibvs_gpio_read(p_ibvs_global,lid,vs_mads);
    if (status) {
      ibis_set_tcl_error("ERROR : Fail to read gpio");
@@ -1011,15 +1011,15 @@ ibvs_gpio_write_global(
   IN uint16_t lid,
   IN uint64_t gpio_mask,
   IN uint64_t gpio_data)
-{		
+{
 	ib_api_status_t status;
-	
+
 	status = ibvs_gpio_write(p_ibvs_global,lid,gpio_mask,gpio_data );
    if (status)
      ibis_set_tcl_error("ERROR : Fail to write gpio");
 	return(status);
 }
-	
+
 int
 ibvs_multi_sw_reset_global(
   uint8_t num,
@@ -1030,7 +1030,7 @@ ibvs_multi_sw_reset_global(
 	status = ibvs_multi_sw_reset(p_ibvs_global,num,lid_list);
    if (status)
      ibis_set_tcl_error("ERROR : Fail to reset");
-		
+
 	return(status);
 }
 
@@ -1080,7 +1080,7 @@ ibvs_multi_flash_close_global(
      *pp_new_flash_str =
        ibvs_get_vs_str(TRUE, TRUE, num, 4, VS_FLASH_DATA_OFFSET, vs_mads);
    }
-	
+
 	return(status);
 }
 
@@ -1104,7 +1104,7 @@ ibvs_multi_flash_set_bank_global(
      *pp_new_flash_str =
        ibvs_get_vs_str(TRUE, TRUE, num, 4, VS_FLASH_DATA_OFFSET, vs_mads);
    }
-	
+
 	return(status);
 }
 
@@ -1127,7 +1127,7 @@ ibvs_multi_flash_erase_global(
      *pp_new_flash_str =
        ibvs_get_vs_str(TRUE, TRUE, num, 4, VS_FLASH_DATA_OFFSET, vs_mads);
    }
-	
+
 	return(status);
 }
 
@@ -1135,7 +1135,7 @@ int
 ibvs_multi_flash_read_global(
   uint8_t num,
   uint16_t lid_list[],
-  uint8_t size,	
+  uint8_t size,
   uint32_t address,
   char **pp_new_flash_str)
 {
@@ -1160,7 +1160,7 @@ int
 ibvs_multi_flash_write_global(
   uint8_t num,
   uint16_t lid_list[],
-  uint8_t size,	
+  uint8_t size,
   uint32_t address,
   uint32_t data[])
 {
@@ -1180,7 +1180,7 @@ int
 ibvs_mirror_read_global(
   IN uint16_t lid,
   OUT	char **pp_new_mirror_str)
-{		
+{
    ib_api_status_t status;
    ib_vs_t         vs_mads[1];
 
@@ -1199,7 +1199,7 @@ ibvs_mirror_write_global(
   IN uint16_t lid,
   IN uint32_t rx_mirror,
   IN uint32_t tx_mirror)
-{		
+{
    ib_api_status_t status;
 
    status = ibvs_mirror_write(p_ibvs_global,lid,rx_mirror,tx_mirror );
@@ -1213,7 +1213,7 @@ ibvs_plft_map_get_global(
   IN uint16_t lid,
   IN uint8_t upper_ports,
   OUT	char **pp_new_plft_map_str)
-{		
+{
    ib_api_status_t status;
    ib_vs_t         vs_mads[1];
 	char *          buff;
@@ -1415,7 +1415,7 @@ ibbbm_write_vpd_global(
 {
 
 	ib_api_status_t status;
-	
+
 	status = ibbbm_write_vpd(p_ibbbm_global,lid,vpd_device_selector,bytes_num,offset,p_data);
 	;
 	ibis_set_tcl_error("-E- Failed to write VPD");
@@ -1451,7 +1451,7 @@ ibbbm_read_bsn_vpd_global(
 	status = ibbbm_read_vpd(p_ibbbm_global,lid,IBBBM_BSN_VPD_DEV_SEL,IBBBM_BSN_VPD_SIZE,IBBBM_BSN_VPD_OFFSET,p_bbm_vpd_mad);
 	;
 	ibis_set_tcl_error("-E- Failed to read BSN");
-		
+
 	return(status);
 }
 
@@ -1464,11 +1464,11 @@ ibbbm_read_mod_vpd_global(
 	ib_bbm_vpd_t *p_bbm_vpd_mad;
 
 	p_bbm_vpd_mad = (ib_bbm_vpd_t *)p_bbm_mod_vpd_mad;
-	
+
 	status = ibbbm_read_vpd(p_ibbbm_global,lid,IBBBM_MOD_VPD_DEV_SEL,IBBBM_MOD_VPD_SIZE,IBBBM_MOD_VPD_OFFSET,p_bbm_vpd_mad);
 	;
 	ibis_set_tcl_error("-E- Failed to read Module VPD");
-		
+
 	return(status);
 }
 
@@ -1503,7 +1503,7 @@ ibbbm_read_fw_ver_vpd_global(
 	;
 
    ibis_set_tcl_error("-E- Failed to read FW Version.");
-		
+
 	return(status);
 }
 
@@ -1603,12 +1603,12 @@ ibbbm_read_fw_ver_vpd_global(
 	 char *p_res_str = NULL, *tmp;
 	 Tcl_Obj *p_tclObj;
 	 int nameLength;
-	
+
 	 status = ibsac_query(
 		&IbisObj, IB_MAD_ATTR_NODE_RECORD, self, comp_mask, method,
 		&num_recs, &p_result_madw
 		);
-	
+
 	 for( i = 0; i < num_recs; i++ )
 	 {
 		/* we need to create a new node info and copy */
@@ -1616,7 +1616,7 @@ ibbbm_read_fw_ver_vpd_global(
 
 		/* copy into it */
 		*p_rec = *(osmv_get_query_node_rec( p_result_madw, i ));
-		
+
 		/* register it as a new object */
 		SWIG_AltMnglRegObj("nr",p_rec);
 		SWIG_AltMnglRegObj("ni",&(p_rec->node_info));
@@ -1636,16 +1636,16 @@ ibbbm_read_fw_ver_vpd_global(
 			 p_res_str = (char *)malloc(nameLength + 2);
 			 p_res_str[0] = '\0';
 		  }
-		
+
 		  strcat(p_res_str, tmp);
 		  strcat(p_res_str, " ");
 		}
 		Tcl_DecrRefCount(p_tclObj);
 	 }
-	
+
 	 if( p_result_madw != NULL )
 		osm_mad_pool_put( &IbisObj.mad_pool, p_result_madw );
-	
+
 	 return(p_res_str);
   }
 
@@ -1661,12 +1661,12 @@ ibbbm_read_fw_ver_vpd_global(
 	 char *p_res_str = NULL, *tmp;
 	 Tcl_Obj *p_tclObj;
 	 int nameLength;
-	
+
 	 status = ibsac_query(
 		&IbisObj, IB_MAD_ATTR_PORTINFO_RECORD, self, comp_mask, method,
 		&num_recs, &p_result_madw
 		);
-	
+
 	 for( i = 0; i < num_recs; i++ )
 	 {
 		/* we need to create a new node info and copy */
@@ -1674,7 +1674,7 @@ ibbbm_read_fw_ver_vpd_global(
 
 		/* copy into it */
 		*p_rec = *(osmv_get_query_portinfo_rec( p_result_madw, i ));
-		
+
 		/* register it as a new object */
 		SWIG_AltMnglRegObj("pir",p_rec);
 		SWIG_AltMnglRegObj("pi",&(p_rec->port_info));
@@ -1694,16 +1694,16 @@ ibbbm_read_fw_ver_vpd_global(
 			 p_res_str = (char *)malloc(nameLength + 2);
 			 p_res_str[0] = '\0';
 		  }
-		
+
 		  strcat(p_res_str, tmp);
 		  strcat(p_res_str, " ");
 		}
 		Tcl_DecrRefCount(p_tclObj);
 	 }
-	
+
 	 if( p_result_madw != NULL )
 		osm_mad_pool_put( &IbisObj.mad_pool, p_result_madw );
-	
+
 	 return(p_res_str);
   }
 
@@ -1719,20 +1719,20 @@ ibbbm_read_fw_ver_vpd_global(
 	 char *p_res_str = NULL, *tmp;
 	 Tcl_Obj *p_tclObj;
 	 int nameLength;
-	
+
 	 status = ibsac_query(
 		&IbisObj, IB_MAD_ATTR_SMINFO_RECORD, self, comp_mask, method,
 		&num_recs, &p_result_madw
 		);
-	
+
 	 for( i = 0; i < num_recs; i++ )
 	 {
 		/* we need to create a new node info and copy */
 		p_rec = (ib_sminfo_record_t *)malloc(sizeof(ib_sminfo_record_t));
-		
+
 		/* copy into it */
 		*p_rec = *((ib_sminfo_record_t*)osmv_get_query_result( p_result_madw, i ));
-		
+
 		/* register it as a new object */
 		SWIG_AltMnglRegObj("smir",p_rec);
 		SWIG_AltMnglRegObj("smi",&(p_rec->sm_info));
@@ -1752,16 +1752,16 @@ ibbbm_read_fw_ver_vpd_global(
 			 p_res_str = (char *)malloc(nameLength + 2);
 			 p_res_str[0] = '\0';
 		  }
-		
+
 		  strcat(p_res_str, tmp);
 		  strcat(p_res_str, " ");
 		}
 		Tcl_DecrRefCount(p_tclObj);
 	 }
-	
+
 	 if( p_result_madw != NULL )
 		osm_mad_pool_put( &IbisObj.mad_pool, p_result_madw );
-	
+
 	 return(p_res_str);
   }
 
@@ -1777,20 +1777,20 @@ ibbbm_read_fw_ver_vpd_global(
 	 char *p_res_str = NULL, *tmp;
 	 Tcl_Obj *p_tclObj;
 	 int nameLength;
-	
+
 	 status = ibsac_query(
 		&IbisObj, CL_NTOH16(0x0014), self, comp_mask, method,
 		&num_recs, &p_result_madw
 		);
-	
+
 	 for( i = 0; i < num_recs; i++ )
 	 {
 		/* we need to create a new node info and copy */
 		p_rec = (ib_switch_info_record_t *)malloc(sizeof(ib_switch_info_record_t));
-		
+
 		/* copy into it */
 		*p_rec = *((ib_switch_info_record_t*)osmv_get_query_result( p_result_madw, i ));
-		
+
 		/* register it as a new object */
 		SWIG_AltMnglRegObj("swir",p_rec);
 		SWIG_AltMnglRegObj("swi",&(p_rec->switch_info));
@@ -1810,16 +1810,16 @@ ibbbm_read_fw_ver_vpd_global(
 			 p_res_str = (char *)malloc(nameLength + 2);
 			 p_res_str[0] = '\0';
 		  }
-		
+
 		  strcat(p_res_str, tmp);
 		  strcat(p_res_str, " ");
 		}
 		Tcl_DecrRefCount(p_tclObj);
 	 }
-	
+
 	 if( p_result_madw != NULL )
 		osm_mad_pool_put( &IbisObj.mad_pool, p_result_madw );
-	
+
 	 return(p_res_str);
   }
 
@@ -1835,20 +1835,20 @@ ibbbm_read_fw_ver_vpd_global(
 	 char *p_res_str = NULL, *tmp;
 	 Tcl_Obj *p_tclObj;
 	 int nameLength;
-	
+
 	 status = ibsac_query(
 		&IbisObj, IB_MAD_ATTR_PATH_RECORD, self, comp_mask, method,
 		&num_recs, &p_result_madw
 		);
-	
+
 	 for( i = 0; i < num_recs; i++ )
 	 {
 		/* we need to create a new node info and copy */
 		p_rec = (ib_path_rec_t *)malloc(sizeof(ib_path_rec_t));
-		
+
 		/* copy into it */
 		*p_rec = *((ib_path_rec_t*)osmv_get_query_result( p_result_madw, i ));
-		
+
 		/* register it as a new object */
 		SWIG_AltMnglRegObj("path",p_rec);
 
@@ -1867,16 +1867,16 @@ ibbbm_read_fw_ver_vpd_global(
 			 p_res_str = (char *)malloc(nameLength + 2);
 			 p_res_str[0] = '\0';
 		  }
-		
+
 		  strcat(p_res_str, tmp);
 		  strcat(p_res_str, " ");
 		}
 		Tcl_DecrRefCount(p_tclObj);
 	 }
-	
+
 	 if( p_result_madw != NULL )
 		osm_mad_pool_put( &IbisObj.mad_pool, p_result_madw );
-	
+
 	 return(p_res_str);
   }
 
@@ -1892,20 +1892,20 @@ ibbbm_read_fw_ver_vpd_global(
 	 char *p_res_str = NULL, *tmp;
 	 Tcl_Obj *p_tclObj;
 	 int nameLength;
-	
+
 	 status = ibsac_query(
 		&IbisObj, IB_MAD_ATTR_LINK_RECORD, self, comp_mask, method,
 		&num_recs, &p_result_madw
 		);
-	
+
 	 for( i = 0; i < num_recs; i++ )
 	 {
 		/* we need to create a new node info and copy */
 		p_rec = (ib_link_record_t *)malloc(sizeof(ib_link_record_t));
-		
+
 		/* copy into it */
 		*p_rec = *((ib_link_record_t*)osmv_get_query_result( p_result_madw, i ));
-		
+
 		/* register it as a new object */
 		SWIG_AltMnglRegObj("link",p_rec);
 
@@ -1924,16 +1924,16 @@ ibbbm_read_fw_ver_vpd_global(
 			 p_res_str = (char *)malloc(nameLength + 2);
 			 p_res_str[0] = '\0';
 		  }
-		
+
 		  strcat(p_res_str, tmp);
 		  strcat(p_res_str, " ");
 		}
 		Tcl_DecrRefCount(p_tclObj);
 	 }
-	
+
 	 if( p_result_madw != NULL )
 		osm_mad_pool_put( &IbisObj.mad_pool, p_result_madw );
-	
+
 	 return(p_res_str);
   }
 
@@ -1949,20 +1949,20 @@ ibbbm_read_fw_ver_vpd_global(
 	 char *p_res_str = NULL, *tmp;
 	 Tcl_Obj *p_tclObj;
 	 int nameLength;
-	
+
 	 status = ibsac_query(
 		&IbisObj, IB_MAD_ATTR_LFT_RECORD, self, comp_mask, method,
 		&num_recs, &p_result_madw
 		);
-	
+
 	 for( i = 0; i < num_recs; i++ )
 	 {
 		/* we need to create a new node info and copy */
 		p_rec = (ib_lft_record_t *)malloc(sizeof(ib_lft_record_t));
-		
+
 		/* copy into it */
 		*p_rec = *((ib_lft_record_t*)osmv_get_query_result( p_result_madw, i ));
-		
+
 		/* register it as a new object */
 		SWIG_AltMnglRegObj("lft",p_rec);
 
@@ -1981,16 +1981,16 @@ ibbbm_read_fw_ver_vpd_global(
 			 p_res_str = (char *)malloc(nameLength + 2);
 			 p_res_str[0] = '\0';
 		  }
-		
+
 		  strcat(p_res_str, tmp);
 		  strcat(p_res_str, " ");
 		}
 		Tcl_DecrRefCount(p_tclObj);
 	 }
-	
+
 	 if( p_result_madw != NULL )
 		osm_mad_pool_put( &IbisObj.mad_pool, p_result_madw );
-	
+
 	 return(p_res_str);
   }
 
@@ -2006,20 +2006,20 @@ ibbbm_read_fw_ver_vpd_global(
 	 char *p_res_str = NULL, *tmp;
 	 Tcl_Obj *p_tclObj;
 	 int nameLength;
-	
+
 	 status = ibsac_query(
 		&IbisObj, IB_MAD_ATTR_MCMEMBER_RECORD, self, comp_mask, method,
 		&num_recs, &p_result_madw
 		);
-	
+
 	 for( i = 0; i < num_recs; i++ )
 	 {
 		/* we need to create a new node info and copy */
 		p_rec = (ib_member_rec_t *)malloc(sizeof(ib_member_rec_t));
-		
+
 		/* copy into it */
 		*p_rec = *((ib_member_rec_t*)osmv_get_query_result( p_result_madw, i ));
-		
+
 		/* register it as a new object */
 		SWIG_AltMnglRegObj("mcm",p_rec);
 
@@ -2038,16 +2038,16 @@ ibbbm_read_fw_ver_vpd_global(
 			 p_res_str = (char *)malloc(nameLength + 2);
 			 p_res_str[0] = '\0';
 		  }
-		
+
 		  strcat(p_res_str, tmp);
 		  strcat(p_res_str, " ");
 		}
 		Tcl_DecrRefCount(p_tclObj);
 	 }
-	
+
 	 if( p_result_madw != NULL )
 		osm_mad_pool_put( &IbisObj.mad_pool, p_result_madw );
-	
+
 	 return(p_res_str);
   }
 
@@ -2063,20 +2063,20 @@ ibbbm_read_fw_ver_vpd_global(
 	 char *p_res_str = NULL, *tmp;
 	 Tcl_Obj *p_tclObj;
 	 int nameLength;
-	
+
 	 status = ibsac_query(
 		&IbisObj, IB_MAD_ATTR_CLASS_PORT_INFO, self, comp_mask, method,
 		&num_recs, &p_result_madw
 		);
-	
+
 	 for( i = 0; i < num_recs; i++ )
 	 {
 		/* we need to create a new node info and copy */
 		p_rec = (ib_class_port_info_t *)malloc(sizeof(ib_class_port_info_t));
-		
+
 		/* copy into it */
 		*p_rec = *((ib_class_port_info_t*)osmv_get_query_result( p_result_madw, i ));
-		
+
 		/* register it as a new object */
 		SWIG_AltMnglRegObj("cpi",p_rec);
 
@@ -2095,16 +2095,16 @@ ibbbm_read_fw_ver_vpd_global(
 			 p_res_str = (char *)malloc(nameLength + 2);
 			 p_res_str[0] = '\0';
 		  }
-		
+
 		  strcat(p_res_str, tmp);
 		  strcat(p_res_str, " ");
 		}
 		Tcl_DecrRefCount(p_tclObj);
 	 }
-	
+
 	 if( p_result_madw != NULL )
 		osm_mad_pool_put( &IbisObj.mad_pool, p_result_madw );
-	
+
 	 return(p_res_str);
   }
 
@@ -2120,20 +2120,20 @@ ibbbm_read_fw_ver_vpd_global(
 	 char *p_res_str = NULL, *tmp;
 	 Tcl_Obj *p_tclObj;
 	 int nameLength;
-	
+
 	 status = ibsac_query(
 		&IbisObj,  IB_MAD_ATTR_INFORM_INFO, self, comp_mask, method,
 		&num_recs, &p_result_madw
 		);
-	
+
 	 for( i = 0; i < num_recs; i++ )
 	 {
 		/* we need to create a new node info and copy */
 		p_rec = (ib_inform_info_t *)malloc(sizeof(ib_inform_info_t));
-		
+
 		/* copy into it */
 		*p_rec = *((ib_inform_info_t*)osmv_get_query_result( p_result_madw, i ));
-		
+
 		/* register it as a new object */
 		SWIG_AltMnglRegObj("info",p_rec);
 
@@ -2152,16 +2152,16 @@ ibbbm_read_fw_ver_vpd_global(
 			 p_res_str = (char *)malloc(nameLength + 2);
 			 p_res_str[0] = '\0';
 		  }
-		
+
 		  strcat(p_res_str, tmp);
 		  strcat(p_res_str, " ");
 		}
 		Tcl_DecrRefCount(p_tclObj);
 	 }
-	
+
 	 if( p_result_madw != NULL )
 		osm_mad_pool_put( &IbisObj.mad_pool, p_result_madw );
-	
+
 	 return(p_res_str);
   }
 
@@ -2178,20 +2178,20 @@ ibbbm_read_fw_ver_vpd_global(
 	 char *p_res_str = NULL, *tmp;
 	 Tcl_Obj *p_tclObj;
 	 int nameLength;
-	
+
 	 status = ibsac_query(
 		&IbisObj,  IB_MAD_ATTR_SERVICE_RECORD, self, comp_mask, method,
 		&num_recs, &p_result_madw
 		);
-	
+
 	 for( i = 0; i < num_recs; i++ )
 	 {
 		/* we need to create a new node info and copy */
 		p_rec = (ib_service_record_t *)malloc(sizeof(ib_service_record_t));
-		
+
 		/* copy into it */
 		*p_rec = *((ib_service_record_t*)osmv_get_query_result( p_result_madw, i ));
-		
+
 		/* register it as a new object */
 		SWIG_AltMnglRegObj("svc",p_rec);
 
@@ -2210,16 +2210,16 @@ ibbbm_read_fw_ver_vpd_global(
 			 p_res_str = (char *)malloc(nameLength + 2);
 			 p_res_str[0] = '\0';
 		  }
-		
+
 		  strcat(p_res_str, tmp);
 		  strcat(p_res_str, " ");
 		}
 		Tcl_DecrRefCount(p_tclObj);
 	 }
-	
+
 	 if( p_result_madw != NULL )
 		osm_mad_pool_put( &IbisObj.mad_pool, p_result_madw );
-	
+
 	 return(p_res_str);
   }
 
@@ -2235,20 +2235,20 @@ ibbbm_read_fw_ver_vpd_global(
 	 char *p_res_str = NULL, *tmp;
 	 Tcl_Obj *p_tclObj;
 	 int nameLength;
-	
+
 	 status = ibsac_query(
 		&IbisObj, IB_MAD_ATTR_SLVL_RECORD, self, comp_mask, method,
 		&num_recs, &p_result_madw
 		);
-	
+
 	 for( i = 0; i < num_recs; i++ )
 	 {
 		/* we need to create a new node info and copy */
 		p_rec = (ib_slvl_table_record_t *)malloc(sizeof(ib_slvl_table_record_t));
-		
+
 		/* copy into it */
 		*p_rec = *((ib_slvl_table_record_t*)osmv_get_query_result( p_result_madw, i ));
-		
+
 		/* register it as a new object */
 		SWIG_AltMnglRegObj("slvr",p_rec);
 		SWIG_AltMnglRegObj("slvt",&(p_rec->slvl_tbl));
@@ -2268,16 +2268,16 @@ ibbbm_read_fw_ver_vpd_global(
 			 p_res_str = (char *)malloc(nameLength + 2);
 			 p_res_str[0] = '\0';
 		  }
-		
+
 		  strcat(p_res_str, tmp);
 		  strcat(p_res_str, " ");
 		}
 		Tcl_DecrRefCount(p_tclObj);
 	 }
-	
+
 	 if( p_result_madw != NULL )
 		osm_mad_pool_put( &IbisObj.mad_pool, p_result_madw );
-	
+
 	 return(p_res_str);
   }
 
@@ -2293,20 +2293,20 @@ ibbbm_read_fw_ver_vpd_global(
 	 char *p_res_str = NULL, *tmp;
 	 Tcl_Obj *p_tclObj;
 	 int nameLength;
-	
+
 	 status = ibsac_query(
 		&IbisObj, IB_MAD_ATTR_VLARB_RECORD, self, comp_mask, method,
 		&num_recs, &p_result_madw
 		);
-	
+
 	 for( i = 0; i < num_recs; i++ )
 	 {
 		/* we need to create a new node info and copy */
 		p_rec = (ib_vl_arb_table_record_t *)malloc(sizeof(ib_vl_arb_table_record_t));
-		
+
 		/* copy into it */
 		*p_rec = *((ib_vl_arb_table_record_t*)osmv_get_query_result( p_result_madw, i ));
-		
+
 		/* register it as a new object */
 		SWIG_AltMnglRegObj("vlarb",p_rec);
 
@@ -2325,16 +2325,16 @@ ibbbm_read_fw_ver_vpd_global(
 			 p_res_str = (char *)malloc(nameLength + 2);
 			 p_res_str[0] = '\0';
 		  }
-		
+
 		  strcat(p_res_str, tmp);
 		  strcat(p_res_str, " ");
 		}
 		Tcl_DecrRefCount(p_tclObj);
 	 }
-	
+
 	 if( p_result_madw != NULL )
 		osm_mad_pool_put( &IbisObj.mad_pool, p_result_madw );
-	
+
 	 return(p_res_str);
   }
 
@@ -2350,20 +2350,20 @@ ibbbm_read_fw_ver_vpd_global(
 	 char *p_res_str = NULL, *tmp;
 	 Tcl_Obj *p_tclObj;
 	 int nameLength;
-	
+
 	 status = ibsac_query(
 		&IbisObj, IB_MAD_ATTR_PKEY_TBL_RECORD, self, comp_mask, method,
 		&num_recs, &p_result_madw
 		);
-	
+
 	 for( i = 0; i < num_recs; i++ )
 	 {
 		/* we need to create a new node info and copy */
 		p_rec = (ib_pkey_table_record_t *)malloc(sizeof(ib_pkey_table_record_t));
-		
+
 		/* copy into it */
 		*p_rec = *((ib_pkey_table_record_t*)osmv_get_query_result( p_result_madw, i ));
-		
+
 		/* register it as a new object */
 		SWIG_AltMnglRegObj("pkr",p_rec);
 		SWIG_AltMnglRegObj("pkt",&(p_rec->pkey_tbl));
@@ -2383,16 +2383,16 @@ ibbbm_read_fw_ver_vpd_global(
 			 p_res_str = (char *)malloc(nameLength + 2);
 			 p_res_str[0] = '\0';
 		  }
-		
+
 		  strcat(p_res_str, tmp);
 		  strcat(p_res_str, " ");
 		}
 		Tcl_DecrRefCount(p_tclObj);
 	 }
-	
+
 	 if( p_result_madw != NULL )
 		osm_mad_pool_put( &IbisObj.mad_pool, p_result_madw );
-	
+
 	 return(p_res_str);
   }
 
@@ -2533,7 +2533,7 @@ typedef union {
 		uint8_t			node_type_msb;
 		ib_net16_t		node_type_lsb;
 	 } generic;
-	
+
 	 struct _sac_inform_vend
 	 {
 		ib_net16_t		dev_id;
@@ -2542,7 +2542,7 @@ typedef union {
 		uint8_t			vendor_id_msb;
 		ib_net16_t		vendor_id_lsb;
 	 } vend;
-	
+
   } sacInformInfo_g_or_v;
 
 
@@ -2701,7 +2701,7 @@ typedef union {
 		ib_net16_t	prod_type_lsb;
 		ib_net16_t	trap_num;
 	 }	generic;
-	
+
 	 struct _sm_notice_vend
 	 {
 		uint8_t		vend_id_msb;
@@ -2918,8 +2918,8 @@ typedef struct {
       printf("-E- fail to init ibcr_init.\n");
       ibcr_destroy( p_ibcr_global );
       exit(1);
-    }	
-	
+    }
+
     status = ibpm_init(p_ibpm_global);
     if( status != IB_SUCCESS )
     {
@@ -2934,7 +2934,7 @@ typedef struct {
       printf("-E- Fail to init ibvs_init.\n");
       ibvs_destroy( p_ibvs_global );
       exit(1);
-    }	
+    }
 
     status = ibbbm_init(p_ibbbm_global);
     if( status != IB_SUCCESS )
@@ -2942,7 +2942,7 @@ typedef struct {
       printf("-E- Fail to init ibbbm_init.\n");
       ibbbm_destroy( p_ibbbm_global );
       exit(1);
-    }	
+    }
 
     status = ibsm_init(gp_ibsm);
     if( status != IB_SUCCESS )
@@ -2950,7 +2950,7 @@ typedef struct {
       printf("-E- Fail to init ibbbm_init.\n");
       ibsm_destroy( gp_ibsm );
       exit(1);
-    }	
+    }
 
     return 0;
   }
@@ -3019,7 +3019,7 @@ typedef struct {
       printf("-E- Fail to ibvs_bind.\n");
       ibvs_destroy( p_ibvs_global );
       exit(1);
-    }		
+    }
 
     status = ibbbm_bind(p_ibbbm_global);
     if( status != IB_SUCCESS )
@@ -3027,7 +3027,7 @@ typedef struct {
       printf("-E- Fail to ibbbm_bind.\n");
       ibbbm_destroy( p_ibbbm_global );
       exit(1);
-    }		
+    }
 
     status = ibsm_bind(gp_ibsm);
     if( status != IB_SUCCESS )
@@ -3035,7 +3035,7 @@ typedef struct {
       printf("-E- Fail to ibsm_bind.\n");
       ibsm_destroy( gp_ibsm );
       exit(1);
-    }		
+    }
 
     if (ibsac_bind(&IbisObj))
     {
@@ -3089,7 +3089,7 @@ typedef struct {
 
 	 /* command options */
     tcl_result = Tcl_GetObjResult(interp);
-	
+
     if ((objc < 1) || (objc > 1)) {
         Tcl_SetStringObj(tcl_result,"Wrong # args. ibis_get_local_ports_info ",-1);
         return TCL_ERROR;
@@ -3127,7 +3127,7 @@ typedef struct {
       p_obj = Tcl_NewStringObj(res, strlen(res));
       Tcl_ListObjAppendElement(interp, tcl_result, p_obj);
     }
-	
+
     return TCL_OK;
   }
 
@@ -3376,13 +3376,13 @@ static int _wrap_crReadMulti(ClientData clientData, Tcl_Interp *interp, int objc
     strcpy(loc_buf,str_tcl);
 
 
-    str = strtok_r(loc_buf," ", &str_token);			
-    for (i=0;i<IBCR_MULTI_MAX;i++) {		
+    str = strtok_r(loc_buf," ", &str_token);
+    for (i=0;i<IBCR_MULTI_MAX;i++) {
 	if (str == NULL) {
 	    break;
 	}
 	temp0[i] = strtoul(str, NULL, 0);
-	str = strtok_r(NULL," ",&str_token);	
+	str = strtok_r(NULL," ",&str_token);
     }
     _arg1 = temp0;
     free(loc_buf);
@@ -3459,13 +3459,13 @@ static int _wrap_crWriteMulti(ClientData clientData, Tcl_Interp *interp, int obj
     strcpy(loc_buf,str_tcl);
 
 
-    str = strtok_r(loc_buf," ", &str_token);			
-    for (i=0;i<IBCR_MULTI_MAX;i++) {		
+    str = strtok_r(loc_buf," ", &str_token);
+    for (i=0;i<IBCR_MULTI_MAX;i++) {
 	if (str == NULL) {
 	    break;
 	}
 	temp0[i] = strtoul(str, NULL, 0);
-	str = strtok_r(NULL," ",&str_token);	
+	str = strtok_r(NULL," ",&str_token);
     }
     _arg1 = temp0;
     free(loc_buf);
@@ -3645,13 +3645,13 @@ static int _wrap_pmGetPortCountersMulti(ClientData clientData, Tcl_Interp *inter
     loc_buf = (char *)malloc((strlen(str_tcl)+1)*sizeof(char));
     strcpy(loc_buf,str_tcl);
 
-    str = strtok_r(loc_buf," ", &str_token);			
-    for (i=0;i<IBPM_MULTI_MAX;i++) {		
+    str = strtok_r(loc_buf," ", &str_token);
+    for (i=0;i<IBPM_MULTI_MAX;i++) {
 	if (str == NULL) {
 	    break;
 	}
 	temp0[i] = atoi(str);
-	str = strtok_r(NULL," ",&str_token);	
+	str = strtok_r(NULL," ",&str_token);
     }
     _arg1 = temp0;
     free(loc_buf);
@@ -3667,13 +3667,13 @@ static int _wrap_pmGetPortCountersMulti(ClientData clientData, Tcl_Interp *inter
   loc_buf = (char *)malloc((strlen(str_tcl)+1)*sizeof(char));
   strcpy(loc_buf,str_tcl);
 
-  str = strtok_r(loc_buf," ", &str_token);			
-  for (i=0;i<IBPM_MULTI_MAX;i++) {		
+  str = strtok_r(loc_buf," ", &str_token);
+  for (i=0;i<IBPM_MULTI_MAX;i++) {
     if (str == NULL) {
       break;
     }
     temp1[i] = atoi(str);
-    str = strtok_r(NULL," ",&str_token);	
+    str = strtok_r(NULL," ",&str_token);
   }
 
   _arg2 = temp1;
@@ -3750,13 +3750,13 @@ static int _wrap_pmGetExtPortCountersMulti(ClientData clientData, Tcl_Interp *in
     loc_buf = (char *)malloc((strlen(str_tcl)+1)*sizeof(char));
     strcpy(loc_buf,str_tcl);
 
-    str = strtok_r(loc_buf," ", &str_token);			
-    for (i=0;i<IBPM_MULTI_MAX;i++) {		
+    str = strtok_r(loc_buf," ", &str_token);
+    for (i=0;i<IBPM_MULTI_MAX;i++) {
 	if (str == NULL) {
 	    break;
 	}
 	temp0[i] = atoi(str);
-	str = strtok_r(NULL," ",&str_token);	
+	str = strtok_r(NULL," ",&str_token);
     }
     _arg1 = temp0;
     free(loc_buf);
@@ -3772,13 +3772,13 @@ static int _wrap_pmGetExtPortCountersMulti(ClientData clientData, Tcl_Interp *in
   loc_buf = (char *)malloc((strlen(str_tcl)+1)*sizeof(char));
   strcpy(loc_buf,str_tcl);
 
-  str = strtok_r(loc_buf," ", &str_token);			
-  for (i=0;i<IBPM_MULTI_MAX;i++) {		
+  str = strtok_r(loc_buf," ", &str_token);
+  for (i=0;i<IBPM_MULTI_MAX;i++) {
     if (str == NULL) {
       break;
     }
     temp1[i] = atoi(str);
-    str = strtok_r(NULL," ",&str_token);	
+    str = strtok_r(NULL," ",&str_token);
   }
 
   _arg2 = temp1;
@@ -3902,13 +3902,13 @@ static int _wrap_pmClrAllCountersMulti(ClientData clientData, Tcl_Interp *interp
     loc_buf = (char *)malloc((strlen(str_tcl)+1)*sizeof(char));
     strcpy(loc_buf,str_tcl);
 
-    str = strtok_r(loc_buf," ", &str_token);			
-    for (i=0;i<IBPM_MULTI_MAX;i++) {		
+    str = strtok_r(loc_buf," ", &str_token);
+    for (i=0;i<IBPM_MULTI_MAX;i++) {
 	if (str == NULL) {
 	    break;
 	}
 	temp0[i] = atoi(str);
-	str = strtok_r(NULL," ",&str_token);	
+	str = strtok_r(NULL," ",&str_token);
     }
     _arg1 = temp0;
     free(loc_buf);
@@ -3924,13 +3924,13 @@ static int _wrap_pmClrAllCountersMulti(ClientData clientData, Tcl_Interp *interp
   loc_buf = (char *)malloc((strlen(str_tcl)+1)*sizeof(char));
   strcpy(loc_buf,str_tcl);
 
-  str = strtok_r(loc_buf," ", &str_token);			
-  for (i=0;i<IBPM_MULTI_MAX;i++) {		
+  str = strtok_r(loc_buf," ", &str_token);
+  for (i=0;i<IBPM_MULTI_MAX;i++) {
     if (str == NULL) {
       break;
     }
     temp1[i] = atoi(str);
-    str = strtok_r(NULL," ",&str_token);	
+    str = strtok_r(NULL," ",&str_token);
   }
 
   _arg2 = temp1;
@@ -4122,13 +4122,13 @@ static int _wrap_vsCpuWrite(ClientData clientData, Tcl_Interp *interp, int objc,
     str_tcl = Tcl_GetStringFromObj(objv[4],NULL);
     loc_buf = (char *)malloc((strlen(str_tcl)+1)*sizeof(char));
     strcpy(loc_buf,str_tcl);
-    str = strtok_r(loc_buf," ", &str_token);			
-    for (i=0;i<IBVS_DATA_MAX;i++) {		
+    str = strtok_r(loc_buf," ", &str_token);
+    for (i=0;i<IBVS_DATA_MAX;i++) {
 	if (str == NULL) {
 	    break;
 	}
-	temp2[i] = (uint32_t)strtoll(str, (char **)NULL, 0);	
-	str = strtok_r(NULL," ",&str_token);	
+	temp2[i] = (uint32_t)strtoll(str, (char **)NULL, 0);
+	str = strtok_r(NULL," ",&str_token);
     }
     _arg3 = temp2;
     free(loc_buf);
@@ -4298,13 +4298,13 @@ static int _wrap_vsI2cWrite(ClientData clientData, Tcl_Interp *interp, int objc,
     str_tcl = Tcl_GetStringFromObj(objv[6],NULL);
     loc_buf = (char *)malloc((strlen(str_tcl)+1)*sizeof(char));
     strcpy(loc_buf,str_tcl);
-    str = strtok_r(loc_buf," ", &str_token);			
-    for (i=0;i<IBVS_DATA_MAX;i++) {		
+    str = strtok_r(loc_buf," ", &str_token);
+    for (i=0;i<IBVS_DATA_MAX;i++) {
 	if (str == NULL) {
 	    break;
 	}
-	temp4[i] = (uint32_t)strtoll(str, (char **)NULL, 0);	
-	str = strtok_r(NULL," ",&str_token);	
+	temp4[i] = (uint32_t)strtoll(str, (char **)NULL, 0);
+	str = strtok_r(NULL," ",&str_token);
     }
     _arg5 = temp4;
     free(loc_buf);
@@ -4381,13 +4381,13 @@ static int _wrap_vsI2cReadMulti(ClientData clientData, Tcl_Interp *interp, int o
   loc_buf = (char *)malloc((strlen(str_tcl)+1)*sizeof(char));
   strcpy(loc_buf,str_tcl);
 
-  str = strtok_r(loc_buf," ", &str_token);			
-  for (i=0;i<IBVS_MULTI_MAX;i++) {		
+  str = strtok_r(loc_buf," ", &str_token);
+  for (i=0;i<IBVS_MULTI_MAX;i++) {
     if (str == NULL) {
       break;
     }
     temp0[i] = atoi(str);
-    str = strtok_r(NULL," ",&str_token);	
+    str = strtok_r(NULL," ",&str_token);
   }
   _arg1 = temp0;
   free(loc_buf);
@@ -4486,13 +4486,13 @@ static int _wrap_vsI2cWriteMulti(ClientData clientData, Tcl_Interp *interp, int 
   loc_buf = (char *)malloc((strlen(str_tcl)+1)*sizeof(char));
   strcpy(loc_buf,str_tcl);
 
-  str = strtok_r(loc_buf," ", &str_token);			
-  for (i=0;i<IBVS_MULTI_MAX;i++) {		
+  str = strtok_r(loc_buf," ", &str_token);
+  for (i=0;i<IBVS_MULTI_MAX;i++) {
     if (str == NULL) {
       break;
     }
     temp0[i] = atoi(str);
-    str = strtok_r(NULL," ",&str_token);	
+    str = strtok_r(NULL," ",&str_token);
   }
   _arg1 = temp0;
   free(loc_buf);
@@ -4523,13 +4523,13 @@ static int _wrap_vsI2cWriteMulti(ClientData clientData, Tcl_Interp *interp, int 
     str_tcl = Tcl_GetStringFromObj(objv[7],NULL);
     loc_buf = (char *)malloc((strlen(str_tcl)+1)*sizeof(char));
     strcpy(loc_buf,str_tcl);
-    str = strtok_r(loc_buf," ", &str_token);			
-    for (i=0;i<IBVS_DATA_MAX;i++) {		
+    str = strtok_r(loc_buf," ", &str_token);
+    for (i=0;i<IBVS_DATA_MAX;i++) {
 	if (str == NULL) {
 	    break;
 	}
-	temp5[i] = (uint32_t)strtoll(str, (char **)NULL, 0);	
-	str = strtok_r(NULL," ",&str_token);	
+	temp5[i] = (uint32_t)strtoll(str, (char **)NULL, 0);
+	str = strtok_r(NULL," ",&str_token);
     }
     _arg6 = temp5;
     free(loc_buf);
@@ -4710,13 +4710,13 @@ static int _wrap_vsSWReset(ClientData clientData, Tcl_Interp *interp, int objc, 
   loc_buf = (char *)malloc((strlen(str_tcl)+1)*sizeof(char));
   strcpy(loc_buf,str_tcl);
 
-  str = strtok_r(loc_buf," ", &str_token);			
-  for (i=0;i<IBVS_MULTI_MAX;i++) {		
+  str = strtok_r(loc_buf," ", &str_token);
+  for (i=0;i<IBVS_MULTI_MAX;i++) {
     if (str == NULL) {
       break;
     }
     temp0[i] = atoi(str);
-    str = strtok_r(NULL," ",&str_token);	
+    str = strtok_r(NULL," ",&str_token);
   }
   _arg1 = temp0;
   free(loc_buf);
@@ -4793,13 +4793,13 @@ static int _wrap_vsFlashStartMulti(ClientData clientData, Tcl_Interp *interp, in
   loc_buf = (char *)malloc((strlen(str_tcl)+1)*sizeof(char));
   strcpy(loc_buf,str_tcl);
 
-  str = strtok_r(loc_buf," ", &str_token);			
-  for (i=0;i<IBVS_MULTI_MAX;i++) {		
+  str = strtok_r(loc_buf," ", &str_token);
+  for (i=0;i<IBVS_MULTI_MAX;i++) {
     if (str == NULL) {
       break;
     }
     temp0[i] = atoi(str);
-    str = strtok_r(NULL," ",&str_token);	
+    str = strtok_r(NULL," ",&str_token);
   }
   _arg1 = temp0;
   free(loc_buf);
@@ -4826,13 +4826,13 @@ static int _wrap_vsFlashStartMulti(ClientData clientData, Tcl_Interp *interp, in
     str_tcl = Tcl_GetStringFromObj(objv[6],NULL);
     loc_buf = (char *)malloc((strlen(str_tcl)+1)*sizeof(char));
     strcpy(loc_buf,str_tcl);
-    str = strtok_r(loc_buf," ", &str_token);			
-    for (i=0;i<IBVS_DATA_MAX;i++) {		
+    str = strtok_r(loc_buf," ", &str_token);
+    for (i=0;i<IBVS_DATA_MAX;i++) {
 	if (str == NULL) {
 	    break;
 	}
-	temp4[i] = (uint32_t)strtoll(str, (char **)NULL, 0);	
-	str = strtok_r(NULL," ",&str_token);	
+	temp4[i] = (uint32_t)strtoll(str, (char **)NULL, 0);
+	str = strtok_r(NULL," ",&str_token);
     }
     _arg5 = temp4;
     free(loc_buf);
@@ -4907,13 +4907,13 @@ static int _wrap_vsFlashStopMulti(ClientData clientData, Tcl_Interp *interp, int
   loc_buf = (char *)malloc((strlen(str_tcl)+1)*sizeof(char));
   strcpy(loc_buf,str_tcl);
 
-  str = strtok_r(loc_buf," ", &str_token);			
-  for (i=0;i<IBVS_MULTI_MAX;i++) {		
+  str = strtok_r(loc_buf," ", &str_token);
+  for (i=0;i<IBVS_MULTI_MAX;i++) {
     if (str == NULL) {
       break;
     }
     temp0[i] = atoi(str);
-    str = strtok_r(NULL," ",&str_token);	
+    str = strtok_r(NULL," ",&str_token);
   }
   _arg1 = temp0;
   free(loc_buf);
@@ -4992,13 +4992,13 @@ static int _wrap_vsFlashSetBankMulti(ClientData clientData, Tcl_Interp *interp, 
   loc_buf = (char *)malloc((strlen(str_tcl)+1)*sizeof(char));
   strcpy(loc_buf,str_tcl);
 
-  str = strtok_r(loc_buf," ", &str_token);			
-  for (i=0;i<IBVS_MULTI_MAX;i++) {		
+  str = strtok_r(loc_buf," ", &str_token);
+  for (i=0;i<IBVS_MULTI_MAX;i++) {
     if (str == NULL) {
       break;
     }
     temp0[i] = atoi(str);
-    str = strtok_r(NULL," ",&str_token);	
+    str = strtok_r(NULL," ",&str_token);
   }
   _arg1 = temp0;
   free(loc_buf);
@@ -5077,13 +5077,13 @@ static int _wrap_vsFlashEraseSectorMulti(ClientData clientData, Tcl_Interp *inte
   loc_buf = (char *)malloc((strlen(str_tcl)+1)*sizeof(char));
   strcpy(loc_buf,str_tcl);
 
-  str = strtok_r(loc_buf," ", &str_token);			
-  for (i=0;i<IBVS_MULTI_MAX;i++) {		
+  str = strtok_r(loc_buf," ", &str_token);
+  for (i=0;i<IBVS_MULTI_MAX;i++) {
     if (str == NULL) {
       break;
     }
     temp0[i] = atoi(str);
-    str = strtok_r(NULL," ",&str_token);	
+    str = strtok_r(NULL," ",&str_token);
   }
   _arg1 = temp0;
   free(loc_buf);
@@ -5164,13 +5164,13 @@ static int _wrap_vsFlashReadSectorMulti(ClientData clientData, Tcl_Interp *inter
   loc_buf = (char *)malloc((strlen(str_tcl)+1)*sizeof(char));
   strcpy(loc_buf,str_tcl);
 
-  str = strtok_r(loc_buf," ", &str_token);			
-  for (i=0;i<IBVS_MULTI_MAX;i++) {		
+  str = strtok_r(loc_buf," ", &str_token);
+  for (i=0;i<IBVS_MULTI_MAX;i++) {
     if (str == NULL) {
       break;
     }
     temp0[i] = atoi(str);
-    str = strtok_r(NULL," ",&str_token);	
+    str = strtok_r(NULL," ",&str_token);
   }
   _arg1 = temp0;
   free(loc_buf);
@@ -5252,13 +5252,13 @@ static int _wrap_vsFlashWriteSectorMulti(ClientData clientData, Tcl_Interp *inte
   loc_buf = (char *)malloc((strlen(str_tcl)+1)*sizeof(char));
   strcpy(loc_buf,str_tcl);
 
-  str = strtok_r(loc_buf," ", &str_token);			
-  for (i=0;i<IBVS_MULTI_MAX;i++) {		
+  str = strtok_r(loc_buf," ", &str_token);
+  for (i=0;i<IBVS_MULTI_MAX;i++) {
     if (str == NULL) {
       break;
     }
     temp0[i] = atoi(str);
-    str = strtok_r(NULL," ",&str_token);	
+    str = strtok_r(NULL," ",&str_token);
   }
   _arg1 = temp0;
   free(loc_buf);
@@ -5281,13 +5281,13 @@ static int _wrap_vsFlashWriteSectorMulti(ClientData clientData, Tcl_Interp *inte
     str_tcl = Tcl_GetStringFromObj(objv[5],NULL);
     loc_buf = (char *)malloc((strlen(str_tcl)+1)*sizeof(char));
     strcpy(loc_buf,str_tcl);
-    str = strtok_r(loc_buf," ", &str_token);			
-    for (i=0;i<IBVS_DATA_MAX;i++) {		
+    str = strtok_r(loc_buf," ", &str_token);
+    for (i=0;i<IBVS_DATA_MAX;i++) {
 	if (str == NULL) {
 	    break;
 	}
-	temp3[i] = (uint32_t)strtoll(str, (char **)NULL, 0);	
-	str = strtok_r(NULL," ",&str_token);	
+	temp3[i] = (uint32_t)strtoll(str, (char **)NULL, 0);
+	str = strtok_r(NULL," ",&str_token);
     }
     _arg4 = temp3;
     free(loc_buf);
@@ -5767,10 +5767,10 @@ static int _wrap_bbmVSDRead(ClientData clientData, Tcl_Interp *interp, int objc,
 			(_arg1->vpd_device_selector),
 		        cl_ntoh16(_arg1->bytes_num),
 			cl_ntoh16(_arg1->offset));
-	 for (j=0;j<IBBBM_BSN_VPD_SIZE;j++) {	
+	 for (j=0;j<IBBBM_BSN_VPD_SIZE;j++) {
 		sprintf(buff,"%s {bsn%u 0x%x} ",buff,j,_arg1->bsn[j]);
 	 };
-	
+
          Tcl_SetStringObj(tcl_result, buff, strlen(buff));
   } else {
          Tcl_SetStringObj(tcl_result, "", 0);
@@ -5837,10 +5837,10 @@ static int _wrap_bbmBSNRead(ClientData clientData, Tcl_Interp *interp, int objc,
 			(_arg1->vpd_device_selector),
 		        cl_ntoh16(_arg1->bytes_num),
 			cl_ntoh16(_arg1->offset));
-	 for (j=0;j<IBBBM_BSN_VPD_SIZE;j++) {	
+	 for (j=0;j<IBBBM_BSN_VPD_SIZE;j++) {
 		sprintf(buff,"%s {bsn%u 0x%x} ",buff,j,_arg1->bsn[j]);
 	 };
-	
+
          Tcl_SetStringObj(tcl_result, buff, strlen(buff));
   } else {
          Tcl_SetStringObj(tcl_result, "", 0);
@@ -5918,7 +5918,7 @@ static int _wrap_bbmModRead(ClientData clientData, Tcl_Interp *interp, int objc,
 	 for (i=0;i<IBBBM_MOD_VPD_PWR_SIZE;i++) {
          	sprintf(buff,"%s {power%u 0x%x} ",buff,i+1,cl_ntoh32(_arg1->power_sup_record[i]));
          };
-	 	
+
          Tcl_SetStringObj(tcl_result, buff, strlen(buff));
   } else {
          Tcl_SetStringObj(tcl_result, "", 0);
@@ -5996,13 +5996,13 @@ static int _wrap_bbmChaRead(ClientData clientData, Tcl_Interp *interp, int objc,
 	 for (i=0;i<IBBBM_CHA_VPD_PWR_SIZE;i++) {
          	sprintf(buff,"%s {power%u 0x%x} ",buff,i+1,cl_ntoh32(_arg1->power_sup_record[i]));
          };
-	
+
 	 sprintf(buff,"%s {fan_count 0x%x} ",buff,_arg1->fan_count);
 
    	 for (i=0;i<IBBBM_CHA_VPD_FAN_SIZE;i++) {
          	sprintf(buff,"%s {fan%u 0x%x} ",buff,i+1,cl_ntoh16(_arg1->fan_record[i]));
          };
-		
+
          Tcl_SetStringObj(tcl_result, buff, strlen(buff));
   } else {
          Tcl_SetStringObj(tcl_result, "", 0);
@@ -6071,7 +6071,7 @@ static int _wrap_bbmFWVerRead(ClientData clientData, Tcl_Interp *interp, int obj
 			_arg1->maj_fw_ver,
 			_arg1->min_fw_ver,
 			_arg1->sub_min_fw_ver);
-	
+
          Tcl_SetStringObj(tcl_result, buff, strlen(buff));
   } else {
          Tcl_SetStringObj(tcl_result, "", 0);
@@ -7457,7 +7457,7 @@ static int _wrap_sacNodeInfo_port_num_vendor_id_get(ClientData clientData, Tcl_I
     return TCL_OK;
 }
 static void  sacNodeInfo_delete(sacNodeInfo *self) {
-	 SWIG_AltMnglUnregObj(self);	
+	 SWIG_AltMnglUnregObj(self);
     free(self);
   }
 static int _wrap_sacNodeInfo_delete(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
@@ -8246,7 +8246,7 @@ free(_result);
 static void  sacNodeRec_delete(sacNodeRec *self) {
 	 /* we need to de-register both the node info and node record */
 	 SWIG_AltMnglUnregObj(&(self->node_info));
-	 SWIG_AltMnglUnregObj(self);	
+	 SWIG_AltMnglUnregObj(self);
     free(self);
   }
 static int _wrap_sacNodeRec_delete(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
@@ -11805,7 +11805,7 @@ static int _wrap_sacPortInfo_error_threshold_get(ClientData clientData, Tcl_Inte
     return TCL_OK;
 }
 static void  sacPortInfo_delete(sacPortInfo *self) {
-	 SWIG_AltMnglUnregObj(self);	
+	 SWIG_AltMnglUnregObj(self);
     free(self);
   }
 static int _wrap_sacPortInfo_delete(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
@@ -13498,7 +13498,7 @@ static int _wrap_sacSmInfo_pri_state_get(ClientData clientData, Tcl_Interp *inte
     return TCL_OK;
 }
 static void  sacSmInfo_delete(sacSmInfo *self) {
-	 SWIG_AltMnglUnregObj(self);	
+	 SWIG_AltMnglUnregObj(self);
     free(self);
   }
 static int _wrap_sacSmInfo_delete(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
@@ -15554,7 +15554,7 @@ static int _wrap_sacSwInfo_flags_get(ClientData clientData, Tcl_Interp *interp, 
     return TCL_OK;
 }
 static void  sacSwInfo_delete(sacSwInfo *self) {
-	 SWIG_AltMnglUnregObj(self);	
+	 SWIG_AltMnglUnregObj(self);
     free(self);
   }
 static int _wrap_sacSwInfo_delete(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
@@ -57491,7 +57491,7 @@ SWIGEXPORT(int,Ibis_Init)(Tcl_Interp *interp) {
 
 
  {
-	
+
 	}
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "pmMultiMaxGet", _wrap_pmMultiMaxGet, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "pmGetPortCounters", _wrap_pmGetPortCounters, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
@@ -57757,7 +57757,7 @@ SWIGEXPORT(int,Ibis_Init)(Tcl_Interp *interp) {
       if (p_ibcr_global == NULL) {
         printf("-E- Error from ibcr_construct.\n");
         exit(1);
-      }	
+      }
 
       /* ------------------ IBPM ---------------------- */
       p_ibpm_global = ibpm_construct();
@@ -57765,19 +57765,19 @@ SWIGEXPORT(int,Ibis_Init)(Tcl_Interp *interp) {
       if (p_ibpm_global == NULL) {
         printf("-E- Error from ibpm_construct.\n");
         exit(1);
-      }	
+      }
 
       /* ------------------ IBVS ---------------------- */
 		p_ibvs_global = ibvs_construct();
-	
+
   		if (p_ibvs_global == NULL) {
 			printf("-E- Error from ibvs_construct.\n");
          exit(1);
-  		}	
+  		}
 
       /* ------------------ IBBBM ---------------------- */
 		p_ibbbm_global = ibbbm_construct();
-	
+
   		if (p_ibbbm_global == NULL) {
 			printf("-E- Error from ibbbm_construct.\n");
          exit(1);
@@ -57785,7 +57785,7 @@ SWIGEXPORT(int,Ibis_Init)(Tcl_Interp *interp) {
 
       /* ------------------ IBSM ---------------------- */
 		gp_ibsm = ibsm_construct();
-	
+
   		if (gp_ibsm == NULL) {
 			printf("-E- Error from ibsm_construct.\n");
          exit(1);
@@ -57866,7 +57866,7 @@ SWIGEXPORT(int,Ibis_Init)(Tcl_Interp *interp) {
 
       SWIG_AltMnglRegObj("pi", &(ibsac_portinfo_rec.port_info));
       SWIG_AltMnglRegObj("pir",&(ibsac_portinfo_rec));
-	
+
       SWIG_AltMnglRegObj("smi", &(ibsac_sminfo_rec.sm_info));
       SWIG_AltMnglRegObj("smir",&(ibsac_sminfo_rec));
 
