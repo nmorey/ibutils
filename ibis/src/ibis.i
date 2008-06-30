@@ -64,6 +64,7 @@ BEGIN_C_DECLS
 #include "ibbbm.h"
 #include "ibsac.h"
 #include "ibsm.h"
+#include "ibcc.h"
 
 END_C_DECLS
 
@@ -149,7 +150,7 @@ ibisp_is_debug(void)
 %include ibcr.i
 
 //
-// IBCR Interfaces and C Code
+// IBPM Interfaces and C Code
 //
 %include ibpm.i
 
@@ -172,6 +173,11 @@ ibisp_is_debug(void)
 // IBSM Interfaces and C Code
 //
 %include ibsm.i
+
+//
+// IBCC Interfaces and C Code
+//
+%include ibcc.i
 
 %{
   /* globals */
@@ -231,8 +237,16 @@ ibisp_is_debug(void)
     status = ibsm_init(gp_ibsm);
     if( status != IB_SUCCESS )
     {
-      printf("-E- Fail to init ibbbm_init.\n");
+      printf("-E- Fail to init ibsm_init.\n");
       ibsm_destroy( gp_ibsm );
+      exit(1);
+    }
+
+    status = ibcc_init(gp_ibcc);
+    if( status != IB_SUCCESS )
+    {
+      printf("-E- Fail to init ibcc_init.\n");
+      ibcc_destroy( gp_ibcc );
       exit(1);
     }
 
@@ -249,6 +263,7 @@ ibisp_is_debug(void)
     ibvs_destroy(p_ibvs_global);
     ibbbm_destroy(p_ibbbm_global);
     ibsm_destroy(gp_ibsm);
+    ibcc_destroy(gp_ibcc);
 
     ibis_destroy();
     usleep(100);
@@ -318,6 +333,14 @@ ibisp_is_debug(void)
     {
       printf("-E- Fail to ibsm_bind.\n");
       ibsm_destroy( gp_ibsm );
+      exit(1);
+    }
+
+    status = ibcc_bind(gp_ibcc);
+    if( status != IB_SUCCESS )
+    {
+      printf("-E- Fail to ibcc_bind.\n");
+      ibcc_destroy( gp_ibcc );
       exit(1);
     }
 
@@ -592,6 +615,28 @@ extern char * ibisSourceVersion;
       memset(&ibsm_pkey_table_obj, 0, sizeof(ib_pkey_table_t));
       memset(&ibsm_sm_info_obj, 0, sizeof(ib_sm_info_t));
 
+      /* ------------------ IBCC ---------------------- */
+
+      gp_ibcc = ibcc_construct();
+
+      if (gp_ibcc == NULL) {
+          printf("-E- Error from ibcc_construct.\n");
+          exit(1);
+      }
+
+      /* Initialize global records */
+      memset(&ibcc_class_port_info_obj, 0, sizeof(ib_class_port_info_t));
+      memset(&ibcc_notice_obj, 0, sizeof(ib_mad_notice_attr_t));
+      memset(&ibcc_cong_info_obj, 0, sizeof(ib_cong_info_t));
+      memset(&ibcc_cong_key_info_obj, 0, sizeof(ib_cong_key_info_t));
+      memset(&ibcc_ca_cong_log_obj, 0, sizeof(ibcc_ca_cong_log_t));
+      memset(&ibcc_sw_cong_log_obj, 0, sizeof(ibcc_sw_cong_log_t));
+      memset(&ibcc_sw_cong_setting_obj, 0, sizeof(ib_sw_cong_setting_t));
+      memset(&ibcc_sw_port_cong_setting_obj, 0, sizeof(ib_sw_port_cong_setting_t));
+      memset(&ibcc_ca_cong_setting_obj, 0, sizeof(ib_ca_cong_setting_t));
+      memset(&ibcc_table_obj, 0, sizeof(ib_cc_tbl_t));
+      memset(&ibcc_time_stamp_obj, 0, sizeof(ib_time_stamp_t));
+
       /* ------------------ IBSAC ---------------------- */
 
       /* Initialize global records */
@@ -697,6 +742,9 @@ extern char * ibisSourceVersion;
 									 (ClientData)ibis_opt_p, 0);
 
     /* add commands for accessing the global query records */
+
+    /* ------------------ IBSM ---------------------- */
+
     Tcl_CreateObjCommand(interp,"smNodeInfoMad",
                          TclsmNodeInfoMethodCmd,
                          (ClientData)&ibsm_node_info_obj, 0);
@@ -744,6 +792,54 @@ extern char * ibisSourceVersion;
     Tcl_CreateObjCommand(interp,"smNoticeMad",
                          TclsmNoticeMethodCmd,
                          (ClientData)&ibsm_notice_obj, 0);
+
+    /* ------------------ IBCC ---------------------- */
+
+    Tcl_CreateObjCommand(interp,"ccClassPortInfoMad",
+                         TclccClassPortInfoMethodCmd,
+                         (ClientData)&ibcc_class_port_info_obj, 0);
+
+    Tcl_CreateObjCommand(interp,"ccNoticeMad",
+                         TclccNoticeMethodCmd,
+                         (ClientData)&ibcc_notice_obj, 0);
+
+    Tcl_CreateObjCommand(interp,"ccCongestionInfoMad",
+                         TclccCongestionInfoMethodCmd,
+                         (ClientData)&ibcc_cong_info_obj, 0);
+
+    Tcl_CreateObjCommand(interp,"ccCongestionKeyInfoMad",
+                         TclccCongestionKeyInfoMethodCmd,
+                         (ClientData)&ibcc_cong_key_info_obj, 0);
+
+    Tcl_CreateObjCommand(interp,"ccCACongestionLogMad",
+                         TclccCACongestionLogMethodCmd,
+                         (ClientData)&ibcc_ca_cong_log_obj, 0);
+
+    Tcl_CreateObjCommand(interp,"ccSWCongestionLogMad",
+                         TclccSWCongestionLogMethodCmd,
+                         (ClientData)&ibcc_sw_cong_log_obj, 0);
+
+    Tcl_CreateObjCommand(interp,"ccSWCongestionSettingMad",
+                         TclccSWCongestionSettingMethodCmd,
+                         (ClientData)&ibcc_sw_cong_setting_obj, 0);
+
+    Tcl_CreateObjCommand(interp,"ccSWPortCongestionSettingMad",
+                         TclccSWPortCongestionSettingMethodCmd,
+                         (ClientData)&ibcc_sw_port_cong_setting_obj, 0);
+
+    Tcl_CreateObjCommand(interp,"ccCACongestionSettingMad",
+                         TclccCACongestionSettingMethodCmd,
+                         (ClientData)&ibcc_ca_cong_setting_obj, 0);
+
+    Tcl_CreateObjCommand(interp,"ccTableMad",
+                         TclccTableMethodCmd,
+                         (ClientData)&ibcc_table_obj, 0);
+
+    Tcl_CreateObjCommand(interp,"ccTimeStampMad",
+                         TclccTimeStampMethodCmd,
+                         (ClientData)&ibcc_time_stamp_obj, 0);
+
+    /* ------------------ IBSAC --------------------- */
 
 	 Tcl_CreateObjCommand(interp,"sacNodeQuery",
 								 TclsacNodeRecMethodCmd,

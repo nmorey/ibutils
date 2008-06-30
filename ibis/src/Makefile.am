@@ -57,11 +57,11 @@ LIB_FILE_TRIPLET=1.0.0
 lib_LTLIBRARIES = libibiscom.la libibis.la
 
 libibiscom_la_SOURCES = ibbbm.c ibcr.c	ibis.c ibis_gsi_mad_ctrl.c \
-	ibpm.c ibsac.c ibsm.c ibvs.c
+	ibpm.c ibsac.c ibsm.c ibvs.c ibcc.c
 
 # client library to be used by IBIS TCL package:
 libibis_la_SOURCES = ibis_wrap.c ibbbm.c ibcr.c	ibis.c ibis_gsi_mad_ctrl.c \
-	ibpm.c ibsac.c ibsm.c ibvs.c
+	ibpm.c ibsac.c ibsm.c ibvs.c ibcc.c
 
 libibis_la_LDFLAGS = -version-info $(LIB_VER_TRIPLET) -no-undefined  \
 	 $(OSM_LDFLAGS) $(TCL_LIBS)
@@ -87,7 +87,8 @@ SWIG_IFC_FILES= $(srcdir)/ibbbm.i \
 	$(srcdir)/ibpm.i \
 	$(srcdir)/ibsac.i \
 	$(srcdir)/ibsm.i \
-	$(srcdir)/ibvs.i
+	$(srcdir)/ibvs.i \
+	$(srcdir)/ibcc.i
 
 ibis.lo: $(srcdir)/git_version.h
 
@@ -150,6 +151,7 @@ EXTRA_DIST = swig_extended_obj.c fixSwigWrapper pkgIndex.tcl \
 	 ibsm.h \
 	 ibvs_base.h \
 	 ibvs.h \
+	 ibcc.h \
 	 git_version.h
 
 # we do not want the temporary and the archive libs installed:
