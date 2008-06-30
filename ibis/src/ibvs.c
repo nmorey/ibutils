@@ -121,7 +121,7 @@ ibvs_bind(
 
   status = ibis_gsi_mad_ctrl_bind(
     &(IbisObj.mad_ctrl),
-    VS_CLASS,
+    VS_CLASS, 1,
     &p_ibvs->h_bind
     );
 
@@ -132,7 +132,7 @@ ibvs_bind(
 
   status = ibis_gsi_mad_ctrl_bind(
     &(IbisObj.mad_ctrl),
-	 IB_MCLASS_SUBN_LID,
+    IB_MCLASS_SUBN_LID, 1,
     &p_ibvs->h_smp_bind
     );
 

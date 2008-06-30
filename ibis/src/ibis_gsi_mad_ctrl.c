@@ -635,6 +635,7 @@ ib_api_status_t
 ibis_gsi_mad_ctrl_bind(
   IN ibis_gsi_mad_ctrl_t* const p_ctrl,
   IN const uint8_t mad_class,
+  IN const uint8_t class_version,
   IN osm_bind_handle_t *p_h_bind)
 {
   osm_bind_info_t bind_info;
@@ -651,7 +652,7 @@ ibis_gsi_mad_ctrl_bind(
     goto Exit;
   }
 
-  bind_info.class_version = 1;
+  bind_info.class_version = class_version;
   bind_info.is_responder = FALSE;
   bind_info.is_report_processor = FALSE;
   bind_info.is_trap_processor = FALSE;

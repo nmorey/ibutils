@@ -331,6 +331,7 @@ ib_api_status_t
 ibis_gsi_mad_ctrl_bind(
   IN ibis_gsi_mad_ctrl_t* const p_ctrl,
   IN const uint8_t mad_class,
+  IN const uint8_t class_version,
   IN osm_bind_handle_t *p_h_bind);
 /*
 * PARAMETERS
@@ -339,6 +340,9 @@ ibis_gsi_mad_ctrl_bind(
 *
 *  mad_class
 *     [in] The specific mad class we register for.
+*
+*  class_version
+*     [in] The specific class version we register for.
 *
 *
 * RETURN VALUES

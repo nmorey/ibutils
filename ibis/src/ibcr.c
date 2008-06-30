@@ -121,7 +121,7 @@ ibcr_bind(
 
   status = ibis_gsi_mad_ctrl_bind(
     &(IbisObj.mad_ctrl),
-    CR_CLASS,
+    CR_CLASS, 1,
     &p_ibcr->h_bind
     );
 

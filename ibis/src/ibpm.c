@@ -117,7 +117,7 @@ ibpm_bind(
 
   status = ibis_gsi_mad_ctrl_bind(
     &(IbisObj.mad_ctrl),
-    IB_MCLASS_PERF,
+    IB_MCLASS_PERF, 1,
     &p_ibpm->h_bind
     );
 

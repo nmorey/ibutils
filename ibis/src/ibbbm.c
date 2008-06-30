@@ -167,7 +167,7 @@ ibbbm_bind(
 
   status = ibis_gsi_mad_ctrl_bind(
     &(IbisObj.mad_ctrl),
-    BBM_CLASS,
+    BBM_CLASS, 1,
     &p_ibbbm->h_bind
     );
 

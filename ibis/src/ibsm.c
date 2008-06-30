@@ -119,7 +119,7 @@ ibsm_bind(
      be handled by the osm_vendor_bind if asked for LID route */
   status = ibis_gsi_mad_ctrl_bind(
     &(IbisObj.mad_ctrl),
-    IB_MCLASS_SUBN_LID,
+    IB_MCLASS_SUBN_LID, 1,
     &p_ibsm->lid_route_bind
     );
 
