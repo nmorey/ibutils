@@ -30,8 +30,9 @@ proc SetInfoArgv {} {
 	-load_db,regexp   "file.exists.readable"
 
 	-skip,name     "skip.checks"
-	-skip,desc     "Skip the executions of part of the application"
-	-skip,param    "ibdiag_check/s"
+	-skip,desc     "Skip the executions of the given check. Applicable skip checks: dup_guids|zero_guids|pm|logical_state|part|ipoib|all"
+	-skip,param    "ibdiag check"
+	-skip,regexp   {^(dup_guids|zero_guids|pm|logical_state|part|ipoib|all)$}	
 	-skip,error    "-E-argv:not.legal.skip"
 	-skip,default  "None"
 	-skip,arglen   "1.."
