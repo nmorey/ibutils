@@ -72,7 +72,7 @@
 
 	/* we probably want to use our own naming for classes */
 	typedef ib_class_port_info_t       ccClassPortInfo;
-	typedef ib_mad_notice_attr_t       ccNotice;
+	typedef ibcc_notice_attr_t         ccNotice;
 	typedef ib_cong_info_t             ccCongestionInfo;
 	typedef ib_cong_key_info_t         ccCongestionKeyInfo;
 	typedef ibcc_ca_cong_log_t         ccCACongestionLog;
@@ -86,7 +86,7 @@
 	/* these are the global objects to be used
 	   for set/get (one for each attribute) */
 	ib_class_port_info_t               ibcc_class_port_info_obj;
-	ib_mad_notice_attr_t               ibcc_notice_obj;
+	ibcc_notice_attr_t                 ibcc_notice_obj;
 	ib_cong_info_t                     ibcc_cong_info_obj;
 	ib_cong_key_info_t                 ibcc_cong_key_info_obj;
 	ibcc_ca_cong_log_t                 ibcc_ca_cong_log_obj;
@@ -201,41 +201,27 @@ typedef struct _ibcc_class_port_info {
 
 typedef struct _ibcc_notice
 {
-	uint8_t   generic_type;
+	uint8_t       generic_type;
 
-	union _notice_g_or_v {
-		struct {
-			uint8_t prod_type_msb;
-			ib_net16_t prod_type_lsb;
-			ib_net16_t trap_num;
-		} generic;
-	} g_or_v;
+	uint8_t       generic__prod_type_msb;
+	ib_net16_t    generic__prod_type_lsb;
+	ib_net16_t    generic__trap_num;
 
-	ib_net16_t   issuer_lid;
-	ib_net16_t   toggle_count;
+	ib_net16_t    issuer_lid;
+	ib_net16_t    toggle_count;
 
-	union _data_details
-	{
-		struct _cc_raw_data {
-			uint8_array_t  details[54];
-		} raw_data;
+	ib_net16_t    ntc0__source_lid;   // Source LID from offending packet LRH
+	uint8_t       ntc0__method;       // Method, from common MAD header
+	uint8_t       ntc0__resv0;
+	ib_net16_t    ntc0__attr_id;      // Attribute ID, from common MAD header
+	ib_net16_t    ntc0__resv1;
+	ib_net32_t    ntc0__attr_mod;     // Attribute Modif, from common MAD header
+	ib_net32_t    ntc0__qp;           // 8b pad, 24b dest QP from BTH
+	ib_net64_t    ntc0__cc_key;       // CC key of the offending packet
+	ib_gid_t      ntc0__source_gid;   // GID from GRH of the offending packet
+	uint8_array_t ntc0__padding[14];  // Padding - ignored on read
 
-		struct {
-			ib_net16_t source_lid;   // Source LID from offending packet LRH
-			uint8_t method;          // Method, from common MAD header
-			uint8_t resv0;
-			ib_net16_t attr_id;       // Attribute ID, from common MAD header
-			ib_net16_t resv1;
-			ib_net32_t attr_mod;      // Attribute Modif, from common MAD header
-			ib_net32_t qp;            // 8b pad, 24b dest QP from BTH
-			ib_net64_t cc_key;        // CC key of the offending packet
-			ib_gid_t source_gid;      // GID from GRH of the offending packet
-			uint8_array_t padding[14];// Padding - ignored on read
-		} ntc_0;
-
-	} data_details;
-
-	ib_gid_t   issuer_gid;
+	ib_gid_t      issuer_gid;
 } ccNotice;
 
 %addmethods ccNotice {
@@ -366,7 +352,7 @@ typedef struct _ib_cong_key_info {
 	long int value;
 	long int entry_index = 0;
 	int k;
-	int countSubLists, idx, numElements;
+	int countSubLists, numElements;
 	int i = 0;
 	int option = 0;
 	Tcl_Obj ** subListObjArray;
@@ -413,30 +399,37 @@ typedef struct _ib_cong_key_info {
 		option = 1;
 	}
 
+	for (i = 0; i < $dim0; i++) {
+		entrys[i].slid = 0;
+		entrys[i].dlid = 0;
+		entrys[i].resv0_sl = 0;
+		entrys[i].time_stamp = 0;
+	}
+
 	if (option == 1) {
 		/*
 		 * first option - list of groups of four values
 		 */
 
-		for (idx = 0; idx < countSubLists; idx++) {
+		for (i = 0; i < countSubLists; i++) {
 
-			if (Tcl_ListObjLength(interp, subListObjArray[idx], &numElements) != TCL_OK) {
+			if (Tcl_ListObjLength(interp, subListObjArray[i], &numElements) != TCL_OK) {
 				printf("Error: wrong format for SW Congestion Log Event: %s\n",
-					Tcl_GetStringFromObj(subListObjArray[idx],NULL));
+					Tcl_GetStringFromObj(subListObjArray[i],NULL));
 				return TCL_ERROR;
 			}
 
 			if (numElements != 4) {
 				printf("Error: wrong number of elements for SW Congestion Log Event: %s\n",
-					Tcl_GetStringFromObj(subListObjArray[idx],NULL));
+					Tcl_GetStringFromObj(subListObjArray[i],NULL));
 				return TCL_ERROR;
 			}
 
 			for (k = 0; k < 4; k++) {
 
-				if (Tcl_ListObjIndex(interp, subListObjArray[idx], k, &tclObj) != TCL_OK) {
+				if (Tcl_ListObjIndex(interp, subListObjArray[i], k, &tclObj) != TCL_OK) {
 					printf("Error: Fail to obtain the element of SW Congestion Log Event: %s\n",
-						Tcl_GetStringFromObj(subListObjArray[idx],NULL));
+						Tcl_GetStringFromObj(subListObjArray[i],NULL));
 					return TCL_ERROR;
 				}
 				value = strtol(Tcl_GetStringFromObj(tclObj, NULL), NULL, 0);
@@ -444,43 +437,37 @@ typedef struct _ib_cong_key_info {
 					case 0: entrys[i].slid = cl_hton16(value); break;
 					case 1: entrys[i].dlid = cl_hton16(value); break;
 					case 2: entrys[i].resv0_sl = value; break;
-					case 3: entrys[i++].time_stamp = cl_hton32(value); break;
+					case 3: entrys[i].time_stamp = cl_hton32(value); break;
 					default: break;
 				}
 			}
 		}
 
-		for (; i < $dim0; i++) {
-			entrys[i].slid = 0;
-			entrys[i].dlid = 0;
-			entrys[i].resv0_sl = 0;
-			entrys[i].time_stamp = 0;
-		}
 	}
 	else {
 		/*
 		 * second option - index and four values
 		 */
 
-		for (idx = 0; idx < countSubLists; idx++) {
+		for (i = 0; i < countSubLists; i++) {
 
-			if (Tcl_ListObjLength(interp, subListObjArray[idx], &numElements) != TCL_OK) {
+			if (Tcl_ListObjLength(interp, subListObjArray[i], &numElements) != TCL_OK) {
 				printf("Error: wrong format for SW Congestion Log Event: %s\n",
-					Tcl_GetStringFromObj(subListObjArray[idx],NULL));
+					Tcl_GetStringFromObj(subListObjArray[i],NULL));
 				return TCL_ERROR;
 			}
 
 			if (numElements != 5) {
 				printf("Error: wrong number of elements for SW Congestion Log Event: %s\n",
-					Tcl_GetStringFromObj(subListObjArray[idx],NULL));
+					Tcl_GetStringFromObj(subListObjArray[i],NULL));
 				return TCL_ERROR;
 			}
 
 			for (k = 0; k < 5; k++) {
 
-				if (Tcl_ListObjIndex(interp, subListObjArray[idx], k, &tclObj) != TCL_OK) {
+				if (Tcl_ListObjIndex(interp, subListObjArray[i], k, &tclObj) != TCL_OK) {
 					printf("Error: Fail to obtain the element of SW Congestion Log Event: %s\n",
-						Tcl_GetStringFromObj(subListObjArray[idx],NULL));
+						Tcl_GetStringFromObj(subListObjArray[i],NULL));
 					return TCL_ERROR;
 				}
 				value = strtol(Tcl_GetStringFromObj(tclObj, NULL), NULL, 0);
@@ -511,38 +498,26 @@ typedef struct _ib_cong_key_info {
 	int i;
 	char buff[99];
 
-	sprintf(buff, "-entry_list ");
+	sprintf(buff, "-entry_list\n ");
 	Tcl_AppendResult(interp, buff, NULL);
 
 	for (i=0; i <$dim0 ; i++) {
-		sprintf(buff, "{#%u:", i);
+		sprintf(buff, " {#%02u:", i);
 		Tcl_AppendResult(interp, buff, NULL);
 
-		if ($source[i].slid)
-			sprintf(buff, " -slid 0x%04x", cl_ntoh16($source[i].slid));
-		else
-			sprintf(buff, " -slid 0");
+		sprintf(buff, " -slid 0x%04x", cl_ntoh16($source[i].slid));
 		Tcl_AppendResult(interp, buff, NULL);
 
-		if ($source[i].dlid)
-			sprintf(buff, " -dlid 0x%04x", cl_ntoh16($source[i].dlid));
-		else
-			sprintf(buff, " -dlid 0");
+		sprintf(buff, " -dlid 0x%04x", cl_ntoh16($source[i].dlid));
 		Tcl_AppendResult(interp, buff, NULL);
 
-		if ($source[i].resv0_sl)
-			sprintf(buff, " -resv0_sl 0x%02x", $source[i].resv0_sl);
-		else
-			sprintf(buff, " -resv0_sl 0");
+		sprintf(buff, " -resv0_sl 0x%02x", $source[i].resv0_sl);
 		Tcl_AppendResult(interp, buff, NULL);
 
-		if ($source[i].time_stamp)
-			sprintf(buff, " -time_stamp 0x%08x", cl_ntoh32($source[i].time_stamp));
-		else
-			sprintf(buff, " -time_stamp 0");
+		sprintf(buff, " -time_stamp 0x%08x", cl_ntoh32($source[i].time_stamp));
 		Tcl_AppendResult(interp, buff, NULL);
 
-		sprintf(buff, "} ");
+		sprintf(buff, "}\n ");
 		Tcl_AppendResult(interp, buff, NULL);
 	}
 }
@@ -562,7 +537,7 @@ typedef struct _ib_cong_log_event_sw {
 	long int value;
 	long int entry_index = 0;
 	int k;
-	int countSubLists, idx, numElements;
+	int countSubLists, numElements;
 	int i = 0;
 	int option = 0;
 	Tcl_Obj ** subListObjArray;
@@ -609,30 +584,37 @@ typedef struct _ib_cong_log_event_sw {
 		option = 1;
 	}
 
+	for (i = 0; i < $dim0; i++) {
+		entrys[i].resv0_local_qp = 0;
+		entrys[i].remote_qp_sl_service_type = 0;
+		entrys[i].remote_lid = 0;
+		entrys[i].time_stamp = 0;
+	}
+
 	if (option == 1) {
 		/*
 		 * first option - list of groups of four values
 		 */
 
-		for (idx = 0; idx < countSubLists; idx++) {
+		for (i = 0; i < countSubLists; i++) {
 
-			if (Tcl_ListObjLength(interp, subListObjArray[idx], &numElements) != TCL_OK) {
+			if (Tcl_ListObjLength(interp, subListObjArray[i], &numElements) != TCL_OK) {
 				printf("Error: wrong format for CA Congestion Log Event: %s\n",
-					Tcl_GetStringFromObj(subListObjArray[idx],NULL));
+					Tcl_GetStringFromObj(subListObjArray[i],NULL));
 				return TCL_ERROR;
 			}
 
 			if (numElements != 4) {
 				printf("Error: wrong number of elements for CA Congestion Log Event: %s\n",
-					Tcl_GetStringFromObj(subListObjArray[idx],NULL));
+					Tcl_GetStringFromObj(subListObjArray[i],NULL));
 				return TCL_ERROR;
 			}
 
 			for (k = 0; k < 4; k++) {
 
-				if (Tcl_ListObjIndex(interp, subListObjArray[idx], k, &tclObj) != TCL_OK) {
+				if (Tcl_ListObjIndex(interp, subListObjArray[i], k, &tclObj) != TCL_OK) {
 					printf("Error: Fail to obtain the element of CA Congestion Log Event: %s\n",
-						Tcl_GetStringFromObj(subListObjArray[idx],NULL));
+						Tcl_GetStringFromObj(subListObjArray[i],NULL));
 					return TCL_ERROR;
 				}
 				value = strtol(Tcl_GetStringFromObj(tclObj, NULL), NULL, 0);
@@ -640,43 +622,37 @@ typedef struct _ib_cong_log_event_sw {
 					case 0: entrys[i].resv0_local_qp = cl_hton32(value); break;
 					case 1: entrys[i].remote_qp_sl_service_type = cl_hton32(value); break;
 					case 2: entrys[i].remote_lid = cl_hton16(value); break;
-					case 3: entrys[i++].time_stamp = cl_hton32(value); break;
+					case 3: entrys[i].time_stamp = cl_hton32(value); break;
 					default: break;
 				}
 			}
 		}
 
-		for (; i < $dim0; i++) {
-			entrys[i].resv0_local_qp = 0;
-			entrys[i].remote_qp_sl_service_type = 0;
-			entrys[i].remote_lid = 0;
-			entrys[i].time_stamp = 0;
-		}
 	}
 	else {
 		/*
 		 * second option - index and four values
 		 */
 
-		for (idx = 0; idx < countSubLists; idx++) {
+		for (i = 0; i < countSubLists; i++) {
 
-			if (Tcl_ListObjLength(interp, subListObjArray[idx], &numElements) != TCL_OK) {
+			if (Tcl_ListObjLength(interp, subListObjArray[i], &numElements) != TCL_OK) {
 				printf("Error: wrong format for CA Congestion Log Event: %s\n",
-					Tcl_GetStringFromObj(subListObjArray[idx],NULL));
+					Tcl_GetStringFromObj(subListObjArray[i],NULL));
 				return TCL_ERROR;
 			}
 
 			if (numElements != 5) {
 				printf("Error: wrong number of elements for CA Congestion Log Event: %s\n",
-					Tcl_GetStringFromObj(subListObjArray[idx],NULL));
+					Tcl_GetStringFromObj(subListObjArray[i],NULL));
 				return TCL_ERROR;
 			}
 
 			for (k = 0; k < 5; k++) {
 
-				if (Tcl_ListObjIndex(interp, subListObjArray[idx], k, &tclObj) != TCL_OK) {
+				if (Tcl_ListObjIndex(interp, subListObjArray[i], k, &tclObj) != TCL_OK) {
 					printf("Error: Fail to obtain the element of CA Congestion Log Event: %s\n",
-						Tcl_GetStringFromObj(subListObjArray[idx],NULL));
+						Tcl_GetStringFromObj(subListObjArray[i],NULL));
 					return TCL_ERROR;
 				}
 				value = strtol(Tcl_GetStringFromObj(tclObj, NULL), NULL, 0);
@@ -707,38 +683,26 @@ typedef struct _ib_cong_log_event_sw {
 	int i;
 	char buff[99];
 
-	sprintf(buff, "-entry_list ");
+	sprintf(buff, "-log_event\n ");
 	Tcl_AppendResult(interp, buff, NULL);
 
 	for (i=0; i <$dim0 ; i++) {
-		sprintf(buff, "{#%u:", i);
+		sprintf(buff, " {#%02u:", i);
 		Tcl_AppendResult(interp, buff, NULL);
 
-		if ($source[i].resv0_local_qp)
-			sprintf(buff, " -resv0_local_qp 0x%08x", cl_ntoh32($source[i].resv0_local_qp));
-		else
-			sprintf(buff, " -resv0_local_qp 0");
+		sprintf(buff, " -resv0_local_qp 0x%08x", cl_ntoh32($source[i].resv0_local_qp));
 		Tcl_AppendResult(interp, buff, NULL);
 
-		if ($source[i].remote_qp_sl_service_type)
-			sprintf(buff, " -remote_qp_sl_service_type 0x%08x", cl_ntoh32($source[i].remote_qp_sl_service_type));
-		else
-			sprintf(buff, " -remote_qp_sl_service_type 0");
+		sprintf(buff, " -remote_qp_sl_service_type 0x%08x", cl_ntoh32($source[i].remote_qp_sl_service_type));
 		Tcl_AppendResult(interp, buff, NULL);
 
-		if ($source[i].remote_lid)
-			sprintf(buff, " -remote_lid 0x%04x", cl_ntoh16($source[i].remote_lid));
-		else
-			sprintf(buff, " -remote_lid 0");
+		sprintf(buff, " -remote_lid 0x%04x", cl_ntoh16($source[i].remote_lid));
 		Tcl_AppendResult(interp, buff, NULL);
 
-		if ($source[i].time_stamp)
-			sprintf(buff, " -time_stamp 0x%08x", cl_ntoh32($source[i].time_stamp));
-		else
-			sprintf(buff, " -time_stamp 0");
+		sprintf(buff, " -time_stamp 0x%08x", cl_ntoh32($source[i].time_stamp));
 		Tcl_AppendResult(interp, buff, NULL);
 
-		sprintf(buff, "} ");
+		sprintf(buff, "}\n ");
 		Tcl_AppendResult(interp, buff, NULL);
 	}
 }
@@ -862,7 +826,7 @@ typedef struct _ib_sw_cong_setting {
 	long int value;
 	long int entry_index = 0;
 	int k;
-	int countSubLists, idx, numElements;
+	int countSubLists, numElements;
 	int i = 0;
 	int option = 0;
 	Tcl_Obj ** subListObjArray;
@@ -909,72 +873,73 @@ typedef struct _ib_sw_cong_setting {
 		option = 1;
 	}
 
+	for (i = 0; i < $dim0; i++) {
+		entrys[i].valid_ctrl_type_res_threshold = 0;
+		entrys[i].packet_size = 0;
+		entrys[i].cong_param = 0;
+	}
+
 	if (option == 1) {
 		/*
 		 * first option - list of groups of four values
 		 */
 
-		for (idx = 0; idx < countSubLists; idx++) {
+		for (i = 0; i < countSubLists; i++) {
 
-			if (Tcl_ListObjLength(interp, subListObjArray[idx], &numElements) != TCL_OK) {
+			if (Tcl_ListObjLength(interp, subListObjArray[i], &numElements) != TCL_OK) {
 				printf("Error: wrong format for SW Port Congestion Setting Element: %s\n",
-					Tcl_GetStringFromObj(subListObjArray[idx],NULL));
+					Tcl_GetStringFromObj(subListObjArray[i],NULL));
 				return TCL_ERROR;
 			}
 
 			if (numElements != 3) {
 				printf("Error: wrong number of elements for SW Port Congestion Setting Element: %s\n",
-					Tcl_GetStringFromObj(subListObjArray[idx],NULL));
+					Tcl_GetStringFromObj(subListObjArray[i],NULL));
 				return TCL_ERROR;
 			}
 
 			for (k = 0; k < 3; k++) {
 
-				if (Tcl_ListObjIndex(interp, subListObjArray[idx], k, &tclObj) != TCL_OK) {
+				if (Tcl_ListObjIndex(interp, subListObjArray[i], k, &tclObj) != TCL_OK) {
 					printf("Error: Fail to obtain the element of SW Port Congestion Setting Element: %s\n",
-						Tcl_GetStringFromObj(subListObjArray[idx],NULL));
+						Tcl_GetStringFromObj(subListObjArray[i],NULL));
 					return TCL_ERROR;
 				}
 				value = strtol(Tcl_GetStringFromObj(tclObj, NULL), NULL, 0);
 				switch (k) {
 					case 0: entrys[i].valid_ctrl_type_res_threshold = value; break;
 					case 1: entrys[i].packet_size = value; break;
-					case 2: entrys[i++].cong_param = cl_hton16(value); break;
+					case 2: entrys[i].cong_param = cl_hton16(value); break;
 					default: break;
 				}
 			}
 		}
 
-		for (; i < $dim0; i++) {
-			entrys[i].valid_ctrl_type_res_threshold = 0;
-			entrys[i].packet_size = 0;
-			entrys[i].cong_param = 0;
-		}
 	}
 	else {
 		/*
 		 * second option - index and four values
 		 */
 
-		for (idx = 0; idx < countSubLists; idx++) {
+		for (i = 0; i < countSubLists; i++) {
 
-			if (Tcl_ListObjLength(interp, subListObjArray[idx], &numElements) != TCL_OK) {
+			if (Tcl_ListObjLength(interp, subListObjArray[i], &numElements) != TCL_OK) {
 				printf("Error: wrong format for SW Port Congestion Setting Element: %s\n",
-					Tcl_GetStringFromObj(subListObjArray[idx],NULL));
+					Tcl_GetStringFromObj(subListObjArray[i],NULL));
 				return TCL_ERROR;
 			}
 
 			if (numElements != 4) {
 				printf("Error: wrong number of elements for SW Port Congestion Setting Element: %s\n",
-					Tcl_GetStringFromObj(subListObjArray[idx],NULL));
+					Tcl_GetStringFromObj(subListObjArray[i],NULL));
 				return TCL_ERROR;
 			}
 
 			for (k = 0; k < 4; k++) {
 
-				if (Tcl_ListObjIndex(interp, subListObjArray[idx], k, &tclObj) != TCL_OK) {
+				if (Tcl_ListObjIndex(interp, subListObjArray[i], k, &tclObj) != TCL_OK) {
 					printf("Error: Fail to obtain the element of SW Port Congestion Setting Element: %s\n",
-						Tcl_GetStringFromObj(subListObjArray[idx],NULL));
+						Tcl_GetStringFromObj(subListObjArray[i],NULL));
 					return TCL_ERROR;
 				}
 				value = strtol(Tcl_GetStringFromObj(tclObj, NULL), NULL, 0);
@@ -1004,32 +969,23 @@ typedef struct _ib_sw_cong_setting {
 	int i;
 	char buff[99];
 
-	sprintf(buff, "-block ");
+	sprintf(buff, "-block\n ");
 	Tcl_AppendResult(interp, buff, NULL);
 
 	for (i=0; i <$dim0 ; i++) {
-		sprintf(buff, "{#%u:", i);
+		sprintf(buff, " {#%02u:", i);
 		Tcl_AppendResult(interp, buff, NULL);
 
-		if ($source[i].valid_ctrl_type_res_threshold)
-			sprintf(buff, " -valid_ctrl_type_res_threshold 0x%02x", $source[i].valid_ctrl_type_res_threshold);
-		else
-			sprintf(buff, " -valid_ctrl_type_res_threshold 0");
+		sprintf(buff, " -valid_ctrl_type_res_threshold 0x%02x", $source[i].valid_ctrl_type_res_threshold);
 		Tcl_AppendResult(interp, buff, NULL);
 
-		if ($source[i].packet_size)
-			sprintf(buff, " -packet_size 0x%02x", $source[i].packet_size);
-		else
-			sprintf(buff, " -packet_size 0");
+		sprintf(buff, " -packet_size 0x%02x", $source[i].packet_size);
 		Tcl_AppendResult(interp, buff, NULL);
 
-		if ($source[i].cong_param)
-			sprintf(buff, " -cong_param 0x%04x", cl_ntoh16($source[i].cong_param));
-		else
-			sprintf(buff, " -cong_param 0");
+		sprintf(buff, " -cong_param 0x%04x", cl_ntoh16($source[i].cong_param));
 		Tcl_AppendResult(interp, buff, NULL);
 
-		sprintf(buff, "} ");
+		sprintf(buff, "}\n ");
 		Tcl_AppendResult(interp, buff, NULL);
 	}
 }
@@ -1084,7 +1040,7 @@ typedef struct _ib_sw_port_cong_setting {
 	long int value;
 	long int entry_index = 0;
 	int k;
-	int countSubLists, idx, numElements;
+	int countSubLists, numElements;
 	int i = 0;
 	int option = 0;
 	Tcl_Obj ** subListObjArray;
@@ -1131,30 +1087,37 @@ typedef struct _ib_sw_port_cong_setting {
 		option = 1;
 	}
 
+	for (i = 0; i < $dim0; i++) {
+		entrys[i].ccti_timer = 0;
+		entrys[i].ccti_increase = 0;
+		entrys[i].trigger_threshold = 0;
+		entrys[i].ccti_min = 0;
+	}
+
 	if (option == 1) {
 		/*
 		 * first option - list of groups of four values
 		 */
 
-		for (idx = 0; idx < countSubLists; idx++) {
+		for (i = 0; i < countSubLists; i++) {
 
-			if (Tcl_ListObjLength(interp, subListObjArray[idx], &numElements) != TCL_OK) {
+			if (Tcl_ListObjLength(interp, subListObjArray[i], &numElements) != TCL_OK) {
 				printf("Error: wrong format for CA Congestion Entry: %s\n",
-					Tcl_GetStringFromObj(subListObjArray[idx],NULL));
+					Tcl_GetStringFromObj(subListObjArray[i],NULL));
 				return TCL_ERROR;
 			}
 
 			if (numElements != 4) {
 				printf("Error: wrong number of elements for CA Congestion Entry: %s\n",
-					Tcl_GetStringFromObj(subListObjArray[idx],NULL));
+					Tcl_GetStringFromObj(subListObjArray[i],NULL));
 				return TCL_ERROR;
 			}
 
 			for (k = 0; k < 4; k++) {
 
-				if (Tcl_ListObjIndex(interp, subListObjArray[idx], k, &tclObj) != TCL_OK) {
+				if (Tcl_ListObjIndex(interp, subListObjArray[i], k, &tclObj) != TCL_OK) {
 					printf("Error: Fail to obtain the element of CA Congestion Entry: %s\n",
-						Tcl_GetStringFromObj(subListObjArray[idx],NULL));
+						Tcl_GetStringFromObj(subListObjArray[i],NULL));
 					return TCL_ERROR;
 				}
 				value = strtol(Tcl_GetStringFromObj(tclObj, NULL), NULL, 0);
@@ -1162,43 +1125,37 @@ typedef struct _ib_sw_port_cong_setting {
 					case 0: entrys[i].ccti_timer = cl_hton16(value); break;
 					case 1: entrys[i].ccti_increase = value; break;
 					case 2: entrys[i].trigger_threshold = value; break;
-					case 3: entrys[i++].ccti_min = value; break;
+					case 3: entrys[i].ccti_min = value; break;
 					default: break;
 				}
 			}
 		}
 
-		for (; i < $dim0; i++) {
-			entrys[i].ccti_timer = 0;
-			entrys[i].ccti_increase = 0;
-			entrys[i].trigger_threshold = 0;
-			entrys[i].ccti_min = 0;
-		}
 	}
 	else {
 		/*
 		 * second option - index and four values
 		 */
 
-		for (idx = 0; idx < countSubLists; idx++) {
+		for (i = 0; i < countSubLists; i++) {
 
-			if (Tcl_ListObjLength(interp, subListObjArray[idx], &numElements) != TCL_OK) {
+			if (Tcl_ListObjLength(interp, subListObjArray[i], &numElements) != TCL_OK) {
 				printf("Error: wrong format for CA Congestion Entry: %s\n",
-					Tcl_GetStringFromObj(subListObjArray[idx],NULL));
+					Tcl_GetStringFromObj(subListObjArray[i],NULL));
 				return TCL_ERROR;
 			}
 
 			if (numElements != 5) {
 				printf("Error: wrong number of elements for CA Congestion Entry: %s\n",
-					Tcl_GetStringFromObj(subListObjArray[idx],NULL));
+					Tcl_GetStringFromObj(subListObjArray[i],NULL));
 				return TCL_ERROR;
 			}
 
 			for (k = 0; k < 5; k++) {
 
-				if (Tcl_ListObjIndex(interp, subListObjArray[idx], k, &tclObj) != TCL_OK) {
+				if (Tcl_ListObjIndex(interp, subListObjArray[i], k, &tclObj) != TCL_OK) {
 					printf("Error: Fail to obtain the element of CA Congestion Entry: %s\n",
-						Tcl_GetStringFromObj(subListObjArray[idx],NULL));
+						Tcl_GetStringFromObj(subListObjArray[i],NULL));
 					return TCL_ERROR;
 				}
 				value = strtol(Tcl_GetStringFromObj(tclObj, NULL), NULL, 0);
@@ -1229,38 +1186,26 @@ typedef struct _ib_sw_port_cong_setting {
 	int i;
 	char buff[99];
 
-	sprintf(buff, "-entry_list ");
+	sprintf(buff, "-entry_list\n ");
 	Tcl_AppendResult(interp, buff, NULL);
 
 	for (i=0; i <$dim0 ; i++) {
-		sprintf(buff, "{SL%u:", i);
+		sprintf(buff, " {SL%02u:", i);
 		Tcl_AppendResult(interp, buff, NULL);
 
-		if ($source[i].ccti_timer)
-			sprintf(buff, " -ccti_timer 0x%04x", cl_ntoh16($source[i].ccti_timer));
-		else
-			sprintf(buff, " -ccti_timer 0");
+		sprintf(buff, " -ccti_timer 0x%04x", cl_ntoh16($source[i].ccti_timer));
 		Tcl_AppendResult(interp, buff, NULL);
 
-		if ($source[i].ccti_increase)
-			sprintf(buff, " -ccti_increase 0x%02x", $source[i].ccti_increase);
-		else
-			sprintf(buff, " -ccti_increase 0");
+		sprintf(buff, " -ccti_increase 0x%02x", $source[i].ccti_increase);
 		Tcl_AppendResult(interp, buff, NULL);
 
-		if ($source[i].trigger_threshold)
-			sprintf(buff, " -trigger_threshold 0x%02x", $source[i].trigger_threshold);
-		else
-			sprintf(buff, " -trigger_threshold 0");
+		sprintf(buff, " -trigger_threshold 0x%02x", $source[i].trigger_threshold);
 		Tcl_AppendResult(interp, buff, NULL);
 
-		if ($source[i].ccti_min)
-			sprintf(buff, " -ccti_min 0x%02x", $source[i].ccti_min);
-		else
-			sprintf(buff, " -ccti_min 0");
+		sprintf(buff, " -ccti_min 0x%02x", $source[i].ccti_min);
 		Tcl_AppendResult(interp, buff, NULL);
 
-		sprintf(buff, "} ");
+		sprintf(buff, "}\n ");
 		Tcl_AppendResult(interp, buff, NULL);
 	}
 }
@@ -1321,7 +1266,7 @@ typedef struct _ib_ca_cong_setting {
 %typemap(in) ib_cc_tbl_entry_t[ANY] (ib_cc_tbl_entry_t entrys[$dim0]) {
 	long int value;
 	long int entry_index = 0;
-	int countSubLists, idx, numElements;
+	int countSubLists, numElements;
 	int i = 0;
 	int option = 0;
 	Tcl_Obj ** subListObjArray;
@@ -1368,69 +1313,70 @@ typedef struct _ib_ca_cong_setting {
 		option = 1;
 	}
 
+	for (i = 0; i < $dim0; i++)
+		entrys[i].shift_multiplier = 0;
+
 	if (option == 1) {
 		/*
 		 * first option - list of values
 		 */
 
-		for (idx = 0; idx < countSubLists; idx++) {
+		for (i = 0; i < countSubLists; i++) {
 
-			if (Tcl_ListObjLength(interp, subListObjArray[idx], &numElements) != TCL_OK) {
+			if (Tcl_ListObjLength(interp, subListObjArray[i], &numElements) != TCL_OK) {
 				printf("Error: wrong format for CC Table Entry: %s\n",
-					Tcl_GetStringFromObj(subListObjArray[idx],NULL));
+					Tcl_GetStringFromObj(subListObjArray[i],NULL));
 				return TCL_ERROR;
 			}
 
 			if (numElements != 1) {
 				printf("Error: wrong number of elements for CC Table Entry: %s\n",
-					Tcl_GetStringFromObj(subListObjArray[idx],NULL));
+					Tcl_GetStringFromObj(subListObjArray[i],NULL));
 				return TCL_ERROR;
 			}
 
-			if (Tcl_ListObjIndex(interp, subListObjArray[idx], 0, &tclObj) != TCL_OK) {
+			if (Tcl_ListObjIndex(interp, subListObjArray[i], 0, &tclObj) != TCL_OK) {
 				printf("Error: Fail to obtain the element of CC Table Entry: %s\n",
-					Tcl_GetStringFromObj(subListObjArray[idx],NULL));
+					Tcl_GetStringFromObj(subListObjArray[i],NULL));
 				return TCL_ERROR;
 			}
 
 			value = strtol(Tcl_GetStringFromObj(tclObj, NULL), NULL, 0);
 
-			entrys[i++].shift_multiplier = cl_hton16(value);
+			entrys[i].shift_multiplier = cl_hton16(value);
 		}
 
-		for (; i < $dim0; i++)
-			entrys[i].shift_multiplier = 0;
 	}
 	else {
 		/*
 		 * second option - index and value
 		 */
 
-		for (idx = 0; idx < countSubLists; idx++) {
+		for (i = 0; i < countSubLists; i++) {
 
-			if (Tcl_ListObjLength(interp, subListObjArray[idx], &numElements) != TCL_OK) {
+			if (Tcl_ListObjLength(interp, subListObjArray[i], &numElements) != TCL_OK) {
 				printf("Error: wrong format for CC Table Entry: %s\n",
-					Tcl_GetStringFromObj(subListObjArray[idx],NULL));
+					Tcl_GetStringFromObj(subListObjArray[i],NULL));
 				return TCL_ERROR;
 			}
 
 			if (numElements != 2) {
 				printf("Error: wrong number of elements for CC Table Entry: %s\n",
-					Tcl_GetStringFromObj(subListObjArray[idx],NULL));
+					Tcl_GetStringFromObj(subListObjArray[i],NULL));
 				return TCL_ERROR;
 			}
 
-			if (Tcl_ListObjIndex(interp, subListObjArray[idx], 0, &tclObj) != TCL_OK) {
+			if (Tcl_ListObjIndex(interp, subListObjArray[i], 0, &tclObj) != TCL_OK) {
 				printf("Error: Fail to obtain the element of CC Table Entry: %s\n",
-					Tcl_GetStringFromObj(subListObjArray[idx],NULL));
+					Tcl_GetStringFromObj(subListObjArray[i],NULL));
 				return TCL_ERROR;
 			}
 
 			entry_index = strtol(Tcl_GetStringFromObj(tclObj, NULL), NULL, 0);
 
-			if (Tcl_ListObjIndex(interp, subListObjArray[idx], 1, &tclObj) != TCL_OK) {
+			if (Tcl_ListObjIndex(interp, subListObjArray[i], 1, &tclObj) != TCL_OK) {
 				printf("Error: Fail to obtain the element of CC Table Entry: %s\n",
-					Tcl_GetStringFromObj(subListObjArray[idx],NULL));
+					Tcl_GetStringFromObj(subListObjArray[i],NULL));
 				return TCL_ERROR;
 			}
 
@@ -1454,16 +1400,16 @@ typedef struct _ib_ca_cong_setting {
 	int i;
 	char buff[99];
 
-	sprintf(buff, "-entry_list ");
+	sprintf(buff, "-entry_list { ");
 	Tcl_AppendResult(interp, buff, NULL);
 
 	for (i=0; i <$dim0 ; i++) {
-		if ($source[i].shift_multiplier)
-			sprintf(buff, "{#%u: 0x%04x} ", i, cl_ntoh16($source[i].shift_multiplier));
-		else
-			sprintf(buff, "{#%u: 0} ", i);
+		sprintf(buff, "{#%02u: 0x%04x} ", i, cl_ntoh16($source[i].shift_multiplier));
 		Tcl_AppendResult(interp, buff, NULL);
 	}
+
+	sprintf(buff, "} ");
+	Tcl_AppendResult(interp, buff, NULL);
 }
 
 typedef struct _ibcc_tbl_entry {

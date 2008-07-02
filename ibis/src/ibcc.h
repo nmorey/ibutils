@@ -1039,6 +1039,49 @@ typedef struct _ib_time_stamp {
 
 /******************************************************/
 
+/****s* IBA Base: Types/ibcc_notice_attr_t
+* NAME
+*	ibcc_notice_attr_t
+*
+* DESCRIPTION
+*	IBA defined Notice attribute (13.4.8) defines
+*	many types of notices, so it has many unions.
+*	Instead of dealing with the union in SWIG, the
+*	following struct is defined to deal only with
+*	CC notice.
+*	For more details, please see ib_mad_notice_attr_t
+*	definition in ib_types.h
+*
+* SYNOPSIS
+*/
+#include <complib/cl_packon.h>
+typedef struct _ibcc_notice
+{
+	uint8_t    generic_type;
+
+	uint8_t    generic__prod_type_msb;
+	ib_net16_t generic__prod_type_lsb;
+	ib_net16_t generic__trap_num;
+
+	ib_net16_t issuer_lid;
+	ib_net16_t toggle_count;
+
+	ib_net16_t ntc0__source_lid;   // Source LID from offending packet LRH
+	uint8_t    ntc0__method;       // Method, from common MAD header
+	uint8_t    ntc0__resv0;
+	ib_net16_t ntc0__attr_id;      // Attribute ID, from common MAD header
+	ib_net16_t ntc0__resv1;
+	ib_net32_t ntc0__attr_mod;     // Attribute Modif, from common MAD header
+	ib_net32_t ntc0__qp;           // 8b pad, 24b dest QP from BTH
+	ib_net64_t ntc0__cc_key;       // CC key of the offending packet
+	ib_gid_t   ntc0__source_gid;   // GID from GRH of the offending packet
+	uint8_t    ntc0__padding[14];  // Padding - ignored on read
+
+	ib_gid_t      issuer_gid;
+} PACK_SUFFIX ibcc_notice_attr_t;
+#include <complib/cl_packoff.h>
+/*********/
+
 /****s* IBA Base: Types/ibcc_ca_cong_log_t
 * NAME
 *	ibcc_ca_cong_log_t
@@ -1055,6 +1098,7 @@ typedef struct _ib_time_stamp {
 *
 * SYNOPSIS
 */
+#include <complib/cl_packon.h>
 typedef struct _ib_ca_cong_log {
 	uint8_t log_type;
 	uint8_t cong_flags;
@@ -1063,7 +1107,8 @@ typedef struct _ib_ca_cong_log {
 	ib_net16_t resv;
 	ib_net32_t time_stamp;
 	ib_cong_log_event_ca_t log_event[13];
-} ibcc_ca_cong_log_t;
+} PACK_SUFFIX ibcc_ca_cong_log_t;
+#include <complib/cl_packoff.h>
 /*********/
 
 /****s* IBA Base: Types/ibcc_sw_cong_log_t
@@ -1082,6 +1127,7 @@ typedef struct _ib_ca_cong_log {
 *
 * SYNOPSIS
 */
+#include <complib/cl_packon.h>
 typedef struct _ib_sw_cong_log {
 	uint8_t log_type;
 	uint8_t cong_flags;
@@ -1089,7 +1135,8 @@ typedef struct _ib_sw_cong_log {
 	ib_net32_t time_stamp;
 	uint8_t port_map[32];
 	ib_cong_log_event_sw_t entry_list[15];
-} ibcc_sw_cong_log_t;
+} PACK_SUFFIX ibcc_sw_cong_log_t;
+#include <complib/cl_packoff.h>
 /*********/
 
 #endif /* _IBCC_H_ */

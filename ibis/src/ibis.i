@@ -626,7 +626,7 @@ extern char * ibisSourceVersion;
 
       /* Initialize global records */
       memset(&ibcc_class_port_info_obj, 0, sizeof(ib_class_port_info_t));
-      memset(&ibcc_notice_obj, 0, sizeof(ib_mad_notice_attr_t));
+      memset(&ibcc_notice_obj, 0, sizeof(ibcc_notice_attr_t));
       memset(&ibcc_cong_info_obj, 0, sizeof(ib_cong_info_t));
       memset(&ibcc_cong_key_info_obj, 0, sizeof(ib_cong_key_info_t));
       memset(&ibcc_ca_cong_log_obj, 0, sizeof(ibcc_ca_cong_log_t));
