@@ -694,7 +694,7 @@
 }
 
 %typemap(tcl8,in) uint16_t * (uint16_t temp) {
-  temp = atoi(Tcl_GetStringFromObj($source,NULL));
+  temp = strtoul(Tcl_GetStringFromObj($source,NULL), NULL, 0);
   $target = &temp;
 }
 
@@ -705,7 +705,7 @@
 }
 
 %typemap(tcl8,in) uint8_t * (uint8_t temp) {
-  temp = atoi(Tcl_GetStringFromObj($source,NULL));
+  temp = strtoul(Tcl_GetStringFromObj($source,NULL), NULL, 0);
   $target = &temp;
 }
 
@@ -738,7 +738,7 @@
 }
 
 %typemap(tcl8,in) ib_net16_t * (ib_net16_t temp) {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj($source,NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj($source,NULL), NULL, 0));
   $target = &temp;
 }
 

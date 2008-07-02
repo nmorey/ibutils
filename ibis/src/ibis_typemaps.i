@@ -108,7 +108,7 @@
 }
 
 %typemap(tcl8,in) ib_net16_t * (ib_net16_t temp) {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj($source,NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj($source,NULL), NULL, 0));
   $target = &temp;
 }
 
