@@ -119,16 +119,14 @@ FORCE:
 # only generate the swig wrappers if they do not exist...
 # so we avoid un-needed swig dependency
 if HAS_SWIG
-ibis_wrap.c: @MAINTAINER_MODE_TRUE@ $(SWIG_IFC_FILES)
+$(srcdir)/ibis_wrap.c: @MAINTAINER_MODE_TRUE@ $(SWIG_IFC_FILES)
 	swig -I$(srcdir) -dhtml -tcl8 -o swig_wrap.c $(srcdir)/ibis.i
-	$(srcdir)/fixSwigWrapper -g -s -p -o ibis_wrap.c
-	if test ibis_wrap.c -ef $(srcdir)/ibis_wrap.c; then cp ibis_wrap.c $(srcdir)/ibis_wrap.c; fi
+	$(srcdir)/fixSwigWrapper -g -s -p -o $@
 	rm -f swig_wrap.c
 
-ibissh_wrap.cpp: @MAINTAINER_MODE_TRUE@ $(SWIG_IFC_FILES)
+$(srcdir)/ibissh_wrap.cpp: @MAINTAINER_MODE_TRUE@ $(SWIG_IFC_FILES)
 	swig -I$(srcdir) -dhtml -tcl8  -ltclsh.i -o swig_wrap.c $(srcdir)/ibis.i
-	$(srcdir)/fixSwigWrapper -g -s -p -r ibis -o ibissh_wrap.cpp
-	if test ! ibissh_wrap.cpp -ef $(srcdir)/ibissh_wrap.cpp; then cp ibissh_wrap.cpp $(srcdir)/ibissh_wrap.cpp; fi
+	$(srcdir)/fixSwigWrapper -g -s -p -r ibis -o $@
 	rm -f swig_wrap.c
 endif
 
