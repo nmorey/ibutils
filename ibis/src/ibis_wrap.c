@@ -329,6 +329,7 @@ BEGIN_C_DECLS
 #include "ibbbm.h"
 #include "ibsac.h"
 #include "ibsm.h"
+#include "ibcc.h"
 
 END_C_DECLS
 
@@ -2890,6 +2891,48 @@ typedef struct {
     } smNotice_data_details_ntc_259;
 
 
+#include "stdio.h"
+#include <errno.h>
+#include <stdlib.h>
+#include <getopt.h>
+#include <iba/ib_types.h>
+#include <complib/cl_types.h>
+#include <complib/cl_qmap.h>
+#include <complib/cl_map.h>
+#include <complib/cl_debug.h>
+#include "ibis_api.h"
+
+	/* the global pointer to this CC mads manager */
+	static ibcc_t *gp_ibcc;
+
+	/* we probably want to use our own naming for classes */
+	typedef ib_class_port_info_t       ccClassPortInfo;
+	typedef ibcc_notice_attr_t         ccNotice;
+	typedef ib_cong_info_t             ccCongestionInfo;
+	typedef ib_cong_key_info_t         ccCongestionKeyInfo;
+	typedef ibcc_ca_cong_log_t         ccCACongestionLog;
+	typedef ibcc_sw_cong_log_t         ccSWCongestionLog;
+	typedef ib_sw_cong_setting_t       ccSWCongestionSetting;
+	typedef ib_sw_port_cong_setting_t  ccSWPortCongestionSetting;
+	typedef ib_ca_cong_setting_t       ccCACongestionSetting;
+	typedef ib_cc_tbl_t                ccTable;
+	typedef ib_time_stamp_t            ccTimeStamp;
+
+	/* these are the global objects to be used
+	   for set/get (one for each attribute) */
+	ib_class_port_info_t               ibcc_class_port_info_obj;
+	ibcc_notice_attr_t                 ibcc_notice_obj;
+	ib_cong_info_t                     ibcc_cong_info_obj;
+	ib_cong_key_info_t                 ibcc_cong_key_info_obj;
+	ibcc_ca_cong_log_t                 ibcc_ca_cong_log_obj;
+	ibcc_sw_cong_log_t                 ibcc_sw_cong_log_obj;
+	ib_sw_cong_setting_t               ibcc_sw_cong_setting_obj;
+	ib_sw_port_cong_setting_t          ibcc_sw_port_cong_setting_obj;
+	ib_ca_cong_setting_t               ibcc_ca_cong_setting_obj;
+	ib_cc_tbl_t                        ibcc_table_obj;
+	ib_time_stamp_t                    ibcc_time_stamp_obj;
+
+
   /* globals */
   ibis_t    IbisObj;
   static ibis_opt_t  *ibis_opt_p;
@@ -2947,8 +2990,16 @@ typedef struct {
     status = ibsm_init(gp_ibsm);
     if( status != IB_SUCCESS )
     {
-      printf("-E- Fail to init ibbbm_init.\n");
+      printf("-E- Fail to init ibsm_init.\n");
       ibsm_destroy( gp_ibsm );
+      exit(1);
+    }
+
+    status = ibcc_init(gp_ibcc);
+    if( status != IB_SUCCESS )
+    {
+      printf("-E- Fail to init ibcc_init.\n");
+      ibcc_destroy( gp_ibcc );
       exit(1);
     }
 
@@ -2965,6 +3016,7 @@ typedef struct {
     ibvs_destroy(p_ibvs_global);
     ibbbm_destroy(p_ibbbm_global);
     ibsm_destroy(gp_ibsm);
+    ibcc_destroy(gp_ibcc);
 
     ibis_destroy();
     usleep(100);
@@ -3034,6 +3086,14 @@ typedef struct {
     {
       printf("-E- Fail to ibsm_bind.\n");
       ibsm_destroy( gp_ibsm );
+      exit(1);
+    }
+
+    status = ibcc_bind(gp_ibcc);
+    if( status != IB_SUCCESS )
+    {
+      printf("-E- Fail to ibcc_bind.\n");
+      ibcc_destroy( gp_ibcc );
       exit(1);
     }
 
@@ -7038,7 +7098,7 @@ static int _wrap_sacNodeInfo_partition_cap_set(ClientData clientData, Tcl_Interp
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -7148,7 +7208,7 @@ static int _wrap_sacNodeInfo_device_id_set(ClientData clientData, Tcl_Interp *in
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -7821,7 +7881,7 @@ static int _wrap_sacNodeRec_lid_set(ClientData clientData, Tcl_Interp *interp, i
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -8746,7 +8806,7 @@ static int _wrap_sacPortInfo_base_lid_set(ClientData clientData, Tcl_Interp *int
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -8856,7 +8916,7 @@ static int _wrap_sacPortInfo_master_sm_base_lid_set(ClientData clientData, Tcl_I
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -9076,7 +9136,7 @@ static int _wrap_sacPortInfo_diag_code_set(ClientData clientData, Tcl_Interp *in
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -9186,7 +9246,7 @@ static int _wrap_sacPortInfo_m_key_lease_period_set(ClientData clientData, Tcl_I
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -11056,7 +11116,7 @@ static int _wrap_sacPortInfo_m_key_violations_set(ClientData clientData, Tcl_Int
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -11166,7 +11226,7 @@ static int _wrap_sacPortInfo_p_key_violations_set(ClientData clientData, Tcl_Int
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -11276,7 +11336,7 @@ static int _wrap_sacPortInfo_q_key_violations_set(ClientData clientData, Tcl_Int
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -12378,7 +12438,7 @@ static int _wrap_sacPortRec_lid_set(ClientData clientData, Tcl_Interp *interp, i
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -13785,7 +13845,7 @@ static int _wrap_sacSmRec_lid_set(ClientData clientData, Tcl_Interp *interp, int
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -14365,7 +14425,7 @@ static int _wrap_sacSwInfo_lin_cap_set(ClientData clientData, Tcl_Interp *interp
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -14475,7 +14535,7 @@ static int _wrap_sacSwInfo_rand_cap_set(ClientData clientData, Tcl_Interp *inter
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -14585,7 +14645,7 @@ static int _wrap_sacSwInfo_mcast_cap_set(ClientData clientData, Tcl_Interp *inte
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -14695,7 +14755,7 @@ static int _wrap_sacSwInfo_lin_top_set(ClientData clientData, Tcl_Interp *interp
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -15245,7 +15305,7 @@ static int _wrap_sacSwInfo_lids_per_port_set(ClientData clientData, Tcl_Interp *
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -15355,7 +15415,7 @@ static int _wrap_sacSwInfo_enforce_cap_set(ClientData clientData, Tcl_Interp *in
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -15918,7 +15978,7 @@ static int _wrap_sacSwRec_lid_set(ClientData clientData, Tcl_Interp *interp, int
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -16498,7 +16558,7 @@ static int _wrap_sacLinkRec_from_lid_set(ClientData clientData, Tcl_Interp *inte
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -16828,7 +16888,7 @@ static int _wrap_sacLinkRec_to_lid_set(ClientData clientData, Tcl_Interp *interp
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -17728,7 +17788,7 @@ static int _wrap_sacPathRec_dlid_set(ClientData clientData, Tcl_Interp *interp, 
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -17838,7 +17898,7 @@ static int _wrap_sacPathRec_slid_set(ClientData clientData, Tcl_Interp *interp, 
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -18278,7 +18338,7 @@ static int _wrap_sacPathRec_pkey_set(ClientData clientData, Tcl_Interp *interp, 
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -18388,7 +18448,7 @@ static int _wrap_sacPathRec_qos_class_sl_set(ClientData clientData, Tcl_Interp *
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -19436,7 +19496,7 @@ static int _wrap_sacLFTRec_lid_set(ClientData clientData, Tcl_Interp *interp, in
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -19546,7 +19606,7 @@ static int _wrap_sacLFTRec_block_num_set(ClientData clientData, Tcl_Interp *inte
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -20561,7 +20621,7 @@ static int _wrap_sacMCMRec_mlid_set(ClientData clientData, Tcl_Interp *interp, i
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -20891,7 +20951,7 @@ static int _wrap_sacMCMRec_pkey_set(ClientData clientData, Tcl_Interp *interp, i
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -22356,7 +22416,7 @@ static int _wrap_sacClassPortInfo_cap_mask_set(ClientData clientData, Tcl_Interp
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -22832,7 +22892,7 @@ static int _wrap_sacClassPortInfo_redir_lid_set(ClientData clientData, Tcl_Inter
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -22942,7 +23002,7 @@ static int _wrap_sacClassPortInfo_redir_pkey_set(ClientData clientData, Tcl_Inte
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -23528,7 +23588,7 @@ static int _wrap_sacClassPortInfo_trap_lid_set(ClientData clientData, Tcl_Interp
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -23638,7 +23698,7 @@ static int _wrap_sacClassPortInfo_trap_pkey_set(ClientData clientData, Tcl_Inter
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -24566,7 +24626,7 @@ static int _wrap_sacInformInfo_lid_range_begin_set(ClientData clientData, Tcl_In
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -24676,7 +24736,7 @@ static int _wrap_sacInformInfo_lid_range_end_set(ClientData clientData, Tcl_Inte
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -24786,7 +24846,7 @@ static int _wrap_sacInformInfo_reserved1_set(ClientData clientData, Tcl_Interp *
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -25116,7 +25176,7 @@ static int _wrap_sacInformInfo_trap_type_set(ClientData clientData, Tcl_Interp *
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -25921,7 +25981,7 @@ static int _wrap_sacInformInfo_g_or_v_generic_trap_num_set(ClientData clientData
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -26361,7 +26421,7 @@ static int _wrap_sacInformInfo_g_or_v_generic_node_type_lsb_set(ClientData clien
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -26697,7 +26757,7 @@ static int _wrap_sacInformInfo_g_or_v_vend_dev_id_set(ClientData clientData, Tcl
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -27137,7 +27197,7 @@ static int _wrap_sacInformInfo_g_or_v_vend_vendor_id_lsb_set(ClientData clientDa
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -27729,7 +27789,7 @@ static int _wrap_sacServiceRec_service_pkey_set(ClientData clientData, Tcl_Inter
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -27839,7 +27899,7 @@ static int _wrap_sacServiceRec_resv_set(ClientData clientData, Tcl_Interp *inter
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -29825,7 +29885,7 @@ static int _wrap_sacSlVlRec_lid_set(ClientData clientData, Tcl_Interp *interp, i
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -30767,7 +30827,7 @@ static int _wrap_sacVlArbRec_lid_set(ClientData clientData, Tcl_Interp *interp, 
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -32120,7 +32180,7 @@ static int _wrap_sacPKeyRec_lid_set(ClientData clientData, Tcl_Interp *interp, i
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -33953,7 +34013,7 @@ static int _wrap_smNodeInfo_partition_cap_set(ClientData clientData, Tcl_Interp 
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -34063,7 +34123,7 @@ static int _wrap_smNodeInfo_device_id_set(ClientData clientData, Tcl_Interp *int
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -35191,7 +35251,7 @@ static int _wrap_smPortInfo_base_lid_set(ClientData clientData, Tcl_Interp *inte
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -35301,7 +35361,7 @@ static int _wrap_smPortInfo_master_sm_base_lid_set(ClientData clientData, Tcl_In
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -35521,7 +35581,7 @@ static int _wrap_smPortInfo_diag_code_set(ClientData clientData, Tcl_Interp *int
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -35631,7 +35691,7 @@ static int _wrap_smPortInfo_m_key_lease_period_set(ClientData clientData, Tcl_In
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -37501,7 +37561,7 @@ static int _wrap_smPortInfo_m_key_violations_set(ClientData clientData, Tcl_Inte
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -37611,7 +37671,7 @@ static int _wrap_smPortInfo_p_key_violations_set(ClientData clientData, Tcl_Inte
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -37721,7 +37781,7 @@ static int _wrap_smPortInfo_q_key_violations_set(ClientData clientData, Tcl_Inte
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -39078,7 +39138,7 @@ static int _wrap_smSwInfo_lin_cap_set(ClientData clientData, Tcl_Interp *interp,
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -39188,7 +39248,7 @@ static int _wrap_smSwInfo_rand_cap_set(ClientData clientData, Tcl_Interp *interp
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -39298,7 +39358,7 @@ static int _wrap_smSwInfo_mcast_cap_set(ClientData clientData, Tcl_Interp *inter
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -39408,7 +39468,7 @@ static int _wrap_smSwInfo_lin_top_set(ClientData clientData, Tcl_Interp *interp,
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -39958,7 +40018,7 @@ static int _wrap_smSwInfo_lids_per_port_set(ClientData clientData, Tcl_Interp *i
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -40068,7 +40128,7 @@ static int _wrap_smSwInfo_enforce_cap_set(ClientData clientData, Tcl_Interp *int
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -46482,7 +46542,7 @@ static int _wrap_smNotice_issuer_lid_set(ClientData clientData, Tcl_Interp *inte
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -46592,7 +46652,7 @@ static int _wrap_smNotice_toggle_count_set(ClientData clientData, Tcl_Interp *in
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -48390,7 +48450,7 @@ static int _wrap_smNotice_g_or_v_generic_prod_type_lsb_set(ClientData clientData
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -48500,7 +48560,7 @@ static int _wrap_smNotice_g_or_v_generic_trap_num_set(ClientData clientData, Tcl
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -48924,7 +48984,7 @@ static int _wrap_smNotice_g_or_v_vend_vend_id_lsb_set(ClientData clientData, Tcl
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -49034,7 +49094,7 @@ static int _wrap_smNotice_g_or_v_vend_dev_id_set(ClientData clientData, Tcl_Inte
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -50150,7 +50210,7 @@ static int _wrap_smNotice_data_details_ntc_128_sw_lid_set(ClientData clientData,
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -50442,7 +50502,7 @@ static int _wrap_smNotice_data_details_ntc_129_131_pad_set(ClientData clientData
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -50552,7 +50612,7 @@ static int _wrap_smNotice_data_details_ntc_129_131_lid_set(ClientData clientData
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -50976,7 +51036,7 @@ static int _wrap_smNotice_data_details_ntc_144_pad1_set(ClientData clientData, T
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -51086,7 +51146,7 @@ static int _wrap_smNotice_data_details_ntc_144_lid_set(ClientData clientData, Tc
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -51196,7 +51256,7 @@ static int _wrap_smNotice_data_details_ntc_144_pad2_set(ClientData clientData, T
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -51631,7 +51691,7 @@ static int _wrap_smNotice_data_details_ntc_145_pad1_set(ClientData clientData, T
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -51741,7 +51801,7 @@ static int _wrap_smNotice_data_details_ntc_145_lid_set(ClientData clientData, Tc
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -51851,7 +51911,7 @@ static int _wrap_smNotice_data_details_ntc_145_pad2_set(ClientData clientData, T
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -52286,7 +52346,7 @@ static int _wrap_smNotice_data_details_ntc_256_pad1_set(ClientData clientData, T
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -52396,7 +52456,7 @@ static int _wrap_smNotice_data_details_ntc_256_lid_set(ClientData clientData, Tc
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -52506,7 +52566,7 @@ static int _wrap_smNotice_data_details_ntc_256_pad2_set(ClientData clientData, T
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -52836,7 +52896,7 @@ static int _wrap_smNotice_data_details_ntc_256_attr_id_set(ClientData clientData
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -53824,7 +53884,7 @@ static int _wrap_smNotice_data_details_ntc_257_258_pad1_set(ClientData clientDat
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -53934,7 +53994,7 @@ static int _wrap_smNotice_data_details_ntc_257_258_lid1_set(ClientData clientDat
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -54044,7 +54104,7 @@ static int _wrap_smNotice_data_details_ntc_257_258_lid2_set(ClientData clientDat
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -55134,7 +55194,7 @@ static int _wrap_smNotice_data_details_ntc_259_data_valid_set(ClientData clientD
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -55244,7 +55304,7 @@ static int _wrap_smNotice_data_details_ntc_259_lid1_set(ClientData clientData, T
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -55354,7 +55414,7 @@ static int _wrap_smNotice_data_details_ntc_259_lid2_set(ClientData clientData, T
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -55904,7 +55964,7 @@ static int _wrap_smNotice_data_details_ntc_259_qp2_lsb_set(ClientData clientData
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -56284,7 +56344,7 @@ static int _wrap_smNotice_data_details_ntc_259_sw_lid_set(ClientData clientData,
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -56776,6 +56836,16303 @@ static int TclsmNotice_data_details_ntc_259Cmd(ClientData clientData, Tcl_Interp
       Tcl_CmdInfo dummy;
       if (!Tcl_GetCommandInfo(interp,name,&dummy)) {
 	Tcl_CreateObjCommand(interp,name, TclsmNotice_data_details_ntc_259MethodCmd, (ClientData) newObj, del);
+	return TCL_OK;
+      } else {
+	Tcl_SetStringObj(tcl_result,"Object name already exists!",-1);
+	return TCL_ERROR;
+      }
+    }
+}
+
+
+#define _ibcc_class_port_info_base_ver_set(_swigobj,_swigval) (_swigobj->base_ver = *(_swigval),_swigval)
+static int _wrap_ccClassPortInfo_base_ver_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    ccClassPortInfo * _arg0;
+    uint8_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint8_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccClassPortInfo_base_ver_set { ccClassPortInfo * } { uint8_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccClassPortInfo_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccClassPortInfo_base_ver_set. Expected _ccClassPortInfo_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (uint8_t *)_ibcc_class_port_info_base_ver_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ibcc_class_port_info_base_ver_get(_swigobj) (&_swigobj->base_ver)
+static int _wrap_ccClassPortInfo_base_ver_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    ccClassPortInfo * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccClassPortInfo_base_ver_get { ccClassPortInfo * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccClassPortInfo_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccClassPortInfo_base_ver_get. Expected _ccClassPortInfo_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (uint8_t *)_ibcc_class_port_info_base_ver_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ibcc_class_port_info_class_ver_set(_swigobj,_swigval) (_swigobj->class_ver = *(_swigval),_swigval)
+static int _wrap_ccClassPortInfo_class_ver_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    ccClassPortInfo * _arg0;
+    uint8_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint8_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccClassPortInfo_class_ver_set { ccClassPortInfo * } { uint8_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccClassPortInfo_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccClassPortInfo_class_ver_set. Expected _ccClassPortInfo_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (uint8_t *)_ibcc_class_port_info_class_ver_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ibcc_class_port_info_class_ver_get(_swigobj) (&_swigobj->class_ver)
+static int _wrap_ccClassPortInfo_class_ver_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    ccClassPortInfo * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccClassPortInfo_class_ver_get { ccClassPortInfo * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccClassPortInfo_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccClassPortInfo_class_ver_get. Expected _ccClassPortInfo_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (uint8_t *)_ibcc_class_port_info_class_ver_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ibcc_class_port_info_cap_mask_set(_swigobj,_swigval) (_swigobj->cap_mask = *(_swigval),_swigval)
+static int _wrap_ccClassPortInfo_cap_mask_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    ccClassPortInfo * _arg0;
+    ib_net16_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_net16_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccClassPortInfo_cap_mask_set { ccClassPortInfo * } { ib_net16_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccClassPortInfo_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccClassPortInfo_cap_mask_set. Expected _ccClassPortInfo_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net16_t *)_ibcc_class_port_info_cap_mask_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ibcc_class_port_info_cap_mask_get(_swigobj) (&_swigobj->cap_mask)
+static int _wrap_ccClassPortInfo_cap_mask_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    ccClassPortInfo * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccClassPortInfo_cap_mask_get { ccClassPortInfo * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccClassPortInfo_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccClassPortInfo_cap_mask_get. Expected _ccClassPortInfo_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net16_t *)_ibcc_class_port_info_cap_mask_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ibcc_class_port_info_cap_mask2_resp_time_set(_swigobj,_swigval) (_swigobj->cap_mask2_resp_time = *(_swigval),_swigval)
+static int _wrap_ccClassPortInfo_cap_mask2_resp_time_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net32_t * _result;
+    ccClassPortInfo * _arg0;
+    ib_net32_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_net32_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccClassPortInfo_cap_mask2_resp_time_set { ccClassPortInfo * } { ib_net32_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccClassPortInfo_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccClassPortInfo_cap_mask2_resp_time_set. Expected _ccClassPortInfo_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton32(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net32_t *)_ibcc_class_port_info_cap_mask2_resp_time_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_ntoh32(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ibcc_class_port_info_cap_mask2_resp_time_get(_swigobj) (&_swigobj->cap_mask2_resp_time)
+static int _wrap_ccClassPortInfo_cap_mask2_resp_time_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net32_t * _result;
+    ccClassPortInfo * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccClassPortInfo_cap_mask2_resp_time_get { ccClassPortInfo * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccClassPortInfo_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccClassPortInfo_cap_mask2_resp_time_get. Expected _ccClassPortInfo_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net32_t *)_ibcc_class_port_info_cap_mask2_resp_time_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_ntoh32(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ibcc_class_port_info_redir_gid_set(_swigobj,_swigval) (_swigobj->redir_gid = *(_swigval),_swigval)
+static int _wrap_ccClassPortInfo_redir_gid_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_gid_t * _result;
+    ccClassPortInfo * _arg0;
+    ib_gid_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_gid_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccClassPortInfo_redir_gid_set { ccClassPortInfo * } { ib_gid_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccClassPortInfo_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccClassPortInfo_redir_gid_set. Expected _ccClassPortInfo_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+	char buf[38];
+	char *p_prefix, *p_guid;
+	char *str_token;
+
+	strcpy(buf, Tcl_GetStringFromObj(objv[2],NULL));
+	p_prefix = strtok_r(buf,":", &str_token);
+	p_guid = strtok_r(NULL, " ", &str_token);
+	temp.unicast.prefix = cl_hton64(strtoull(p_prefix, NULL, 16));
+	errno = 0;
+	if (errno) {
+		printf("Wrong format for gid prefix:%s\n", p_prefix);
+		return TCL_ERROR;
+	}
+
+	temp.unicast.interface_id = cl_hton64(strtoull(p_guid, NULL, 16));
+	if (errno) {
+		printf("Wrong format for gid guid:%s\n", p_guid);
+		return TCL_ERROR;
+	}
+
+	_arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_gid_t *)_ibcc_class_port_info_redir_gid_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[38];
+  sprintf(buff, "0x%016" PRIx64 ":0x%016" PRIx64,
+          cl_ntoh64(_result->unicast.prefix),
+          cl_ntoh64(_result->unicast.interface_id)
+          );
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ibcc_class_port_info_redir_gid_get(_swigobj) (&_swigobj->redir_gid)
+static int _wrap_ccClassPortInfo_redir_gid_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_gid_t * _result;
+    ccClassPortInfo * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccClassPortInfo_redir_gid_get { ccClassPortInfo * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccClassPortInfo_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccClassPortInfo_redir_gid_get. Expected _ccClassPortInfo_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_gid_t *)_ibcc_class_port_info_redir_gid_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[38];
+  sprintf(buff, "0x%016" PRIx64 ":0x%016" PRIx64,
+          cl_ntoh64(_result->unicast.prefix),
+          cl_ntoh64(_result->unicast.interface_id)
+          );
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ibcc_class_port_info_redir_tc_sl_fl_set(_swigobj,_swigval) (_swigobj->redir_tc_sl_fl = *(_swigval),_swigval)
+static int _wrap_ccClassPortInfo_redir_tc_sl_fl_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net32_t * _result;
+    ccClassPortInfo * _arg0;
+    ib_net32_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_net32_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccClassPortInfo_redir_tc_sl_fl_set { ccClassPortInfo * } { ib_net32_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccClassPortInfo_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccClassPortInfo_redir_tc_sl_fl_set. Expected _ccClassPortInfo_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton32(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net32_t *)_ibcc_class_port_info_redir_tc_sl_fl_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_ntoh32(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ibcc_class_port_info_redir_tc_sl_fl_get(_swigobj) (&_swigobj->redir_tc_sl_fl)
+static int _wrap_ccClassPortInfo_redir_tc_sl_fl_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net32_t * _result;
+    ccClassPortInfo * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccClassPortInfo_redir_tc_sl_fl_get { ccClassPortInfo * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccClassPortInfo_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccClassPortInfo_redir_tc_sl_fl_get. Expected _ccClassPortInfo_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net32_t *)_ibcc_class_port_info_redir_tc_sl_fl_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_ntoh32(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ibcc_class_port_info_redir_lid_set(_swigobj,_swigval) (_swigobj->redir_lid = *(_swigval),_swigval)
+static int _wrap_ccClassPortInfo_redir_lid_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    ccClassPortInfo * _arg0;
+    ib_net16_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_net16_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccClassPortInfo_redir_lid_set { ccClassPortInfo * } { ib_net16_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccClassPortInfo_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccClassPortInfo_redir_lid_set. Expected _ccClassPortInfo_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net16_t *)_ibcc_class_port_info_redir_lid_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ibcc_class_port_info_redir_lid_get(_swigobj) (&_swigobj->redir_lid)
+static int _wrap_ccClassPortInfo_redir_lid_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    ccClassPortInfo * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccClassPortInfo_redir_lid_get { ccClassPortInfo * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccClassPortInfo_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccClassPortInfo_redir_lid_get. Expected _ccClassPortInfo_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net16_t *)_ibcc_class_port_info_redir_lid_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ibcc_class_port_info_redir_pkey_set(_swigobj,_swigval) (_swigobj->redir_pkey = *(_swigval),_swigval)
+static int _wrap_ccClassPortInfo_redir_pkey_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    ccClassPortInfo * _arg0;
+    ib_net16_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_net16_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccClassPortInfo_redir_pkey_set { ccClassPortInfo * } { ib_net16_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccClassPortInfo_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccClassPortInfo_redir_pkey_set. Expected _ccClassPortInfo_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net16_t *)_ibcc_class_port_info_redir_pkey_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ibcc_class_port_info_redir_pkey_get(_swigobj) (&_swigobj->redir_pkey)
+static int _wrap_ccClassPortInfo_redir_pkey_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    ccClassPortInfo * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccClassPortInfo_redir_pkey_get { ccClassPortInfo * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccClassPortInfo_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccClassPortInfo_redir_pkey_get. Expected _ccClassPortInfo_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net16_t *)_ibcc_class_port_info_redir_pkey_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ibcc_class_port_info_redir_qp_set(_swigobj,_swigval) (_swigobj->redir_qp = *(_swigval),_swigval)
+static int _wrap_ccClassPortInfo_redir_qp_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net32_t * _result;
+    ccClassPortInfo * _arg0;
+    ib_net32_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_net32_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccClassPortInfo_redir_qp_set { ccClassPortInfo * } { ib_net32_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccClassPortInfo_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccClassPortInfo_redir_qp_set. Expected _ccClassPortInfo_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton32(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net32_t *)_ibcc_class_port_info_redir_qp_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_ntoh32(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ibcc_class_port_info_redir_qp_get(_swigobj) (&_swigobj->redir_qp)
+static int _wrap_ccClassPortInfo_redir_qp_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net32_t * _result;
+    ccClassPortInfo * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccClassPortInfo_redir_qp_get { ccClassPortInfo * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccClassPortInfo_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccClassPortInfo_redir_qp_get. Expected _ccClassPortInfo_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net32_t *)_ibcc_class_port_info_redir_qp_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_ntoh32(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ibcc_class_port_info_redir_qkey_set(_swigobj,_swigval) (_swigobj->redir_qkey = *(_swigval),_swigval)
+static int _wrap_ccClassPortInfo_redir_qkey_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net32_t * _result;
+    ccClassPortInfo * _arg0;
+    ib_net32_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_net32_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccClassPortInfo_redir_qkey_set { ccClassPortInfo * } { ib_net32_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccClassPortInfo_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccClassPortInfo_redir_qkey_set. Expected _ccClassPortInfo_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton32(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net32_t *)_ibcc_class_port_info_redir_qkey_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_ntoh32(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ibcc_class_port_info_redir_qkey_get(_swigobj) (&_swigobj->redir_qkey)
+static int _wrap_ccClassPortInfo_redir_qkey_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net32_t * _result;
+    ccClassPortInfo * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccClassPortInfo_redir_qkey_get { ccClassPortInfo * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccClassPortInfo_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccClassPortInfo_redir_qkey_get. Expected _ccClassPortInfo_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net32_t *)_ibcc_class_port_info_redir_qkey_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_ntoh32(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ibcc_class_port_info_trap_gid_set(_swigobj,_swigval) (_swigobj->trap_gid = *(_swigval),_swigval)
+static int _wrap_ccClassPortInfo_trap_gid_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_gid_t * _result;
+    ccClassPortInfo * _arg0;
+    ib_gid_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_gid_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccClassPortInfo_trap_gid_set { ccClassPortInfo * } { ib_gid_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccClassPortInfo_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccClassPortInfo_trap_gid_set. Expected _ccClassPortInfo_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+	char buf[38];
+	char *p_prefix, *p_guid;
+	char *str_token;
+
+	strcpy(buf, Tcl_GetStringFromObj(objv[2],NULL));
+	p_prefix = strtok_r(buf,":", &str_token);
+	p_guid = strtok_r(NULL, " ", &str_token);
+	temp.unicast.prefix = cl_hton64(strtoull(p_prefix, NULL, 16));
+	errno = 0;
+	if (errno) {
+		printf("Wrong format for gid prefix:%s\n", p_prefix);
+		return TCL_ERROR;
+	}
+
+	temp.unicast.interface_id = cl_hton64(strtoull(p_guid, NULL, 16));
+	if (errno) {
+		printf("Wrong format for gid guid:%s\n", p_guid);
+		return TCL_ERROR;
+	}
+
+	_arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_gid_t *)_ibcc_class_port_info_trap_gid_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[38];
+  sprintf(buff, "0x%016" PRIx64 ":0x%016" PRIx64,
+          cl_ntoh64(_result->unicast.prefix),
+          cl_ntoh64(_result->unicast.interface_id)
+          );
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ibcc_class_port_info_trap_gid_get(_swigobj) (&_swigobj->trap_gid)
+static int _wrap_ccClassPortInfo_trap_gid_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_gid_t * _result;
+    ccClassPortInfo * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccClassPortInfo_trap_gid_get { ccClassPortInfo * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccClassPortInfo_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccClassPortInfo_trap_gid_get. Expected _ccClassPortInfo_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_gid_t *)_ibcc_class_port_info_trap_gid_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[38];
+  sprintf(buff, "0x%016" PRIx64 ":0x%016" PRIx64,
+          cl_ntoh64(_result->unicast.prefix),
+          cl_ntoh64(_result->unicast.interface_id)
+          );
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ibcc_class_port_info_trap_tc_sl_fl_set(_swigobj,_swigval) (_swigobj->trap_tc_sl_fl = *(_swigval),_swigval)
+static int _wrap_ccClassPortInfo_trap_tc_sl_fl_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net32_t * _result;
+    ccClassPortInfo * _arg0;
+    ib_net32_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_net32_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccClassPortInfo_trap_tc_sl_fl_set { ccClassPortInfo * } { ib_net32_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccClassPortInfo_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccClassPortInfo_trap_tc_sl_fl_set. Expected _ccClassPortInfo_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton32(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net32_t *)_ibcc_class_port_info_trap_tc_sl_fl_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_ntoh32(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ibcc_class_port_info_trap_tc_sl_fl_get(_swigobj) (&_swigobj->trap_tc_sl_fl)
+static int _wrap_ccClassPortInfo_trap_tc_sl_fl_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net32_t * _result;
+    ccClassPortInfo * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccClassPortInfo_trap_tc_sl_fl_get { ccClassPortInfo * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccClassPortInfo_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccClassPortInfo_trap_tc_sl_fl_get. Expected _ccClassPortInfo_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net32_t *)_ibcc_class_port_info_trap_tc_sl_fl_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_ntoh32(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ibcc_class_port_info_trap_lid_set(_swigobj,_swigval) (_swigobj->trap_lid = *(_swigval),_swigval)
+static int _wrap_ccClassPortInfo_trap_lid_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    ccClassPortInfo * _arg0;
+    ib_net16_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_net16_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccClassPortInfo_trap_lid_set { ccClassPortInfo * } { ib_net16_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccClassPortInfo_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccClassPortInfo_trap_lid_set. Expected _ccClassPortInfo_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net16_t *)_ibcc_class_port_info_trap_lid_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ibcc_class_port_info_trap_lid_get(_swigobj) (&_swigobj->trap_lid)
+static int _wrap_ccClassPortInfo_trap_lid_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    ccClassPortInfo * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccClassPortInfo_trap_lid_get { ccClassPortInfo * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccClassPortInfo_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccClassPortInfo_trap_lid_get. Expected _ccClassPortInfo_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net16_t *)_ibcc_class_port_info_trap_lid_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ibcc_class_port_info_trap_pkey_set(_swigobj,_swigval) (_swigobj->trap_pkey = *(_swigval),_swigval)
+static int _wrap_ccClassPortInfo_trap_pkey_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    ccClassPortInfo * _arg0;
+    ib_net16_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_net16_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccClassPortInfo_trap_pkey_set { ccClassPortInfo * } { ib_net16_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccClassPortInfo_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccClassPortInfo_trap_pkey_set. Expected _ccClassPortInfo_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net16_t *)_ibcc_class_port_info_trap_pkey_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ibcc_class_port_info_trap_pkey_get(_swigobj) (&_swigobj->trap_pkey)
+static int _wrap_ccClassPortInfo_trap_pkey_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    ccClassPortInfo * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccClassPortInfo_trap_pkey_get { ccClassPortInfo * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccClassPortInfo_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccClassPortInfo_trap_pkey_get. Expected _ccClassPortInfo_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net16_t *)_ibcc_class_port_info_trap_pkey_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ibcc_class_port_info_trap_hop_qp_set(_swigobj,_swigval) (_swigobj->trap_hop_qp = *(_swigval),_swigval)
+static int _wrap_ccClassPortInfo_trap_hop_qp_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net32_t * _result;
+    ccClassPortInfo * _arg0;
+    ib_net32_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_net32_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccClassPortInfo_trap_hop_qp_set { ccClassPortInfo * } { ib_net32_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccClassPortInfo_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccClassPortInfo_trap_hop_qp_set. Expected _ccClassPortInfo_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton32(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net32_t *)_ibcc_class_port_info_trap_hop_qp_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_ntoh32(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ibcc_class_port_info_trap_hop_qp_get(_swigobj) (&_swigobj->trap_hop_qp)
+static int _wrap_ccClassPortInfo_trap_hop_qp_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net32_t * _result;
+    ccClassPortInfo * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccClassPortInfo_trap_hop_qp_get { ccClassPortInfo * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccClassPortInfo_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccClassPortInfo_trap_hop_qp_get. Expected _ccClassPortInfo_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net32_t *)_ibcc_class_port_info_trap_hop_qp_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_ntoh32(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ibcc_class_port_info_trap_qkey_set(_swigobj,_swigval) (_swigobj->trap_qkey = *(_swigval),_swigval)
+static int _wrap_ccClassPortInfo_trap_qkey_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net32_t * _result;
+    ccClassPortInfo * _arg0;
+    ib_net32_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_net32_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccClassPortInfo_trap_qkey_set { ccClassPortInfo * } { ib_net32_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccClassPortInfo_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccClassPortInfo_trap_qkey_set. Expected _ccClassPortInfo_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton32(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net32_t *)_ibcc_class_port_info_trap_qkey_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_ntoh32(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ibcc_class_port_info_trap_qkey_get(_swigobj) (&_swigobj->trap_qkey)
+static int _wrap_ccClassPortInfo_trap_qkey_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net32_t * _result;
+    ccClassPortInfo * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccClassPortInfo_trap_qkey_get { ccClassPortInfo * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccClassPortInfo_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccClassPortInfo_trap_qkey_get. Expected _ccClassPortInfo_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net32_t *)_ibcc_class_port_info_trap_qkey_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_ntoh32(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+static int  ccClassPortInfo_getByLid(ccClassPortInfo *self,uint16_t  lid) {
+		return ibcc_send_mad_by_lid (
+			gp_ibcc,
+			IBCC_DEAFULT_KEY,
+			NULL,                    // log data
+			0,                       // log data size
+			(uint8_t *)self,         // mgt data
+			sizeof(ccClassPortInfo), // mgt data size
+			lid,
+			CL_NTOH16(IB_MAD_ATTR_CLASS_PORT_INFO),
+			0,                       // attribute modifier
+			IB_MAD_METHOD_GET);
+	}
+static int _wrap_ccClassPortInfo_getByLid(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    int  _result;
+    ccClassPortInfo * _arg0;
+    uint16_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint16_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccClassPortInfo_getByLid { ccClassPortInfo * } lid ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccClassPortInfo_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccClassPortInfo_getByLid. Expected _ccClassPortInfo_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (int )ccClassPortInfo_getByLid(_arg0,*_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+    Tcl_SetIntObj(tcl_result,(long) _result);
+    return TCL_OK;
+}
+static int  ccClassPortInfo_setByLid(ccClassPortInfo *self,uint16_t  lid) {
+		return ibcc_send_mad_by_lid(
+			gp_ibcc,
+			IBCC_DEAFULT_KEY,
+			NULL,                    // log data
+			0,                       // log data size
+			(uint8_t *)self,         // mgt data
+			sizeof(ccClassPortInfo), // mgt data size
+			lid,
+			CL_NTOH16(IB_MAD_ATTR_CLASS_PORT_INFO),
+			0,                       // attribute modifier
+			IB_MAD_METHOD_SET);
+	}
+static int _wrap_ccClassPortInfo_setByLid(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    int  _result;
+    ccClassPortInfo * _arg0;
+    uint16_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint16_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccClassPortInfo_setByLid { ccClassPortInfo * } lid ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccClassPortInfo_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccClassPortInfo_setByLid. Expected _ccClassPortInfo_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (int )ccClassPortInfo_setByLid(_arg0,*_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+    Tcl_SetIntObj(tcl_result,(long) _result);
+    return TCL_OK;
+}
+/* methodcmd8.swg : Tcl8.x method invocation */
+
+static int TclccClassPortInfoMethodCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST _objv[]) {
+  int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
+  char *_str;
+  int rcode;
+  Tcl_Obj **objv;
+  Tcl_Obj *oldarg,*tcl_result,*obj;
+  int length;
+  char c;
+
+  tcl_result = Tcl_GetObjResult(interp);
+  objv = (Tcl_Obj **) _objv;
+  if (objc < 2) {
+    Tcl_SetStringObj(tcl_result,"ccClassPortInfo methods : { dump cget configure getByLid setByLid  }",-1);
+    return TCL_ERROR;
+  }
+  obj = Tcl_NewObj();
+  SWIG_SetPointerObj(obj,(void *) clientData,"_ccClassPortInfo_p");
+  _str = Tcl_GetStringFromObj(objv[1],&length);
+  c = *_str;
+  if (0);
+      if (strcmp(_str,"getByLid") == 0) {
+        cmd = _wrap_ccClassPortInfo_getByLid;
+    }    else if (strcmp(_str,"setByLid") == 0) {
+        cmd = _wrap_ccClassPortInfo_setByLid;
+    }
+    else if ((c == 'c') && (strncmp(_str,"configure",length) == 0) && (length >= 2)) {
+      int i = 2;
+      cmd = 0;
+      while (i+1 < objc) {
+        _str = Tcl_GetStringFromObj(objv[i],&length);
+                        if (strcmp(_str,"-base_ver") == 0) {
+                    cmd = _wrap_ccClassPortInfo_base_ver_set;
+                }  else if (strcmp(_str,"-class_ver") == 0) {
+                    cmd = _wrap_ccClassPortInfo_class_ver_set;
+                }  else if (strcmp(_str,"-cap_mask") == 0) {
+                    cmd = _wrap_ccClassPortInfo_cap_mask_set;
+                }  else if (strcmp(_str,"-cap_mask2_resp_time") == 0) {
+                    cmd = _wrap_ccClassPortInfo_cap_mask2_resp_time_set;
+                }  else if (strcmp(_str,"-redir_gid") == 0) {
+                    cmd = _wrap_ccClassPortInfo_redir_gid_set;
+                }  else if (strcmp(_str,"-redir_tc_sl_fl") == 0) {
+                    cmd = _wrap_ccClassPortInfo_redir_tc_sl_fl_set;
+                }  else if (strcmp(_str,"-redir_lid") == 0) {
+                    cmd = _wrap_ccClassPortInfo_redir_lid_set;
+                }  else if (strcmp(_str,"-redir_pkey") == 0) {
+                    cmd = _wrap_ccClassPortInfo_redir_pkey_set;
+                }  else if (strcmp(_str,"-redir_qp") == 0) {
+                    cmd = _wrap_ccClassPortInfo_redir_qp_set;
+                }  else if (strcmp(_str,"-redir_qkey") == 0) {
+                    cmd = _wrap_ccClassPortInfo_redir_qkey_set;
+                }  else if (strcmp(_str,"-trap_gid") == 0) {
+                    cmd = _wrap_ccClassPortInfo_trap_gid_set;
+                }  else if (strcmp(_str,"-trap_tc_sl_fl") == 0) {
+                    cmd = _wrap_ccClassPortInfo_trap_tc_sl_fl_set;
+                }  else if (strcmp(_str,"-trap_lid") == 0) {
+                    cmd = _wrap_ccClassPortInfo_trap_lid_set;
+                }  else if (strcmp(_str,"-trap_pkey") == 0) {
+                    cmd = _wrap_ccClassPortInfo_trap_pkey_set;
+                }  else if (strcmp(_str,"-trap_hop_qp") == 0) {
+                    cmd = _wrap_ccClassPortInfo_trap_hop_qp_set;
+                }  else if (strcmp(_str,"-trap_qkey") == 0) {
+                    cmd = _wrap_ccClassPortInfo_trap_qkey_set;
+                }
+          if (cmd) {
+            oldarg = objv[i];
+            objv[i] = obj;
+            rcode = (*cmd)(clientData,interp,3,&objv[i-1]);
+            objv[i] = oldarg;
+            if (rcode == TCL_ERROR) return rcode;
+            cmd = 0;
+          } else {
+            Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be { -base_ver -class_ver -cap_mask -cap_mask2_resp_time -redir_gid -redir_tc_sl_fl -redir_lid -redir_pkey -redir_qp -redir_qkey -trap_gid -trap_tc_sl_fl -trap_lid -trap_pkey -trap_hop_qp -trap_qkey  }",-1);
+            return TCL_ERROR;
+          }
+        i+=2;
+      }
+      if ((i < objc) || (i == 2)) {
+        Tcl_SetStringObj(tcl_result,"{ -base_ver -class_ver -cap_mask -cap_mask2_resp_time -redir_gid -redir_tc_sl_fl -redir_lid -redir_pkey -redir_qp -redir_qkey -trap_gid -trap_tc_sl_fl -trap_lid -trap_pkey -trap_hop_qp -trap_qkey  }",-1);
+        return TCL_ERROR;
+      }
+      return TCL_OK;
+    } else if ((c == 'c') && (strncmp(_str,"cget",length) == 0) && (length >= 2)) {
+      if (objc == 3) {
+        _str = Tcl_GetStringFromObj(objv[2],&length);
+        if (0) {}
+                        if (strcmp(_str,"-base_ver") == 0) {
+                    cmd = _wrap_ccClassPortInfo_base_ver_get;
+                }  else if (strcmp(_str,"-class_ver") == 0) {
+                    cmd = _wrap_ccClassPortInfo_class_ver_get;
+                }  else if (strcmp(_str,"-cap_mask") == 0) {
+                    cmd = _wrap_ccClassPortInfo_cap_mask_get;
+                }  else if (strcmp(_str,"-cap_mask2_resp_time") == 0) {
+                    cmd = _wrap_ccClassPortInfo_cap_mask2_resp_time_get;
+                }  else if (strcmp(_str,"-redir_gid") == 0) {
+                    cmd = _wrap_ccClassPortInfo_redir_gid_get;
+                }  else if (strcmp(_str,"-redir_tc_sl_fl") == 0) {
+                    cmd = _wrap_ccClassPortInfo_redir_tc_sl_fl_get;
+                }  else if (strcmp(_str,"-redir_lid") == 0) {
+                    cmd = _wrap_ccClassPortInfo_redir_lid_get;
+                }  else if (strcmp(_str,"-redir_pkey") == 0) {
+                    cmd = _wrap_ccClassPortInfo_redir_pkey_get;
+                }  else if (strcmp(_str,"-redir_qp") == 0) {
+                    cmd = _wrap_ccClassPortInfo_redir_qp_get;
+                }  else if (strcmp(_str,"-redir_qkey") == 0) {
+                    cmd = _wrap_ccClassPortInfo_redir_qkey_get;
+                }  else if (strcmp(_str,"-trap_gid") == 0) {
+                    cmd = _wrap_ccClassPortInfo_trap_gid_get;
+                }  else if (strcmp(_str,"-trap_tc_sl_fl") == 0) {
+                    cmd = _wrap_ccClassPortInfo_trap_tc_sl_fl_get;
+                }  else if (strcmp(_str,"-trap_lid") == 0) {
+                    cmd = _wrap_ccClassPortInfo_trap_lid_get;
+                }  else if (strcmp(_str,"-trap_pkey") == 0) {
+                    cmd = _wrap_ccClassPortInfo_trap_pkey_get;
+                }  else if (strcmp(_str,"-trap_hop_qp") == 0) {
+                    cmd = _wrap_ccClassPortInfo_trap_hop_qp_get;
+                }  else if (strcmp(_str,"-trap_qkey") == 0) {
+                    cmd = _wrap_ccClassPortInfo_trap_qkey_get;
+                }
+          else if (strcmp(_str,"-this") == 0) {
+            SWIG_SetPointerObj(tcl_result,(void *) clientData, "_ccClassPortInfo_p");
+            return TCL_OK;
+          }
+        if (cmd) {
+          oldarg = objv[2];
+          objv[2] = obj;
+          rcode = (*cmd)(clientData,interp,objc-1,&objv[1]);
+          objv[2] = oldarg;
+          return rcode;
+        } else {
+          Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this -base_ver -class_ver -cap_mask -cap_mask2_resp_time -redir_gid -redir_tc_sl_fl -redir_lid -redir_pkey -redir_qp -redir_qkey -trap_gid -trap_tc_sl_fl -trap_lid -trap_pkey -trap_hop_qp -trap_qkey  }",-1);
+          return TCL_ERROR;
+        }
+      } else {
+        Tcl_SetStringObj(tcl_result,"{ -this -base_ver -class_ver -cap_mask -cap_mask2_resp_time -redir_gid -redir_tc_sl_fl -redir_lid -redir_pkey -redir_qp -redir_qkey -trap_gid -trap_tc_sl_fl -trap_lid -trap_pkey -trap_hop_qp -trap_qkey  }", -1);
+        return TCL_ERROR;
+      }
+    } else if ((c == 'd') && (strncmp(_str,"dump",length) == 0) && (length >= 2)) {
+      if (objc == 2) {
+        Tcl_Obj *pDumpObj;
+        pDumpObj = Tcl_NewStringObj("",-1);
+        Tcl_IncrRefCount(pDumpObj);
+                cmd = _wrap_ccClassPortInfo_base_ver_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-base_ver ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ccClassPortInfo_class_ver_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-class_ver ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ccClassPortInfo_cap_mask_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-cap_mask ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ccClassPortInfo_cap_mask2_resp_time_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-cap_mask2_resp_time ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ccClassPortInfo_redir_gid_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-redir_gid ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ccClassPortInfo_redir_tc_sl_fl_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-redir_tc_sl_fl ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ccClassPortInfo_redir_lid_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-redir_lid ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ccClassPortInfo_redir_pkey_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-redir_pkey ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ccClassPortInfo_redir_qp_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-redir_qp ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ccClassPortInfo_redir_qkey_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-redir_qkey ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ccClassPortInfo_trap_gid_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-trap_gid ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ccClassPortInfo_trap_tc_sl_fl_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-trap_tc_sl_fl ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ccClassPortInfo_trap_lid_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-trap_lid ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ccClassPortInfo_trap_pkey_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-trap_pkey ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ccClassPortInfo_trap_hop_qp_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-trap_hop_qp ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ccClassPortInfo_trap_qkey_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-trap_qkey ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+
+        Tcl_DecrRefCount(pDumpObj);
+        return TCL_OK;
+      } else {
+        Tcl_SetStringObj(tcl_result,"no parameters are allowed for dump", -1);
+        return TCL_ERROR;
+      }
+    }
+  if (!cmd) {
+    Tcl_SetStringObj(tcl_result,"Invalid Method. Must be { dump cget configure getByLid setByLid }",-1);
+    return TCL_ERROR;
+  }
+  oldarg = objv[1];
+  objv[1] = obj;
+  rcode = (*cmd)(clientData,interp,objc,objv);
+  objv[1] = oldarg;
+  return rcode;
+}
+
+
+
+/* objcmd8.swg : Tcl 8.x object creation */
+
+static int TclccClassPortInfoCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+    void (*del)(ClientData) = 0;
+    char *name = 0;
+    int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
+    ccClassPortInfo * newObj = 0;
+    int firstarg = 0;
+    int thisarg = 0;
+    int length;
+    char *_str;
+    Tcl_Obj *tcl_result;
+
+    tcl_result = Tcl_GetObjResult(interp);
+    if (objc == 1) {
+        cmd = 0;
+    } else {
+      _str = Tcl_GetStringFromObj(objv[1],&length);
+      if (strcmp(_str,"-this") == 0) thisarg = 2;
+      else if (strcmp(_str,"-args") == 0) {
+	firstarg = 1;
+	cmd = 0;
+      } else if (objc == 2) {
+	firstarg = 1;
+	name = _str;
+	cmd = 0;
+      } else if (objc >= 3) {
+	name = _str;
+	_str = Tcl_GetStringFromObj(objv[2],&length);
+	if (strcmp(_str,"-this") == 0) thisarg = 3;
+	else {
+	  firstarg = 1;
+	  cmd = 0;
+	}
+      }
+    }
+    if (cmd) {
+        int result;
+        result = (*cmd)(clientData,interp,objc-firstarg,&objv[firstarg]);
+        if (result == TCL_OK) {
+            SWIG_GetPointerObj(interp,tcl_result,(void **) &newObj,"_ccClassPortInfo_p");
+        } else { return result; }
+        if (!name) name = Tcl_GetStringFromObj(tcl_result,&length);
+        del = 0;
+    } else if (thisarg > 0) {
+        if (thisarg < objc) {
+            char *r;
+            r = SWIG_GetPointerObj(interp,objv[thisarg],(void **) &newObj,"_ccClassPortInfo_p");
+            if (r) {
+	      Tcl_SetStringObj(tcl_result,"Type error. not a ccClassPortInfo object.",-1);
+	      return TCL_ERROR;
+            }
+        if (!name) name = Tcl_GetStringFromObj(objv[thisarg],&length);
+	Tcl_SetStringObj(tcl_result,name,-1);
+        } else {
+            Tcl_SetStringObj(tcl_result,"wrong # args.",-1);
+            return TCL_ERROR;
+        }
+    } else {
+        Tcl_SetStringObj(tcl_result,"No constructor available.",-1);
+        return TCL_ERROR;
+    }
+    {
+      Tcl_CmdInfo dummy;
+      if (!Tcl_GetCommandInfo(interp,name,&dummy)) {
+	Tcl_CreateObjCommand(interp,name, TclccClassPortInfoMethodCmd, (ClientData) newObj, del);
+	return TCL_OK;
+      } else {
+	Tcl_SetStringObj(tcl_result,"Object name already exists!",-1);
+	return TCL_ERROR;
+      }
+    }
+}
+
+
+#define _ibcc_notice_generic_type_set(_swigobj,_swigval) (_swigobj->generic_type = *(_swigval),_swigval)
+static int _wrap_ccNotice_generic_type_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    ccNotice * _arg0;
+    uint8_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint8_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccNotice_generic_type_set { ccNotice * } { uint8_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccNotice_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccNotice_generic_type_set. Expected _ccNotice_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (uint8_t *)_ibcc_notice_generic_type_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ibcc_notice_generic_type_get(_swigobj) (&_swigobj->generic_type)
+static int _wrap_ccNotice_generic_type_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    ccNotice * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccNotice_generic_type_get { ccNotice * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccNotice_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccNotice_generic_type_get. Expected _ccNotice_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (uint8_t *)_ibcc_notice_generic_type_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ibcc_notice_generic__prod_type_msb_set(_swigobj,_swigval) (_swigobj->generic__prod_type_msb = *(_swigval),_swigval)
+static int _wrap_ccNotice_generic__prod_type_msb_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    ccNotice * _arg0;
+    uint8_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint8_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccNotice_generic__prod_type_msb_set { ccNotice * } { uint8_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccNotice_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccNotice_generic__prod_type_msb_set. Expected _ccNotice_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (uint8_t *)_ibcc_notice_generic__prod_type_msb_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ibcc_notice_generic__prod_type_msb_get(_swigobj) (&_swigobj->generic__prod_type_msb)
+static int _wrap_ccNotice_generic__prod_type_msb_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    ccNotice * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccNotice_generic__prod_type_msb_get { ccNotice * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccNotice_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccNotice_generic__prod_type_msb_get. Expected _ccNotice_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (uint8_t *)_ibcc_notice_generic__prod_type_msb_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ibcc_notice_generic__prod_type_lsb_set(_swigobj,_swigval) (_swigobj->generic__prod_type_lsb = *(_swigval),_swigval)
+static int _wrap_ccNotice_generic__prod_type_lsb_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    ccNotice * _arg0;
+    ib_net16_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_net16_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccNotice_generic__prod_type_lsb_set { ccNotice * } { ib_net16_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccNotice_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccNotice_generic__prod_type_lsb_set. Expected _ccNotice_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net16_t *)_ibcc_notice_generic__prod_type_lsb_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ibcc_notice_generic__prod_type_lsb_get(_swigobj) (&_swigobj->generic__prod_type_lsb)
+static int _wrap_ccNotice_generic__prod_type_lsb_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    ccNotice * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccNotice_generic__prod_type_lsb_get { ccNotice * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccNotice_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccNotice_generic__prod_type_lsb_get. Expected _ccNotice_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net16_t *)_ibcc_notice_generic__prod_type_lsb_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ibcc_notice_generic__trap_num_set(_swigobj,_swigval) (_swigobj->generic__trap_num = *(_swigval),_swigval)
+static int _wrap_ccNotice_generic__trap_num_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    ccNotice * _arg0;
+    ib_net16_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_net16_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccNotice_generic__trap_num_set { ccNotice * } { ib_net16_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccNotice_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccNotice_generic__trap_num_set. Expected _ccNotice_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net16_t *)_ibcc_notice_generic__trap_num_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ibcc_notice_generic__trap_num_get(_swigobj) (&_swigobj->generic__trap_num)
+static int _wrap_ccNotice_generic__trap_num_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    ccNotice * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccNotice_generic__trap_num_get { ccNotice * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccNotice_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccNotice_generic__trap_num_get. Expected _ccNotice_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net16_t *)_ibcc_notice_generic__trap_num_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ibcc_notice_issuer_lid_set(_swigobj,_swigval) (_swigobj->issuer_lid = *(_swigval),_swigval)
+static int _wrap_ccNotice_issuer_lid_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    ccNotice * _arg0;
+    ib_net16_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_net16_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccNotice_issuer_lid_set { ccNotice * } { ib_net16_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccNotice_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccNotice_issuer_lid_set. Expected _ccNotice_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net16_t *)_ibcc_notice_issuer_lid_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ibcc_notice_issuer_lid_get(_swigobj) (&_swigobj->issuer_lid)
+static int _wrap_ccNotice_issuer_lid_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    ccNotice * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccNotice_issuer_lid_get { ccNotice * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccNotice_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccNotice_issuer_lid_get. Expected _ccNotice_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net16_t *)_ibcc_notice_issuer_lid_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ibcc_notice_toggle_count_set(_swigobj,_swigval) (_swigobj->toggle_count = *(_swigval),_swigval)
+static int _wrap_ccNotice_toggle_count_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    ccNotice * _arg0;
+    ib_net16_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_net16_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccNotice_toggle_count_set { ccNotice * } { ib_net16_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccNotice_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccNotice_toggle_count_set. Expected _ccNotice_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net16_t *)_ibcc_notice_toggle_count_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ibcc_notice_toggle_count_get(_swigobj) (&_swigobj->toggle_count)
+static int _wrap_ccNotice_toggle_count_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    ccNotice * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccNotice_toggle_count_get { ccNotice * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccNotice_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccNotice_toggle_count_get. Expected _ccNotice_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net16_t *)_ibcc_notice_toggle_count_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ibcc_notice_ntc0__source_lid_set(_swigobj,_swigval) (_swigobj->ntc0__source_lid = *(_swigval),_swigval)
+static int _wrap_ccNotice_ntc0__source_lid_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    ccNotice * _arg0;
+    ib_net16_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_net16_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccNotice_ntc0__source_lid_set { ccNotice * } { ib_net16_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccNotice_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccNotice_ntc0__source_lid_set. Expected _ccNotice_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net16_t *)_ibcc_notice_ntc0__source_lid_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ibcc_notice_ntc0__source_lid_get(_swigobj) (&_swigobj->ntc0__source_lid)
+static int _wrap_ccNotice_ntc0__source_lid_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    ccNotice * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccNotice_ntc0__source_lid_get { ccNotice * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccNotice_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccNotice_ntc0__source_lid_get. Expected _ccNotice_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net16_t *)_ibcc_notice_ntc0__source_lid_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ibcc_notice_ntc0__method_set(_swigobj,_swigval) (_swigobj->ntc0__method = *(_swigval),_swigval)
+static int _wrap_ccNotice_ntc0__method_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    ccNotice * _arg0;
+    uint8_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint8_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccNotice_ntc0__method_set { ccNotice * } { uint8_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccNotice_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccNotice_ntc0__method_set. Expected _ccNotice_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (uint8_t *)_ibcc_notice_ntc0__method_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ibcc_notice_ntc0__method_get(_swigobj) (&_swigobj->ntc0__method)
+static int _wrap_ccNotice_ntc0__method_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    ccNotice * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccNotice_ntc0__method_get { ccNotice * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccNotice_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccNotice_ntc0__method_get. Expected _ccNotice_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (uint8_t *)_ibcc_notice_ntc0__method_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ibcc_notice_ntc0__resv0_set(_swigobj,_swigval) (_swigobj->ntc0__resv0 = *(_swigval),_swigval)
+static int _wrap_ccNotice_ntc0__resv0_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    ccNotice * _arg0;
+    uint8_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint8_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccNotice_ntc0__resv0_set { ccNotice * } { uint8_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccNotice_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccNotice_ntc0__resv0_set. Expected _ccNotice_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (uint8_t *)_ibcc_notice_ntc0__resv0_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ibcc_notice_ntc0__resv0_get(_swigobj) (&_swigobj->ntc0__resv0)
+static int _wrap_ccNotice_ntc0__resv0_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    ccNotice * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccNotice_ntc0__resv0_get { ccNotice * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccNotice_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccNotice_ntc0__resv0_get. Expected _ccNotice_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (uint8_t *)_ibcc_notice_ntc0__resv0_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ibcc_notice_ntc0__attr_id_set(_swigobj,_swigval) (_swigobj->ntc0__attr_id = *(_swigval),_swigval)
+static int _wrap_ccNotice_ntc0__attr_id_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    ccNotice * _arg0;
+    ib_net16_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_net16_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccNotice_ntc0__attr_id_set { ccNotice * } { ib_net16_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccNotice_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccNotice_ntc0__attr_id_set. Expected _ccNotice_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net16_t *)_ibcc_notice_ntc0__attr_id_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ibcc_notice_ntc0__attr_id_get(_swigobj) (&_swigobj->ntc0__attr_id)
+static int _wrap_ccNotice_ntc0__attr_id_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    ccNotice * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccNotice_ntc0__attr_id_get { ccNotice * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccNotice_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccNotice_ntc0__attr_id_get. Expected _ccNotice_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net16_t *)_ibcc_notice_ntc0__attr_id_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ibcc_notice_ntc0__resv1_set(_swigobj,_swigval) (_swigobj->ntc0__resv1 = *(_swigval),_swigval)
+static int _wrap_ccNotice_ntc0__resv1_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    ccNotice * _arg0;
+    ib_net16_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_net16_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccNotice_ntc0__resv1_set { ccNotice * } { ib_net16_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccNotice_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccNotice_ntc0__resv1_set. Expected _ccNotice_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net16_t *)_ibcc_notice_ntc0__resv1_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ibcc_notice_ntc0__resv1_get(_swigobj) (&_swigobj->ntc0__resv1)
+static int _wrap_ccNotice_ntc0__resv1_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    ccNotice * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccNotice_ntc0__resv1_get { ccNotice * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccNotice_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccNotice_ntc0__resv1_get. Expected _ccNotice_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net16_t *)_ibcc_notice_ntc0__resv1_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ibcc_notice_ntc0__attr_mod_set(_swigobj,_swigval) (_swigobj->ntc0__attr_mod = *(_swigval),_swigval)
+static int _wrap_ccNotice_ntc0__attr_mod_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net32_t * _result;
+    ccNotice * _arg0;
+    ib_net32_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_net32_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccNotice_ntc0__attr_mod_set { ccNotice * } { ib_net32_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccNotice_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccNotice_ntc0__attr_mod_set. Expected _ccNotice_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton32(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net32_t *)_ibcc_notice_ntc0__attr_mod_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_ntoh32(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ibcc_notice_ntc0__attr_mod_get(_swigobj) (&_swigobj->ntc0__attr_mod)
+static int _wrap_ccNotice_ntc0__attr_mod_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net32_t * _result;
+    ccNotice * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccNotice_ntc0__attr_mod_get { ccNotice * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccNotice_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccNotice_ntc0__attr_mod_get. Expected _ccNotice_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net32_t *)_ibcc_notice_ntc0__attr_mod_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_ntoh32(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ibcc_notice_ntc0__qp_set(_swigobj,_swigval) (_swigobj->ntc0__qp = *(_swigval),_swigval)
+static int _wrap_ccNotice_ntc0__qp_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net32_t * _result;
+    ccNotice * _arg0;
+    ib_net32_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_net32_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccNotice_ntc0__qp_set { ccNotice * } { ib_net32_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccNotice_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccNotice_ntc0__qp_set. Expected _ccNotice_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton32(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net32_t *)_ibcc_notice_ntc0__qp_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_ntoh32(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ibcc_notice_ntc0__qp_get(_swigobj) (&_swigobj->ntc0__qp)
+static int _wrap_ccNotice_ntc0__qp_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net32_t * _result;
+    ccNotice * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccNotice_ntc0__qp_get { ccNotice * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccNotice_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccNotice_ntc0__qp_get. Expected _ccNotice_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net32_t *)_ibcc_notice_ntc0__qp_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_ntoh32(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ibcc_notice_ntc0__cc_key_set(_swigobj,_swigval) (_swigobj->ntc0__cc_key = *(_swigval),_swigval)
+static int _wrap_ccNotice_ntc0__cc_key_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net64_t * _result;
+    ccNotice * _arg0;
+    ib_net64_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint64_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccNotice_ntc0__cc_key_set { ccNotice * } { ib_net64_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccNotice_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccNotice_ntc0__cc_key_set. Expected _ccNotice_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton64(strtoull(Tcl_GetStringFromObj(objv[2],NULL), NULL, 16));
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net64_t *)_ibcc_notice_ntc0__cc_key_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "0x%016" PRIx64, cl_ntoh64(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ibcc_notice_ntc0__cc_key_get(_swigobj) (&_swigobj->ntc0__cc_key)
+static int _wrap_ccNotice_ntc0__cc_key_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net64_t * _result;
+    ccNotice * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccNotice_ntc0__cc_key_get { ccNotice * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccNotice_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccNotice_ntc0__cc_key_get. Expected _ccNotice_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net64_t *)_ibcc_notice_ntc0__cc_key_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "0x%016" PRIx64, cl_ntoh64(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ibcc_notice_ntc0__source_gid_set(_swigobj,_swigval) (_swigobj->ntc0__source_gid = *(_swigval),_swigval)
+static int _wrap_ccNotice_ntc0__source_gid_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_gid_t * _result;
+    ccNotice * _arg0;
+    ib_gid_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_gid_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccNotice_ntc0__source_gid_set { ccNotice * } { ib_gid_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccNotice_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccNotice_ntc0__source_gid_set. Expected _ccNotice_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+	char buf[38];
+	char *p_prefix, *p_guid;
+	char *str_token;
+
+	strcpy(buf, Tcl_GetStringFromObj(objv[2],NULL));
+	p_prefix = strtok_r(buf,":", &str_token);
+	p_guid = strtok_r(NULL, " ", &str_token);
+	temp.unicast.prefix = cl_hton64(strtoull(p_prefix, NULL, 16));
+	errno = 0;
+	if (errno) {
+		printf("Wrong format for gid prefix:%s\n", p_prefix);
+		return TCL_ERROR;
+	}
+
+	temp.unicast.interface_id = cl_hton64(strtoull(p_guid, NULL, 16));
+	if (errno) {
+		printf("Wrong format for gid guid:%s\n", p_guid);
+		return TCL_ERROR;
+	}
+
+	_arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_gid_t *)_ibcc_notice_ntc0__source_gid_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[38];
+  sprintf(buff, "0x%016" PRIx64 ":0x%016" PRIx64,
+          cl_ntoh64(_result->unicast.prefix),
+          cl_ntoh64(_result->unicast.interface_id)
+          );
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ibcc_notice_ntc0__source_gid_get(_swigobj) (&_swigobj->ntc0__source_gid)
+static int _wrap_ccNotice_ntc0__source_gid_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_gid_t * _result;
+    ccNotice * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccNotice_ntc0__source_gid_get { ccNotice * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccNotice_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccNotice_ntc0__source_gid_get. Expected _ccNotice_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_gid_t *)_ibcc_notice_ntc0__source_gid_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[38];
+  sprintf(buff, "0x%016" PRIx64 ":0x%016" PRIx64,
+          cl_ntoh64(_result->unicast.prefix),
+          cl_ntoh64(_result->unicast.interface_id)
+          );
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+static uint8_array_t * _ibcc_notice_ntc0__padding_set(ccNotice *obj, uint8_array_t val[14]) {
+{
+	int i;
+	for (i=0; i <14 ; i++) {
+		obj->ntc0__padding[i] = *(val+i);
+	}
+}
+    return (uint8_array_t *) val;
+}
+static int _wrap_ccNotice_ntc0__padding_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_array_t * _result;
+    ccNotice * _arg0;
+    uint8_array_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint8_t  entrys[14];
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccNotice_ntc0__padding_set { ccNotice * } { uint8_array_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccNotice_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccNotice_ntc0__padding_set. Expected _ccNotice_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  char *buff;
+  char *p_ch;
+  char *last;
+  long int entry;
+
+  int i = 0;
+  buff = (char *)malloc((strlen(Tcl_GetStringFromObj(objv[2],NULL))+1)*sizeof(char));
+  strcpy(buff, Tcl_GetStringFromObj(objv[2],NULL));
+  p_ch = strtok_r(buff, " \t",&last);
+  while (p_ch && (i < 14))
+  {
+    entry = strtol(p_ch, NULL, 0);
+    if (entry > 0xff)
+    {
+      printf("Error: wrong format or out of range value for expected uint8_t entry: %s\n", p_ch);
+      return TCL_ERROR;
+    }
+    entrys[i++] = entry;
+    p_ch = strtok_r(NULL, " \t", &last);
+  }
+  for (; i < 14; i++) entrys[i] = 0;
+
+  free(buff);
+  _arg1 = entrys;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (uint8_array_t *)_ibcc_notice_ntc0__padding_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  int i;
+  char buff[8];
+  for (i=0; i <14 ; i++) {
+    sprintf(buff, "0x%02x ", *(_result+i));
+    Tcl_AppendResult(interp, buff, NULL);
+  }
+}
+    return TCL_OK;
+}
+#define _ibcc_notice_ntc0__padding_get(_swigobj) ((uint8_array_t *) _swigobj->ntc0__padding)
+static int _wrap_ccNotice_ntc0__padding_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_array_t * _result;
+    ccNotice * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccNotice_ntc0__padding_get { ccNotice * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccNotice_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccNotice_ntc0__padding_get. Expected _ccNotice_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (uint8_array_t *)_ibcc_notice_ntc0__padding_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  int i;
+  char buff[8];
+  for (i=0; i <14 ; i++) {
+    sprintf(buff, "0x%02x ", *(_result+i));
+    Tcl_AppendResult(interp, buff, NULL);
+  }
+}
+    return TCL_OK;
+}
+#define _ibcc_notice_issuer_gid_set(_swigobj,_swigval) (_swigobj->issuer_gid = *(_swigval),_swigval)
+static int _wrap_ccNotice_issuer_gid_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_gid_t * _result;
+    ccNotice * _arg0;
+    ib_gid_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_gid_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccNotice_issuer_gid_set { ccNotice * } { ib_gid_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccNotice_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccNotice_issuer_gid_set. Expected _ccNotice_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+	char buf[38];
+	char *p_prefix, *p_guid;
+	char *str_token;
+
+	strcpy(buf, Tcl_GetStringFromObj(objv[2],NULL));
+	p_prefix = strtok_r(buf,":", &str_token);
+	p_guid = strtok_r(NULL, " ", &str_token);
+	temp.unicast.prefix = cl_hton64(strtoull(p_prefix, NULL, 16));
+	errno = 0;
+	if (errno) {
+		printf("Wrong format for gid prefix:%s\n", p_prefix);
+		return TCL_ERROR;
+	}
+
+	temp.unicast.interface_id = cl_hton64(strtoull(p_guid, NULL, 16));
+	if (errno) {
+		printf("Wrong format for gid guid:%s\n", p_guid);
+		return TCL_ERROR;
+	}
+
+	_arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_gid_t *)_ibcc_notice_issuer_gid_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[38];
+  sprintf(buff, "0x%016" PRIx64 ":0x%016" PRIx64,
+          cl_ntoh64(_result->unicast.prefix),
+          cl_ntoh64(_result->unicast.interface_id)
+          );
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ibcc_notice_issuer_gid_get(_swigobj) (&_swigobj->issuer_gid)
+static int _wrap_ccNotice_issuer_gid_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_gid_t * _result;
+    ccNotice * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccNotice_issuer_gid_get { ccNotice * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccNotice_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccNotice_issuer_gid_get. Expected _ccNotice_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_gid_t *)_ibcc_notice_issuer_gid_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[38];
+  sprintf(buff, "0x%016" PRIx64 ":0x%016" PRIx64,
+          cl_ntoh64(_result->unicast.prefix),
+          cl_ntoh64(_result->unicast.interface_id)
+          );
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+static int  ccNotice_trapByLid(ccNotice *self,uint16_t  lid) {
+		return ibcc_send_mad_by_lid(
+			gp_ibcc,
+			IBCC_DEAFULT_KEY,
+			NULL,                    // log data
+			0,                       // log data size
+			(uint8_t *)self,         // mgt data
+			sizeof(ccNotice),        // mgt data size
+			lid,
+			CL_NTOH16(IB_MAD_ATTR_NOTICE),
+			0,                       // attribute modifier
+			IB_MAD_METHOD_TRAP);
+	}
+static int _wrap_ccNotice_trapByLid(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    int  _result;
+    ccNotice * _arg0;
+    uint16_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint16_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccNotice_trapByLid { ccNotice * } lid ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccNotice_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccNotice_trapByLid. Expected _ccNotice_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (int )ccNotice_trapByLid(_arg0,*_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+    Tcl_SetIntObj(tcl_result,(long) _result);
+    return TCL_OK;
+}
+/* methodcmd8.swg : Tcl8.x method invocation */
+
+static int TclccNoticeMethodCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST _objv[]) {
+  int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
+  char *_str;
+  int rcode;
+  Tcl_Obj **objv;
+  Tcl_Obj *oldarg,*tcl_result,*obj;
+  int length;
+  char c;
+
+  tcl_result = Tcl_GetObjResult(interp);
+  objv = (Tcl_Obj **) _objv;
+  if (objc < 2) {
+    Tcl_SetStringObj(tcl_result,"ccNotice methods : { dump cget configure trapByLid  }",-1);
+    return TCL_ERROR;
+  }
+  obj = Tcl_NewObj();
+  SWIG_SetPointerObj(obj,(void *) clientData,"_ccNotice_p");
+  _str = Tcl_GetStringFromObj(objv[1],&length);
+  c = *_str;
+  if (0);
+      if (strcmp(_str,"trapByLid") == 0) {
+        cmd = _wrap_ccNotice_trapByLid;
+    }
+    else if ((c == 'c') && (strncmp(_str,"configure",length) == 0) && (length >= 2)) {
+      int i = 2;
+      cmd = 0;
+      while (i+1 < objc) {
+        _str = Tcl_GetStringFromObj(objv[i],&length);
+                        if (strcmp(_str,"-generic_type") == 0) {
+                    cmd = _wrap_ccNotice_generic_type_set;
+                }  else if (strcmp(_str,"-generic__prod_type_msb") == 0) {
+                    cmd = _wrap_ccNotice_generic__prod_type_msb_set;
+                }  else if (strcmp(_str,"-generic__prod_type_lsb") == 0) {
+                    cmd = _wrap_ccNotice_generic__prod_type_lsb_set;
+                }  else if (strcmp(_str,"-generic__trap_num") == 0) {
+                    cmd = _wrap_ccNotice_generic__trap_num_set;
+                }  else if (strcmp(_str,"-issuer_lid") == 0) {
+                    cmd = _wrap_ccNotice_issuer_lid_set;
+                }  else if (strcmp(_str,"-toggle_count") == 0) {
+                    cmd = _wrap_ccNotice_toggle_count_set;
+                }  else if (strcmp(_str,"-ntc0__source_lid") == 0) {
+                    cmd = _wrap_ccNotice_ntc0__source_lid_set;
+                }  else if (strcmp(_str,"-ntc0__method") == 0) {
+                    cmd = _wrap_ccNotice_ntc0__method_set;
+                }  else if (strcmp(_str,"-ntc0__resv0") == 0) {
+                    cmd = _wrap_ccNotice_ntc0__resv0_set;
+                }  else if (strcmp(_str,"-ntc0__attr_id") == 0) {
+                    cmd = _wrap_ccNotice_ntc0__attr_id_set;
+                }  else if (strcmp(_str,"-ntc0__resv1") == 0) {
+                    cmd = _wrap_ccNotice_ntc0__resv1_set;
+                }  else if (strcmp(_str,"-ntc0__attr_mod") == 0) {
+                    cmd = _wrap_ccNotice_ntc0__attr_mod_set;
+                }  else if (strcmp(_str,"-ntc0__qp") == 0) {
+                    cmd = _wrap_ccNotice_ntc0__qp_set;
+                }  else if (strcmp(_str,"-ntc0__cc_key") == 0) {
+                    cmd = _wrap_ccNotice_ntc0__cc_key_set;
+                }  else if (strcmp(_str,"-ntc0__source_gid") == 0) {
+                    cmd = _wrap_ccNotice_ntc0__source_gid_set;
+                }  else if (strcmp(_str,"-ntc0__padding") == 0) {
+                    cmd = _wrap_ccNotice_ntc0__padding_set;
+                }  else if (strcmp(_str,"-issuer_gid") == 0) {
+                    cmd = _wrap_ccNotice_issuer_gid_set;
+                }
+          if (cmd) {
+            oldarg = objv[i];
+            objv[i] = obj;
+            rcode = (*cmd)(clientData,interp,3,&objv[i-1]);
+            objv[i] = oldarg;
+            if (rcode == TCL_ERROR) return rcode;
+            cmd = 0;
+          } else {
+            Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be { -generic_type -generic__prod_type_msb -generic__prod_type_lsb -generic__trap_num -issuer_lid -toggle_count -ntc0__source_lid -ntc0__method -ntc0__resv0 -ntc0__attr_id -ntc0__resv1 -ntc0__attr_mod -ntc0__qp -ntc0__cc_key -ntc0__source_gid -ntc0__padding -issuer_gid  }",-1);
+            return TCL_ERROR;
+          }
+        i+=2;
+      }
+      if ((i < objc) || (i == 2)) {
+        Tcl_SetStringObj(tcl_result,"{ -generic_type -generic__prod_type_msb -generic__prod_type_lsb -generic__trap_num -issuer_lid -toggle_count -ntc0__source_lid -ntc0__method -ntc0__resv0 -ntc0__attr_id -ntc0__resv1 -ntc0__attr_mod -ntc0__qp -ntc0__cc_key -ntc0__source_gid -ntc0__padding -issuer_gid  }",-1);
+        return TCL_ERROR;
+      }
+      return TCL_OK;
+    } else if ((c == 'c') && (strncmp(_str,"cget",length) == 0) && (length >= 2)) {
+      if (objc == 3) {
+        _str = Tcl_GetStringFromObj(objv[2],&length);
+        if (0) {}
+                        if (strcmp(_str,"-generic_type") == 0) {
+                    cmd = _wrap_ccNotice_generic_type_get;
+                }  else if (strcmp(_str,"-generic__prod_type_msb") == 0) {
+                    cmd = _wrap_ccNotice_generic__prod_type_msb_get;
+                }  else if (strcmp(_str,"-generic__prod_type_lsb") == 0) {
+                    cmd = _wrap_ccNotice_generic__prod_type_lsb_get;
+                }  else if (strcmp(_str,"-generic__trap_num") == 0) {
+                    cmd = _wrap_ccNotice_generic__trap_num_get;
+                }  else if (strcmp(_str,"-issuer_lid") == 0) {
+                    cmd = _wrap_ccNotice_issuer_lid_get;
+                }  else if (strcmp(_str,"-toggle_count") == 0) {
+                    cmd = _wrap_ccNotice_toggle_count_get;
+                }  else if (strcmp(_str,"-ntc0__source_lid") == 0) {
+                    cmd = _wrap_ccNotice_ntc0__source_lid_get;
+                }  else if (strcmp(_str,"-ntc0__method") == 0) {
+                    cmd = _wrap_ccNotice_ntc0__method_get;
+                }  else if (strcmp(_str,"-ntc0__resv0") == 0) {
+                    cmd = _wrap_ccNotice_ntc0__resv0_get;
+                }  else if (strcmp(_str,"-ntc0__attr_id") == 0) {
+                    cmd = _wrap_ccNotice_ntc0__attr_id_get;
+                }  else if (strcmp(_str,"-ntc0__resv1") == 0) {
+                    cmd = _wrap_ccNotice_ntc0__resv1_get;
+                }  else if (strcmp(_str,"-ntc0__attr_mod") == 0) {
+                    cmd = _wrap_ccNotice_ntc0__attr_mod_get;
+                }  else if (strcmp(_str,"-ntc0__qp") == 0) {
+                    cmd = _wrap_ccNotice_ntc0__qp_get;
+                }  else if (strcmp(_str,"-ntc0__cc_key") == 0) {
+                    cmd = _wrap_ccNotice_ntc0__cc_key_get;
+                }  else if (strcmp(_str,"-ntc0__source_gid") == 0) {
+                    cmd = _wrap_ccNotice_ntc0__source_gid_get;
+                }  else if (strcmp(_str,"-ntc0__padding") == 0) {
+                    cmd = _wrap_ccNotice_ntc0__padding_get;
+                }  else if (strcmp(_str,"-issuer_gid") == 0) {
+                    cmd = _wrap_ccNotice_issuer_gid_get;
+                }
+          else if (strcmp(_str,"-this") == 0) {
+            SWIG_SetPointerObj(tcl_result,(void *) clientData, "_ccNotice_p");
+            return TCL_OK;
+          }
+        if (cmd) {
+          oldarg = objv[2];
+          objv[2] = obj;
+          rcode = (*cmd)(clientData,interp,objc-1,&objv[1]);
+          objv[2] = oldarg;
+          return rcode;
+        } else {
+          Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this -generic_type -generic__prod_type_msb -generic__prod_type_lsb -generic__trap_num -issuer_lid -toggle_count -ntc0__source_lid -ntc0__method -ntc0__resv0 -ntc0__attr_id -ntc0__resv1 -ntc0__attr_mod -ntc0__qp -ntc0__cc_key -ntc0__source_gid -ntc0__padding -issuer_gid  }",-1);
+          return TCL_ERROR;
+        }
+      } else {
+        Tcl_SetStringObj(tcl_result,"{ -this -generic_type -generic__prod_type_msb -generic__prod_type_lsb -generic__trap_num -issuer_lid -toggle_count -ntc0__source_lid -ntc0__method -ntc0__resv0 -ntc0__attr_id -ntc0__resv1 -ntc0__attr_mod -ntc0__qp -ntc0__cc_key -ntc0__source_gid -ntc0__padding -issuer_gid  }", -1);
+        return TCL_ERROR;
+      }
+    } else if ((c == 'd') && (strncmp(_str,"dump",length) == 0) && (length >= 2)) {
+      if (objc == 2) {
+        Tcl_Obj *pDumpObj;
+        pDumpObj = Tcl_NewStringObj("",-1);
+        Tcl_IncrRefCount(pDumpObj);
+                cmd = _wrap_ccNotice_generic_type_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-generic_type ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ccNotice_generic__prod_type_msb_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-generic__prod_type_msb ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ccNotice_generic__prod_type_lsb_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-generic__prod_type_lsb ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ccNotice_generic__trap_num_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-generic__trap_num ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ccNotice_issuer_lid_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-issuer_lid ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ccNotice_toggle_count_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-toggle_count ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ccNotice_ntc0__source_lid_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-ntc0__source_lid ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ccNotice_ntc0__method_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-ntc0__method ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ccNotice_ntc0__resv0_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-ntc0__resv0 ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ccNotice_ntc0__attr_id_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-ntc0__attr_id ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ccNotice_ntc0__resv1_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-ntc0__resv1 ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ccNotice_ntc0__attr_mod_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-ntc0__attr_mod ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ccNotice_ntc0__qp_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-ntc0__qp ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ccNotice_ntc0__cc_key_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-ntc0__cc_key ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ccNotice_ntc0__source_gid_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-ntc0__source_gid ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ccNotice_ntc0__padding_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-ntc0__padding ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ccNotice_issuer_gid_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-issuer_gid ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+
+        Tcl_DecrRefCount(pDumpObj);
+        return TCL_OK;
+      } else {
+        Tcl_SetStringObj(tcl_result,"no parameters are allowed for dump", -1);
+        return TCL_ERROR;
+      }
+    }
+  if (!cmd) {
+    Tcl_SetStringObj(tcl_result,"Invalid Method. Must be { dump cget configure trapByLid }",-1);
+    return TCL_ERROR;
+  }
+  oldarg = objv[1];
+  objv[1] = obj;
+  rcode = (*cmd)(clientData,interp,objc,objv);
+  objv[1] = oldarg;
+  return rcode;
+}
+
+
+
+/* objcmd8.swg : Tcl 8.x object creation */
+
+static int TclccNoticeCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+    void (*del)(ClientData) = 0;
+    char *name = 0;
+    int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
+    ccNotice * newObj = 0;
+    int firstarg = 0;
+    int thisarg = 0;
+    int length;
+    char *_str;
+    Tcl_Obj *tcl_result;
+
+    tcl_result = Tcl_GetObjResult(interp);
+    if (objc == 1) {
+        cmd = 0;
+    } else {
+      _str = Tcl_GetStringFromObj(objv[1],&length);
+      if (strcmp(_str,"-this") == 0) thisarg = 2;
+      else if (strcmp(_str,"-args") == 0) {
+	firstarg = 1;
+	cmd = 0;
+      } else if (objc == 2) {
+	firstarg = 1;
+	name = _str;
+	cmd = 0;
+      } else if (objc >= 3) {
+	name = _str;
+	_str = Tcl_GetStringFromObj(objv[2],&length);
+	if (strcmp(_str,"-this") == 0) thisarg = 3;
+	else {
+	  firstarg = 1;
+	  cmd = 0;
+	}
+      }
+    }
+    if (cmd) {
+        int result;
+        result = (*cmd)(clientData,interp,objc-firstarg,&objv[firstarg]);
+        if (result == TCL_OK) {
+            SWIG_GetPointerObj(interp,tcl_result,(void **) &newObj,"_ccNotice_p");
+        } else { return result; }
+        if (!name) name = Tcl_GetStringFromObj(tcl_result,&length);
+        del = 0;
+    } else if (thisarg > 0) {
+        if (thisarg < objc) {
+            char *r;
+            r = SWIG_GetPointerObj(interp,objv[thisarg],(void **) &newObj,"_ccNotice_p");
+            if (r) {
+	      Tcl_SetStringObj(tcl_result,"Type error. not a ccNotice object.",-1);
+	      return TCL_ERROR;
+            }
+        if (!name) name = Tcl_GetStringFromObj(objv[thisarg],&length);
+	Tcl_SetStringObj(tcl_result,name,-1);
+        } else {
+            Tcl_SetStringObj(tcl_result,"wrong # args.",-1);
+            return TCL_ERROR;
+        }
+    } else {
+        Tcl_SetStringObj(tcl_result,"No constructor available.",-1);
+        return TCL_ERROR;
+    }
+    {
+      Tcl_CmdInfo dummy;
+      if (!Tcl_GetCommandInfo(interp,name,&dummy)) {
+	Tcl_CreateObjCommand(interp,name, TclccNoticeMethodCmd, (ClientData) newObj, del);
+	return TCL_OK;
+      } else {
+	Tcl_SetStringObj(tcl_result,"Object name already exists!",-1);
+	return TCL_ERROR;
+      }
+    }
+}
+
+
+#define _ib_cong_info_cong_info_set(_swigobj,_swigval) (_swigobj->cong_info = *(_swigval),_swigval)
+static int _wrap_ccCongestionInfo_cong_info_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    ccCongestionInfo * _arg0;
+    uint8_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint8_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccCongestionInfo_cong_info_set { ccCongestionInfo * } { uint8_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccCongestionInfo_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccCongestionInfo_cong_info_set. Expected _ccCongestionInfo_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (uint8_t *)_ib_cong_info_cong_info_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_cong_info_cong_info_get(_swigobj) (&_swigobj->cong_info)
+static int _wrap_ccCongestionInfo_cong_info_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    ccCongestionInfo * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccCongestionInfo_cong_info_get { ccCongestionInfo * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccCongestionInfo_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccCongestionInfo_cong_info_get. Expected _ccCongestionInfo_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (uint8_t *)_ib_cong_info_cong_info_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_cong_info_resv_set(_swigobj,_swigval) (_swigobj->resv = *(_swigval),_swigval)
+static int _wrap_ccCongestionInfo_resv_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    ccCongestionInfo * _arg0;
+    uint8_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint8_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccCongestionInfo_resv_set { ccCongestionInfo * } { uint8_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccCongestionInfo_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccCongestionInfo_resv_set. Expected _ccCongestionInfo_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (uint8_t *)_ib_cong_info_resv_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_cong_info_resv_get(_swigobj) (&_swigobj->resv)
+static int _wrap_ccCongestionInfo_resv_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    ccCongestionInfo * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccCongestionInfo_resv_get { ccCongestionInfo * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccCongestionInfo_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccCongestionInfo_resv_get. Expected _ccCongestionInfo_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (uint8_t *)_ib_cong_info_resv_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_cong_info_ctrl_table_cap_set(_swigobj,_swigval) (_swigobj->ctrl_table_cap = *(_swigval),_swigval)
+static int _wrap_ccCongestionInfo_ctrl_table_cap_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    ccCongestionInfo * _arg0;
+    uint8_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint8_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccCongestionInfo_ctrl_table_cap_set { ccCongestionInfo * } { uint8_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccCongestionInfo_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccCongestionInfo_ctrl_table_cap_set. Expected _ccCongestionInfo_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (uint8_t *)_ib_cong_info_ctrl_table_cap_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_cong_info_ctrl_table_cap_get(_swigobj) (&_swigobj->ctrl_table_cap)
+static int _wrap_ccCongestionInfo_ctrl_table_cap_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    ccCongestionInfo * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccCongestionInfo_ctrl_table_cap_get { ccCongestionInfo * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccCongestionInfo_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccCongestionInfo_ctrl_table_cap_get. Expected _ccCongestionInfo_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (uint8_t *)_ib_cong_info_ctrl_table_cap_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+static int  ccCongestionInfo_getByLid(ccCongestionInfo *self,uint16_t  lid) {
+		return ibcc_send_mad_by_lid (
+			gp_ibcc,
+			IBCC_DEAFULT_KEY,
+			NULL,                     // log data
+			0,                        // log data size
+			(uint8_t *)self,          // mgt data
+			sizeof(ccCongestionInfo), // mgt data size
+			lid,
+			CL_NTOH16(IB_MAD_ATTR_CONG_INFO),
+			0,                        // attribute modifier
+			IB_MAD_METHOD_GET);
+	}
+static int _wrap_ccCongestionInfo_getByLid(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    int  _result;
+    ccCongestionInfo * _arg0;
+    uint16_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint16_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccCongestionInfo_getByLid { ccCongestionInfo * } lid ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccCongestionInfo_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccCongestionInfo_getByLid. Expected _ccCongestionInfo_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (int )ccCongestionInfo_getByLid(_arg0,*_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+    Tcl_SetIntObj(tcl_result,(long) _result);
+    return TCL_OK;
+}
+/* methodcmd8.swg : Tcl8.x method invocation */
+
+static int TclccCongestionInfoMethodCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST _objv[]) {
+  int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
+  char *_str;
+  int rcode;
+  Tcl_Obj **objv;
+  Tcl_Obj *oldarg,*tcl_result,*obj;
+  int length;
+  char c;
+
+  tcl_result = Tcl_GetObjResult(interp);
+  objv = (Tcl_Obj **) _objv;
+  if (objc < 2) {
+    Tcl_SetStringObj(tcl_result,"ccCongestionInfo methods : { dump cget configure getByLid  }",-1);
+    return TCL_ERROR;
+  }
+  obj = Tcl_NewObj();
+  SWIG_SetPointerObj(obj,(void *) clientData,"_ccCongestionInfo_p");
+  _str = Tcl_GetStringFromObj(objv[1],&length);
+  c = *_str;
+  if (0);
+      if (strcmp(_str,"getByLid") == 0) {
+        cmd = _wrap_ccCongestionInfo_getByLid;
+    }
+    else if ((c == 'c') && (strncmp(_str,"configure",length) == 0) && (length >= 2)) {
+      int i = 2;
+      cmd = 0;
+      while (i+1 < objc) {
+        _str = Tcl_GetStringFromObj(objv[i],&length);
+                        if (strcmp(_str,"-cong_info") == 0) {
+                    cmd = _wrap_ccCongestionInfo_cong_info_set;
+                }  else if (strcmp(_str,"-resv") == 0) {
+                    cmd = _wrap_ccCongestionInfo_resv_set;
+                }  else if (strcmp(_str,"-ctrl_table_cap") == 0) {
+                    cmd = _wrap_ccCongestionInfo_ctrl_table_cap_set;
+                }
+          if (cmd) {
+            oldarg = objv[i];
+            objv[i] = obj;
+            rcode = (*cmd)(clientData,interp,3,&objv[i-1]);
+            objv[i] = oldarg;
+            if (rcode == TCL_ERROR) return rcode;
+            cmd = 0;
+          } else {
+            Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be { -cong_info -resv -ctrl_table_cap  }",-1);
+            return TCL_ERROR;
+          }
+        i+=2;
+      }
+      if ((i < objc) || (i == 2)) {
+        Tcl_SetStringObj(tcl_result,"{ -cong_info -resv -ctrl_table_cap  }",-1);
+        return TCL_ERROR;
+      }
+      return TCL_OK;
+    } else if ((c == 'c') && (strncmp(_str,"cget",length) == 0) && (length >= 2)) {
+      if (objc == 3) {
+        _str = Tcl_GetStringFromObj(objv[2],&length);
+        if (0) {}
+                        if (strcmp(_str,"-cong_info") == 0) {
+                    cmd = _wrap_ccCongestionInfo_cong_info_get;
+                }  else if (strcmp(_str,"-resv") == 0) {
+                    cmd = _wrap_ccCongestionInfo_resv_get;
+                }  else if (strcmp(_str,"-ctrl_table_cap") == 0) {
+                    cmd = _wrap_ccCongestionInfo_ctrl_table_cap_get;
+                }
+          else if (strcmp(_str,"-this") == 0) {
+            SWIG_SetPointerObj(tcl_result,(void *) clientData, "_ccCongestionInfo_p");
+            return TCL_OK;
+          }
+        if (cmd) {
+          oldarg = objv[2];
+          objv[2] = obj;
+          rcode = (*cmd)(clientData,interp,objc-1,&objv[1]);
+          objv[2] = oldarg;
+          return rcode;
+        } else {
+          Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this -cong_info -resv -ctrl_table_cap  }",-1);
+          return TCL_ERROR;
+        }
+      } else {
+        Tcl_SetStringObj(tcl_result,"{ -this -cong_info -resv -ctrl_table_cap  }", -1);
+        return TCL_ERROR;
+      }
+    } else if ((c == 'd') && (strncmp(_str,"dump",length) == 0) && (length >= 2)) {
+      if (objc == 2) {
+        Tcl_Obj *pDumpObj;
+        pDumpObj = Tcl_NewStringObj("",-1);
+        Tcl_IncrRefCount(pDumpObj);
+                cmd = _wrap_ccCongestionInfo_cong_info_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-cong_info ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ccCongestionInfo_resv_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-resv ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ccCongestionInfo_ctrl_table_cap_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-ctrl_table_cap ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+
+        Tcl_DecrRefCount(pDumpObj);
+        return TCL_OK;
+      } else {
+        Tcl_SetStringObj(tcl_result,"no parameters are allowed for dump", -1);
+        return TCL_ERROR;
+      }
+    }
+  if (!cmd) {
+    Tcl_SetStringObj(tcl_result,"Invalid Method. Must be { dump cget configure getByLid }",-1);
+    return TCL_ERROR;
+  }
+  oldarg = objv[1];
+  objv[1] = obj;
+  rcode = (*cmd)(clientData,interp,objc,objv);
+  objv[1] = oldarg;
+  return rcode;
+}
+
+
+
+/* objcmd8.swg : Tcl 8.x object creation */
+
+static int TclccCongestionInfoCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+    void (*del)(ClientData) = 0;
+    char *name = 0;
+    int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
+    ccCongestionInfo * newObj = 0;
+    int firstarg = 0;
+    int thisarg = 0;
+    int length;
+    char *_str;
+    Tcl_Obj *tcl_result;
+
+    tcl_result = Tcl_GetObjResult(interp);
+    if (objc == 1) {
+        cmd = 0;
+    } else {
+      _str = Tcl_GetStringFromObj(objv[1],&length);
+      if (strcmp(_str,"-this") == 0) thisarg = 2;
+      else if (strcmp(_str,"-args") == 0) {
+	firstarg = 1;
+	cmd = 0;
+      } else if (objc == 2) {
+	firstarg = 1;
+	name = _str;
+	cmd = 0;
+      } else if (objc >= 3) {
+	name = _str;
+	_str = Tcl_GetStringFromObj(objv[2],&length);
+	if (strcmp(_str,"-this") == 0) thisarg = 3;
+	else {
+	  firstarg = 1;
+	  cmd = 0;
+	}
+      }
+    }
+    if (cmd) {
+        int result;
+        result = (*cmd)(clientData,interp,objc-firstarg,&objv[firstarg]);
+        if (result == TCL_OK) {
+            SWIG_GetPointerObj(interp,tcl_result,(void **) &newObj,"_ccCongestionInfo_p");
+        } else { return result; }
+        if (!name) name = Tcl_GetStringFromObj(tcl_result,&length);
+        del = 0;
+    } else if (thisarg > 0) {
+        if (thisarg < objc) {
+            char *r;
+            r = SWIG_GetPointerObj(interp,objv[thisarg],(void **) &newObj,"_ccCongestionInfo_p");
+            if (r) {
+	      Tcl_SetStringObj(tcl_result,"Type error. not a ccCongestionInfo object.",-1);
+	      return TCL_ERROR;
+            }
+        if (!name) name = Tcl_GetStringFromObj(objv[thisarg],&length);
+	Tcl_SetStringObj(tcl_result,name,-1);
+        } else {
+            Tcl_SetStringObj(tcl_result,"wrong # args.",-1);
+            return TCL_ERROR;
+        }
+    } else {
+        Tcl_SetStringObj(tcl_result,"No constructor available.",-1);
+        return TCL_ERROR;
+    }
+    {
+      Tcl_CmdInfo dummy;
+      if (!Tcl_GetCommandInfo(interp,name,&dummy)) {
+	Tcl_CreateObjCommand(interp,name, TclccCongestionInfoMethodCmd, (ClientData) newObj, del);
+	return TCL_OK;
+      } else {
+	Tcl_SetStringObj(tcl_result,"Object name already exists!",-1);
+	return TCL_ERROR;
+      }
+    }
+}
+
+
+#define _ib_cong_key_info_cc_key_set(_swigobj,_swigval) (_swigobj->cc_key = *(_swigval),_swigval)
+static int _wrap_ccCongestionKeyInfo_cc_key_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net64_t * _result;
+    ccCongestionKeyInfo * _arg0;
+    ib_net64_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint64_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccCongestionKeyInfo_cc_key_set { ccCongestionKeyInfo * } { ib_net64_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccCongestionKeyInfo_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccCongestionKeyInfo_cc_key_set. Expected _ccCongestionKeyInfo_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton64(strtoull(Tcl_GetStringFromObj(objv[2],NULL), NULL, 16));
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net64_t *)_ib_cong_key_info_cc_key_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "0x%016" PRIx64, cl_ntoh64(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_cong_key_info_cc_key_get(_swigobj) (&_swigobj->cc_key)
+static int _wrap_ccCongestionKeyInfo_cc_key_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net64_t * _result;
+    ccCongestionKeyInfo * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccCongestionKeyInfo_cc_key_get { ccCongestionKeyInfo * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccCongestionKeyInfo_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccCongestionKeyInfo_cc_key_get. Expected _ccCongestionKeyInfo_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net64_t *)_ib_cong_key_info_cc_key_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "0x%016" PRIx64, cl_ntoh64(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_cong_key_info_protect_bit_set(_swigobj,_swigval) (_swigobj->protect_bit = *(_swigval),_swigval)
+static int _wrap_ccCongestionKeyInfo_protect_bit_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    ccCongestionKeyInfo * _arg0;
+    uint8_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint8_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccCongestionKeyInfo_protect_bit_set { ccCongestionKeyInfo * } { uint8_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccCongestionKeyInfo_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccCongestionKeyInfo_protect_bit_set. Expected _ccCongestionKeyInfo_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (uint8_t *)_ib_cong_key_info_protect_bit_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_cong_key_info_protect_bit_get(_swigobj) (&_swigobj->protect_bit)
+static int _wrap_ccCongestionKeyInfo_protect_bit_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    ccCongestionKeyInfo * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccCongestionKeyInfo_protect_bit_get { ccCongestionKeyInfo * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccCongestionKeyInfo_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccCongestionKeyInfo_protect_bit_get. Expected _ccCongestionKeyInfo_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (uint8_t *)_ib_cong_key_info_protect_bit_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_cong_key_info_resv_set(_swigobj,_swigval) (_swigobj->resv = *(_swigval),_swigval)
+static int _wrap_ccCongestionKeyInfo_resv_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    ccCongestionKeyInfo * _arg0;
+    uint8_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint8_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccCongestionKeyInfo_resv_set { ccCongestionKeyInfo * } { uint8_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccCongestionKeyInfo_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccCongestionKeyInfo_resv_set. Expected _ccCongestionKeyInfo_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (uint8_t *)_ib_cong_key_info_resv_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_cong_key_info_resv_get(_swigobj) (&_swigobj->resv)
+static int _wrap_ccCongestionKeyInfo_resv_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    ccCongestionKeyInfo * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccCongestionKeyInfo_resv_get { ccCongestionKeyInfo * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccCongestionKeyInfo_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccCongestionKeyInfo_resv_get. Expected _ccCongestionKeyInfo_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (uint8_t *)_ib_cong_key_info_resv_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_cong_key_info_lease_period_set(_swigobj,_swigval) (_swigobj->lease_period = *(_swigval),_swigval)
+static int _wrap_ccCongestionKeyInfo_lease_period_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    ccCongestionKeyInfo * _arg0;
+    ib_net16_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_net16_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccCongestionKeyInfo_lease_period_set { ccCongestionKeyInfo * } { ib_net16_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccCongestionKeyInfo_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccCongestionKeyInfo_lease_period_set. Expected _ccCongestionKeyInfo_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net16_t *)_ib_cong_key_info_lease_period_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_cong_key_info_lease_period_get(_swigobj) (&_swigobj->lease_period)
+static int _wrap_ccCongestionKeyInfo_lease_period_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    ccCongestionKeyInfo * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccCongestionKeyInfo_lease_period_get { ccCongestionKeyInfo * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccCongestionKeyInfo_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccCongestionKeyInfo_lease_period_get. Expected _ccCongestionKeyInfo_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net16_t *)_ib_cong_key_info_lease_period_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_cong_key_info_violations_set(_swigobj,_swigval) (_swigobj->violations = *(_swigval),_swigval)
+static int _wrap_ccCongestionKeyInfo_violations_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    ccCongestionKeyInfo * _arg0;
+    ib_net16_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_net16_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccCongestionKeyInfo_violations_set { ccCongestionKeyInfo * } { ib_net16_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccCongestionKeyInfo_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccCongestionKeyInfo_violations_set. Expected _ccCongestionKeyInfo_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net16_t *)_ib_cong_key_info_violations_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_cong_key_info_violations_get(_swigobj) (&_swigobj->violations)
+static int _wrap_ccCongestionKeyInfo_violations_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    ccCongestionKeyInfo * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccCongestionKeyInfo_violations_get { ccCongestionKeyInfo * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccCongestionKeyInfo_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccCongestionKeyInfo_violations_get. Expected _ccCongestionKeyInfo_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net16_t *)_ib_cong_key_info_violations_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+static int  ccCongestionKeyInfo_getByLid(ccCongestionKeyInfo *self,uint16_t  lid) {
+		return ibcc_send_mad_by_lid (
+			gp_ibcc,
+			IBCC_DEAFULT_KEY,
+			NULL,                    // log data
+			0,                       // log data size
+			(uint8_t *)self,         // mgt data
+			sizeof(ccCongestionKeyInfo), // mgt data size
+			lid,
+			CL_NTOH16(IB_MAD_ATTR_CONG_KEY_INFO),
+			0,                       // attribute modifier
+			IB_MAD_METHOD_GET);
+	}
+static int _wrap_ccCongestionKeyInfo_getByLid(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    int  _result;
+    ccCongestionKeyInfo * _arg0;
+    uint16_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint16_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccCongestionKeyInfo_getByLid { ccCongestionKeyInfo * } lid ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccCongestionKeyInfo_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccCongestionKeyInfo_getByLid. Expected _ccCongestionKeyInfo_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (int )ccCongestionKeyInfo_getByLid(_arg0,*_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+    Tcl_SetIntObj(tcl_result,(long) _result);
+    return TCL_OK;
+}
+static int  ccCongestionKeyInfo_setByLid(ccCongestionKeyInfo *self,uint16_t  lid) {
+		return ibcc_send_mad_by_lid(
+			gp_ibcc,
+			IBCC_DEAFULT_KEY,
+			NULL,                    // log data
+			0,                       // log data size
+			(uint8_t *)self,         // mgt data
+			sizeof(ccCongestionKeyInfo), // mgt data size
+			lid,
+			CL_NTOH16(IB_MAD_ATTR_CONG_KEY_INFO),
+			0,                       // attribute modifier
+			IB_MAD_METHOD_SET);
+	}
+static int _wrap_ccCongestionKeyInfo_setByLid(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    int  _result;
+    ccCongestionKeyInfo * _arg0;
+    uint16_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint16_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccCongestionKeyInfo_setByLid { ccCongestionKeyInfo * } lid ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccCongestionKeyInfo_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccCongestionKeyInfo_setByLid. Expected _ccCongestionKeyInfo_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (int )ccCongestionKeyInfo_setByLid(_arg0,*_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+    Tcl_SetIntObj(tcl_result,(long) _result);
+    return TCL_OK;
+}
+/* methodcmd8.swg : Tcl8.x method invocation */
+
+static int TclccCongestionKeyInfoMethodCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST _objv[]) {
+  int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
+  char *_str;
+  int rcode;
+  Tcl_Obj **objv;
+  Tcl_Obj *oldarg,*tcl_result,*obj;
+  int length;
+  char c;
+
+  tcl_result = Tcl_GetObjResult(interp);
+  objv = (Tcl_Obj **) _objv;
+  if (objc < 2) {
+    Tcl_SetStringObj(tcl_result,"ccCongestionKeyInfo methods : { dump cget configure getByLid setByLid  }",-1);
+    return TCL_ERROR;
+  }
+  obj = Tcl_NewObj();
+  SWIG_SetPointerObj(obj,(void *) clientData,"_ccCongestionKeyInfo_p");
+  _str = Tcl_GetStringFromObj(objv[1],&length);
+  c = *_str;
+  if (0);
+      if (strcmp(_str,"getByLid") == 0) {
+        cmd = _wrap_ccCongestionKeyInfo_getByLid;
+    }    else if (strcmp(_str,"setByLid") == 0) {
+        cmd = _wrap_ccCongestionKeyInfo_setByLid;
+    }
+    else if ((c == 'c') && (strncmp(_str,"configure",length) == 0) && (length >= 2)) {
+      int i = 2;
+      cmd = 0;
+      while (i+1 < objc) {
+        _str = Tcl_GetStringFromObj(objv[i],&length);
+                        if (strcmp(_str,"-cc_key") == 0) {
+                    cmd = _wrap_ccCongestionKeyInfo_cc_key_set;
+                }  else if (strcmp(_str,"-protect_bit") == 0) {
+                    cmd = _wrap_ccCongestionKeyInfo_protect_bit_set;
+                }  else if (strcmp(_str,"-resv") == 0) {
+                    cmd = _wrap_ccCongestionKeyInfo_resv_set;
+                }  else if (strcmp(_str,"-lease_period") == 0) {
+                    cmd = _wrap_ccCongestionKeyInfo_lease_period_set;
+                }  else if (strcmp(_str,"-violations") == 0) {
+                    cmd = _wrap_ccCongestionKeyInfo_violations_set;
+                }
+          if (cmd) {
+            oldarg = objv[i];
+            objv[i] = obj;
+            rcode = (*cmd)(clientData,interp,3,&objv[i-1]);
+            objv[i] = oldarg;
+            if (rcode == TCL_ERROR) return rcode;
+            cmd = 0;
+          } else {
+            Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be { -cc_key -protect_bit -resv -lease_period -violations  }",-1);
+            return TCL_ERROR;
+          }
+        i+=2;
+      }
+      if ((i < objc) || (i == 2)) {
+        Tcl_SetStringObj(tcl_result,"{ -cc_key -protect_bit -resv -lease_period -violations  }",-1);
+        return TCL_ERROR;
+      }
+      return TCL_OK;
+    } else if ((c == 'c') && (strncmp(_str,"cget",length) == 0) && (length >= 2)) {
+      if (objc == 3) {
+        _str = Tcl_GetStringFromObj(objv[2],&length);
+        if (0) {}
+                        if (strcmp(_str,"-cc_key") == 0) {
+                    cmd = _wrap_ccCongestionKeyInfo_cc_key_get;
+                }  else if (strcmp(_str,"-protect_bit") == 0) {
+                    cmd = _wrap_ccCongestionKeyInfo_protect_bit_get;
+                }  else if (strcmp(_str,"-resv") == 0) {
+                    cmd = _wrap_ccCongestionKeyInfo_resv_get;
+                }  else if (strcmp(_str,"-lease_period") == 0) {
+                    cmd = _wrap_ccCongestionKeyInfo_lease_period_get;
+                }  else if (strcmp(_str,"-violations") == 0) {
+                    cmd = _wrap_ccCongestionKeyInfo_violations_get;
+                }
+          else if (strcmp(_str,"-this") == 0) {
+            SWIG_SetPointerObj(tcl_result,(void *) clientData, "_ccCongestionKeyInfo_p");
+            return TCL_OK;
+          }
+        if (cmd) {
+          oldarg = objv[2];
+          objv[2] = obj;
+          rcode = (*cmd)(clientData,interp,objc-1,&objv[1]);
+          objv[2] = oldarg;
+          return rcode;
+        } else {
+          Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this -cc_key -protect_bit -resv -lease_period -violations  }",-1);
+          return TCL_ERROR;
+        }
+      } else {
+        Tcl_SetStringObj(tcl_result,"{ -this -cc_key -protect_bit -resv -lease_period -violations  }", -1);
+        return TCL_ERROR;
+      }
+    } else if ((c == 'd') && (strncmp(_str,"dump",length) == 0) && (length >= 2)) {
+      if (objc == 2) {
+        Tcl_Obj *pDumpObj;
+        pDumpObj = Tcl_NewStringObj("",-1);
+        Tcl_IncrRefCount(pDumpObj);
+                cmd = _wrap_ccCongestionKeyInfo_cc_key_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-cc_key ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ccCongestionKeyInfo_protect_bit_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-protect_bit ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ccCongestionKeyInfo_resv_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-resv ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ccCongestionKeyInfo_lease_period_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-lease_period ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ccCongestionKeyInfo_violations_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-violations ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+
+        Tcl_DecrRefCount(pDumpObj);
+        return TCL_OK;
+      } else {
+        Tcl_SetStringObj(tcl_result,"no parameters are allowed for dump", -1);
+        return TCL_ERROR;
+      }
+    }
+  if (!cmd) {
+    Tcl_SetStringObj(tcl_result,"Invalid Method. Must be { dump cget configure getByLid setByLid }",-1);
+    return TCL_ERROR;
+  }
+  oldarg = objv[1];
+  objv[1] = obj;
+  rcode = (*cmd)(clientData,interp,objc,objv);
+  objv[1] = oldarg;
+  return rcode;
+}
+
+
+
+/* objcmd8.swg : Tcl 8.x object creation */
+
+static int TclccCongestionKeyInfoCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+    void (*del)(ClientData) = 0;
+    char *name = 0;
+    int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
+    ccCongestionKeyInfo * newObj = 0;
+    int firstarg = 0;
+    int thisarg = 0;
+    int length;
+    char *_str;
+    Tcl_Obj *tcl_result;
+
+    tcl_result = Tcl_GetObjResult(interp);
+    if (objc == 1) {
+        cmd = 0;
+    } else {
+      _str = Tcl_GetStringFromObj(objv[1],&length);
+      if (strcmp(_str,"-this") == 0) thisarg = 2;
+      else if (strcmp(_str,"-args") == 0) {
+	firstarg = 1;
+	cmd = 0;
+      } else if (objc == 2) {
+	firstarg = 1;
+	name = _str;
+	cmd = 0;
+      } else if (objc >= 3) {
+	name = _str;
+	_str = Tcl_GetStringFromObj(objv[2],&length);
+	if (strcmp(_str,"-this") == 0) thisarg = 3;
+	else {
+	  firstarg = 1;
+	  cmd = 0;
+	}
+      }
+    }
+    if (cmd) {
+        int result;
+        result = (*cmd)(clientData,interp,objc-firstarg,&objv[firstarg]);
+        if (result == TCL_OK) {
+            SWIG_GetPointerObj(interp,tcl_result,(void **) &newObj,"_ccCongestionKeyInfo_p");
+        } else { return result; }
+        if (!name) name = Tcl_GetStringFromObj(tcl_result,&length);
+        del = 0;
+    } else if (thisarg > 0) {
+        if (thisarg < objc) {
+            char *r;
+            r = SWIG_GetPointerObj(interp,objv[thisarg],(void **) &newObj,"_ccCongestionKeyInfo_p");
+            if (r) {
+	      Tcl_SetStringObj(tcl_result,"Type error. not a ccCongestionKeyInfo object.",-1);
+	      return TCL_ERROR;
+            }
+        if (!name) name = Tcl_GetStringFromObj(objv[thisarg],&length);
+	Tcl_SetStringObj(tcl_result,name,-1);
+        } else {
+            Tcl_SetStringObj(tcl_result,"wrong # args.",-1);
+            return TCL_ERROR;
+        }
+    } else {
+        Tcl_SetStringObj(tcl_result,"No constructor available.",-1);
+        return TCL_ERROR;
+    }
+    {
+      Tcl_CmdInfo dummy;
+      if (!Tcl_GetCommandInfo(interp,name,&dummy)) {
+	Tcl_CreateObjCommand(interp,name, TclccCongestionKeyInfoMethodCmd, (ClientData) newObj, del);
+	return TCL_OK;
+      } else {
+	Tcl_SetStringObj(tcl_result,"Object name already exists!",-1);
+	return TCL_ERROR;
+      }
+    }
+}
+
+
+#define _ib_cong_log_event_sw_slid_set(_swigobj,_swigval) (_swigobj->slid = *(_swigval),_swigval)
+static int _wrap_ib_cong_log_event_sw_t_slid_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    ib_cong_log_event_sw_t * _arg0;
+    ib_net16_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_net16_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ib_cong_log_event_sw_t_slid_set { ib_cong_log_event_sw_t * } { ib_net16_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ib_cong_log_event_sw_t_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ib_cong_log_event_sw_t_slid_set. Expected _ib_cong_log_event_sw_t_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net16_t *)_ib_cong_log_event_sw_slid_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_cong_log_event_sw_slid_get(_swigobj) (&_swigobj->slid)
+static int _wrap_ib_cong_log_event_sw_t_slid_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    ib_cong_log_event_sw_t * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ib_cong_log_event_sw_t_slid_get { ib_cong_log_event_sw_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ib_cong_log_event_sw_t_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ib_cong_log_event_sw_t_slid_get. Expected _ib_cong_log_event_sw_t_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net16_t *)_ib_cong_log_event_sw_slid_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_cong_log_event_sw_dlid_set(_swigobj,_swigval) (_swigobj->dlid = *(_swigval),_swigval)
+static int _wrap_ib_cong_log_event_sw_t_dlid_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    ib_cong_log_event_sw_t * _arg0;
+    ib_net16_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_net16_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ib_cong_log_event_sw_t_dlid_set { ib_cong_log_event_sw_t * } { ib_net16_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ib_cong_log_event_sw_t_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ib_cong_log_event_sw_t_dlid_set. Expected _ib_cong_log_event_sw_t_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net16_t *)_ib_cong_log_event_sw_dlid_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_cong_log_event_sw_dlid_get(_swigobj) (&_swigobj->dlid)
+static int _wrap_ib_cong_log_event_sw_t_dlid_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    ib_cong_log_event_sw_t * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ib_cong_log_event_sw_t_dlid_get { ib_cong_log_event_sw_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ib_cong_log_event_sw_t_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ib_cong_log_event_sw_t_dlid_get. Expected _ib_cong_log_event_sw_t_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net16_t *)_ib_cong_log_event_sw_dlid_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_cong_log_event_sw_resv0_sl_set(_swigobj,_swigval) (_swigobj->resv0_sl = *(_swigval),_swigval)
+static int _wrap_ib_cong_log_event_sw_t_resv0_sl_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    ib_cong_log_event_sw_t * _arg0;
+    uint8_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint8_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ib_cong_log_event_sw_t_resv0_sl_set { ib_cong_log_event_sw_t * } { uint8_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ib_cong_log_event_sw_t_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ib_cong_log_event_sw_t_resv0_sl_set. Expected _ib_cong_log_event_sw_t_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (uint8_t *)_ib_cong_log_event_sw_resv0_sl_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_cong_log_event_sw_resv0_sl_get(_swigobj) (&_swigobj->resv0_sl)
+static int _wrap_ib_cong_log_event_sw_t_resv0_sl_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    ib_cong_log_event_sw_t * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ib_cong_log_event_sw_t_resv0_sl_get { ib_cong_log_event_sw_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ib_cong_log_event_sw_t_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ib_cong_log_event_sw_t_resv0_sl_get. Expected _ib_cong_log_event_sw_t_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (uint8_t *)_ib_cong_log_event_sw_resv0_sl_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_cong_log_event_sw_resv1_set(_swigobj,_swigval) (_swigobj->resv1 = *(_swigval),_swigval)
+static int _wrap_ib_cong_log_event_sw_t_resv1_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    ib_cong_log_event_sw_t * _arg0;
+    uint8_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint8_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ib_cong_log_event_sw_t_resv1_set { ib_cong_log_event_sw_t * } { uint8_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ib_cong_log_event_sw_t_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ib_cong_log_event_sw_t_resv1_set. Expected _ib_cong_log_event_sw_t_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (uint8_t *)_ib_cong_log_event_sw_resv1_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_cong_log_event_sw_resv1_get(_swigobj) (&_swigobj->resv1)
+static int _wrap_ib_cong_log_event_sw_t_resv1_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    ib_cong_log_event_sw_t * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ib_cong_log_event_sw_t_resv1_get { ib_cong_log_event_sw_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ib_cong_log_event_sw_t_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ib_cong_log_event_sw_t_resv1_get. Expected _ib_cong_log_event_sw_t_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (uint8_t *)_ib_cong_log_event_sw_resv1_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_cong_log_event_sw_resv2_set(_swigobj,_swigval) (_swigobj->resv2 = *(_swigval),_swigval)
+static int _wrap_ib_cong_log_event_sw_t_resv2_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    ib_cong_log_event_sw_t * _arg0;
+    ib_net16_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_net16_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ib_cong_log_event_sw_t_resv2_set { ib_cong_log_event_sw_t * } { ib_net16_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ib_cong_log_event_sw_t_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ib_cong_log_event_sw_t_resv2_set. Expected _ib_cong_log_event_sw_t_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net16_t *)_ib_cong_log_event_sw_resv2_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_cong_log_event_sw_resv2_get(_swigobj) (&_swigobj->resv2)
+static int _wrap_ib_cong_log_event_sw_t_resv2_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    ib_cong_log_event_sw_t * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ib_cong_log_event_sw_t_resv2_get { ib_cong_log_event_sw_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ib_cong_log_event_sw_t_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ib_cong_log_event_sw_t_resv2_get. Expected _ib_cong_log_event_sw_t_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net16_t *)_ib_cong_log_event_sw_resv2_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_cong_log_event_sw_time_stamp_set(_swigobj,_swigval) (_swigobj->time_stamp = *(_swigval),_swigval)
+static int _wrap_ib_cong_log_event_sw_t_time_stamp_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net32_t * _result;
+    ib_cong_log_event_sw_t * _arg0;
+    ib_net32_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_net32_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ib_cong_log_event_sw_t_time_stamp_set { ib_cong_log_event_sw_t * } { ib_net32_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ib_cong_log_event_sw_t_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ib_cong_log_event_sw_t_time_stamp_set. Expected _ib_cong_log_event_sw_t_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton32(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net32_t *)_ib_cong_log_event_sw_time_stamp_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_ntoh32(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_cong_log_event_sw_time_stamp_get(_swigobj) (&_swigobj->time_stamp)
+static int _wrap_ib_cong_log_event_sw_t_time_stamp_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net32_t * _result;
+    ib_cong_log_event_sw_t * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ib_cong_log_event_sw_t_time_stamp_get { ib_cong_log_event_sw_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ib_cong_log_event_sw_t_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ib_cong_log_event_sw_t_time_stamp_get. Expected _ib_cong_log_event_sw_t_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net32_t *)_ib_cong_log_event_sw_time_stamp_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_ntoh32(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+/* methodcmd8.swg : Tcl8.x method invocation */
+
+static int Tclib_cong_log_event_sw_tMethodCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST _objv[]) {
+  int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
+  char *_str;
+  int rcode;
+  Tcl_Obj **objv;
+  Tcl_Obj *oldarg,*tcl_result,*obj;
+  int length;
+  char c;
+
+  tcl_result = Tcl_GetObjResult(interp);
+  objv = (Tcl_Obj **) _objv;
+  if (objc < 2) {
+    Tcl_SetStringObj(tcl_result,"ib_cong_log_event_sw_t methods : { dump cget configure  }",-1);
+    return TCL_ERROR;
+  }
+  obj = Tcl_NewObj();
+  SWIG_SetPointerObj(obj,(void *) clientData,"_ib_cong_log_event_sw_t_p");
+  _str = Tcl_GetStringFromObj(objv[1],&length);
+  c = *_str;
+  if (0);
+
+    else if ((c == 'c') && (strncmp(_str,"configure",length) == 0) && (length >= 2)) {
+      int i = 2;
+      cmd = 0;
+      while (i+1 < objc) {
+        _str = Tcl_GetStringFromObj(objv[i],&length);
+                        if (strcmp(_str,"-slid") == 0) {
+                    cmd = _wrap_ib_cong_log_event_sw_t_slid_set;
+                }  else if (strcmp(_str,"-dlid") == 0) {
+                    cmd = _wrap_ib_cong_log_event_sw_t_dlid_set;
+                }  else if (strcmp(_str,"-resv0_sl") == 0) {
+                    cmd = _wrap_ib_cong_log_event_sw_t_resv0_sl_set;
+                }  else if (strcmp(_str,"-resv1") == 0) {
+                    cmd = _wrap_ib_cong_log_event_sw_t_resv1_set;
+                }  else if (strcmp(_str,"-resv2") == 0) {
+                    cmd = _wrap_ib_cong_log_event_sw_t_resv2_set;
+                }  else if (strcmp(_str,"-time_stamp") == 0) {
+                    cmd = _wrap_ib_cong_log_event_sw_t_time_stamp_set;
+                }
+          if (cmd) {
+            oldarg = objv[i];
+            objv[i] = obj;
+            rcode = (*cmd)(clientData,interp,3,&objv[i-1]);
+            objv[i] = oldarg;
+            if (rcode == TCL_ERROR) return rcode;
+            cmd = 0;
+          } else {
+            Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be { -slid -dlid -resv0_sl -resv1 -resv2 -time_stamp  }",-1);
+            return TCL_ERROR;
+          }
+        i+=2;
+      }
+      if ((i < objc) || (i == 2)) {
+        Tcl_SetStringObj(tcl_result,"{ -slid -dlid -resv0_sl -resv1 -resv2 -time_stamp  }",-1);
+        return TCL_ERROR;
+      }
+      return TCL_OK;
+    } else if ((c == 'c') && (strncmp(_str,"cget",length) == 0) && (length >= 2)) {
+      if (objc == 3) {
+        _str = Tcl_GetStringFromObj(objv[2],&length);
+        if (0) {}
+                        if (strcmp(_str,"-slid") == 0) {
+                    cmd = _wrap_ib_cong_log_event_sw_t_slid_get;
+                }  else if (strcmp(_str,"-dlid") == 0) {
+                    cmd = _wrap_ib_cong_log_event_sw_t_dlid_get;
+                }  else if (strcmp(_str,"-resv0_sl") == 0) {
+                    cmd = _wrap_ib_cong_log_event_sw_t_resv0_sl_get;
+                }  else if (strcmp(_str,"-resv1") == 0) {
+                    cmd = _wrap_ib_cong_log_event_sw_t_resv1_get;
+                }  else if (strcmp(_str,"-resv2") == 0) {
+                    cmd = _wrap_ib_cong_log_event_sw_t_resv2_get;
+                }  else if (strcmp(_str,"-time_stamp") == 0) {
+                    cmd = _wrap_ib_cong_log_event_sw_t_time_stamp_get;
+                }
+          else if (strcmp(_str,"-this") == 0) {
+            SWIG_SetPointerObj(tcl_result,(void *) clientData, "_ib_cong_log_event_sw_t_p");
+            return TCL_OK;
+          }
+        if (cmd) {
+          oldarg = objv[2];
+          objv[2] = obj;
+          rcode = (*cmd)(clientData,interp,objc-1,&objv[1]);
+          objv[2] = oldarg;
+          return rcode;
+        } else {
+          Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this -slid -dlid -resv0_sl -resv1 -resv2 -time_stamp  }",-1);
+          return TCL_ERROR;
+        }
+      } else {
+        Tcl_SetStringObj(tcl_result,"{ -this -slid -dlid -resv0_sl -resv1 -resv2 -time_stamp  }", -1);
+        return TCL_ERROR;
+      }
+    } else if ((c == 'd') && (strncmp(_str,"dump",length) == 0) && (length >= 2)) {
+      if (objc == 2) {
+        Tcl_Obj *pDumpObj;
+        pDumpObj = Tcl_NewStringObj("",-1);
+        Tcl_IncrRefCount(pDumpObj);
+                cmd = _wrap_ib_cong_log_event_sw_t_slid_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-slid ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_cong_log_event_sw_t_dlid_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-dlid ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_cong_log_event_sw_t_resv0_sl_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-resv0_sl ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_cong_log_event_sw_t_resv1_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-resv1 ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_cong_log_event_sw_t_resv2_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-resv2 ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_cong_log_event_sw_t_time_stamp_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-time_stamp ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+
+        Tcl_DecrRefCount(pDumpObj);
+        return TCL_OK;
+      } else {
+        Tcl_SetStringObj(tcl_result,"no parameters are allowed for dump", -1);
+        return TCL_ERROR;
+      }
+    }
+  if (!cmd) {
+    Tcl_SetStringObj(tcl_result,"Invalid Method. Must be { dump cget configure }",-1);
+    return TCL_ERROR;
+  }
+  oldarg = objv[1];
+  objv[1] = obj;
+  rcode = (*cmd)(clientData,interp,objc,objv);
+  objv[1] = oldarg;
+  return rcode;
+}
+
+
+
+/* objcmd8.swg : Tcl 8.x object creation */
+
+static int Tclib_cong_log_event_sw_tCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+    void (*del)(ClientData) = 0;
+    char *name = 0;
+    int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
+    ib_cong_log_event_sw_t * newObj = 0;
+    int firstarg = 0;
+    int thisarg = 0;
+    int length;
+    char *_str;
+    Tcl_Obj *tcl_result;
+
+    tcl_result = Tcl_GetObjResult(interp);
+    if (objc == 1) {
+        cmd = 0;
+    } else {
+      _str = Tcl_GetStringFromObj(objv[1],&length);
+      if (strcmp(_str,"-this") == 0) thisarg = 2;
+      else if (strcmp(_str,"-args") == 0) {
+	firstarg = 1;
+	cmd = 0;
+      } else if (objc == 2) {
+	firstarg = 1;
+	name = _str;
+	cmd = 0;
+      } else if (objc >= 3) {
+	name = _str;
+	_str = Tcl_GetStringFromObj(objv[2],&length);
+	if (strcmp(_str,"-this") == 0) thisarg = 3;
+	else {
+	  firstarg = 1;
+	  cmd = 0;
+	}
+      }
+    }
+    if (cmd) {
+        int result;
+        result = (*cmd)(clientData,interp,objc-firstarg,&objv[firstarg]);
+        if (result == TCL_OK) {
+            SWIG_GetPointerObj(interp,tcl_result,(void **) &newObj,"_ib_cong_log_event_sw_t_p");
+        } else { return result; }
+        if (!name) name = Tcl_GetStringFromObj(tcl_result,&length);
+        del = 0;
+    } else if (thisarg > 0) {
+        if (thisarg < objc) {
+            char *r;
+            r = SWIG_GetPointerObj(interp,objv[thisarg],(void **) &newObj,"_ib_cong_log_event_sw_t_p");
+            if (r) {
+	      Tcl_SetStringObj(tcl_result,"Type error. not a ib_cong_log_event_sw_t object.",-1);
+	      return TCL_ERROR;
+            }
+        if (!name) name = Tcl_GetStringFromObj(objv[thisarg],&length);
+	Tcl_SetStringObj(tcl_result,name,-1);
+        } else {
+            Tcl_SetStringObj(tcl_result,"wrong # args.",-1);
+            return TCL_ERROR;
+        }
+    } else {
+        Tcl_SetStringObj(tcl_result,"No constructor available.",-1);
+        return TCL_ERROR;
+    }
+    {
+      Tcl_CmdInfo dummy;
+      if (!Tcl_GetCommandInfo(interp,name,&dummy)) {
+	Tcl_CreateObjCommand(interp,name, Tclib_cong_log_event_sw_tMethodCmd, (ClientData) newObj, del);
+	return TCL_OK;
+      } else {
+	Tcl_SetStringObj(tcl_result,"Object name already exists!",-1);
+	return TCL_ERROR;
+      }
+    }
+}
+
+
+#define _ib_cong_log_event_ca_resv0_local_qp_set(_swigobj,_swigval) (_swigobj->resv0_local_qp = *(_swigval),_swigval)
+static int _wrap_ib_cong_log_event_ca_t_resv0_local_qp_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net32_t * _result;
+    ib_cong_log_event_ca_t * _arg0;
+    ib_net32_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_net32_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ib_cong_log_event_ca_t_resv0_local_qp_set { ib_cong_log_event_ca_t * } { ib_net32_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ib_cong_log_event_ca_t_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ib_cong_log_event_ca_t_resv0_local_qp_set. Expected _ib_cong_log_event_ca_t_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton32(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net32_t *)_ib_cong_log_event_ca_resv0_local_qp_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_ntoh32(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_cong_log_event_ca_resv0_local_qp_get(_swigobj) (&_swigobj->resv0_local_qp)
+static int _wrap_ib_cong_log_event_ca_t_resv0_local_qp_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net32_t * _result;
+    ib_cong_log_event_ca_t * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ib_cong_log_event_ca_t_resv0_local_qp_get { ib_cong_log_event_ca_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ib_cong_log_event_ca_t_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ib_cong_log_event_ca_t_resv0_local_qp_get. Expected _ib_cong_log_event_ca_t_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net32_t *)_ib_cong_log_event_ca_resv0_local_qp_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_ntoh32(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_cong_log_event_ca_remote_qp_sl_service_type_set(_swigobj,_swigval) (_swigobj->remote_qp_sl_service_type = *(_swigval),_swigval)
+static int _wrap_ib_cong_log_event_ca_t_remote_qp_sl_service_type_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net32_t * _result;
+    ib_cong_log_event_ca_t * _arg0;
+    ib_net32_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_net32_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ib_cong_log_event_ca_t_remote_qp_sl_service_type_set { ib_cong_log_event_ca_t * } { ib_net32_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ib_cong_log_event_ca_t_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ib_cong_log_event_ca_t_remote_qp_sl_service_type_set. Expected _ib_cong_log_event_ca_t_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton32(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net32_t *)_ib_cong_log_event_ca_remote_qp_sl_service_type_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_ntoh32(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_cong_log_event_ca_remote_qp_sl_service_type_get(_swigobj) (&_swigobj->remote_qp_sl_service_type)
+static int _wrap_ib_cong_log_event_ca_t_remote_qp_sl_service_type_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net32_t * _result;
+    ib_cong_log_event_ca_t * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ib_cong_log_event_ca_t_remote_qp_sl_service_type_get { ib_cong_log_event_ca_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ib_cong_log_event_ca_t_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ib_cong_log_event_ca_t_remote_qp_sl_service_type_get. Expected _ib_cong_log_event_ca_t_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net32_t *)_ib_cong_log_event_ca_remote_qp_sl_service_type_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_ntoh32(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_cong_log_event_ca_remote_lid_set(_swigobj,_swigval) (_swigobj->remote_lid = *(_swigval),_swigval)
+static int _wrap_ib_cong_log_event_ca_t_remote_lid_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    ib_cong_log_event_ca_t * _arg0;
+    ib_net16_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_net16_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ib_cong_log_event_ca_t_remote_lid_set { ib_cong_log_event_ca_t * } { ib_net16_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ib_cong_log_event_ca_t_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ib_cong_log_event_ca_t_remote_lid_set. Expected _ib_cong_log_event_ca_t_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net16_t *)_ib_cong_log_event_ca_remote_lid_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_cong_log_event_ca_remote_lid_get(_swigobj) (&_swigobj->remote_lid)
+static int _wrap_ib_cong_log_event_ca_t_remote_lid_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    ib_cong_log_event_ca_t * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ib_cong_log_event_ca_t_remote_lid_get { ib_cong_log_event_ca_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ib_cong_log_event_ca_t_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ib_cong_log_event_ca_t_remote_lid_get. Expected _ib_cong_log_event_ca_t_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net16_t *)_ib_cong_log_event_ca_remote_lid_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_cong_log_event_ca_resv1_set(_swigobj,_swigval) (_swigobj->resv1 = *(_swigval),_swigval)
+static int _wrap_ib_cong_log_event_ca_t_resv1_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    ib_cong_log_event_ca_t * _arg0;
+    ib_net16_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_net16_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ib_cong_log_event_ca_t_resv1_set { ib_cong_log_event_ca_t * } { ib_net16_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ib_cong_log_event_ca_t_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ib_cong_log_event_ca_t_resv1_set. Expected _ib_cong_log_event_ca_t_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net16_t *)_ib_cong_log_event_ca_resv1_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_cong_log_event_ca_resv1_get(_swigobj) (&_swigobj->resv1)
+static int _wrap_ib_cong_log_event_ca_t_resv1_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    ib_cong_log_event_ca_t * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ib_cong_log_event_ca_t_resv1_get { ib_cong_log_event_ca_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ib_cong_log_event_ca_t_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ib_cong_log_event_ca_t_resv1_get. Expected _ib_cong_log_event_ca_t_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net16_t *)_ib_cong_log_event_ca_resv1_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_cong_log_event_ca_time_stamp_set(_swigobj,_swigval) (_swigobj->time_stamp = *(_swigval),_swigval)
+static int _wrap_ib_cong_log_event_ca_t_time_stamp_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net32_t * _result;
+    ib_cong_log_event_ca_t * _arg0;
+    ib_net32_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_net32_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ib_cong_log_event_ca_t_time_stamp_set { ib_cong_log_event_ca_t * } { ib_net32_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ib_cong_log_event_ca_t_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ib_cong_log_event_ca_t_time_stamp_set. Expected _ib_cong_log_event_ca_t_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton32(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net32_t *)_ib_cong_log_event_ca_time_stamp_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_ntoh32(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_cong_log_event_ca_time_stamp_get(_swigobj) (&_swigobj->time_stamp)
+static int _wrap_ib_cong_log_event_ca_t_time_stamp_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net32_t * _result;
+    ib_cong_log_event_ca_t * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ib_cong_log_event_ca_t_time_stamp_get { ib_cong_log_event_ca_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ib_cong_log_event_ca_t_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ib_cong_log_event_ca_t_time_stamp_get. Expected _ib_cong_log_event_ca_t_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net32_t *)_ib_cong_log_event_ca_time_stamp_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_ntoh32(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+/* methodcmd8.swg : Tcl8.x method invocation */
+
+static int Tclib_cong_log_event_ca_tMethodCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST _objv[]) {
+  int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
+  char *_str;
+  int rcode;
+  Tcl_Obj **objv;
+  Tcl_Obj *oldarg,*tcl_result,*obj;
+  int length;
+  char c;
+
+  tcl_result = Tcl_GetObjResult(interp);
+  objv = (Tcl_Obj **) _objv;
+  if (objc < 2) {
+    Tcl_SetStringObj(tcl_result,"ib_cong_log_event_ca_t methods : { dump cget configure  }",-1);
+    return TCL_ERROR;
+  }
+  obj = Tcl_NewObj();
+  SWIG_SetPointerObj(obj,(void *) clientData,"_ib_cong_log_event_ca_t_p");
+  _str = Tcl_GetStringFromObj(objv[1],&length);
+  c = *_str;
+  if (0);
+
+    else if ((c == 'c') && (strncmp(_str,"configure",length) == 0) && (length >= 2)) {
+      int i = 2;
+      cmd = 0;
+      while (i+1 < objc) {
+        _str = Tcl_GetStringFromObj(objv[i],&length);
+                        if (strcmp(_str,"-resv0_local_qp") == 0) {
+                    cmd = _wrap_ib_cong_log_event_ca_t_resv0_local_qp_set;
+                }  else if (strcmp(_str,"-remote_qp_sl_service_type") == 0) {
+                    cmd = _wrap_ib_cong_log_event_ca_t_remote_qp_sl_service_type_set;
+                }  else if (strcmp(_str,"-remote_lid") == 0) {
+                    cmd = _wrap_ib_cong_log_event_ca_t_remote_lid_set;
+                }  else if (strcmp(_str,"-resv1") == 0) {
+                    cmd = _wrap_ib_cong_log_event_ca_t_resv1_set;
+                }  else if (strcmp(_str,"-time_stamp") == 0) {
+                    cmd = _wrap_ib_cong_log_event_ca_t_time_stamp_set;
+                }
+          if (cmd) {
+            oldarg = objv[i];
+            objv[i] = obj;
+            rcode = (*cmd)(clientData,interp,3,&objv[i-1]);
+            objv[i] = oldarg;
+            if (rcode == TCL_ERROR) return rcode;
+            cmd = 0;
+          } else {
+            Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be { -resv0_local_qp -remote_qp_sl_service_type -remote_lid -resv1 -time_stamp  }",-1);
+            return TCL_ERROR;
+          }
+        i+=2;
+      }
+      if ((i < objc) || (i == 2)) {
+        Tcl_SetStringObj(tcl_result,"{ -resv0_local_qp -remote_qp_sl_service_type -remote_lid -resv1 -time_stamp  }",-1);
+        return TCL_ERROR;
+      }
+      return TCL_OK;
+    } else if ((c == 'c') && (strncmp(_str,"cget",length) == 0) && (length >= 2)) {
+      if (objc == 3) {
+        _str = Tcl_GetStringFromObj(objv[2],&length);
+        if (0) {}
+                        if (strcmp(_str,"-resv0_local_qp") == 0) {
+                    cmd = _wrap_ib_cong_log_event_ca_t_resv0_local_qp_get;
+                }  else if (strcmp(_str,"-remote_qp_sl_service_type") == 0) {
+                    cmd = _wrap_ib_cong_log_event_ca_t_remote_qp_sl_service_type_get;
+                }  else if (strcmp(_str,"-remote_lid") == 0) {
+                    cmd = _wrap_ib_cong_log_event_ca_t_remote_lid_get;
+                }  else if (strcmp(_str,"-resv1") == 0) {
+                    cmd = _wrap_ib_cong_log_event_ca_t_resv1_get;
+                }  else if (strcmp(_str,"-time_stamp") == 0) {
+                    cmd = _wrap_ib_cong_log_event_ca_t_time_stamp_get;
+                }
+          else if (strcmp(_str,"-this") == 0) {
+            SWIG_SetPointerObj(tcl_result,(void *) clientData, "_ib_cong_log_event_ca_t_p");
+            return TCL_OK;
+          }
+        if (cmd) {
+          oldarg = objv[2];
+          objv[2] = obj;
+          rcode = (*cmd)(clientData,interp,objc-1,&objv[1]);
+          objv[2] = oldarg;
+          return rcode;
+        } else {
+          Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this -resv0_local_qp -remote_qp_sl_service_type -remote_lid -resv1 -time_stamp  }",-1);
+          return TCL_ERROR;
+        }
+      } else {
+        Tcl_SetStringObj(tcl_result,"{ -this -resv0_local_qp -remote_qp_sl_service_type -remote_lid -resv1 -time_stamp  }", -1);
+        return TCL_ERROR;
+      }
+    } else if ((c == 'd') && (strncmp(_str,"dump",length) == 0) && (length >= 2)) {
+      if (objc == 2) {
+        Tcl_Obj *pDumpObj;
+        pDumpObj = Tcl_NewStringObj("",-1);
+        Tcl_IncrRefCount(pDumpObj);
+                cmd = _wrap_ib_cong_log_event_ca_t_resv0_local_qp_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-resv0_local_qp ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_cong_log_event_ca_t_remote_qp_sl_service_type_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-remote_qp_sl_service_type ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_cong_log_event_ca_t_remote_lid_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-remote_lid ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_cong_log_event_ca_t_resv1_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-resv1 ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_cong_log_event_ca_t_time_stamp_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-time_stamp ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+
+        Tcl_DecrRefCount(pDumpObj);
+        return TCL_OK;
+      } else {
+        Tcl_SetStringObj(tcl_result,"no parameters are allowed for dump", -1);
+        return TCL_ERROR;
+      }
+    }
+  if (!cmd) {
+    Tcl_SetStringObj(tcl_result,"Invalid Method. Must be { dump cget configure }",-1);
+    return TCL_ERROR;
+  }
+  oldarg = objv[1];
+  objv[1] = obj;
+  rcode = (*cmd)(clientData,interp,objc,objv);
+  objv[1] = oldarg;
+  return rcode;
+}
+
+
+
+/* objcmd8.swg : Tcl 8.x object creation */
+
+static int Tclib_cong_log_event_ca_tCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+    void (*del)(ClientData) = 0;
+    char *name = 0;
+    int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
+    ib_cong_log_event_ca_t * newObj = 0;
+    int firstarg = 0;
+    int thisarg = 0;
+    int length;
+    char *_str;
+    Tcl_Obj *tcl_result;
+
+    tcl_result = Tcl_GetObjResult(interp);
+    if (objc == 1) {
+        cmd = 0;
+    } else {
+      _str = Tcl_GetStringFromObj(objv[1],&length);
+      if (strcmp(_str,"-this") == 0) thisarg = 2;
+      else if (strcmp(_str,"-args") == 0) {
+	firstarg = 1;
+	cmd = 0;
+      } else if (objc == 2) {
+	firstarg = 1;
+	name = _str;
+	cmd = 0;
+      } else if (objc >= 3) {
+	name = _str;
+	_str = Tcl_GetStringFromObj(objv[2],&length);
+	if (strcmp(_str,"-this") == 0) thisarg = 3;
+	else {
+	  firstarg = 1;
+	  cmd = 0;
+	}
+      }
+    }
+    if (cmd) {
+        int result;
+        result = (*cmd)(clientData,interp,objc-firstarg,&objv[firstarg]);
+        if (result == TCL_OK) {
+            SWIG_GetPointerObj(interp,tcl_result,(void **) &newObj,"_ib_cong_log_event_ca_t_p");
+        } else { return result; }
+        if (!name) name = Tcl_GetStringFromObj(tcl_result,&length);
+        del = 0;
+    } else if (thisarg > 0) {
+        if (thisarg < objc) {
+            char *r;
+            r = SWIG_GetPointerObj(interp,objv[thisarg],(void **) &newObj,"_ib_cong_log_event_ca_t_p");
+            if (r) {
+	      Tcl_SetStringObj(tcl_result,"Type error. not a ib_cong_log_event_ca_t object.",-1);
+	      return TCL_ERROR;
+            }
+        if (!name) name = Tcl_GetStringFromObj(objv[thisarg],&length);
+	Tcl_SetStringObj(tcl_result,name,-1);
+        } else {
+            Tcl_SetStringObj(tcl_result,"wrong # args.",-1);
+            return TCL_ERROR;
+        }
+    } else {
+        Tcl_SetStringObj(tcl_result,"No constructor available.",-1);
+        return TCL_ERROR;
+    }
+    {
+      Tcl_CmdInfo dummy;
+      if (!Tcl_GetCommandInfo(interp,name,&dummy)) {
+	Tcl_CreateObjCommand(interp,name, Tclib_cong_log_event_ca_tMethodCmd, (ClientData) newObj, del);
+	return TCL_OK;
+      } else {
+	Tcl_SetStringObj(tcl_result,"Object name already exists!",-1);
+	return TCL_ERROR;
+      }
+    }
+}
+
+
+#define _ib_sw_cong_log_log_type_set(_swigobj,_swigval) (_swigobj->log_type = *(_swigval),_swigval)
+static int _wrap_ccSWCongestionLog_log_type_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    ccSWCongestionLog * _arg0;
+    uint8_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint8_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccSWCongestionLog_log_type_set { ccSWCongestionLog * } { uint8_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccSWCongestionLog_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccSWCongestionLog_log_type_set. Expected _ccSWCongestionLog_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (uint8_t *)_ib_sw_cong_log_log_type_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_sw_cong_log_log_type_get(_swigobj) (&_swigobj->log_type)
+static int _wrap_ccSWCongestionLog_log_type_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    ccSWCongestionLog * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccSWCongestionLog_log_type_get { ccSWCongestionLog * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccSWCongestionLog_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccSWCongestionLog_log_type_get. Expected _ccSWCongestionLog_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (uint8_t *)_ib_sw_cong_log_log_type_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_sw_cong_log_cong_flags_set(_swigobj,_swigval) (_swigobj->cong_flags = *(_swigval),_swigval)
+static int _wrap_ccSWCongestionLog_cong_flags_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    ccSWCongestionLog * _arg0;
+    uint8_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint8_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccSWCongestionLog_cong_flags_set { ccSWCongestionLog * } { uint8_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccSWCongestionLog_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccSWCongestionLog_cong_flags_set. Expected _ccSWCongestionLog_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (uint8_t *)_ib_sw_cong_log_cong_flags_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_sw_cong_log_cong_flags_get(_swigobj) (&_swigobj->cong_flags)
+static int _wrap_ccSWCongestionLog_cong_flags_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    ccSWCongestionLog * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccSWCongestionLog_cong_flags_get { ccSWCongestionLog * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccSWCongestionLog_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccSWCongestionLog_cong_flags_get. Expected _ccSWCongestionLog_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (uint8_t *)_ib_sw_cong_log_cong_flags_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_sw_cong_log_event_counter_set(_swigobj,_swigval) (_swigobj->event_counter = *(_swigval),_swigval)
+static int _wrap_ccSWCongestionLog_event_counter_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    ccSWCongestionLog * _arg0;
+    ib_net16_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_net16_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccSWCongestionLog_event_counter_set { ccSWCongestionLog * } { ib_net16_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccSWCongestionLog_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccSWCongestionLog_event_counter_set. Expected _ccSWCongestionLog_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net16_t *)_ib_sw_cong_log_event_counter_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_sw_cong_log_event_counter_get(_swigobj) (&_swigobj->event_counter)
+static int _wrap_ccSWCongestionLog_event_counter_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    ccSWCongestionLog * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccSWCongestionLog_event_counter_get { ccSWCongestionLog * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccSWCongestionLog_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccSWCongestionLog_event_counter_get. Expected _ccSWCongestionLog_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net16_t *)_ib_sw_cong_log_event_counter_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_sw_cong_log_time_stamp_set(_swigobj,_swigval) (_swigobj->time_stamp = *(_swigval),_swigval)
+static int _wrap_ccSWCongestionLog_time_stamp_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net32_t * _result;
+    ccSWCongestionLog * _arg0;
+    ib_net32_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_net32_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccSWCongestionLog_time_stamp_set { ccSWCongestionLog * } { ib_net32_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccSWCongestionLog_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccSWCongestionLog_time_stamp_set. Expected _ccSWCongestionLog_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton32(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net32_t *)_ib_sw_cong_log_time_stamp_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_ntoh32(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_sw_cong_log_time_stamp_get(_swigobj) (&_swigobj->time_stamp)
+static int _wrap_ccSWCongestionLog_time_stamp_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net32_t * _result;
+    ccSWCongestionLog * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccSWCongestionLog_time_stamp_get { ccSWCongestionLog * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccSWCongestionLog_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccSWCongestionLog_time_stamp_get. Expected _ccSWCongestionLog_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net32_t *)_ib_sw_cong_log_time_stamp_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_ntoh32(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+static uint8_array_t * _ib_sw_cong_log_port_map_set(ccSWCongestionLog *obj, uint8_array_t val[32]) {
+{
+	int i;
+	for (i=0; i <32 ; i++) {
+		obj->port_map[i] = *(val+i);
+	}
+}
+    return (uint8_array_t *) val;
+}
+static int _wrap_ccSWCongestionLog_port_map_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_array_t * _result;
+    ccSWCongestionLog * _arg0;
+    uint8_array_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint8_t  entrys[32];
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccSWCongestionLog_port_map_set { ccSWCongestionLog * } { uint8_array_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccSWCongestionLog_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccSWCongestionLog_port_map_set. Expected _ccSWCongestionLog_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  char *buff;
+  char *p_ch;
+  char *last;
+  long int entry;
+
+  int i = 0;
+  buff = (char *)malloc((strlen(Tcl_GetStringFromObj(objv[2],NULL))+1)*sizeof(char));
+  strcpy(buff, Tcl_GetStringFromObj(objv[2],NULL));
+  p_ch = strtok_r(buff, " \t",&last);
+  while (p_ch && (i < 32))
+  {
+    entry = strtol(p_ch, NULL, 0);
+    if (entry > 0xff)
+    {
+      printf("Error: wrong format or out of range value for expected uint8_t entry: %s\n", p_ch);
+      return TCL_ERROR;
+    }
+    entrys[i++] = entry;
+    p_ch = strtok_r(NULL, " \t", &last);
+  }
+  for (; i < 32; i++) entrys[i] = 0;
+
+  free(buff);
+  _arg1 = entrys;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (uint8_array_t *)_ib_sw_cong_log_port_map_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  int i;
+  char buff[8];
+  for (i=0; i <32 ; i++) {
+    sprintf(buff, "0x%02x ", *(_result+i));
+    Tcl_AppendResult(interp, buff, NULL);
+  }
+}
+    return TCL_OK;
+}
+#define _ib_sw_cong_log_port_map_get(_swigobj) ((uint8_array_t *) _swigobj->port_map)
+static int _wrap_ccSWCongestionLog_port_map_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_array_t * _result;
+    ccSWCongestionLog * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccSWCongestionLog_port_map_get { ccSWCongestionLog * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccSWCongestionLog_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccSWCongestionLog_port_map_get. Expected _ccSWCongestionLog_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (uint8_array_t *)_ib_sw_cong_log_port_map_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  int i;
+  char buff[8];
+  for (i=0; i <32 ; i++) {
+    sprintf(buff, "0x%02x ", *(_result+i));
+    Tcl_AppendResult(interp, buff, NULL);
+  }
+}
+    return TCL_OK;
+}
+static ib_cong_log_event_sw_t * _ib_sw_cong_log_entry_list_set(ccSWCongestionLog *obj, ib_cong_log_event_sw_t val[15]) {
+{
+	int i;
+	for (i=0; i <15 ; i++) {
+		obj->entry_list[i] = *(val+i);
+	}
+}
+    return (ib_cong_log_event_sw_t *) val;
+}
+static int _wrap_ccSWCongestionLog_entry_list_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_cong_log_event_sw_t * _result;
+    ccSWCongestionLog * _arg0;
+    ib_cong_log_event_sw_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_cong_log_event_sw_t  entrys[15];
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccSWCongestionLog_entry_list_set { ccSWCongestionLog * } { ib_cong_log_event_sw_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccSWCongestionLog_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccSWCongestionLog_entry_list_set. Expected _ccSWCongestionLog_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+	long int value;
+	long int entry_index = 0;
+	int k;
+	int countSubLists, numElements;
+	int i = 0;
+	int option = 0;
+	Tcl_Obj ** subListObjArray;
+	Tcl_Obj  * tclObj;
+
+	if (Tcl_ListObjGetElements(interp, objv[2], &countSubLists, &subListObjArray) != TCL_OK)
+	{
+		printf("Error: wrong format for SW Congestion Log Event: %s\n",
+			Tcl_GetStringFromObj(objv[2],NULL));
+		return TCL_ERROR;
+	}
+
+	/*
+	 * There are two options to configure log_event:
+	 *   1. Configure the whole list by providing list of value groups:
+	 *        ccSWCongestionLogMad configure -log_event {{1 2 3 4} {5 6 7 8}}
+	 *   2. Configure specific items from the list by providing index in addition to the above:
+	 *        ccSWCongestionLogMad configure -log_event {{4 1 2 3 4} {8 5 6 7 8}}
+	 */
+
+	if (countSubLists > 0) {
+
+		/* check how many members does the first substring have */
+
+		if (Tcl_ListObjLength(interp, subListObjArray[0], &numElements) != TCL_OK) {
+			printf("Error: wrong format for SW Congestion Entry: %s\n",
+				Tcl_GetStringFromObj(subListObjArray[0],NULL));
+			return TCL_ERROR;
+		}
+
+		if (numElements == 4)
+			option = 1;
+		else if (numElements == 5)
+			option = 2;
+		else {
+			printf("Error: wrong number of elements for SW Congestion Entry: %s\n",
+				Tcl_GetStringFromObj(subListObjArray[0],NULL));
+			return TCL_ERROR;
+		}
+	}
+	else {
+		/* if the user didn't specify anything, use option 1,
+		   wich will effectively clear the whole list values */
+		option = 1;
+	}
+
+	for (i = 0; i < 15; i++) {
+		entrys[i].slid = 0;
+		entrys[i].dlid = 0;
+		entrys[i].resv0_sl = 0;
+		entrys[i].time_stamp = 0;
+	}
+
+	if (option == 1) {
+		/*
+		 * first option - list of groups of four values
+		 */
+
+		for (i = 0; i < countSubLists; i++) {
+
+			if (Tcl_ListObjLength(interp, subListObjArray[i], &numElements) != TCL_OK) {
+				printf("Error: wrong format for SW Congestion Log Event: %s\n",
+					Tcl_GetStringFromObj(subListObjArray[i],NULL));
+				return TCL_ERROR;
+			}
+
+			if (numElements != 4) {
+				printf("Error: wrong number of elements for SW Congestion Log Event: %s\n",
+					Tcl_GetStringFromObj(subListObjArray[i],NULL));
+				return TCL_ERROR;
+			}
+
+			for (k = 0; k < 4; k++) {
+
+				if (Tcl_ListObjIndex(interp, subListObjArray[i], k, &tclObj) != TCL_OK) {
+					printf("Error: Fail to obtain the element of SW Congestion Log Event: %s\n",
+						Tcl_GetStringFromObj(subListObjArray[i],NULL));
+					return TCL_ERROR;
+				}
+				value = strtol(Tcl_GetStringFromObj(tclObj, NULL), NULL, 0);
+				switch (k) {
+					case 0: entrys[i].slid = cl_hton16(value); break;
+					case 1: entrys[i].dlid = cl_hton16(value); break;
+					case 2: entrys[i].resv0_sl = value; break;
+					case 3: entrys[i].time_stamp = cl_hton32(value); break;
+					default: break;
+				}
+			}
+		}
+
+	}
+	else {
+		/*
+		 * second option - index and four values
+		 */
+
+		for (i = 0; i < countSubLists; i++) {
+
+			if (Tcl_ListObjLength(interp, subListObjArray[i], &numElements) != TCL_OK) {
+				printf("Error: wrong format for SW Congestion Log Event: %s\n",
+					Tcl_GetStringFromObj(subListObjArray[i],NULL));
+				return TCL_ERROR;
+			}
+
+			if (numElements != 5) {
+				printf("Error: wrong number of elements for SW Congestion Log Event: %s\n",
+					Tcl_GetStringFromObj(subListObjArray[i],NULL));
+				return TCL_ERROR;
+			}
+
+			for (k = 0; k < 5; k++) {
+
+				if (Tcl_ListObjIndex(interp, subListObjArray[i], k, &tclObj) != TCL_OK) {
+					printf("Error: Fail to obtain the element of SW Congestion Log Event: %s\n",
+						Tcl_GetStringFromObj(subListObjArray[i],NULL));
+					return TCL_ERROR;
+				}
+				value = strtol(Tcl_GetStringFromObj(tclObj, NULL), NULL, 0);
+				switch (k) {
+					case 0: entry_index = value; break;
+					case 1: entrys[entry_index].slid = cl_hton16(value); break;
+					case 2: entrys[entry_index].dlid = cl_hton16(value); break;
+					case 3: entrys[entry_index].resv0_sl = value; break;
+					case 4: entrys[entry_index].time_stamp = cl_hton32(value); break;
+					default: break;
+				}
+			}
+
+		}
+	}
+
+	_arg1 = entrys;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_cong_log_event_sw_t *)_ib_sw_cong_log_entry_list_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+	int i;
+	char buff[99];
+
+	sprintf(buff, "-entry_list\n ");
+	Tcl_AppendResult(interp, buff, NULL);
+
+	for (i=0; i <15 ; i++) {
+		sprintf(buff, " {#%02u:", i);
+		Tcl_AppendResult(interp, buff, NULL);
+
+		sprintf(buff, " -slid 0x%04x", cl_ntoh16(_result[i].slid));
+		Tcl_AppendResult(interp, buff, NULL);
+
+		sprintf(buff, " -dlid 0x%04x", cl_ntoh16(_result[i].dlid));
+		Tcl_AppendResult(interp, buff, NULL);
+
+		sprintf(buff, " -resv0_sl 0x%02x", _result[i].resv0_sl);
+		Tcl_AppendResult(interp, buff, NULL);
+
+		sprintf(buff, " -time_stamp 0x%08x", cl_ntoh32(_result[i].time_stamp));
+		Tcl_AppendResult(interp, buff, NULL);
+
+		sprintf(buff, "}\n ");
+		Tcl_AppendResult(interp, buff, NULL);
+	}
+}
+    return TCL_OK;
+}
+#define _ib_sw_cong_log_entry_list_get(_swigobj) ((ib_cong_log_event_sw_t *) _swigobj->entry_list)
+static int _wrap_ccSWCongestionLog_entry_list_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_cong_log_event_sw_t * _result;
+    ccSWCongestionLog * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccSWCongestionLog_entry_list_get { ccSWCongestionLog * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccSWCongestionLog_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccSWCongestionLog_entry_list_get. Expected _ccSWCongestionLog_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_cong_log_event_sw_t *)_ib_sw_cong_log_entry_list_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+	int i;
+	char buff[99];
+
+	sprintf(buff, "-entry_list\n ");
+	Tcl_AppendResult(interp, buff, NULL);
+
+	for (i=0; i <15 ; i++) {
+		sprintf(buff, " {#%02u:", i);
+		Tcl_AppendResult(interp, buff, NULL);
+
+		sprintf(buff, " -slid 0x%04x", cl_ntoh16(_result[i].slid));
+		Tcl_AppendResult(interp, buff, NULL);
+
+		sprintf(buff, " -dlid 0x%04x", cl_ntoh16(_result[i].dlid));
+		Tcl_AppendResult(interp, buff, NULL);
+
+		sprintf(buff, " -resv0_sl 0x%02x", _result[i].resv0_sl);
+		Tcl_AppendResult(interp, buff, NULL);
+
+		sprintf(buff, " -time_stamp 0x%08x", cl_ntoh32(_result[i].time_stamp));
+		Tcl_AppendResult(interp, buff, NULL);
+
+		sprintf(buff, "}\n ");
+		Tcl_AppendResult(interp, buff, NULL);
+	}
+}
+    return TCL_OK;
+}
+static int  ccSWCongestionLog_getByLid(ccSWCongestionLog *self,uint16_t  lid) {
+		return ibcc_send_mad_by_lid (
+			gp_ibcc,
+			IBCC_DEAFULT_KEY,
+			(uint8_t *)self,           // log data
+			sizeof(ccSWCongestionLog), // log data size
+			NULL,                      // mgt data
+			0,                         // mgt data size
+			lid,
+			CL_NTOH16(IB_MAD_ATTR_CONG_LOG),
+			0,                       // attribute modifier
+			IB_MAD_METHOD_GET);
+	}
+static int _wrap_ccSWCongestionLog_getByLid(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    int  _result;
+    ccSWCongestionLog * _arg0;
+    uint16_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint16_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccSWCongestionLog_getByLid { ccSWCongestionLog * } lid ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccSWCongestionLog_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccSWCongestionLog_getByLid. Expected _ccSWCongestionLog_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (int )ccSWCongestionLog_getByLid(_arg0,*_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+    Tcl_SetIntObj(tcl_result,(long) _result);
+    return TCL_OK;
+}
+/* methodcmd8.swg : Tcl8.x method invocation */
+
+static int TclccSWCongestionLogMethodCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST _objv[]) {
+  int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
+  char *_str;
+  int rcode;
+  Tcl_Obj **objv;
+  Tcl_Obj *oldarg,*tcl_result,*obj;
+  int length;
+  char c;
+
+  tcl_result = Tcl_GetObjResult(interp);
+  objv = (Tcl_Obj **) _objv;
+  if (objc < 2) {
+    Tcl_SetStringObj(tcl_result,"ccSWCongestionLog methods : { dump cget configure getByLid  }",-1);
+    return TCL_ERROR;
+  }
+  obj = Tcl_NewObj();
+  SWIG_SetPointerObj(obj,(void *) clientData,"_ccSWCongestionLog_p");
+  _str = Tcl_GetStringFromObj(objv[1],&length);
+  c = *_str;
+  if (0);
+      if (strcmp(_str,"getByLid") == 0) {
+        cmd = _wrap_ccSWCongestionLog_getByLid;
+    }
+    else if ((c == 'c') && (strncmp(_str,"configure",length) == 0) && (length >= 2)) {
+      int i = 2;
+      cmd = 0;
+      while (i+1 < objc) {
+        _str = Tcl_GetStringFromObj(objv[i],&length);
+                        if (strcmp(_str,"-log_type") == 0) {
+                    cmd = _wrap_ccSWCongestionLog_log_type_set;
+                }  else if (strcmp(_str,"-cong_flags") == 0) {
+                    cmd = _wrap_ccSWCongestionLog_cong_flags_set;
+                }  else if (strcmp(_str,"-event_counter") == 0) {
+                    cmd = _wrap_ccSWCongestionLog_event_counter_set;
+                }  else if (strcmp(_str,"-time_stamp") == 0) {
+                    cmd = _wrap_ccSWCongestionLog_time_stamp_set;
+                }  else if (strcmp(_str,"-port_map") == 0) {
+                    cmd = _wrap_ccSWCongestionLog_port_map_set;
+                }  else if (strcmp(_str,"-entry_list") == 0) {
+                    cmd = _wrap_ccSWCongestionLog_entry_list_set;
+                }
+          if (cmd) {
+            oldarg = objv[i];
+            objv[i] = obj;
+            rcode = (*cmd)(clientData,interp,3,&objv[i-1]);
+            objv[i] = oldarg;
+            if (rcode == TCL_ERROR) return rcode;
+            cmd = 0;
+          } else {
+            Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be { -log_type -cong_flags -event_counter -time_stamp -port_map -entry_list  }",-1);
+            return TCL_ERROR;
+          }
+        i+=2;
+      }
+      if ((i < objc) || (i == 2)) {
+        Tcl_SetStringObj(tcl_result,"{ -log_type -cong_flags -event_counter -time_stamp -port_map -entry_list  }",-1);
+        return TCL_ERROR;
+      }
+      return TCL_OK;
+    } else if ((c == 'c') && (strncmp(_str,"cget",length) == 0) && (length >= 2)) {
+      if (objc == 3) {
+        _str = Tcl_GetStringFromObj(objv[2],&length);
+        if (0) {}
+                        if (strcmp(_str,"-log_type") == 0) {
+                    cmd = _wrap_ccSWCongestionLog_log_type_get;
+                }  else if (strcmp(_str,"-cong_flags") == 0) {
+                    cmd = _wrap_ccSWCongestionLog_cong_flags_get;
+                }  else if (strcmp(_str,"-event_counter") == 0) {
+                    cmd = _wrap_ccSWCongestionLog_event_counter_get;
+                }  else if (strcmp(_str,"-time_stamp") == 0) {
+                    cmd = _wrap_ccSWCongestionLog_time_stamp_get;
+                }  else if (strcmp(_str,"-port_map") == 0) {
+                    cmd = _wrap_ccSWCongestionLog_port_map_get;
+                }  else if (strcmp(_str,"-entry_list") == 0) {
+                    cmd = _wrap_ccSWCongestionLog_entry_list_get;
+                }
+          else if (strcmp(_str,"-this") == 0) {
+            SWIG_SetPointerObj(tcl_result,(void *) clientData, "_ccSWCongestionLog_p");
+            return TCL_OK;
+          }
+        if (cmd) {
+          oldarg = objv[2];
+          objv[2] = obj;
+          rcode = (*cmd)(clientData,interp,objc-1,&objv[1]);
+          objv[2] = oldarg;
+          return rcode;
+        } else {
+          Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this -log_type -cong_flags -event_counter -time_stamp -port_map -entry_list  }",-1);
+          return TCL_ERROR;
+        }
+      } else {
+        Tcl_SetStringObj(tcl_result,"{ -this -log_type -cong_flags -event_counter -time_stamp -port_map -entry_list  }", -1);
+        return TCL_ERROR;
+      }
+    } else if ((c == 'd') && (strncmp(_str,"dump",length) == 0) && (length >= 2)) {
+      if (objc == 2) {
+        Tcl_Obj *pDumpObj;
+        pDumpObj = Tcl_NewStringObj("",-1);
+        Tcl_IncrRefCount(pDumpObj);
+                cmd = _wrap_ccSWCongestionLog_log_type_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-log_type ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ccSWCongestionLog_cong_flags_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-cong_flags ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ccSWCongestionLog_event_counter_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-event_counter ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ccSWCongestionLog_time_stamp_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-time_stamp ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ccSWCongestionLog_port_map_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-port_map ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ccSWCongestionLog_entry_list_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-entry_list ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+
+        Tcl_DecrRefCount(pDumpObj);
+        return TCL_OK;
+      } else {
+        Tcl_SetStringObj(tcl_result,"no parameters are allowed for dump", -1);
+        return TCL_ERROR;
+      }
+    }
+  if (!cmd) {
+    Tcl_SetStringObj(tcl_result,"Invalid Method. Must be { dump cget configure getByLid }",-1);
+    return TCL_ERROR;
+  }
+  oldarg = objv[1];
+  objv[1] = obj;
+  rcode = (*cmd)(clientData,interp,objc,objv);
+  objv[1] = oldarg;
+  return rcode;
+}
+
+
+
+/* objcmd8.swg : Tcl 8.x object creation */
+
+static int TclccSWCongestionLogCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+    void (*del)(ClientData) = 0;
+    char *name = 0;
+    int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
+    ccSWCongestionLog * newObj = 0;
+    int firstarg = 0;
+    int thisarg = 0;
+    int length;
+    char *_str;
+    Tcl_Obj *tcl_result;
+
+    tcl_result = Tcl_GetObjResult(interp);
+    if (objc == 1) {
+        cmd = 0;
+    } else {
+      _str = Tcl_GetStringFromObj(objv[1],&length);
+      if (strcmp(_str,"-this") == 0) thisarg = 2;
+      else if (strcmp(_str,"-args") == 0) {
+	firstarg = 1;
+	cmd = 0;
+      } else if (objc == 2) {
+	firstarg = 1;
+	name = _str;
+	cmd = 0;
+      } else if (objc >= 3) {
+	name = _str;
+	_str = Tcl_GetStringFromObj(objv[2],&length);
+	if (strcmp(_str,"-this") == 0) thisarg = 3;
+	else {
+	  firstarg = 1;
+	  cmd = 0;
+	}
+      }
+    }
+    if (cmd) {
+        int result;
+        result = (*cmd)(clientData,interp,objc-firstarg,&objv[firstarg]);
+        if (result == TCL_OK) {
+            SWIG_GetPointerObj(interp,tcl_result,(void **) &newObj,"_ccSWCongestionLog_p");
+        } else { return result; }
+        if (!name) name = Tcl_GetStringFromObj(tcl_result,&length);
+        del = 0;
+    } else if (thisarg > 0) {
+        if (thisarg < objc) {
+            char *r;
+            r = SWIG_GetPointerObj(interp,objv[thisarg],(void **) &newObj,"_ccSWCongestionLog_p");
+            if (r) {
+	      Tcl_SetStringObj(tcl_result,"Type error. not a ccSWCongestionLog object.",-1);
+	      return TCL_ERROR;
+            }
+        if (!name) name = Tcl_GetStringFromObj(objv[thisarg],&length);
+	Tcl_SetStringObj(tcl_result,name,-1);
+        } else {
+            Tcl_SetStringObj(tcl_result,"wrong # args.",-1);
+            return TCL_ERROR;
+        }
+    } else {
+        Tcl_SetStringObj(tcl_result,"No constructor available.",-1);
+        return TCL_ERROR;
+    }
+    {
+      Tcl_CmdInfo dummy;
+      if (!Tcl_GetCommandInfo(interp,name,&dummy)) {
+	Tcl_CreateObjCommand(interp,name, TclccSWCongestionLogMethodCmd, (ClientData) newObj, del);
+	return TCL_OK;
+      } else {
+	Tcl_SetStringObj(tcl_result,"Object name already exists!",-1);
+	return TCL_ERROR;
+      }
+    }
+}
+
+
+#define _ib_ca_cong_log_log_type_set(_swigobj,_swigval) (_swigobj->log_type = *(_swigval),_swigval)
+static int _wrap_ccCACongestionLog_log_type_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    ccCACongestionLog * _arg0;
+    uint8_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint8_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccCACongestionLog_log_type_set { ccCACongestionLog * } { uint8_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccCACongestionLog_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccCACongestionLog_log_type_set. Expected _ccCACongestionLog_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (uint8_t *)_ib_ca_cong_log_log_type_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_ca_cong_log_log_type_get(_swigobj) (&_swigobj->log_type)
+static int _wrap_ccCACongestionLog_log_type_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    ccCACongestionLog * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccCACongestionLog_log_type_get { ccCACongestionLog * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccCACongestionLog_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccCACongestionLog_log_type_get. Expected _ccCACongestionLog_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (uint8_t *)_ib_ca_cong_log_log_type_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_ca_cong_log_cong_flags_set(_swigobj,_swigval) (_swigobj->cong_flags = *(_swigval),_swigval)
+static int _wrap_ccCACongestionLog_cong_flags_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    ccCACongestionLog * _arg0;
+    uint8_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint8_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccCACongestionLog_cong_flags_set { ccCACongestionLog * } { uint8_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccCACongestionLog_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccCACongestionLog_cong_flags_set. Expected _ccCACongestionLog_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (uint8_t *)_ib_ca_cong_log_cong_flags_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_ca_cong_log_cong_flags_get(_swigobj) (&_swigobj->cong_flags)
+static int _wrap_ccCACongestionLog_cong_flags_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    ccCACongestionLog * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccCACongestionLog_cong_flags_get { ccCACongestionLog * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccCACongestionLog_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccCACongestionLog_cong_flags_get. Expected _ccCACongestionLog_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (uint8_t *)_ib_ca_cong_log_cong_flags_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_ca_cong_log_event_counter_set(_swigobj,_swigval) (_swigobj->event_counter = *(_swigval),_swigval)
+static int _wrap_ccCACongestionLog_event_counter_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    ccCACongestionLog * _arg0;
+    ib_net16_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_net16_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccCACongestionLog_event_counter_set { ccCACongestionLog * } { ib_net16_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccCACongestionLog_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccCACongestionLog_event_counter_set. Expected _ccCACongestionLog_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net16_t *)_ib_ca_cong_log_event_counter_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_ca_cong_log_event_counter_get(_swigobj) (&_swigobj->event_counter)
+static int _wrap_ccCACongestionLog_event_counter_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    ccCACongestionLog * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccCACongestionLog_event_counter_get { ccCACongestionLog * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccCACongestionLog_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccCACongestionLog_event_counter_get. Expected _ccCACongestionLog_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net16_t *)_ib_ca_cong_log_event_counter_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_ca_cong_log_event_map_set(_swigobj,_swigval) (_swigobj->event_map = *(_swigval),_swigval)
+static int _wrap_ccCACongestionLog_event_map_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    ccCACongestionLog * _arg0;
+    ib_net16_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_net16_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccCACongestionLog_event_map_set { ccCACongestionLog * } { ib_net16_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccCACongestionLog_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccCACongestionLog_event_map_set. Expected _ccCACongestionLog_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net16_t *)_ib_ca_cong_log_event_map_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_ca_cong_log_event_map_get(_swigobj) (&_swigobj->event_map)
+static int _wrap_ccCACongestionLog_event_map_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    ccCACongestionLog * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccCACongestionLog_event_map_get { ccCACongestionLog * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccCACongestionLog_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccCACongestionLog_event_map_get. Expected _ccCACongestionLog_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net16_t *)_ib_ca_cong_log_event_map_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_ca_cong_log_resv_set(_swigobj,_swigval) (_swigobj->resv = *(_swigval),_swigval)
+static int _wrap_ccCACongestionLog_resv_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    ccCACongestionLog * _arg0;
+    ib_net16_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_net16_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccCACongestionLog_resv_set { ccCACongestionLog * } { ib_net16_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccCACongestionLog_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccCACongestionLog_resv_set. Expected _ccCACongestionLog_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net16_t *)_ib_ca_cong_log_resv_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_ca_cong_log_resv_get(_swigobj) (&_swigobj->resv)
+static int _wrap_ccCACongestionLog_resv_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    ccCACongestionLog * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccCACongestionLog_resv_get { ccCACongestionLog * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccCACongestionLog_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccCACongestionLog_resv_get. Expected _ccCACongestionLog_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net16_t *)_ib_ca_cong_log_resv_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_ca_cong_log_time_stamp_set(_swigobj,_swigval) (_swigobj->time_stamp = *(_swigval),_swigval)
+static int _wrap_ccCACongestionLog_time_stamp_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net32_t * _result;
+    ccCACongestionLog * _arg0;
+    ib_net32_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_net32_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccCACongestionLog_time_stamp_set { ccCACongestionLog * } { ib_net32_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccCACongestionLog_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccCACongestionLog_time_stamp_set. Expected _ccCACongestionLog_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton32(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net32_t *)_ib_ca_cong_log_time_stamp_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_ntoh32(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_ca_cong_log_time_stamp_get(_swigobj) (&_swigobj->time_stamp)
+static int _wrap_ccCACongestionLog_time_stamp_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net32_t * _result;
+    ccCACongestionLog * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccCACongestionLog_time_stamp_get { ccCACongestionLog * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccCACongestionLog_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccCACongestionLog_time_stamp_get. Expected _ccCACongestionLog_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net32_t *)_ib_ca_cong_log_time_stamp_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_ntoh32(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+static ib_cong_log_event_ca_t * _ib_ca_cong_log_log_event_set(ccCACongestionLog *obj, ib_cong_log_event_ca_t val[13]) {
+{
+	int i;
+	for (i=0; i <13 ; i++) {
+		obj->log_event[i] = *(val+i);
+	}
+}
+    return (ib_cong_log_event_ca_t *) val;
+}
+static int _wrap_ccCACongestionLog_log_event_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_cong_log_event_ca_t * _result;
+    ccCACongestionLog * _arg0;
+    ib_cong_log_event_ca_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_cong_log_event_ca_t  entrys[13];
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccCACongestionLog_log_event_set { ccCACongestionLog * } { ib_cong_log_event_ca_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccCACongestionLog_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccCACongestionLog_log_event_set. Expected _ccCACongestionLog_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+	long int value;
+	long int entry_index = 0;
+	int k;
+	int countSubLists, numElements;
+	int i = 0;
+	int option = 0;
+	Tcl_Obj ** subListObjArray;
+	Tcl_Obj  * tclObj;
+
+	if (Tcl_ListObjGetElements(interp, objv[2], &countSubLists, &subListObjArray) != TCL_OK)
+	{
+		printf("Error: wrong format for CA Congestion Log Event: %s\n",
+			Tcl_GetStringFromObj(objv[2],NULL));
+		return TCL_ERROR;
+	}
+
+	/*
+	 * There are two options to configure log_event:
+	 *   1. Configure the whole list by providing list of value groups:
+	 *        ccCACongestionLogMad configure -log_event {{1 2 3 4} {5 6 7 8}}
+	 *   2. Configure specific items from the list by providing index in addition to the above:
+	 *        ccCACongestionLogMad configure -log_event {{4 1 2 3 4} {8 5 6 7 8}}
+	 */
+
+	if (countSubLists > 0) {
+
+		/* check how many members does the first substring have */
+
+		if (Tcl_ListObjLength(interp, subListObjArray[0], &numElements) != TCL_OK) {
+			printf("Error: wrong format for CA Congestion Entry: %s\n",
+				Tcl_GetStringFromObj(subListObjArray[0],NULL));
+			return TCL_ERROR;
+		}
+
+		if (numElements == 4)
+			option = 1;
+		else if (numElements == 5)
+			option = 2;
+		else {
+			printf("Error: wrong number of elements for CA Congestion Entry: %s\n",
+				Tcl_GetStringFromObj(subListObjArray[0],NULL));
+			return TCL_ERROR;
+		}
+	}
+	else {
+		/* if the user didn't specify anything, use option 1,
+		   wich will effectively clear the whole list values */
+		option = 1;
+	}
+
+	for (i = 0; i < 13; i++) {
+		entrys[i].resv0_local_qp = 0;
+		entrys[i].remote_qp_sl_service_type = 0;
+		entrys[i].remote_lid = 0;
+		entrys[i].time_stamp = 0;
+	}
+
+	if (option == 1) {
+		/*
+		 * first option - list of groups of four values
+		 */
+
+		for (i = 0; i < countSubLists; i++) {
+
+			if (Tcl_ListObjLength(interp, subListObjArray[i], &numElements) != TCL_OK) {
+				printf("Error: wrong format for CA Congestion Log Event: %s\n",
+					Tcl_GetStringFromObj(subListObjArray[i],NULL));
+				return TCL_ERROR;
+			}
+
+			if (numElements != 4) {
+				printf("Error: wrong number of elements for CA Congestion Log Event: %s\n",
+					Tcl_GetStringFromObj(subListObjArray[i],NULL));
+				return TCL_ERROR;
+			}
+
+			for (k = 0; k < 4; k++) {
+
+				if (Tcl_ListObjIndex(interp, subListObjArray[i], k, &tclObj) != TCL_OK) {
+					printf("Error: Fail to obtain the element of CA Congestion Log Event: %s\n",
+						Tcl_GetStringFromObj(subListObjArray[i],NULL));
+					return TCL_ERROR;
+				}
+				value = strtol(Tcl_GetStringFromObj(tclObj, NULL), NULL, 0);
+				switch (k) {
+					case 0: entrys[i].resv0_local_qp = cl_hton32(value); break;
+					case 1: entrys[i].remote_qp_sl_service_type = cl_hton32(value); break;
+					case 2: entrys[i].remote_lid = cl_hton16(value); break;
+					case 3: entrys[i].time_stamp = cl_hton32(value); break;
+					default: break;
+				}
+			}
+		}
+
+	}
+	else {
+		/*
+		 * second option - index and four values
+		 */
+
+		for (i = 0; i < countSubLists; i++) {
+
+			if (Tcl_ListObjLength(interp, subListObjArray[i], &numElements) != TCL_OK) {
+				printf("Error: wrong format for CA Congestion Log Event: %s\n",
+					Tcl_GetStringFromObj(subListObjArray[i],NULL));
+				return TCL_ERROR;
+			}
+
+			if (numElements != 5) {
+				printf("Error: wrong number of elements for CA Congestion Log Event: %s\n",
+					Tcl_GetStringFromObj(subListObjArray[i],NULL));
+				return TCL_ERROR;
+			}
+
+			for (k = 0; k < 5; k++) {
+
+				if (Tcl_ListObjIndex(interp, subListObjArray[i], k, &tclObj) != TCL_OK) {
+					printf("Error: Fail to obtain the element of CA Congestion Log Event: %s\n",
+						Tcl_GetStringFromObj(subListObjArray[i],NULL));
+					return TCL_ERROR;
+				}
+				value = strtol(Tcl_GetStringFromObj(tclObj, NULL), NULL, 0);
+				switch (k) {
+					case 0: entry_index = value; break;
+					case 1: entrys[entry_index].resv0_local_qp = cl_hton32(value); break;
+					case 2: entrys[entry_index].remote_qp_sl_service_type = cl_hton32(value); break;
+					case 3: entrys[entry_index].remote_lid = cl_hton16(value); break;
+					case 4: entrys[entry_index].time_stamp = cl_hton32(value); break;
+					default: break;
+				}
+			}
+
+		}
+	}
+
+	_arg1 = entrys;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_cong_log_event_ca_t *)_ib_ca_cong_log_log_event_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+	int i;
+	char buff[99];
+
+	sprintf(buff, "-log_event\n ");
+	Tcl_AppendResult(interp, buff, NULL);
+
+	for (i=0; i <13 ; i++) {
+		sprintf(buff, " {#%02u:", i);
+		Tcl_AppendResult(interp, buff, NULL);
+
+		sprintf(buff, " -resv0_local_qp 0x%08x", cl_ntoh32(_result[i].resv0_local_qp));
+		Tcl_AppendResult(interp, buff, NULL);
+
+		sprintf(buff, " -remote_qp_sl_service_type 0x%08x", cl_ntoh32(_result[i].remote_qp_sl_service_type));
+		Tcl_AppendResult(interp, buff, NULL);
+
+		sprintf(buff, " -remote_lid 0x%04x", cl_ntoh16(_result[i].remote_lid));
+		Tcl_AppendResult(interp, buff, NULL);
+
+		sprintf(buff, " -time_stamp 0x%08x", cl_ntoh32(_result[i].time_stamp));
+		Tcl_AppendResult(interp, buff, NULL);
+
+		sprintf(buff, "}\n ");
+		Tcl_AppendResult(interp, buff, NULL);
+	}
+}
+    return TCL_OK;
+}
+#define _ib_ca_cong_log_log_event_get(_swigobj) ((ib_cong_log_event_ca_t *) _swigobj->log_event)
+static int _wrap_ccCACongestionLog_log_event_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_cong_log_event_ca_t * _result;
+    ccCACongestionLog * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccCACongestionLog_log_event_get { ccCACongestionLog * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccCACongestionLog_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccCACongestionLog_log_event_get. Expected _ccCACongestionLog_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_cong_log_event_ca_t *)_ib_ca_cong_log_log_event_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+	int i;
+	char buff[99];
+
+	sprintf(buff, "-log_event\n ");
+	Tcl_AppendResult(interp, buff, NULL);
+
+	for (i=0; i <13 ; i++) {
+		sprintf(buff, " {#%02u:", i);
+		Tcl_AppendResult(interp, buff, NULL);
+
+		sprintf(buff, " -resv0_local_qp 0x%08x", cl_ntoh32(_result[i].resv0_local_qp));
+		Tcl_AppendResult(interp, buff, NULL);
+
+		sprintf(buff, " -remote_qp_sl_service_type 0x%08x", cl_ntoh32(_result[i].remote_qp_sl_service_type));
+		Tcl_AppendResult(interp, buff, NULL);
+
+		sprintf(buff, " -remote_lid 0x%04x", cl_ntoh16(_result[i].remote_lid));
+		Tcl_AppendResult(interp, buff, NULL);
+
+		sprintf(buff, " -time_stamp 0x%08x", cl_ntoh32(_result[i].time_stamp));
+		Tcl_AppendResult(interp, buff, NULL);
+
+		sprintf(buff, "}\n ");
+		Tcl_AppendResult(interp, buff, NULL);
+	}
+}
+    return TCL_OK;
+}
+static int  ccCACongestionLog_getByLid(ccCACongestionLog *self,uint16_t  lid) {
+		return ibcc_send_mad_by_lid (
+			gp_ibcc,
+			IBCC_DEAFULT_KEY,
+			(uint8_t *)self,           // log data
+			sizeof(ccCACongestionLog), // log data size
+			NULL,                      // mgt data
+			0,                         // mgt data size
+			lid,
+			CL_NTOH16(IB_MAD_ATTR_CONG_LOG),
+			0,                       // attribute modifier
+			IB_MAD_METHOD_GET);
+	}
+static int _wrap_ccCACongestionLog_getByLid(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    int  _result;
+    ccCACongestionLog * _arg0;
+    uint16_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint16_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccCACongestionLog_getByLid { ccCACongestionLog * } lid ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccCACongestionLog_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccCACongestionLog_getByLid. Expected _ccCACongestionLog_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (int )ccCACongestionLog_getByLid(_arg0,*_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+    Tcl_SetIntObj(tcl_result,(long) _result);
+    return TCL_OK;
+}
+/* methodcmd8.swg : Tcl8.x method invocation */
+
+static int TclccCACongestionLogMethodCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST _objv[]) {
+  int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
+  char *_str;
+  int rcode;
+  Tcl_Obj **objv;
+  Tcl_Obj *oldarg,*tcl_result,*obj;
+  int length;
+  char c;
+
+  tcl_result = Tcl_GetObjResult(interp);
+  objv = (Tcl_Obj **) _objv;
+  if (objc < 2) {
+    Tcl_SetStringObj(tcl_result,"ccCACongestionLog methods : { dump cget configure getByLid  }",-1);
+    return TCL_ERROR;
+  }
+  obj = Tcl_NewObj();
+  SWIG_SetPointerObj(obj,(void *) clientData,"_ccCACongestionLog_p");
+  _str = Tcl_GetStringFromObj(objv[1],&length);
+  c = *_str;
+  if (0);
+      if (strcmp(_str,"getByLid") == 0) {
+        cmd = _wrap_ccCACongestionLog_getByLid;
+    }
+    else if ((c == 'c') && (strncmp(_str,"configure",length) == 0) && (length >= 2)) {
+      int i = 2;
+      cmd = 0;
+      while (i+1 < objc) {
+        _str = Tcl_GetStringFromObj(objv[i],&length);
+                        if (strcmp(_str,"-log_type") == 0) {
+                    cmd = _wrap_ccCACongestionLog_log_type_set;
+                }  else if (strcmp(_str,"-cong_flags") == 0) {
+                    cmd = _wrap_ccCACongestionLog_cong_flags_set;
+                }  else if (strcmp(_str,"-event_counter") == 0) {
+                    cmd = _wrap_ccCACongestionLog_event_counter_set;
+                }  else if (strcmp(_str,"-event_map") == 0) {
+                    cmd = _wrap_ccCACongestionLog_event_map_set;
+                }  else if (strcmp(_str,"-resv") == 0) {
+                    cmd = _wrap_ccCACongestionLog_resv_set;
+                }  else if (strcmp(_str,"-time_stamp") == 0) {
+                    cmd = _wrap_ccCACongestionLog_time_stamp_set;
+                }  else if (strcmp(_str,"-log_event") == 0) {
+                    cmd = _wrap_ccCACongestionLog_log_event_set;
+                }
+          if (cmd) {
+            oldarg = objv[i];
+            objv[i] = obj;
+            rcode = (*cmd)(clientData,interp,3,&objv[i-1]);
+            objv[i] = oldarg;
+            if (rcode == TCL_ERROR) return rcode;
+            cmd = 0;
+          } else {
+            Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be { -log_type -cong_flags -event_counter -event_map -resv -time_stamp -log_event  }",-1);
+            return TCL_ERROR;
+          }
+        i+=2;
+      }
+      if ((i < objc) || (i == 2)) {
+        Tcl_SetStringObj(tcl_result,"{ -log_type -cong_flags -event_counter -event_map -resv -time_stamp -log_event  }",-1);
+        return TCL_ERROR;
+      }
+      return TCL_OK;
+    } else if ((c == 'c') && (strncmp(_str,"cget",length) == 0) && (length >= 2)) {
+      if (objc == 3) {
+        _str = Tcl_GetStringFromObj(objv[2],&length);
+        if (0) {}
+                        if (strcmp(_str,"-log_type") == 0) {
+                    cmd = _wrap_ccCACongestionLog_log_type_get;
+                }  else if (strcmp(_str,"-cong_flags") == 0) {
+                    cmd = _wrap_ccCACongestionLog_cong_flags_get;
+                }  else if (strcmp(_str,"-event_counter") == 0) {
+                    cmd = _wrap_ccCACongestionLog_event_counter_get;
+                }  else if (strcmp(_str,"-event_map") == 0) {
+                    cmd = _wrap_ccCACongestionLog_event_map_get;
+                }  else if (strcmp(_str,"-resv") == 0) {
+                    cmd = _wrap_ccCACongestionLog_resv_get;
+                }  else if (strcmp(_str,"-time_stamp") == 0) {
+                    cmd = _wrap_ccCACongestionLog_time_stamp_get;
+                }  else if (strcmp(_str,"-log_event") == 0) {
+                    cmd = _wrap_ccCACongestionLog_log_event_get;
+                }
+          else if (strcmp(_str,"-this") == 0) {
+            SWIG_SetPointerObj(tcl_result,(void *) clientData, "_ccCACongestionLog_p");
+            return TCL_OK;
+          }
+        if (cmd) {
+          oldarg = objv[2];
+          objv[2] = obj;
+          rcode = (*cmd)(clientData,interp,objc-1,&objv[1]);
+          objv[2] = oldarg;
+          return rcode;
+        } else {
+          Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this -log_type -cong_flags -event_counter -event_map -resv -time_stamp -log_event  }",-1);
+          return TCL_ERROR;
+        }
+      } else {
+        Tcl_SetStringObj(tcl_result,"{ -this -log_type -cong_flags -event_counter -event_map -resv -time_stamp -log_event  }", -1);
+        return TCL_ERROR;
+      }
+    } else if ((c == 'd') && (strncmp(_str,"dump",length) == 0) && (length >= 2)) {
+      if (objc == 2) {
+        Tcl_Obj *pDumpObj;
+        pDumpObj = Tcl_NewStringObj("",-1);
+        Tcl_IncrRefCount(pDumpObj);
+                cmd = _wrap_ccCACongestionLog_log_type_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-log_type ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ccCACongestionLog_cong_flags_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-cong_flags ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ccCACongestionLog_event_counter_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-event_counter ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ccCACongestionLog_event_map_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-event_map ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ccCACongestionLog_resv_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-resv ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ccCACongestionLog_time_stamp_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-time_stamp ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ccCACongestionLog_log_event_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-log_event ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+
+        Tcl_DecrRefCount(pDumpObj);
+        return TCL_OK;
+      } else {
+        Tcl_SetStringObj(tcl_result,"no parameters are allowed for dump", -1);
+        return TCL_ERROR;
+      }
+    }
+  if (!cmd) {
+    Tcl_SetStringObj(tcl_result,"Invalid Method. Must be { dump cget configure getByLid }",-1);
+    return TCL_ERROR;
+  }
+  oldarg = objv[1];
+  objv[1] = obj;
+  rcode = (*cmd)(clientData,interp,objc,objv);
+  objv[1] = oldarg;
+  return rcode;
+}
+
+
+
+/* objcmd8.swg : Tcl 8.x object creation */
+
+static int TclccCACongestionLogCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+    void (*del)(ClientData) = 0;
+    char *name = 0;
+    int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
+    ccCACongestionLog * newObj = 0;
+    int firstarg = 0;
+    int thisarg = 0;
+    int length;
+    char *_str;
+    Tcl_Obj *tcl_result;
+
+    tcl_result = Tcl_GetObjResult(interp);
+    if (objc == 1) {
+        cmd = 0;
+    } else {
+      _str = Tcl_GetStringFromObj(objv[1],&length);
+      if (strcmp(_str,"-this") == 0) thisarg = 2;
+      else if (strcmp(_str,"-args") == 0) {
+	firstarg = 1;
+	cmd = 0;
+      } else if (objc == 2) {
+	firstarg = 1;
+	name = _str;
+	cmd = 0;
+      } else if (objc >= 3) {
+	name = _str;
+	_str = Tcl_GetStringFromObj(objv[2],&length);
+	if (strcmp(_str,"-this") == 0) thisarg = 3;
+	else {
+	  firstarg = 1;
+	  cmd = 0;
+	}
+      }
+    }
+    if (cmd) {
+        int result;
+        result = (*cmd)(clientData,interp,objc-firstarg,&objv[firstarg]);
+        if (result == TCL_OK) {
+            SWIG_GetPointerObj(interp,tcl_result,(void **) &newObj,"_ccCACongestionLog_p");
+        } else { return result; }
+        if (!name) name = Tcl_GetStringFromObj(tcl_result,&length);
+        del = 0;
+    } else if (thisarg > 0) {
+        if (thisarg < objc) {
+            char *r;
+            r = SWIG_GetPointerObj(interp,objv[thisarg],(void **) &newObj,"_ccCACongestionLog_p");
+            if (r) {
+	      Tcl_SetStringObj(tcl_result,"Type error. not a ccCACongestionLog object.",-1);
+	      return TCL_ERROR;
+            }
+        if (!name) name = Tcl_GetStringFromObj(objv[thisarg],&length);
+	Tcl_SetStringObj(tcl_result,name,-1);
+        } else {
+            Tcl_SetStringObj(tcl_result,"wrong # args.",-1);
+            return TCL_ERROR;
+        }
+    } else {
+        Tcl_SetStringObj(tcl_result,"No constructor available.",-1);
+        return TCL_ERROR;
+    }
+    {
+      Tcl_CmdInfo dummy;
+      if (!Tcl_GetCommandInfo(interp,name,&dummy)) {
+	Tcl_CreateObjCommand(interp,name, TclccCACongestionLogMethodCmd, (ClientData) newObj, del);
+	return TCL_OK;
+      } else {
+	Tcl_SetStringObj(tcl_result,"Object name already exists!",-1);
+	return TCL_ERROR;
+      }
+    }
+}
+
+
+#define _ib_sw_cong_setting_control_map_set(_swigobj,_swigval) (_swigobj->control_map = *(_swigval),_swigval)
+static int _wrap_ccSWCongestionSetting_control_map_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net32_t * _result;
+    ccSWCongestionSetting * _arg0;
+    ib_net32_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_net32_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccSWCongestionSetting_control_map_set { ccSWCongestionSetting * } { ib_net32_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccSWCongestionSetting_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccSWCongestionSetting_control_map_set. Expected _ccSWCongestionSetting_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton32(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net32_t *)_ib_sw_cong_setting_control_map_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_ntoh32(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_sw_cong_setting_control_map_get(_swigobj) (&_swigobj->control_map)
+static int _wrap_ccSWCongestionSetting_control_map_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net32_t * _result;
+    ccSWCongestionSetting * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccSWCongestionSetting_control_map_get { ccSWCongestionSetting * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccSWCongestionSetting_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccSWCongestionSetting_control_map_get. Expected _ccSWCongestionSetting_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net32_t *)_ib_sw_cong_setting_control_map_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_ntoh32(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+static uint8_array_t * _ib_sw_cong_setting_victim_mask_set(ccSWCongestionSetting *obj, uint8_array_t val[32]) {
+{
+	int i;
+	for (i=0; i <32 ; i++) {
+		obj->victim_mask[i] = *(val+i);
+	}
+}
+    return (uint8_array_t *) val;
+}
+static int _wrap_ccSWCongestionSetting_victim_mask_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_array_t * _result;
+    ccSWCongestionSetting * _arg0;
+    uint8_array_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint8_t  entrys[32];
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccSWCongestionSetting_victim_mask_set { ccSWCongestionSetting * } { uint8_array_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccSWCongestionSetting_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccSWCongestionSetting_victim_mask_set. Expected _ccSWCongestionSetting_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  char *buff;
+  char *p_ch;
+  char *last;
+  long int entry;
+
+  int i = 0;
+  buff = (char *)malloc((strlen(Tcl_GetStringFromObj(objv[2],NULL))+1)*sizeof(char));
+  strcpy(buff, Tcl_GetStringFromObj(objv[2],NULL));
+  p_ch = strtok_r(buff, " \t",&last);
+  while (p_ch && (i < 32))
+  {
+    entry = strtol(p_ch, NULL, 0);
+    if (entry > 0xff)
+    {
+      printf("Error: wrong format or out of range value for expected uint8_t entry: %s\n", p_ch);
+      return TCL_ERROR;
+    }
+    entrys[i++] = entry;
+    p_ch = strtok_r(NULL, " \t", &last);
+  }
+  for (; i < 32; i++) entrys[i] = 0;
+
+  free(buff);
+  _arg1 = entrys;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (uint8_array_t *)_ib_sw_cong_setting_victim_mask_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  int i;
+  char buff[8];
+  for (i=0; i <32 ; i++) {
+    sprintf(buff, "0x%02x ", *(_result+i));
+    Tcl_AppendResult(interp, buff, NULL);
+  }
+}
+    return TCL_OK;
+}
+#define _ib_sw_cong_setting_victim_mask_get(_swigobj) ((uint8_array_t *) _swigobj->victim_mask)
+static int _wrap_ccSWCongestionSetting_victim_mask_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_array_t * _result;
+    ccSWCongestionSetting * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccSWCongestionSetting_victim_mask_get { ccSWCongestionSetting * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccSWCongestionSetting_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccSWCongestionSetting_victim_mask_get. Expected _ccSWCongestionSetting_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (uint8_array_t *)_ib_sw_cong_setting_victim_mask_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  int i;
+  char buff[8];
+  for (i=0; i <32 ; i++) {
+    sprintf(buff, "0x%02x ", *(_result+i));
+    Tcl_AppendResult(interp, buff, NULL);
+  }
+}
+    return TCL_OK;
+}
+static uint8_array_t * _ib_sw_cong_setting_credit_mask_set(ccSWCongestionSetting *obj, uint8_array_t val[32]) {
+{
+	int i;
+	for (i=0; i <32 ; i++) {
+		obj->credit_mask[i] = *(val+i);
+	}
+}
+    return (uint8_array_t *) val;
+}
+static int _wrap_ccSWCongestionSetting_credit_mask_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_array_t * _result;
+    ccSWCongestionSetting * _arg0;
+    uint8_array_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint8_t  entrys[32];
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccSWCongestionSetting_credit_mask_set { ccSWCongestionSetting * } { uint8_array_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccSWCongestionSetting_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccSWCongestionSetting_credit_mask_set. Expected _ccSWCongestionSetting_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  char *buff;
+  char *p_ch;
+  char *last;
+  long int entry;
+
+  int i = 0;
+  buff = (char *)malloc((strlen(Tcl_GetStringFromObj(objv[2],NULL))+1)*sizeof(char));
+  strcpy(buff, Tcl_GetStringFromObj(objv[2],NULL));
+  p_ch = strtok_r(buff, " \t",&last);
+  while (p_ch && (i < 32))
+  {
+    entry = strtol(p_ch, NULL, 0);
+    if (entry > 0xff)
+    {
+      printf("Error: wrong format or out of range value for expected uint8_t entry: %s\n", p_ch);
+      return TCL_ERROR;
+    }
+    entrys[i++] = entry;
+    p_ch = strtok_r(NULL, " \t", &last);
+  }
+  for (; i < 32; i++) entrys[i] = 0;
+
+  free(buff);
+  _arg1 = entrys;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (uint8_array_t *)_ib_sw_cong_setting_credit_mask_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  int i;
+  char buff[8];
+  for (i=0; i <32 ; i++) {
+    sprintf(buff, "0x%02x ", *(_result+i));
+    Tcl_AppendResult(interp, buff, NULL);
+  }
+}
+    return TCL_OK;
+}
+#define _ib_sw_cong_setting_credit_mask_get(_swigobj) ((uint8_array_t *) _swigobj->credit_mask)
+static int _wrap_ccSWCongestionSetting_credit_mask_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_array_t * _result;
+    ccSWCongestionSetting * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccSWCongestionSetting_credit_mask_get { ccSWCongestionSetting * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccSWCongestionSetting_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccSWCongestionSetting_credit_mask_get. Expected _ccSWCongestionSetting_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (uint8_array_t *)_ib_sw_cong_setting_credit_mask_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  int i;
+  char buff[8];
+  for (i=0; i <32 ; i++) {
+    sprintf(buff, "0x%02x ", *(_result+i));
+    Tcl_AppendResult(interp, buff, NULL);
+  }
+}
+    return TCL_OK;
+}
+#define _ib_sw_cong_setting_threshold_set(_swigobj,_swigval) (_swigobj->threshold = *(_swigval),_swigval)
+static int _wrap_ccSWCongestionSetting_threshold_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    ccSWCongestionSetting * _arg0;
+    uint8_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint8_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccSWCongestionSetting_threshold_set { ccSWCongestionSetting * } { uint8_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccSWCongestionSetting_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccSWCongestionSetting_threshold_set. Expected _ccSWCongestionSetting_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (uint8_t *)_ib_sw_cong_setting_threshold_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_sw_cong_setting_threshold_get(_swigobj) (&_swigobj->threshold)
+static int _wrap_ccSWCongestionSetting_threshold_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    ccSWCongestionSetting * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccSWCongestionSetting_threshold_get { ccSWCongestionSetting * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccSWCongestionSetting_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccSWCongestionSetting_threshold_get. Expected _ccSWCongestionSetting_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (uint8_t *)_ib_sw_cong_setting_threshold_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_sw_cong_setting_packet_size_set(_swigobj,_swigval) (_swigobj->packet_size = *(_swigval),_swigval)
+static int _wrap_ccSWCongestionSetting_packet_size_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    ccSWCongestionSetting * _arg0;
+    uint8_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint8_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccSWCongestionSetting_packet_size_set { ccSWCongestionSetting * } { uint8_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccSWCongestionSetting_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccSWCongestionSetting_packet_size_set. Expected _ccSWCongestionSetting_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (uint8_t *)_ib_sw_cong_setting_packet_size_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_sw_cong_setting_packet_size_get(_swigobj) (&_swigobj->packet_size)
+static int _wrap_ccSWCongestionSetting_packet_size_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    ccSWCongestionSetting * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccSWCongestionSetting_packet_size_get { ccSWCongestionSetting * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccSWCongestionSetting_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccSWCongestionSetting_packet_size_get. Expected _ccSWCongestionSetting_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (uint8_t *)_ib_sw_cong_setting_packet_size_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_sw_cong_setting_cs_threshold_set(_swigobj,_swigval) (_swigobj->cs_threshold = *(_swigval),_swigval)
+static int _wrap_ccSWCongestionSetting_cs_threshold_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    ccSWCongestionSetting * _arg0;
+    uint8_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint8_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccSWCongestionSetting_cs_threshold_set { ccSWCongestionSetting * } { uint8_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccSWCongestionSetting_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccSWCongestionSetting_cs_threshold_set. Expected _ccSWCongestionSetting_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (uint8_t *)_ib_sw_cong_setting_cs_threshold_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_sw_cong_setting_cs_threshold_get(_swigobj) (&_swigobj->cs_threshold)
+static int _wrap_ccSWCongestionSetting_cs_threshold_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    ccSWCongestionSetting * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccSWCongestionSetting_cs_threshold_get { ccSWCongestionSetting * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccSWCongestionSetting_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccSWCongestionSetting_cs_threshold_get. Expected _ccSWCongestionSetting_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (uint8_t *)_ib_sw_cong_setting_cs_threshold_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_sw_cong_setting_resv0_set(_swigobj,_swigval) (_swigobj->resv0 = *(_swigval),_swigval)
+static int _wrap_ccSWCongestionSetting_resv0_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    ccSWCongestionSetting * _arg0;
+    uint8_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint8_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccSWCongestionSetting_resv0_set { ccSWCongestionSetting * } { uint8_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccSWCongestionSetting_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccSWCongestionSetting_resv0_set. Expected _ccSWCongestionSetting_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (uint8_t *)_ib_sw_cong_setting_resv0_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_sw_cong_setting_resv0_get(_swigobj) (&_swigobj->resv0)
+static int _wrap_ccSWCongestionSetting_resv0_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    ccSWCongestionSetting * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccSWCongestionSetting_resv0_get { ccSWCongestionSetting * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccSWCongestionSetting_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccSWCongestionSetting_resv0_get. Expected _ccSWCongestionSetting_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (uint8_t *)_ib_sw_cong_setting_resv0_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_sw_cong_setting_cs_return_delay_set(_swigobj,_swigval) (_swigobj->cs_return_delay = *(_swigval),_swigval)
+static int _wrap_ccSWCongestionSetting_cs_return_delay_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    ccSWCongestionSetting * _arg0;
+    ib_net16_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_net16_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccSWCongestionSetting_cs_return_delay_set { ccSWCongestionSetting * } { ib_net16_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccSWCongestionSetting_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccSWCongestionSetting_cs_return_delay_set. Expected _ccSWCongestionSetting_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net16_t *)_ib_sw_cong_setting_cs_return_delay_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_sw_cong_setting_cs_return_delay_get(_swigobj) (&_swigobj->cs_return_delay)
+static int _wrap_ccSWCongestionSetting_cs_return_delay_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    ccSWCongestionSetting * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccSWCongestionSetting_cs_return_delay_get { ccSWCongestionSetting * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccSWCongestionSetting_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccSWCongestionSetting_cs_return_delay_get. Expected _ccSWCongestionSetting_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net16_t *)_ib_sw_cong_setting_cs_return_delay_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_sw_cong_setting_marking_rate_set(_swigobj,_swigval) (_swigobj->marking_rate = *(_swigval),_swigval)
+static int _wrap_ccSWCongestionSetting_marking_rate_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    ccSWCongestionSetting * _arg0;
+    ib_net16_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_net16_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccSWCongestionSetting_marking_rate_set { ccSWCongestionSetting * } { ib_net16_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccSWCongestionSetting_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccSWCongestionSetting_marking_rate_set. Expected _ccSWCongestionSetting_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net16_t *)_ib_sw_cong_setting_marking_rate_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_sw_cong_setting_marking_rate_get(_swigobj) (&_swigobj->marking_rate)
+static int _wrap_ccSWCongestionSetting_marking_rate_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    ccSWCongestionSetting * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccSWCongestionSetting_marking_rate_get { ccSWCongestionSetting * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccSWCongestionSetting_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccSWCongestionSetting_marking_rate_get. Expected _ccSWCongestionSetting_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net16_t *)_ib_sw_cong_setting_marking_rate_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+static int  ccSWCongestionSetting_getByLid(ccSWCongestionSetting *self,uint16_t  lid) {
+		return ibcc_send_mad_by_lid (
+			gp_ibcc,
+			IBCC_DEAFULT_KEY,
+			NULL,                    // log data
+			0,                       // log data size
+			(uint8_t *)self,         // mgt data
+			sizeof(ccSWCongestionSetting),// mgt data size
+			lid,
+			CL_NTOH16(IB_MAD_ATTR_SW_CONG_SETTING),
+			0,                       // attribute modifier
+			IB_MAD_METHOD_GET);
+	}
+static int _wrap_ccSWCongestionSetting_getByLid(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    int  _result;
+    ccSWCongestionSetting * _arg0;
+    uint16_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint16_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccSWCongestionSetting_getByLid { ccSWCongestionSetting * } lid ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccSWCongestionSetting_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccSWCongestionSetting_getByLid. Expected _ccSWCongestionSetting_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (int )ccSWCongestionSetting_getByLid(_arg0,*_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+    Tcl_SetIntObj(tcl_result,(long) _result);
+    return TCL_OK;
+}
+static int  ccSWCongestionSetting_setByLid(ccSWCongestionSetting *self,uint16_t  lid) {
+		return ibcc_send_mad_by_lid (
+			gp_ibcc,
+			IBCC_DEAFULT_KEY,
+			NULL,                    // log data
+			0,                       // log data size
+			(uint8_t *)self,         // mgt data
+			sizeof(ccSWCongestionSetting),// mgt data size
+			lid,
+			CL_NTOH16(IB_MAD_ATTR_SW_CONG_SETTING),
+			0,                       // attribute modifier
+			IB_MAD_METHOD_SET);
+	}
+static int _wrap_ccSWCongestionSetting_setByLid(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    int  _result;
+    ccSWCongestionSetting * _arg0;
+    uint16_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint16_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccSWCongestionSetting_setByLid { ccSWCongestionSetting * } lid ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccSWCongestionSetting_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccSWCongestionSetting_setByLid. Expected _ccSWCongestionSetting_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (int )ccSWCongestionSetting_setByLid(_arg0,*_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+    Tcl_SetIntObj(tcl_result,(long) _result);
+    return TCL_OK;
+}
+/* methodcmd8.swg : Tcl8.x method invocation */
+
+static int TclccSWCongestionSettingMethodCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST _objv[]) {
+  int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
+  char *_str;
+  int rcode;
+  Tcl_Obj **objv;
+  Tcl_Obj *oldarg,*tcl_result,*obj;
+  int length;
+  char c;
+
+  tcl_result = Tcl_GetObjResult(interp);
+  objv = (Tcl_Obj **) _objv;
+  if (objc < 2) {
+    Tcl_SetStringObj(tcl_result,"ccSWCongestionSetting methods : { dump cget configure getByLid setByLid  }",-1);
+    return TCL_ERROR;
+  }
+  obj = Tcl_NewObj();
+  SWIG_SetPointerObj(obj,(void *) clientData,"_ccSWCongestionSetting_p");
+  _str = Tcl_GetStringFromObj(objv[1],&length);
+  c = *_str;
+  if (0);
+      if (strcmp(_str,"getByLid") == 0) {
+        cmd = _wrap_ccSWCongestionSetting_getByLid;
+    }    else if (strcmp(_str,"setByLid") == 0) {
+        cmd = _wrap_ccSWCongestionSetting_setByLid;
+    }
+    else if ((c == 'c') && (strncmp(_str,"configure",length) == 0) && (length >= 2)) {
+      int i = 2;
+      cmd = 0;
+      while (i+1 < objc) {
+        _str = Tcl_GetStringFromObj(objv[i],&length);
+                        if (strcmp(_str,"-control_map") == 0) {
+                    cmd = _wrap_ccSWCongestionSetting_control_map_set;
+                }  else if (strcmp(_str,"-victim_mask") == 0) {
+                    cmd = _wrap_ccSWCongestionSetting_victim_mask_set;
+                }  else if (strcmp(_str,"-credit_mask") == 0) {
+                    cmd = _wrap_ccSWCongestionSetting_credit_mask_set;
+                }  else if (strcmp(_str,"-threshold") == 0) {
+                    cmd = _wrap_ccSWCongestionSetting_threshold_set;
+                }  else if (strcmp(_str,"-packet_size") == 0) {
+                    cmd = _wrap_ccSWCongestionSetting_packet_size_set;
+                }  else if (strcmp(_str,"-cs_threshold") == 0) {
+                    cmd = _wrap_ccSWCongestionSetting_cs_threshold_set;
+                }  else if (strcmp(_str,"-resv0") == 0) {
+                    cmd = _wrap_ccSWCongestionSetting_resv0_set;
+                }  else if (strcmp(_str,"-cs_return_delay") == 0) {
+                    cmd = _wrap_ccSWCongestionSetting_cs_return_delay_set;
+                }  else if (strcmp(_str,"-marking_rate") == 0) {
+                    cmd = _wrap_ccSWCongestionSetting_marking_rate_set;
+                }
+          if (cmd) {
+            oldarg = objv[i];
+            objv[i] = obj;
+            rcode = (*cmd)(clientData,interp,3,&objv[i-1]);
+            objv[i] = oldarg;
+            if (rcode == TCL_ERROR) return rcode;
+            cmd = 0;
+          } else {
+            Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be { -control_map -victim_mask -credit_mask -threshold -packet_size -cs_threshold -resv0 -cs_return_delay -marking_rate  }",-1);
+            return TCL_ERROR;
+          }
+        i+=2;
+      }
+      if ((i < objc) || (i == 2)) {
+        Tcl_SetStringObj(tcl_result,"{ -control_map -victim_mask -credit_mask -threshold -packet_size -cs_threshold -resv0 -cs_return_delay -marking_rate  }",-1);
+        return TCL_ERROR;
+      }
+      return TCL_OK;
+    } else if ((c == 'c') && (strncmp(_str,"cget",length) == 0) && (length >= 2)) {
+      if (objc == 3) {
+        _str = Tcl_GetStringFromObj(objv[2],&length);
+        if (0) {}
+                        if (strcmp(_str,"-control_map") == 0) {
+                    cmd = _wrap_ccSWCongestionSetting_control_map_get;
+                }  else if (strcmp(_str,"-victim_mask") == 0) {
+                    cmd = _wrap_ccSWCongestionSetting_victim_mask_get;
+                }  else if (strcmp(_str,"-credit_mask") == 0) {
+                    cmd = _wrap_ccSWCongestionSetting_credit_mask_get;
+                }  else if (strcmp(_str,"-threshold") == 0) {
+                    cmd = _wrap_ccSWCongestionSetting_threshold_get;
+                }  else if (strcmp(_str,"-packet_size") == 0) {
+                    cmd = _wrap_ccSWCongestionSetting_packet_size_get;
+                }  else if (strcmp(_str,"-cs_threshold") == 0) {
+                    cmd = _wrap_ccSWCongestionSetting_cs_threshold_get;
+                }  else if (strcmp(_str,"-resv0") == 0) {
+                    cmd = _wrap_ccSWCongestionSetting_resv0_get;
+                }  else if (strcmp(_str,"-cs_return_delay") == 0) {
+                    cmd = _wrap_ccSWCongestionSetting_cs_return_delay_get;
+                }  else if (strcmp(_str,"-marking_rate") == 0) {
+                    cmd = _wrap_ccSWCongestionSetting_marking_rate_get;
+                }
+          else if (strcmp(_str,"-this") == 0) {
+            SWIG_SetPointerObj(tcl_result,(void *) clientData, "_ccSWCongestionSetting_p");
+            return TCL_OK;
+          }
+        if (cmd) {
+          oldarg = objv[2];
+          objv[2] = obj;
+          rcode = (*cmd)(clientData,interp,objc-1,&objv[1]);
+          objv[2] = oldarg;
+          return rcode;
+        } else {
+          Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this -control_map -victim_mask -credit_mask -threshold -packet_size -cs_threshold -resv0 -cs_return_delay -marking_rate  }",-1);
+          return TCL_ERROR;
+        }
+      } else {
+        Tcl_SetStringObj(tcl_result,"{ -this -control_map -victim_mask -credit_mask -threshold -packet_size -cs_threshold -resv0 -cs_return_delay -marking_rate  }", -1);
+        return TCL_ERROR;
+      }
+    } else if ((c == 'd') && (strncmp(_str,"dump",length) == 0) && (length >= 2)) {
+      if (objc == 2) {
+        Tcl_Obj *pDumpObj;
+        pDumpObj = Tcl_NewStringObj("",-1);
+        Tcl_IncrRefCount(pDumpObj);
+                cmd = _wrap_ccSWCongestionSetting_control_map_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-control_map ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ccSWCongestionSetting_victim_mask_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-victim_mask ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ccSWCongestionSetting_credit_mask_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-credit_mask ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ccSWCongestionSetting_threshold_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-threshold ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ccSWCongestionSetting_packet_size_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-packet_size ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ccSWCongestionSetting_cs_threshold_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-cs_threshold ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ccSWCongestionSetting_resv0_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-resv0 ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ccSWCongestionSetting_cs_return_delay_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-cs_return_delay ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ccSWCongestionSetting_marking_rate_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-marking_rate ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+
+        Tcl_DecrRefCount(pDumpObj);
+        return TCL_OK;
+      } else {
+        Tcl_SetStringObj(tcl_result,"no parameters are allowed for dump", -1);
+        return TCL_ERROR;
+      }
+    }
+  if (!cmd) {
+    Tcl_SetStringObj(tcl_result,"Invalid Method. Must be { dump cget configure getByLid setByLid }",-1);
+    return TCL_ERROR;
+  }
+  oldarg = objv[1];
+  objv[1] = obj;
+  rcode = (*cmd)(clientData,interp,objc,objv);
+  objv[1] = oldarg;
+  return rcode;
+}
+
+
+
+/* objcmd8.swg : Tcl 8.x object creation */
+
+static int TclccSWCongestionSettingCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+    void (*del)(ClientData) = 0;
+    char *name = 0;
+    int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
+    ccSWCongestionSetting * newObj = 0;
+    int firstarg = 0;
+    int thisarg = 0;
+    int length;
+    char *_str;
+    Tcl_Obj *tcl_result;
+
+    tcl_result = Tcl_GetObjResult(interp);
+    if (objc == 1) {
+        cmd = 0;
+    } else {
+      _str = Tcl_GetStringFromObj(objv[1],&length);
+      if (strcmp(_str,"-this") == 0) thisarg = 2;
+      else if (strcmp(_str,"-args") == 0) {
+	firstarg = 1;
+	cmd = 0;
+      } else if (objc == 2) {
+	firstarg = 1;
+	name = _str;
+	cmd = 0;
+      } else if (objc >= 3) {
+	name = _str;
+	_str = Tcl_GetStringFromObj(objv[2],&length);
+	if (strcmp(_str,"-this") == 0) thisarg = 3;
+	else {
+	  firstarg = 1;
+	  cmd = 0;
+	}
+      }
+    }
+    if (cmd) {
+        int result;
+        result = (*cmd)(clientData,interp,objc-firstarg,&objv[firstarg]);
+        if (result == TCL_OK) {
+            SWIG_GetPointerObj(interp,tcl_result,(void **) &newObj,"_ccSWCongestionSetting_p");
+        } else { return result; }
+        if (!name) name = Tcl_GetStringFromObj(tcl_result,&length);
+        del = 0;
+    } else if (thisarg > 0) {
+        if (thisarg < objc) {
+            char *r;
+            r = SWIG_GetPointerObj(interp,objv[thisarg],(void **) &newObj,"_ccSWCongestionSetting_p");
+            if (r) {
+	      Tcl_SetStringObj(tcl_result,"Type error. not a ccSWCongestionSetting object.",-1);
+	      return TCL_ERROR;
+            }
+        if (!name) name = Tcl_GetStringFromObj(objv[thisarg],&length);
+	Tcl_SetStringObj(tcl_result,name,-1);
+        } else {
+            Tcl_SetStringObj(tcl_result,"wrong # args.",-1);
+            return TCL_ERROR;
+        }
+    } else {
+        Tcl_SetStringObj(tcl_result,"No constructor available.",-1);
+        return TCL_ERROR;
+    }
+    {
+      Tcl_CmdInfo dummy;
+      if (!Tcl_GetCommandInfo(interp,name,&dummy)) {
+	Tcl_CreateObjCommand(interp,name, TclccSWCongestionSettingMethodCmd, (ClientData) newObj, del);
+	return TCL_OK;
+      } else {
+	Tcl_SetStringObj(tcl_result,"Object name already exists!",-1);
+	return TCL_ERROR;
+      }
+    }
+}
+
+
+#define _ib_sw_port_cong_setting_element_valid_ctrl_type_res_threshold_set(_swigobj,_swigval) (_swigobj->valid_ctrl_type_res_threshold = *(_swigval),_swigval)
+static int _wrap_ib_sw_port_cong_setting_element_t_valid_ctrl_type_res_threshold_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    ib_sw_port_cong_setting_element_t * _arg0;
+    uint8_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint8_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ib_sw_port_cong_setting_element_t_valid_ctrl_type_res_threshold_set { ib_sw_port_cong_setting_element_t * } { uint8_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ib_sw_port_cong_setting_element_t_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ib_sw_port_cong_setting_element_t_valid_ctrl_type_res_threshold_set. Expected _ib_sw_port_cong_setting_element_t_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (uint8_t *)_ib_sw_port_cong_setting_element_valid_ctrl_type_res_threshold_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_sw_port_cong_setting_element_valid_ctrl_type_res_threshold_get(_swigobj) (&_swigobj->valid_ctrl_type_res_threshold)
+static int _wrap_ib_sw_port_cong_setting_element_t_valid_ctrl_type_res_threshold_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    ib_sw_port_cong_setting_element_t * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ib_sw_port_cong_setting_element_t_valid_ctrl_type_res_threshold_get { ib_sw_port_cong_setting_element_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ib_sw_port_cong_setting_element_t_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ib_sw_port_cong_setting_element_t_valid_ctrl_type_res_threshold_get. Expected _ib_sw_port_cong_setting_element_t_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (uint8_t *)_ib_sw_port_cong_setting_element_valid_ctrl_type_res_threshold_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_sw_port_cong_setting_element_packet_size_set(_swigobj,_swigval) (_swigobj->packet_size = *(_swigval),_swigval)
+static int _wrap_ib_sw_port_cong_setting_element_t_packet_size_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    ib_sw_port_cong_setting_element_t * _arg0;
+    uint8_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint8_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ib_sw_port_cong_setting_element_t_packet_size_set { ib_sw_port_cong_setting_element_t * } { uint8_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ib_sw_port_cong_setting_element_t_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ib_sw_port_cong_setting_element_t_packet_size_set. Expected _ib_sw_port_cong_setting_element_t_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (uint8_t *)_ib_sw_port_cong_setting_element_packet_size_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_sw_port_cong_setting_element_packet_size_get(_swigobj) (&_swigobj->packet_size)
+static int _wrap_ib_sw_port_cong_setting_element_t_packet_size_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    ib_sw_port_cong_setting_element_t * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ib_sw_port_cong_setting_element_t_packet_size_get { ib_sw_port_cong_setting_element_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ib_sw_port_cong_setting_element_t_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ib_sw_port_cong_setting_element_t_packet_size_get. Expected _ib_sw_port_cong_setting_element_t_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (uint8_t *)_ib_sw_port_cong_setting_element_packet_size_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_sw_port_cong_setting_element_cong_param_set(_swigobj,_swigval) (_swigobj->cong_param = *(_swigval),_swigval)
+static int _wrap_ib_sw_port_cong_setting_element_t_cong_param_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    ib_sw_port_cong_setting_element_t * _arg0;
+    ib_net16_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_net16_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ib_sw_port_cong_setting_element_t_cong_param_set { ib_sw_port_cong_setting_element_t * } { ib_net16_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ib_sw_port_cong_setting_element_t_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ib_sw_port_cong_setting_element_t_cong_param_set. Expected _ib_sw_port_cong_setting_element_t_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net16_t *)_ib_sw_port_cong_setting_element_cong_param_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_sw_port_cong_setting_element_cong_param_get(_swigobj) (&_swigobj->cong_param)
+static int _wrap_ib_sw_port_cong_setting_element_t_cong_param_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    ib_sw_port_cong_setting_element_t * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ib_sw_port_cong_setting_element_t_cong_param_get { ib_sw_port_cong_setting_element_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ib_sw_port_cong_setting_element_t_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ib_sw_port_cong_setting_element_t_cong_param_get. Expected _ib_sw_port_cong_setting_element_t_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net16_t *)_ib_sw_port_cong_setting_element_cong_param_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+/* methodcmd8.swg : Tcl8.x method invocation */
+
+static int Tclib_sw_port_cong_setting_element_tMethodCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST _objv[]) {
+  int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
+  char *_str;
+  int rcode;
+  Tcl_Obj **objv;
+  Tcl_Obj *oldarg,*tcl_result,*obj;
+  int length;
+  char c;
+
+  tcl_result = Tcl_GetObjResult(interp);
+  objv = (Tcl_Obj **) _objv;
+  if (objc < 2) {
+    Tcl_SetStringObj(tcl_result,"ib_sw_port_cong_setting_element_t methods : { dump cget configure  }",-1);
+    return TCL_ERROR;
+  }
+  obj = Tcl_NewObj();
+  SWIG_SetPointerObj(obj,(void *) clientData,"_ib_sw_port_cong_setting_element_t_p");
+  _str = Tcl_GetStringFromObj(objv[1],&length);
+  c = *_str;
+  if (0);
+
+    else if ((c == 'c') && (strncmp(_str,"configure",length) == 0) && (length >= 2)) {
+      int i = 2;
+      cmd = 0;
+      while (i+1 < objc) {
+        _str = Tcl_GetStringFromObj(objv[i],&length);
+                        if (strcmp(_str,"-valid_ctrl_type_res_threshold") == 0) {
+                    cmd = _wrap_ib_sw_port_cong_setting_element_t_valid_ctrl_type_res_threshold_set;
+                }  else if (strcmp(_str,"-packet_size") == 0) {
+                    cmd = _wrap_ib_sw_port_cong_setting_element_t_packet_size_set;
+                }  else if (strcmp(_str,"-cong_param") == 0) {
+                    cmd = _wrap_ib_sw_port_cong_setting_element_t_cong_param_set;
+                }
+          if (cmd) {
+            oldarg = objv[i];
+            objv[i] = obj;
+            rcode = (*cmd)(clientData,interp,3,&objv[i-1]);
+            objv[i] = oldarg;
+            if (rcode == TCL_ERROR) return rcode;
+            cmd = 0;
+          } else {
+            Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be { -valid_ctrl_type_res_threshold -packet_size -cong_param  }",-1);
+            return TCL_ERROR;
+          }
+        i+=2;
+      }
+      if ((i < objc) || (i == 2)) {
+        Tcl_SetStringObj(tcl_result,"{ -valid_ctrl_type_res_threshold -packet_size -cong_param  }",-1);
+        return TCL_ERROR;
+      }
+      return TCL_OK;
+    } else if ((c == 'c') && (strncmp(_str,"cget",length) == 0) && (length >= 2)) {
+      if (objc == 3) {
+        _str = Tcl_GetStringFromObj(objv[2],&length);
+        if (0) {}
+                        if (strcmp(_str,"-valid_ctrl_type_res_threshold") == 0) {
+                    cmd = _wrap_ib_sw_port_cong_setting_element_t_valid_ctrl_type_res_threshold_get;
+                }  else if (strcmp(_str,"-packet_size") == 0) {
+                    cmd = _wrap_ib_sw_port_cong_setting_element_t_packet_size_get;
+                }  else if (strcmp(_str,"-cong_param") == 0) {
+                    cmd = _wrap_ib_sw_port_cong_setting_element_t_cong_param_get;
+                }
+          else if (strcmp(_str,"-this") == 0) {
+            SWIG_SetPointerObj(tcl_result,(void *) clientData, "_ib_sw_port_cong_setting_element_t_p");
+            return TCL_OK;
+          }
+        if (cmd) {
+          oldarg = objv[2];
+          objv[2] = obj;
+          rcode = (*cmd)(clientData,interp,objc-1,&objv[1]);
+          objv[2] = oldarg;
+          return rcode;
+        } else {
+          Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this -valid_ctrl_type_res_threshold -packet_size -cong_param  }",-1);
+          return TCL_ERROR;
+        }
+      } else {
+        Tcl_SetStringObj(tcl_result,"{ -this -valid_ctrl_type_res_threshold -packet_size -cong_param  }", -1);
+        return TCL_ERROR;
+      }
+    } else if ((c == 'd') && (strncmp(_str,"dump",length) == 0) && (length >= 2)) {
+      if (objc == 2) {
+        Tcl_Obj *pDumpObj;
+        pDumpObj = Tcl_NewStringObj("",-1);
+        Tcl_IncrRefCount(pDumpObj);
+                cmd = _wrap_ib_sw_port_cong_setting_element_t_valid_ctrl_type_res_threshold_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-valid_ctrl_type_res_threshold ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_sw_port_cong_setting_element_t_packet_size_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-packet_size ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_sw_port_cong_setting_element_t_cong_param_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-cong_param ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+
+        Tcl_DecrRefCount(pDumpObj);
+        return TCL_OK;
+      } else {
+        Tcl_SetStringObj(tcl_result,"no parameters are allowed for dump", -1);
+        return TCL_ERROR;
+      }
+    }
+  if (!cmd) {
+    Tcl_SetStringObj(tcl_result,"Invalid Method. Must be { dump cget configure }",-1);
+    return TCL_ERROR;
+  }
+  oldarg = objv[1];
+  objv[1] = obj;
+  rcode = (*cmd)(clientData,interp,objc,objv);
+  objv[1] = oldarg;
+  return rcode;
+}
+
+
+
+/* objcmd8.swg : Tcl 8.x object creation */
+
+static int Tclib_sw_port_cong_setting_element_tCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+    void (*del)(ClientData) = 0;
+    char *name = 0;
+    int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
+    ib_sw_port_cong_setting_element_t * newObj = 0;
+    int firstarg = 0;
+    int thisarg = 0;
+    int length;
+    char *_str;
+    Tcl_Obj *tcl_result;
+
+    tcl_result = Tcl_GetObjResult(interp);
+    if (objc == 1) {
+        cmd = 0;
+    } else {
+      _str = Tcl_GetStringFromObj(objv[1],&length);
+      if (strcmp(_str,"-this") == 0) thisarg = 2;
+      else if (strcmp(_str,"-args") == 0) {
+	firstarg = 1;
+	cmd = 0;
+      } else if (objc == 2) {
+	firstarg = 1;
+	name = _str;
+	cmd = 0;
+      } else if (objc >= 3) {
+	name = _str;
+	_str = Tcl_GetStringFromObj(objv[2],&length);
+	if (strcmp(_str,"-this") == 0) thisarg = 3;
+	else {
+	  firstarg = 1;
+	  cmd = 0;
+	}
+      }
+    }
+    if (cmd) {
+        int result;
+        result = (*cmd)(clientData,interp,objc-firstarg,&objv[firstarg]);
+        if (result == TCL_OK) {
+            SWIG_GetPointerObj(interp,tcl_result,(void **) &newObj,"_ib_sw_port_cong_setting_element_t_p");
+        } else { return result; }
+        if (!name) name = Tcl_GetStringFromObj(tcl_result,&length);
+        del = 0;
+    } else if (thisarg > 0) {
+        if (thisarg < objc) {
+            char *r;
+            r = SWIG_GetPointerObj(interp,objv[thisarg],(void **) &newObj,"_ib_sw_port_cong_setting_element_t_p");
+            if (r) {
+	      Tcl_SetStringObj(tcl_result,"Type error. not a ib_sw_port_cong_setting_element_t object.",-1);
+	      return TCL_ERROR;
+            }
+        if (!name) name = Tcl_GetStringFromObj(objv[thisarg],&length);
+	Tcl_SetStringObj(tcl_result,name,-1);
+        } else {
+            Tcl_SetStringObj(tcl_result,"wrong # args.",-1);
+            return TCL_ERROR;
+        }
+    } else {
+        Tcl_SetStringObj(tcl_result,"No constructor available.",-1);
+        return TCL_ERROR;
+    }
+    {
+      Tcl_CmdInfo dummy;
+      if (!Tcl_GetCommandInfo(interp,name,&dummy)) {
+	Tcl_CreateObjCommand(interp,name, Tclib_sw_port_cong_setting_element_tMethodCmd, (ClientData) newObj, del);
+	return TCL_OK;
+      } else {
+	Tcl_SetStringObj(tcl_result,"Object name already exists!",-1);
+	return TCL_ERROR;
+      }
+    }
+}
+
+
+static ib_sw_port_cong_setting_element_t * _ib_sw_port_cong_setting_block_set(ccSWPortCongestionSetting *obj, ib_sw_port_cong_setting_element_t val[32]) {
+{
+	int i;
+	for (i=0; i <32 ; i++) {
+		obj->block[i] = *(val+i);
+	}
+}
+    return (ib_sw_port_cong_setting_element_t *) val;
+}
+static int _wrap_ccSWPortCongestionSetting_block_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_sw_port_cong_setting_element_t * _result;
+    ccSWPortCongestionSetting * _arg0;
+    ib_sw_port_cong_setting_element_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_sw_port_cong_setting_element_t  entrys[32];
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccSWPortCongestionSetting_block_set { ccSWPortCongestionSetting * } { ib_sw_port_cong_setting_element_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccSWPortCongestionSetting_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccSWPortCongestionSetting_block_set. Expected _ccSWPortCongestionSetting_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+	long int value;
+	long int entry_index = 0;
+	int k;
+	int countSubLists, numElements;
+	int i = 0;
+	int option = 0;
+	Tcl_Obj ** subListObjArray;
+	Tcl_Obj  * tclObj;
+
+	if (Tcl_ListObjGetElements(interp, objv[2], &countSubLists, &subListObjArray) != TCL_OK)
+	{
+		printf("Error: wrong format for SW Port Congestion Setting Element: %s\n",
+			Tcl_GetStringFromObj(objv[2],NULL));
+		return TCL_ERROR;
+	}
+
+	/*
+	 * There are two options to configure entry_list:
+	 *   1. Configure the whole list by providing list of value groups:
+	 *        ccSWPortCongestionSettingMad configure -block {{1 2 3} {4 5 6}}
+	 *   2. Configure specific items from the list by providing index in addition to the above:
+	 *        ccSWPortCongestionSettingMad configure -block {{4 1 2 3} {8 4 5 6}}
+	 */
+
+	if (countSubLists > 0) {
+
+		/* check how many members does the first substring have */
+
+		if (Tcl_ListObjLength(interp, subListObjArray[0], &numElements) != TCL_OK) {
+			printf("Error: wrong format for SW Port Congestion Setting Element: %s\n",
+				Tcl_GetStringFromObj(subListObjArray[0],NULL));
+			return TCL_ERROR;
+		}
+
+		if (numElements == 3)
+			option = 1;
+		else if (numElements == 4)
+			option = 2;
+		else {
+			printf("Error: wrong number of elements for SW Port Congestion Setting Element: %s\n",
+				Tcl_GetStringFromObj(subListObjArray[0],NULL));
+			return TCL_ERROR;
+		}
+	}
+	else {
+		/* if the user didn't specify anything, use option 1,
+		   wich will effectively clear the whole list values */
+		option = 1;
+	}
+
+	for (i = 0; i < 32; i++) {
+		entrys[i].valid_ctrl_type_res_threshold = 0;
+		entrys[i].packet_size = 0;
+		entrys[i].cong_param = 0;
+	}
+
+	if (option == 1) {
+		/*
+		 * first option - list of groups of four values
+		 */
+
+		for (i = 0; i < countSubLists; i++) {
+
+			if (Tcl_ListObjLength(interp, subListObjArray[i], &numElements) != TCL_OK) {
+				printf("Error: wrong format for SW Port Congestion Setting Element: %s\n",
+					Tcl_GetStringFromObj(subListObjArray[i],NULL));
+				return TCL_ERROR;
+			}
+
+			if (numElements != 3) {
+				printf("Error: wrong number of elements for SW Port Congestion Setting Element: %s\n",
+					Tcl_GetStringFromObj(subListObjArray[i],NULL));
+				return TCL_ERROR;
+			}
+
+			for (k = 0; k < 3; k++) {
+
+				if (Tcl_ListObjIndex(interp, subListObjArray[i], k, &tclObj) != TCL_OK) {
+					printf("Error: Fail to obtain the element of SW Port Congestion Setting Element: %s\n",
+						Tcl_GetStringFromObj(subListObjArray[i],NULL));
+					return TCL_ERROR;
+				}
+				value = strtol(Tcl_GetStringFromObj(tclObj, NULL), NULL, 0);
+				switch (k) {
+					case 0: entrys[i].valid_ctrl_type_res_threshold = value; break;
+					case 1: entrys[i].packet_size = value; break;
+					case 2: entrys[i].cong_param = cl_hton16(value); break;
+					default: break;
+				}
+			}
+		}
+
+	}
+	else {
+		/*
+		 * second option - index and four values
+		 */
+
+		for (i = 0; i < countSubLists; i++) {
+
+			if (Tcl_ListObjLength(interp, subListObjArray[i], &numElements) != TCL_OK) {
+				printf("Error: wrong format for SW Port Congestion Setting Element: %s\n",
+					Tcl_GetStringFromObj(subListObjArray[i],NULL));
+				return TCL_ERROR;
+			}
+
+			if (numElements != 4) {
+				printf("Error: wrong number of elements for SW Port Congestion Setting Element: %s\n",
+					Tcl_GetStringFromObj(subListObjArray[i],NULL));
+				return TCL_ERROR;
+			}
+
+			for (k = 0; k < 4; k++) {
+
+				if (Tcl_ListObjIndex(interp, subListObjArray[i], k, &tclObj) != TCL_OK) {
+					printf("Error: Fail to obtain the element of SW Port Congestion Setting Element: %s\n",
+						Tcl_GetStringFromObj(subListObjArray[i],NULL));
+					return TCL_ERROR;
+				}
+				value = strtol(Tcl_GetStringFromObj(tclObj, NULL), NULL, 0);
+				switch (k) {
+					case 0: entry_index = value; break;
+					case 1: entrys[entry_index].valid_ctrl_type_res_threshold = value; break;
+					case 2: entrys[entry_index].packet_size = value; break;
+					case 3: entrys[entry_index].cong_param = cl_hton16(value); break;
+					default: break;
+				}
+			}
+
+		}
+	}
+
+	_arg1 = entrys;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_sw_port_cong_setting_element_t *)_ib_sw_port_cong_setting_block_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+	int i;
+	char buff[99];
+
+	sprintf(buff, "-block\n ");
+	Tcl_AppendResult(interp, buff, NULL);
+
+	for (i=0; i <32 ; i++) {
+		sprintf(buff, " {#%02u:", i);
+		Tcl_AppendResult(interp, buff, NULL);
+
+		sprintf(buff, " -valid_ctrl_type_res_threshold 0x%02x", _result[i].valid_ctrl_type_res_threshold);
+		Tcl_AppendResult(interp, buff, NULL);
+
+		sprintf(buff, " -packet_size 0x%02x", _result[i].packet_size);
+		Tcl_AppendResult(interp, buff, NULL);
+
+		sprintf(buff, " -cong_param 0x%04x", cl_ntoh16(_result[i].cong_param));
+		Tcl_AppendResult(interp, buff, NULL);
+
+		sprintf(buff, "}\n ");
+		Tcl_AppendResult(interp, buff, NULL);
+	}
+}
+    return TCL_OK;
+}
+#define _ib_sw_port_cong_setting_block_get(_swigobj) ((ib_sw_port_cong_setting_element_t *) _swigobj->block)
+static int _wrap_ccSWPortCongestionSetting_block_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_sw_port_cong_setting_element_t * _result;
+    ccSWPortCongestionSetting * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccSWPortCongestionSetting_block_get { ccSWPortCongestionSetting * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccSWPortCongestionSetting_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccSWPortCongestionSetting_block_get. Expected _ccSWPortCongestionSetting_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_sw_port_cong_setting_element_t *)_ib_sw_port_cong_setting_block_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+	int i;
+	char buff[99];
+
+	sprintf(buff, "-block\n ");
+	Tcl_AppendResult(interp, buff, NULL);
+
+	for (i=0; i <32 ; i++) {
+		sprintf(buff, " {#%02u:", i);
+		Tcl_AppendResult(interp, buff, NULL);
+
+		sprintf(buff, " -valid_ctrl_type_res_threshold 0x%02x", _result[i].valid_ctrl_type_res_threshold);
+		Tcl_AppendResult(interp, buff, NULL);
+
+		sprintf(buff, " -packet_size 0x%02x", _result[i].packet_size);
+		Tcl_AppendResult(interp, buff, NULL);
+
+		sprintf(buff, " -cong_param 0x%04x", cl_ntoh16(_result[i].cong_param));
+		Tcl_AppendResult(interp, buff, NULL);
+
+		sprintf(buff, "}\n ");
+		Tcl_AppendResult(interp, buff, NULL);
+	}
+}
+    return TCL_OK;
+}
+static int  ccSWPortCongestionSetting_getByLid(ccSWPortCongestionSetting *self,uint16_t  lid,uint8_t  block) {
+		return ibcc_send_mad_by_lid (
+			gp_ibcc,
+			IBCC_DEAFULT_KEY,
+			NULL,                    // log data
+			0,                       // log data size
+			(uint8_t *)self,         // mgt data
+			sizeof(ccSWPortCongestionSetting),// mgt data size
+			lid,
+			CL_NTOH16(IB_MAD_ATTR_SW_PORT_CONG_SETTING),
+			block,                   // attribute modifier
+			IB_MAD_METHOD_GET);
+	}
+static int _wrap_ccSWPortCongestionSetting_getByLid(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    int  _result;
+    ccSWPortCongestionSetting * _arg0;
+    uint16_t * _arg1;
+    uint8_t * _arg2;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint16_t  temp;
+    uint8_t  temp0;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 4) || (objc > 4)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccSWPortCongestionSetting_getByLid { ccSWPortCongestionSetting * } lid block ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccSWPortCongestionSetting_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccSWPortCongestionSetting_getByLid. Expected _ccSWPortCongestionSetting_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
+  _arg1 = &temp;
+}
+{
+  temp0 = strtoul(Tcl_GetStringFromObj(objv[3],NULL), NULL, 0);
+  _arg2 = &temp0;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (int )ccSWPortCongestionSetting_getByLid(_arg0,*_arg1,*_arg2);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+    Tcl_SetIntObj(tcl_result,(long) _result);
+    return TCL_OK;
+}
+static int  ccSWPortCongestionSetting_setByLid(ccSWPortCongestionSetting *self,uint16_t  lid,uint8_t  block) {
+		return ibcc_send_mad_by_lid (
+			gp_ibcc,
+			IBCC_DEAFULT_KEY,
+			NULL,                    // log data
+			0,                       // log data size
+			(uint8_t *)self,         // mgt data
+			sizeof(ccSWPortCongestionSetting),// mgt data size
+			lid,
+			CL_NTOH16(IB_MAD_ATTR_SW_PORT_CONG_SETTING),
+			block,                   // attribute modifier
+			IB_MAD_METHOD_SET);
+	}
+static int _wrap_ccSWPortCongestionSetting_setByLid(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    int  _result;
+    ccSWPortCongestionSetting * _arg0;
+    uint16_t * _arg1;
+    uint8_t * _arg2;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint16_t  temp;
+    uint8_t  temp0;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 4) || (objc > 4)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccSWPortCongestionSetting_setByLid { ccSWPortCongestionSetting * } lid block ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccSWPortCongestionSetting_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccSWPortCongestionSetting_setByLid. Expected _ccSWPortCongestionSetting_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
+  _arg1 = &temp;
+}
+{
+  temp0 = strtoul(Tcl_GetStringFromObj(objv[3],NULL), NULL, 0);
+  _arg2 = &temp0;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (int )ccSWPortCongestionSetting_setByLid(_arg0,*_arg1,*_arg2);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+    Tcl_SetIntObj(tcl_result,(long) _result);
+    return TCL_OK;
+}
+/* methodcmd8.swg : Tcl8.x method invocation */
+
+static int TclccSWPortCongestionSettingMethodCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST _objv[]) {
+  int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
+  char *_str;
+  int rcode;
+  Tcl_Obj **objv;
+  Tcl_Obj *oldarg,*tcl_result,*obj;
+  int length;
+  char c;
+
+  tcl_result = Tcl_GetObjResult(interp);
+  objv = (Tcl_Obj **) _objv;
+  if (objc < 2) {
+    Tcl_SetStringObj(tcl_result,"ccSWPortCongestionSetting methods : { dump cget configure getByLid setByLid  }",-1);
+    return TCL_ERROR;
+  }
+  obj = Tcl_NewObj();
+  SWIG_SetPointerObj(obj,(void *) clientData,"_ccSWPortCongestionSetting_p");
+  _str = Tcl_GetStringFromObj(objv[1],&length);
+  c = *_str;
+  if (0);
+      if (strcmp(_str,"getByLid") == 0) {
+        cmd = _wrap_ccSWPortCongestionSetting_getByLid;
+    }    else if (strcmp(_str,"setByLid") == 0) {
+        cmd = _wrap_ccSWPortCongestionSetting_setByLid;
+    }
+    else if ((c == 'c') && (strncmp(_str,"configure",length) == 0) && (length >= 2)) {
+      int i = 2;
+      cmd = 0;
+      while (i+1 < objc) {
+        _str = Tcl_GetStringFromObj(objv[i],&length);
+                        if (strcmp(_str,"-block") == 0) {
+                    cmd = _wrap_ccSWPortCongestionSetting_block_set;
+                }
+          if (cmd) {
+            oldarg = objv[i];
+            objv[i] = obj;
+            rcode = (*cmd)(clientData,interp,3,&objv[i-1]);
+            objv[i] = oldarg;
+            if (rcode == TCL_ERROR) return rcode;
+            cmd = 0;
+          } else {
+            Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be { -block  }",-1);
+            return TCL_ERROR;
+          }
+        i+=2;
+      }
+      if ((i < objc) || (i == 2)) {
+        Tcl_SetStringObj(tcl_result,"{ -block  }",-1);
+        return TCL_ERROR;
+      }
+      return TCL_OK;
+    } else if ((c == 'c') && (strncmp(_str,"cget",length) == 0) && (length >= 2)) {
+      if (objc == 3) {
+        _str = Tcl_GetStringFromObj(objv[2],&length);
+        if (0) {}
+                        if (strcmp(_str,"-block") == 0) {
+                    cmd = _wrap_ccSWPortCongestionSetting_block_get;
+                }
+          else if (strcmp(_str,"-this") == 0) {
+            SWIG_SetPointerObj(tcl_result,(void *) clientData, "_ccSWPortCongestionSetting_p");
+            return TCL_OK;
+          }
+        if (cmd) {
+          oldarg = objv[2];
+          objv[2] = obj;
+          rcode = (*cmd)(clientData,interp,objc-1,&objv[1]);
+          objv[2] = oldarg;
+          return rcode;
+        } else {
+          Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this -block  }",-1);
+          return TCL_ERROR;
+        }
+      } else {
+        Tcl_SetStringObj(tcl_result,"{ -this -block  }", -1);
+        return TCL_ERROR;
+      }
+    } else if ((c == 'd') && (strncmp(_str,"dump",length) == 0) && (length >= 2)) {
+      if (objc == 2) {
+        Tcl_Obj *pDumpObj;
+        pDumpObj = Tcl_NewStringObj("",-1);
+        Tcl_IncrRefCount(pDumpObj);
+                cmd = _wrap_ccSWPortCongestionSetting_block_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-block ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+
+        Tcl_DecrRefCount(pDumpObj);
+        return TCL_OK;
+      } else {
+        Tcl_SetStringObj(tcl_result,"no parameters are allowed for dump", -1);
+        return TCL_ERROR;
+      }
+    }
+  if (!cmd) {
+    Tcl_SetStringObj(tcl_result,"Invalid Method. Must be { dump cget configure getByLid setByLid }",-1);
+    return TCL_ERROR;
+  }
+  oldarg = objv[1];
+  objv[1] = obj;
+  rcode = (*cmd)(clientData,interp,objc,objv);
+  objv[1] = oldarg;
+  return rcode;
+}
+
+
+
+/* objcmd8.swg : Tcl 8.x object creation */
+
+static int TclccSWPortCongestionSettingCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+    void (*del)(ClientData) = 0;
+    char *name = 0;
+    int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
+    ccSWPortCongestionSetting * newObj = 0;
+    int firstarg = 0;
+    int thisarg = 0;
+    int length;
+    char *_str;
+    Tcl_Obj *tcl_result;
+
+    tcl_result = Tcl_GetObjResult(interp);
+    if (objc == 1) {
+        cmd = 0;
+    } else {
+      _str = Tcl_GetStringFromObj(objv[1],&length);
+      if (strcmp(_str,"-this") == 0) thisarg = 2;
+      else if (strcmp(_str,"-args") == 0) {
+	firstarg = 1;
+	cmd = 0;
+      } else if (objc == 2) {
+	firstarg = 1;
+	name = _str;
+	cmd = 0;
+      } else if (objc >= 3) {
+	name = _str;
+	_str = Tcl_GetStringFromObj(objv[2],&length);
+	if (strcmp(_str,"-this") == 0) thisarg = 3;
+	else {
+	  firstarg = 1;
+	  cmd = 0;
+	}
+      }
+    }
+    if (cmd) {
+        int result;
+        result = (*cmd)(clientData,interp,objc-firstarg,&objv[firstarg]);
+        if (result == TCL_OK) {
+            SWIG_GetPointerObj(interp,tcl_result,(void **) &newObj,"_ccSWPortCongestionSetting_p");
+        } else { return result; }
+        if (!name) name = Tcl_GetStringFromObj(tcl_result,&length);
+        del = 0;
+    } else if (thisarg > 0) {
+        if (thisarg < objc) {
+            char *r;
+            r = SWIG_GetPointerObj(interp,objv[thisarg],(void **) &newObj,"_ccSWPortCongestionSetting_p");
+            if (r) {
+	      Tcl_SetStringObj(tcl_result,"Type error. not a ccSWPortCongestionSetting object.",-1);
+	      return TCL_ERROR;
+            }
+        if (!name) name = Tcl_GetStringFromObj(objv[thisarg],&length);
+	Tcl_SetStringObj(tcl_result,name,-1);
+        } else {
+            Tcl_SetStringObj(tcl_result,"wrong # args.",-1);
+            return TCL_ERROR;
+        }
+    } else {
+        Tcl_SetStringObj(tcl_result,"No constructor available.",-1);
+        return TCL_ERROR;
+    }
+    {
+      Tcl_CmdInfo dummy;
+      if (!Tcl_GetCommandInfo(interp,name,&dummy)) {
+	Tcl_CreateObjCommand(interp,name, TclccSWPortCongestionSettingMethodCmd, (ClientData) newObj, del);
+	return TCL_OK;
+      } else {
+	Tcl_SetStringObj(tcl_result,"Object name already exists!",-1);
+	return TCL_ERROR;
+      }
+    }
+}
+
+
+#define _ib_ca_cong_entry_ccti_timer_set(_swigobj,_swigval) (_swigobj->ccti_timer = *(_swigval),_swigval)
+static int _wrap_ib_ca_cong_entry_t_ccti_timer_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    ib_ca_cong_entry_t * _arg0;
+    ib_net16_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_net16_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ib_ca_cong_entry_t_ccti_timer_set { ib_ca_cong_entry_t * } { ib_net16_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ib_ca_cong_entry_t_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ib_ca_cong_entry_t_ccti_timer_set. Expected _ib_ca_cong_entry_t_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net16_t *)_ib_ca_cong_entry_ccti_timer_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_ca_cong_entry_ccti_timer_get(_swigobj) (&_swigobj->ccti_timer)
+static int _wrap_ib_ca_cong_entry_t_ccti_timer_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    ib_ca_cong_entry_t * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ib_ca_cong_entry_t_ccti_timer_get { ib_ca_cong_entry_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ib_ca_cong_entry_t_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ib_ca_cong_entry_t_ccti_timer_get. Expected _ib_ca_cong_entry_t_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net16_t *)_ib_ca_cong_entry_ccti_timer_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_ca_cong_entry_ccti_increase_set(_swigobj,_swigval) (_swigobj->ccti_increase = *(_swigval),_swigval)
+static int _wrap_ib_ca_cong_entry_t_ccti_increase_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    ib_ca_cong_entry_t * _arg0;
+    uint8_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint8_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ib_ca_cong_entry_t_ccti_increase_set { ib_ca_cong_entry_t * } { uint8_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ib_ca_cong_entry_t_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ib_ca_cong_entry_t_ccti_increase_set. Expected _ib_ca_cong_entry_t_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (uint8_t *)_ib_ca_cong_entry_ccti_increase_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_ca_cong_entry_ccti_increase_get(_swigobj) (&_swigobj->ccti_increase)
+static int _wrap_ib_ca_cong_entry_t_ccti_increase_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    ib_ca_cong_entry_t * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ib_ca_cong_entry_t_ccti_increase_get { ib_ca_cong_entry_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ib_ca_cong_entry_t_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ib_ca_cong_entry_t_ccti_increase_get. Expected _ib_ca_cong_entry_t_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (uint8_t *)_ib_ca_cong_entry_ccti_increase_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_ca_cong_entry_trigger_threshold_set(_swigobj,_swigval) (_swigobj->trigger_threshold = *(_swigval),_swigval)
+static int _wrap_ib_ca_cong_entry_t_trigger_threshold_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    ib_ca_cong_entry_t * _arg0;
+    uint8_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint8_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ib_ca_cong_entry_t_trigger_threshold_set { ib_ca_cong_entry_t * } { uint8_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ib_ca_cong_entry_t_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ib_ca_cong_entry_t_trigger_threshold_set. Expected _ib_ca_cong_entry_t_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (uint8_t *)_ib_ca_cong_entry_trigger_threshold_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_ca_cong_entry_trigger_threshold_get(_swigobj) (&_swigobj->trigger_threshold)
+static int _wrap_ib_ca_cong_entry_t_trigger_threshold_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    ib_ca_cong_entry_t * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ib_ca_cong_entry_t_trigger_threshold_get { ib_ca_cong_entry_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ib_ca_cong_entry_t_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ib_ca_cong_entry_t_trigger_threshold_get. Expected _ib_ca_cong_entry_t_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (uint8_t *)_ib_ca_cong_entry_trigger_threshold_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_ca_cong_entry_ccti_min_set(_swigobj,_swigval) (_swigobj->ccti_min = *(_swigval),_swigval)
+static int _wrap_ib_ca_cong_entry_t_ccti_min_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    ib_ca_cong_entry_t * _arg0;
+    uint8_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint8_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ib_ca_cong_entry_t_ccti_min_set { ib_ca_cong_entry_t * } { uint8_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ib_ca_cong_entry_t_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ib_ca_cong_entry_t_ccti_min_set. Expected _ib_ca_cong_entry_t_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (uint8_t *)_ib_ca_cong_entry_ccti_min_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_ca_cong_entry_ccti_min_get(_swigobj) (&_swigobj->ccti_min)
+static int _wrap_ib_ca_cong_entry_t_ccti_min_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    ib_ca_cong_entry_t * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ib_ca_cong_entry_t_ccti_min_get { ib_ca_cong_entry_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ib_ca_cong_entry_t_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ib_ca_cong_entry_t_ccti_min_get. Expected _ib_ca_cong_entry_t_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (uint8_t *)_ib_ca_cong_entry_ccti_min_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_ca_cong_entry_resv0_set(_swigobj,_swigval) (_swigobj->resv0 = *(_swigval),_swigval)
+static int _wrap_ib_ca_cong_entry_t_resv0_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    ib_ca_cong_entry_t * _arg0;
+    uint8_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint8_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ib_ca_cong_entry_t_resv0_set { ib_ca_cong_entry_t * } { uint8_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ib_ca_cong_entry_t_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ib_ca_cong_entry_t_resv0_set. Expected _ib_ca_cong_entry_t_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (uint8_t *)_ib_ca_cong_entry_resv0_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_ca_cong_entry_resv0_get(_swigobj) (&_swigobj->resv0)
+static int _wrap_ib_ca_cong_entry_t_resv0_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    ib_ca_cong_entry_t * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ib_ca_cong_entry_t_resv0_get { ib_ca_cong_entry_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ib_ca_cong_entry_t_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ib_ca_cong_entry_t_resv0_get. Expected _ib_ca_cong_entry_t_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (uint8_t *)_ib_ca_cong_entry_resv0_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_ca_cong_entry_resv1_set(_swigobj,_swigval) (_swigobj->resv1 = *(_swigval),_swigval)
+static int _wrap_ib_ca_cong_entry_t_resv1_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    ib_ca_cong_entry_t * _arg0;
+    ib_net16_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_net16_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ib_ca_cong_entry_t_resv1_set { ib_ca_cong_entry_t * } { ib_net16_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ib_ca_cong_entry_t_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ib_ca_cong_entry_t_resv1_set. Expected _ib_ca_cong_entry_t_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net16_t *)_ib_ca_cong_entry_resv1_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_ca_cong_entry_resv1_get(_swigobj) (&_swigobj->resv1)
+static int _wrap_ib_ca_cong_entry_t_resv1_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    ib_ca_cong_entry_t * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ib_ca_cong_entry_t_resv1_get { ib_ca_cong_entry_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ib_ca_cong_entry_t_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ib_ca_cong_entry_t_resv1_get. Expected _ib_ca_cong_entry_t_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net16_t *)_ib_ca_cong_entry_resv1_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+/* methodcmd8.swg : Tcl8.x method invocation */
+
+static int Tclib_ca_cong_entry_tMethodCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST _objv[]) {
+  int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
+  char *_str;
+  int rcode;
+  Tcl_Obj **objv;
+  Tcl_Obj *oldarg,*tcl_result,*obj;
+  int length;
+  char c;
+
+  tcl_result = Tcl_GetObjResult(interp);
+  objv = (Tcl_Obj **) _objv;
+  if (objc < 2) {
+    Tcl_SetStringObj(tcl_result,"ib_ca_cong_entry_t methods : { dump cget configure  }",-1);
+    return TCL_ERROR;
+  }
+  obj = Tcl_NewObj();
+  SWIG_SetPointerObj(obj,(void *) clientData,"_ib_ca_cong_entry_t_p");
+  _str = Tcl_GetStringFromObj(objv[1],&length);
+  c = *_str;
+  if (0);
+
+    else if ((c == 'c') && (strncmp(_str,"configure",length) == 0) && (length >= 2)) {
+      int i = 2;
+      cmd = 0;
+      while (i+1 < objc) {
+        _str = Tcl_GetStringFromObj(objv[i],&length);
+                        if (strcmp(_str,"-ccti_timer") == 0) {
+                    cmd = _wrap_ib_ca_cong_entry_t_ccti_timer_set;
+                }  else if (strcmp(_str,"-ccti_increase") == 0) {
+                    cmd = _wrap_ib_ca_cong_entry_t_ccti_increase_set;
+                }  else if (strcmp(_str,"-trigger_threshold") == 0) {
+                    cmd = _wrap_ib_ca_cong_entry_t_trigger_threshold_set;
+                }  else if (strcmp(_str,"-ccti_min") == 0) {
+                    cmd = _wrap_ib_ca_cong_entry_t_ccti_min_set;
+                }  else if (strcmp(_str,"-resv0") == 0) {
+                    cmd = _wrap_ib_ca_cong_entry_t_resv0_set;
+                }  else if (strcmp(_str,"-resv1") == 0) {
+                    cmd = _wrap_ib_ca_cong_entry_t_resv1_set;
+                }
+          if (cmd) {
+            oldarg = objv[i];
+            objv[i] = obj;
+            rcode = (*cmd)(clientData,interp,3,&objv[i-1]);
+            objv[i] = oldarg;
+            if (rcode == TCL_ERROR) return rcode;
+            cmd = 0;
+          } else {
+            Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be { -ccti_timer -ccti_increase -trigger_threshold -ccti_min -resv0 -resv1  }",-1);
+            return TCL_ERROR;
+          }
+        i+=2;
+      }
+      if ((i < objc) || (i == 2)) {
+        Tcl_SetStringObj(tcl_result,"{ -ccti_timer -ccti_increase -trigger_threshold -ccti_min -resv0 -resv1  }",-1);
+        return TCL_ERROR;
+      }
+      return TCL_OK;
+    } else if ((c == 'c') && (strncmp(_str,"cget",length) == 0) && (length >= 2)) {
+      if (objc == 3) {
+        _str = Tcl_GetStringFromObj(objv[2],&length);
+        if (0) {}
+                        if (strcmp(_str,"-ccti_timer") == 0) {
+                    cmd = _wrap_ib_ca_cong_entry_t_ccti_timer_get;
+                }  else if (strcmp(_str,"-ccti_increase") == 0) {
+                    cmd = _wrap_ib_ca_cong_entry_t_ccti_increase_get;
+                }  else if (strcmp(_str,"-trigger_threshold") == 0) {
+                    cmd = _wrap_ib_ca_cong_entry_t_trigger_threshold_get;
+                }  else if (strcmp(_str,"-ccti_min") == 0) {
+                    cmd = _wrap_ib_ca_cong_entry_t_ccti_min_get;
+                }  else if (strcmp(_str,"-resv0") == 0) {
+                    cmd = _wrap_ib_ca_cong_entry_t_resv0_get;
+                }  else if (strcmp(_str,"-resv1") == 0) {
+                    cmd = _wrap_ib_ca_cong_entry_t_resv1_get;
+                }
+          else if (strcmp(_str,"-this") == 0) {
+            SWIG_SetPointerObj(tcl_result,(void *) clientData, "_ib_ca_cong_entry_t_p");
+            return TCL_OK;
+          }
+        if (cmd) {
+          oldarg = objv[2];
+          objv[2] = obj;
+          rcode = (*cmd)(clientData,interp,objc-1,&objv[1]);
+          objv[2] = oldarg;
+          return rcode;
+        } else {
+          Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this -ccti_timer -ccti_increase -trigger_threshold -ccti_min -resv0 -resv1  }",-1);
+          return TCL_ERROR;
+        }
+      } else {
+        Tcl_SetStringObj(tcl_result,"{ -this -ccti_timer -ccti_increase -trigger_threshold -ccti_min -resv0 -resv1  }", -1);
+        return TCL_ERROR;
+      }
+    } else if ((c == 'd') && (strncmp(_str,"dump",length) == 0) && (length >= 2)) {
+      if (objc == 2) {
+        Tcl_Obj *pDumpObj;
+        pDumpObj = Tcl_NewStringObj("",-1);
+        Tcl_IncrRefCount(pDumpObj);
+                cmd = _wrap_ib_ca_cong_entry_t_ccti_timer_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-ccti_timer ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_ca_cong_entry_t_ccti_increase_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-ccti_increase ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_ca_cong_entry_t_trigger_threshold_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-trigger_threshold ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_ca_cong_entry_t_ccti_min_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-ccti_min ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_ca_cong_entry_t_resv0_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-resv0 ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ib_ca_cong_entry_t_resv1_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-resv1 ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+
+        Tcl_DecrRefCount(pDumpObj);
+        return TCL_OK;
+      } else {
+        Tcl_SetStringObj(tcl_result,"no parameters are allowed for dump", -1);
+        return TCL_ERROR;
+      }
+    }
+  if (!cmd) {
+    Tcl_SetStringObj(tcl_result,"Invalid Method. Must be { dump cget configure }",-1);
+    return TCL_ERROR;
+  }
+  oldarg = objv[1];
+  objv[1] = obj;
+  rcode = (*cmd)(clientData,interp,objc,objv);
+  objv[1] = oldarg;
+  return rcode;
+}
+
+
+
+/* objcmd8.swg : Tcl 8.x object creation */
+
+static int Tclib_ca_cong_entry_tCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+    void (*del)(ClientData) = 0;
+    char *name = 0;
+    int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
+    ib_ca_cong_entry_t * newObj = 0;
+    int firstarg = 0;
+    int thisarg = 0;
+    int length;
+    char *_str;
+    Tcl_Obj *tcl_result;
+
+    tcl_result = Tcl_GetObjResult(interp);
+    if (objc == 1) {
+        cmd = 0;
+    } else {
+      _str = Tcl_GetStringFromObj(objv[1],&length);
+      if (strcmp(_str,"-this") == 0) thisarg = 2;
+      else if (strcmp(_str,"-args") == 0) {
+	firstarg = 1;
+	cmd = 0;
+      } else if (objc == 2) {
+	firstarg = 1;
+	name = _str;
+	cmd = 0;
+      } else if (objc >= 3) {
+	name = _str;
+	_str = Tcl_GetStringFromObj(objv[2],&length);
+	if (strcmp(_str,"-this") == 0) thisarg = 3;
+	else {
+	  firstarg = 1;
+	  cmd = 0;
+	}
+      }
+    }
+    if (cmd) {
+        int result;
+        result = (*cmd)(clientData,interp,objc-firstarg,&objv[firstarg]);
+        if (result == TCL_OK) {
+            SWIG_GetPointerObj(interp,tcl_result,(void **) &newObj,"_ib_ca_cong_entry_t_p");
+        } else { return result; }
+        if (!name) name = Tcl_GetStringFromObj(tcl_result,&length);
+        del = 0;
+    } else if (thisarg > 0) {
+        if (thisarg < objc) {
+            char *r;
+            r = SWIG_GetPointerObj(interp,objv[thisarg],(void **) &newObj,"_ib_ca_cong_entry_t_p");
+            if (r) {
+	      Tcl_SetStringObj(tcl_result,"Type error. not a ib_ca_cong_entry_t object.",-1);
+	      return TCL_ERROR;
+            }
+        if (!name) name = Tcl_GetStringFromObj(objv[thisarg],&length);
+	Tcl_SetStringObj(tcl_result,name,-1);
+        } else {
+            Tcl_SetStringObj(tcl_result,"wrong # args.",-1);
+            return TCL_ERROR;
+        }
+    } else {
+        Tcl_SetStringObj(tcl_result,"No constructor available.",-1);
+        return TCL_ERROR;
+    }
+    {
+      Tcl_CmdInfo dummy;
+      if (!Tcl_GetCommandInfo(interp,name,&dummy)) {
+	Tcl_CreateObjCommand(interp,name, Tclib_ca_cong_entry_tMethodCmd, (ClientData) newObj, del);
+	return TCL_OK;
+      } else {
+	Tcl_SetStringObj(tcl_result,"Object name already exists!",-1);
+	return TCL_ERROR;
+      }
+    }
+}
+
+
+#define _ib_ca_cong_setting_port_control_set(_swigobj,_swigval) (_swigobj->port_control = *(_swigval),_swigval)
+static int _wrap_ccCACongestionSetting_port_control_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    ccCACongestionSetting * _arg0;
+    uint8_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint8_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccCACongestionSetting_port_control_set { ccCACongestionSetting * } { uint8_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccCACongestionSetting_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccCACongestionSetting_port_control_set. Expected _ccCACongestionSetting_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (uint8_t *)_ib_ca_cong_setting_port_control_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_ca_cong_setting_port_control_get(_swigobj) (&_swigobj->port_control)
+static int _wrap_ccCACongestionSetting_port_control_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    ccCACongestionSetting * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccCACongestionSetting_port_control_get { ccCACongestionSetting * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccCACongestionSetting_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccCACongestionSetting_port_control_get. Expected _ccCACongestionSetting_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (uint8_t *)_ib_ca_cong_setting_port_control_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_ca_cong_setting_resv0_set(_swigobj,_swigval) (_swigobj->resv0 = *(_swigval),_swigval)
+static int _wrap_ccCACongestionSetting_resv0_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    ccCACongestionSetting * _arg0;
+    uint8_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint8_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccCACongestionSetting_resv0_set { ccCACongestionSetting * } { uint8_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccCACongestionSetting_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccCACongestionSetting_resv0_set. Expected _ccCACongestionSetting_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (uint8_t *)_ib_ca_cong_setting_resv0_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_ca_cong_setting_resv0_get(_swigobj) (&_swigobj->resv0)
+static int _wrap_ccCACongestionSetting_resv0_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    uint8_t * _result;
+    ccCACongestionSetting * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccCACongestionSetting_resv0_get { ccCACongestionSetting * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccCACongestionSetting_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccCACongestionSetting_resv0_get. Expected _ccCACongestionSetting_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (uint8_t *)_ib_ca_cong_setting_resv0_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", *_result);
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_ca_cong_setting_control_map_set(_swigobj,_swigval) (_swigobj->control_map = *(_swigval),_swigval)
+static int _wrap_ccCACongestionSetting_control_map_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    ccCACongestionSetting * _arg0;
+    ib_net16_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_net16_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccCACongestionSetting_control_map_set { ccCACongestionSetting * } { ib_net16_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccCACongestionSetting_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccCACongestionSetting_control_map_set. Expected _ccCACongestionSetting_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net16_t *)_ib_ca_cong_setting_control_map_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_ca_cong_setting_control_map_get(_swigobj) (&_swigobj->control_map)
+static int _wrap_ccCACongestionSetting_control_map_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    ccCACongestionSetting * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccCACongestionSetting_control_map_get { ccCACongestionSetting * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccCACongestionSetting_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccCACongestionSetting_control_map_get. Expected _ccCACongestionSetting_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net16_t *)_ib_ca_cong_setting_control_map_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+static ib_ca_cong_entry_t * _ib_ca_cong_setting_entry_list_set(ccCACongestionSetting *obj, ib_ca_cong_entry_t val[16]) {
+{
+	int i;
+	for (i=0; i <16 ; i++) {
+		obj->entry_list[i] = *(val+i);
+	}
+}
+    return (ib_ca_cong_entry_t *) val;
+}
+static int _wrap_ccCACongestionSetting_entry_list_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_ca_cong_entry_t * _result;
+    ccCACongestionSetting * _arg0;
+    ib_ca_cong_entry_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_ca_cong_entry_t  entrys[16];
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccCACongestionSetting_entry_list_set { ccCACongestionSetting * } { ib_ca_cong_entry_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccCACongestionSetting_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccCACongestionSetting_entry_list_set. Expected _ccCACongestionSetting_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+	long int value;
+	long int entry_index = 0;
+	int k;
+	int countSubLists, numElements;
+	int i = 0;
+	int option = 0;
+	Tcl_Obj ** subListObjArray;
+	Tcl_Obj  * tclObj;
+
+	if (Tcl_ListObjGetElements(interp, objv[2], &countSubLists, &subListObjArray) != TCL_OK)
+	{
+		printf("Error: wrong format for CA Congestion Setting: %s\n",
+			Tcl_GetStringFromObj(objv[2],NULL));
+		return TCL_ERROR;
+	}
+
+	/*
+	 * There are two options to configure entry_list:
+	 *   1. Configure the whole list by providing list of value groups:
+	 *        ccCACongestionSetting configure -entry_list {{1 2 3 4} {5 6 7 8}}
+	 *   2. Configure specific items from the list by providing index in addition to the above:
+	 *        ccCACongestionSetting configure -entry_list {{4 1 2 3 4} {8 5 6 7 8}}
+	 */
+
+	if (countSubLists > 0) {
+
+		/* check how many members does the first substring have */
+
+		if (Tcl_ListObjLength(interp, subListObjArray[0], &numElements) != TCL_OK) {
+			printf("Error: wrong format for CA Congestion Entry: %s\n",
+				Tcl_GetStringFromObj(subListObjArray[0],NULL));
+			return TCL_ERROR;
+		}
+
+		if (numElements == 4)
+			option = 1;
+		else if (numElements == 5)
+			option = 2;
+		else {
+			printf("Error: wrong number of elements for CA Congestion Entry: %s\n",
+				Tcl_GetStringFromObj(subListObjArray[0],NULL));
+			return TCL_ERROR;
+		}
+	}
+	else {
+		/* if the user didn't specify anything, use option 1,
+		   wich will effectively clear the whole list values */
+		option = 1;
+	}
+
+	for (i = 0; i < 16; i++) {
+		entrys[i].ccti_timer = 0;
+		entrys[i].ccti_increase = 0;
+		entrys[i].trigger_threshold = 0;
+		entrys[i].ccti_min = 0;
+	}
+
+	if (option == 1) {
+		/*
+		 * first option - list of groups of four values
+		 */
+
+		for (i = 0; i < countSubLists; i++) {
+
+			if (Tcl_ListObjLength(interp, subListObjArray[i], &numElements) != TCL_OK) {
+				printf("Error: wrong format for CA Congestion Entry: %s\n",
+					Tcl_GetStringFromObj(subListObjArray[i],NULL));
+				return TCL_ERROR;
+			}
+
+			if (numElements != 4) {
+				printf("Error: wrong number of elements for CA Congestion Entry: %s\n",
+					Tcl_GetStringFromObj(subListObjArray[i],NULL));
+				return TCL_ERROR;
+			}
+
+			for (k = 0; k < 4; k++) {
+
+				if (Tcl_ListObjIndex(interp, subListObjArray[i], k, &tclObj) != TCL_OK) {
+					printf("Error: Fail to obtain the element of CA Congestion Entry: %s\n",
+						Tcl_GetStringFromObj(subListObjArray[i],NULL));
+					return TCL_ERROR;
+				}
+				value = strtol(Tcl_GetStringFromObj(tclObj, NULL), NULL, 0);
+				switch (k) {
+					case 0: entrys[i].ccti_timer = cl_hton16(value); break;
+					case 1: entrys[i].ccti_increase = value; break;
+					case 2: entrys[i].trigger_threshold = value; break;
+					case 3: entrys[i].ccti_min = value; break;
+					default: break;
+				}
+			}
+		}
+
+	}
+	else {
+		/*
+		 * second option - index and four values
+		 */
+
+		for (i = 0; i < countSubLists; i++) {
+
+			if (Tcl_ListObjLength(interp, subListObjArray[i], &numElements) != TCL_OK) {
+				printf("Error: wrong format for CA Congestion Entry: %s\n",
+					Tcl_GetStringFromObj(subListObjArray[i],NULL));
+				return TCL_ERROR;
+			}
+
+			if (numElements != 5) {
+				printf("Error: wrong number of elements for CA Congestion Entry: %s\n",
+					Tcl_GetStringFromObj(subListObjArray[i],NULL));
+				return TCL_ERROR;
+			}
+
+			for (k = 0; k < 5; k++) {
+
+				if (Tcl_ListObjIndex(interp, subListObjArray[i], k, &tclObj) != TCL_OK) {
+					printf("Error: Fail to obtain the element of CA Congestion Entry: %s\n",
+						Tcl_GetStringFromObj(subListObjArray[i],NULL));
+					return TCL_ERROR;
+				}
+				value = strtol(Tcl_GetStringFromObj(tclObj, NULL), NULL, 0);
+				switch (k) {
+					case 0: entry_index = value; break;
+					case 1: entrys[entry_index].ccti_timer = cl_hton16(value); break;
+					case 2: entrys[entry_index].ccti_increase = value; break;
+					case 3: entrys[entry_index].trigger_threshold = value; break;
+					case 4: entrys[entry_index].ccti_min = value; break;
+					default: break;
+				}
+			}
+
+		}
+	}
+
+	_arg1 = entrys;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_ca_cong_entry_t *)_ib_ca_cong_setting_entry_list_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+	int i;
+	char buff[99];
+
+	sprintf(buff, "-entry_list\n ");
+	Tcl_AppendResult(interp, buff, NULL);
+
+	for (i=0; i <16 ; i++) {
+		sprintf(buff, " {SL%02u:", i);
+		Tcl_AppendResult(interp, buff, NULL);
+
+		sprintf(buff, " -ccti_timer 0x%04x", cl_ntoh16(_result[i].ccti_timer));
+		Tcl_AppendResult(interp, buff, NULL);
+
+		sprintf(buff, " -ccti_increase 0x%02x", _result[i].ccti_increase);
+		Tcl_AppendResult(interp, buff, NULL);
+
+		sprintf(buff, " -trigger_threshold 0x%02x", _result[i].trigger_threshold);
+		Tcl_AppendResult(interp, buff, NULL);
+
+		sprintf(buff, " -ccti_min 0x%02x", _result[i].ccti_min);
+		Tcl_AppendResult(interp, buff, NULL);
+
+		sprintf(buff, "}\n ");
+		Tcl_AppendResult(interp, buff, NULL);
+	}
+}
+    return TCL_OK;
+}
+#define _ib_ca_cong_setting_entry_list_get(_swigobj) ((ib_ca_cong_entry_t *) _swigobj->entry_list)
+static int _wrap_ccCACongestionSetting_entry_list_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_ca_cong_entry_t * _result;
+    ccCACongestionSetting * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccCACongestionSetting_entry_list_get { ccCACongestionSetting * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccCACongestionSetting_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccCACongestionSetting_entry_list_get. Expected _ccCACongestionSetting_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_ca_cong_entry_t *)_ib_ca_cong_setting_entry_list_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+	int i;
+	char buff[99];
+
+	sprintf(buff, "-entry_list\n ");
+	Tcl_AppendResult(interp, buff, NULL);
+
+	for (i=0; i <16 ; i++) {
+		sprintf(buff, " {SL%02u:", i);
+		Tcl_AppendResult(interp, buff, NULL);
+
+		sprintf(buff, " -ccti_timer 0x%04x", cl_ntoh16(_result[i].ccti_timer));
+		Tcl_AppendResult(interp, buff, NULL);
+
+		sprintf(buff, " -ccti_increase 0x%02x", _result[i].ccti_increase);
+		Tcl_AppendResult(interp, buff, NULL);
+
+		sprintf(buff, " -trigger_threshold 0x%02x", _result[i].trigger_threshold);
+		Tcl_AppendResult(interp, buff, NULL);
+
+		sprintf(buff, " -ccti_min 0x%02x", _result[i].ccti_min);
+		Tcl_AppendResult(interp, buff, NULL);
+
+		sprintf(buff, "}\n ");
+		Tcl_AppendResult(interp, buff, NULL);
+	}
+}
+    return TCL_OK;
+}
+static int  ccCACongestionSetting_getByLid(ccCACongestionSetting *self,uint16_t  lid) {
+		return ibcc_send_mad_by_lid (
+			gp_ibcc,
+			IBCC_DEAFULT_KEY,
+			NULL,                    // log data
+			0,                       // log data size
+			(uint8_t *)self,         // mgt data
+			sizeof(ccCACongestionSetting),// mgt data size
+			lid,
+			CL_NTOH16(IB_MAD_ATTR_CA_CONG_SETTING),
+			0,                       // attribute modifier
+			IB_MAD_METHOD_GET);
+	}
+static int _wrap_ccCACongestionSetting_getByLid(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    int  _result;
+    ccCACongestionSetting * _arg0;
+    uint16_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint16_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccCACongestionSetting_getByLid { ccCACongestionSetting * } lid ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccCACongestionSetting_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccCACongestionSetting_getByLid. Expected _ccCACongestionSetting_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (int )ccCACongestionSetting_getByLid(_arg0,*_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+    Tcl_SetIntObj(tcl_result,(long) _result);
+    return TCL_OK;
+}
+static int  ccCACongestionSetting_setByLid(ccCACongestionSetting *self,uint16_t  lid) {
+		return ibcc_send_mad_by_lid (
+			gp_ibcc,
+			IBCC_DEAFULT_KEY,
+			NULL,                    // log data
+			0,                       // log data size
+			(uint8_t *)self,         // mgt data
+			sizeof(ccCACongestionSetting),// mgt data size
+			lid,
+			CL_NTOH16(IB_MAD_ATTR_CA_CONG_SETTING),
+			0,                       // attribute modifier
+			IB_MAD_METHOD_SET);
+	}
+static int _wrap_ccCACongestionSetting_setByLid(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    int  _result;
+    ccCACongestionSetting * _arg0;
+    uint16_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint16_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccCACongestionSetting_setByLid { ccCACongestionSetting * } lid ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccCACongestionSetting_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccCACongestionSetting_setByLid. Expected _ccCACongestionSetting_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (int )ccCACongestionSetting_setByLid(_arg0,*_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+    Tcl_SetIntObj(tcl_result,(long) _result);
+    return TCL_OK;
+}
+/* methodcmd8.swg : Tcl8.x method invocation */
+
+static int TclccCACongestionSettingMethodCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST _objv[]) {
+  int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
+  char *_str;
+  int rcode;
+  Tcl_Obj **objv;
+  Tcl_Obj *oldarg,*tcl_result,*obj;
+  int length;
+  char c;
+
+  tcl_result = Tcl_GetObjResult(interp);
+  objv = (Tcl_Obj **) _objv;
+  if (objc < 2) {
+    Tcl_SetStringObj(tcl_result,"ccCACongestionSetting methods : { dump cget configure getByLid setByLid  }",-1);
+    return TCL_ERROR;
+  }
+  obj = Tcl_NewObj();
+  SWIG_SetPointerObj(obj,(void *) clientData,"_ccCACongestionSetting_p");
+  _str = Tcl_GetStringFromObj(objv[1],&length);
+  c = *_str;
+  if (0);
+      if (strcmp(_str,"getByLid") == 0) {
+        cmd = _wrap_ccCACongestionSetting_getByLid;
+    }    else if (strcmp(_str,"setByLid") == 0) {
+        cmd = _wrap_ccCACongestionSetting_setByLid;
+    }
+    else if ((c == 'c') && (strncmp(_str,"configure",length) == 0) && (length >= 2)) {
+      int i = 2;
+      cmd = 0;
+      while (i+1 < objc) {
+        _str = Tcl_GetStringFromObj(objv[i],&length);
+                        if (strcmp(_str,"-port_control") == 0) {
+                    cmd = _wrap_ccCACongestionSetting_port_control_set;
+                }  else if (strcmp(_str,"-resv0") == 0) {
+                    cmd = _wrap_ccCACongestionSetting_resv0_set;
+                }  else if (strcmp(_str,"-control_map") == 0) {
+                    cmd = _wrap_ccCACongestionSetting_control_map_set;
+                }  else if (strcmp(_str,"-entry_list") == 0) {
+                    cmd = _wrap_ccCACongestionSetting_entry_list_set;
+                }
+          if (cmd) {
+            oldarg = objv[i];
+            objv[i] = obj;
+            rcode = (*cmd)(clientData,interp,3,&objv[i-1]);
+            objv[i] = oldarg;
+            if (rcode == TCL_ERROR) return rcode;
+            cmd = 0;
+          } else {
+            Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be { -port_control -resv0 -control_map -entry_list  }",-1);
+            return TCL_ERROR;
+          }
+        i+=2;
+      }
+      if ((i < objc) || (i == 2)) {
+        Tcl_SetStringObj(tcl_result,"{ -port_control -resv0 -control_map -entry_list  }",-1);
+        return TCL_ERROR;
+      }
+      return TCL_OK;
+    } else if ((c == 'c') && (strncmp(_str,"cget",length) == 0) && (length >= 2)) {
+      if (objc == 3) {
+        _str = Tcl_GetStringFromObj(objv[2],&length);
+        if (0) {}
+                        if (strcmp(_str,"-port_control") == 0) {
+                    cmd = _wrap_ccCACongestionSetting_port_control_get;
+                }  else if (strcmp(_str,"-resv0") == 0) {
+                    cmd = _wrap_ccCACongestionSetting_resv0_get;
+                }  else if (strcmp(_str,"-control_map") == 0) {
+                    cmd = _wrap_ccCACongestionSetting_control_map_get;
+                }  else if (strcmp(_str,"-entry_list") == 0) {
+                    cmd = _wrap_ccCACongestionSetting_entry_list_get;
+                }
+          else if (strcmp(_str,"-this") == 0) {
+            SWIG_SetPointerObj(tcl_result,(void *) clientData, "_ccCACongestionSetting_p");
+            return TCL_OK;
+          }
+        if (cmd) {
+          oldarg = objv[2];
+          objv[2] = obj;
+          rcode = (*cmd)(clientData,interp,objc-1,&objv[1]);
+          objv[2] = oldarg;
+          return rcode;
+        } else {
+          Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this -port_control -resv0 -control_map -entry_list  }",-1);
+          return TCL_ERROR;
+        }
+      } else {
+        Tcl_SetStringObj(tcl_result,"{ -this -port_control -resv0 -control_map -entry_list  }", -1);
+        return TCL_ERROR;
+      }
+    } else if ((c == 'd') && (strncmp(_str,"dump",length) == 0) && (length >= 2)) {
+      if (objc == 2) {
+        Tcl_Obj *pDumpObj;
+        pDumpObj = Tcl_NewStringObj("",-1);
+        Tcl_IncrRefCount(pDumpObj);
+                cmd = _wrap_ccCACongestionSetting_port_control_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-port_control ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ccCACongestionSetting_resv0_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-resv0 ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ccCACongestionSetting_control_map_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-control_map ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ccCACongestionSetting_entry_list_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-entry_list ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+
+        Tcl_DecrRefCount(pDumpObj);
+        return TCL_OK;
+      } else {
+        Tcl_SetStringObj(tcl_result,"no parameters are allowed for dump", -1);
+        return TCL_ERROR;
+      }
+    }
+  if (!cmd) {
+    Tcl_SetStringObj(tcl_result,"Invalid Method. Must be { dump cget configure getByLid setByLid }",-1);
+    return TCL_ERROR;
+  }
+  oldarg = objv[1];
+  objv[1] = obj;
+  rcode = (*cmd)(clientData,interp,objc,objv);
+  objv[1] = oldarg;
+  return rcode;
+}
+
+
+
+/* objcmd8.swg : Tcl 8.x object creation */
+
+static int TclccCACongestionSettingCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+    void (*del)(ClientData) = 0;
+    char *name = 0;
+    int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
+    ccCACongestionSetting * newObj = 0;
+    int firstarg = 0;
+    int thisarg = 0;
+    int length;
+    char *_str;
+    Tcl_Obj *tcl_result;
+
+    tcl_result = Tcl_GetObjResult(interp);
+    if (objc == 1) {
+        cmd = 0;
+    } else {
+      _str = Tcl_GetStringFromObj(objv[1],&length);
+      if (strcmp(_str,"-this") == 0) thisarg = 2;
+      else if (strcmp(_str,"-args") == 0) {
+	firstarg = 1;
+	cmd = 0;
+      } else if (objc == 2) {
+	firstarg = 1;
+	name = _str;
+	cmd = 0;
+      } else if (objc >= 3) {
+	name = _str;
+	_str = Tcl_GetStringFromObj(objv[2],&length);
+	if (strcmp(_str,"-this") == 0) thisarg = 3;
+	else {
+	  firstarg = 1;
+	  cmd = 0;
+	}
+      }
+    }
+    if (cmd) {
+        int result;
+        result = (*cmd)(clientData,interp,objc-firstarg,&objv[firstarg]);
+        if (result == TCL_OK) {
+            SWIG_GetPointerObj(interp,tcl_result,(void **) &newObj,"_ccCACongestionSetting_p");
+        } else { return result; }
+        if (!name) name = Tcl_GetStringFromObj(tcl_result,&length);
+        del = 0;
+    } else if (thisarg > 0) {
+        if (thisarg < objc) {
+            char *r;
+            r = SWIG_GetPointerObj(interp,objv[thisarg],(void **) &newObj,"_ccCACongestionSetting_p");
+            if (r) {
+	      Tcl_SetStringObj(tcl_result,"Type error. not a ccCACongestionSetting object.",-1);
+	      return TCL_ERROR;
+            }
+        if (!name) name = Tcl_GetStringFromObj(objv[thisarg],&length);
+	Tcl_SetStringObj(tcl_result,name,-1);
+        } else {
+            Tcl_SetStringObj(tcl_result,"wrong # args.",-1);
+            return TCL_ERROR;
+        }
+    } else {
+        Tcl_SetStringObj(tcl_result,"No constructor available.",-1);
+        return TCL_ERROR;
+    }
+    {
+      Tcl_CmdInfo dummy;
+      if (!Tcl_GetCommandInfo(interp,name,&dummy)) {
+	Tcl_CreateObjCommand(interp,name, TclccCACongestionSettingMethodCmd, (ClientData) newObj, del);
+	return TCL_OK;
+      } else {
+	Tcl_SetStringObj(tcl_result,"Object name already exists!",-1);
+	return TCL_ERROR;
+      }
+    }
+}
+
+
+#define _ibcc_tbl_entry_shift_multiplier_set(_swigobj,_swigval) (_swigobj->shift_multiplier = *(_swigval),_swigval)
+static int _wrap_ib_cc_tbl_entry_t_shift_multiplier_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    ib_cc_tbl_entry_t * _arg0;
+    ib_net16_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_net16_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ib_cc_tbl_entry_t_shift_multiplier_set { ib_cc_tbl_entry_t * } { ib_net16_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ib_cc_tbl_entry_t_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ib_cc_tbl_entry_t_shift_multiplier_set. Expected _ib_cc_tbl_entry_t_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net16_t *)_ibcc_tbl_entry_shift_multiplier_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ibcc_tbl_entry_shift_multiplier_get(_swigobj) (&_swigobj->shift_multiplier)
+static int _wrap_ib_cc_tbl_entry_t_shift_multiplier_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    ib_cc_tbl_entry_t * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ib_cc_tbl_entry_t_shift_multiplier_get { ib_cc_tbl_entry_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ib_cc_tbl_entry_t_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ib_cc_tbl_entry_t_shift_multiplier_get. Expected _ib_cc_tbl_entry_t_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net16_t *)_ibcc_tbl_entry_shift_multiplier_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+/* methodcmd8.swg : Tcl8.x method invocation */
+
+static int Tclib_cc_tbl_entry_tMethodCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST _objv[]) {
+  int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
+  char *_str;
+  int rcode;
+  Tcl_Obj **objv;
+  Tcl_Obj *oldarg,*tcl_result,*obj;
+  int length;
+  char c;
+
+  tcl_result = Tcl_GetObjResult(interp);
+  objv = (Tcl_Obj **) _objv;
+  if (objc < 2) {
+    Tcl_SetStringObj(tcl_result,"ib_cc_tbl_entry_t methods : { dump cget configure  }",-1);
+    return TCL_ERROR;
+  }
+  obj = Tcl_NewObj();
+  SWIG_SetPointerObj(obj,(void *) clientData,"_ib_cc_tbl_entry_t_p");
+  _str = Tcl_GetStringFromObj(objv[1],&length);
+  c = *_str;
+  if (0);
+
+    else if ((c == 'c') && (strncmp(_str,"configure",length) == 0) && (length >= 2)) {
+      int i = 2;
+      cmd = 0;
+      while (i+1 < objc) {
+        _str = Tcl_GetStringFromObj(objv[i],&length);
+                        if (strcmp(_str,"-shift_multiplier") == 0) {
+                    cmd = _wrap_ib_cc_tbl_entry_t_shift_multiplier_set;
+                }
+          if (cmd) {
+            oldarg = objv[i];
+            objv[i] = obj;
+            rcode = (*cmd)(clientData,interp,3,&objv[i-1]);
+            objv[i] = oldarg;
+            if (rcode == TCL_ERROR) return rcode;
+            cmd = 0;
+          } else {
+            Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be { -shift_multiplier  }",-1);
+            return TCL_ERROR;
+          }
+        i+=2;
+      }
+      if ((i < objc) || (i == 2)) {
+        Tcl_SetStringObj(tcl_result,"{ -shift_multiplier  }",-1);
+        return TCL_ERROR;
+      }
+      return TCL_OK;
+    } else if ((c == 'c') && (strncmp(_str,"cget",length) == 0) && (length >= 2)) {
+      if (objc == 3) {
+        _str = Tcl_GetStringFromObj(objv[2],&length);
+        if (0) {}
+                        if (strcmp(_str,"-shift_multiplier") == 0) {
+                    cmd = _wrap_ib_cc_tbl_entry_t_shift_multiplier_get;
+                }
+          else if (strcmp(_str,"-this") == 0) {
+            SWIG_SetPointerObj(tcl_result,(void *) clientData, "_ib_cc_tbl_entry_t_p");
+            return TCL_OK;
+          }
+        if (cmd) {
+          oldarg = objv[2];
+          objv[2] = obj;
+          rcode = (*cmd)(clientData,interp,objc-1,&objv[1]);
+          objv[2] = oldarg;
+          return rcode;
+        } else {
+          Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this -shift_multiplier  }",-1);
+          return TCL_ERROR;
+        }
+      } else {
+        Tcl_SetStringObj(tcl_result,"{ -this -shift_multiplier  }", -1);
+        return TCL_ERROR;
+      }
+    } else if ((c == 'd') && (strncmp(_str,"dump",length) == 0) && (length >= 2)) {
+      if (objc == 2) {
+        Tcl_Obj *pDumpObj;
+        pDumpObj = Tcl_NewStringObj("",-1);
+        Tcl_IncrRefCount(pDumpObj);
+                cmd = _wrap_ib_cc_tbl_entry_t_shift_multiplier_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-shift_multiplier ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+
+        Tcl_DecrRefCount(pDumpObj);
+        return TCL_OK;
+      } else {
+        Tcl_SetStringObj(tcl_result,"no parameters are allowed for dump", -1);
+        return TCL_ERROR;
+      }
+    }
+  if (!cmd) {
+    Tcl_SetStringObj(tcl_result,"Invalid Method. Must be { dump cget configure }",-1);
+    return TCL_ERROR;
+  }
+  oldarg = objv[1];
+  objv[1] = obj;
+  rcode = (*cmd)(clientData,interp,objc,objv);
+  objv[1] = oldarg;
+  return rcode;
+}
+
+
+
+/* objcmd8.swg : Tcl 8.x object creation */
+
+static int Tclib_cc_tbl_entry_tCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+    void (*del)(ClientData) = 0;
+    char *name = 0;
+    int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
+    ib_cc_tbl_entry_t * newObj = 0;
+    int firstarg = 0;
+    int thisarg = 0;
+    int length;
+    char *_str;
+    Tcl_Obj *tcl_result;
+
+    tcl_result = Tcl_GetObjResult(interp);
+    if (objc == 1) {
+        cmd = 0;
+    } else {
+      _str = Tcl_GetStringFromObj(objv[1],&length);
+      if (strcmp(_str,"-this") == 0) thisarg = 2;
+      else if (strcmp(_str,"-args") == 0) {
+	firstarg = 1;
+	cmd = 0;
+      } else if (objc == 2) {
+	firstarg = 1;
+	name = _str;
+	cmd = 0;
+      } else if (objc >= 3) {
+	name = _str;
+	_str = Tcl_GetStringFromObj(objv[2],&length);
+	if (strcmp(_str,"-this") == 0) thisarg = 3;
+	else {
+	  firstarg = 1;
+	  cmd = 0;
+	}
+      }
+    }
+    if (cmd) {
+        int result;
+        result = (*cmd)(clientData,interp,objc-firstarg,&objv[firstarg]);
+        if (result == TCL_OK) {
+            SWIG_GetPointerObj(interp,tcl_result,(void **) &newObj,"_ib_cc_tbl_entry_t_p");
+        } else { return result; }
+        if (!name) name = Tcl_GetStringFromObj(tcl_result,&length);
+        del = 0;
+    } else if (thisarg > 0) {
+        if (thisarg < objc) {
+            char *r;
+            r = SWIG_GetPointerObj(interp,objv[thisarg],(void **) &newObj,"_ib_cc_tbl_entry_t_p");
+            if (r) {
+	      Tcl_SetStringObj(tcl_result,"Type error. not a ib_cc_tbl_entry_t object.",-1);
+	      return TCL_ERROR;
+            }
+        if (!name) name = Tcl_GetStringFromObj(objv[thisarg],&length);
+	Tcl_SetStringObj(tcl_result,name,-1);
+        } else {
+            Tcl_SetStringObj(tcl_result,"wrong # args.",-1);
+            return TCL_ERROR;
+        }
+    } else {
+        Tcl_SetStringObj(tcl_result,"No constructor available.",-1);
+        return TCL_ERROR;
+    }
+    {
+      Tcl_CmdInfo dummy;
+      if (!Tcl_GetCommandInfo(interp,name,&dummy)) {
+	Tcl_CreateObjCommand(interp,name, Tclib_cc_tbl_entry_tMethodCmd, (ClientData) newObj, del);
+	return TCL_OK;
+      } else {
+	Tcl_SetStringObj(tcl_result,"Object name already exists!",-1);
+	return TCL_ERROR;
+      }
+    }
+}
+
+
+#define _ib_cc_tbl_ccti_limit_set(_swigobj,_swigval) (_swigobj->ccti_limit = *(_swigval),_swigval)
+static int _wrap_ccTable_ccti_limit_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    ccTable * _arg0;
+    ib_net16_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_net16_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccTable_ccti_limit_set { ccTable * } { ib_net16_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccTable_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccTable_ccti_limit_set. Expected _ccTable_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net16_t *)_ib_cc_tbl_ccti_limit_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_cc_tbl_ccti_limit_get(_swigobj) (&_swigobj->ccti_limit)
+static int _wrap_ccTable_ccti_limit_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    ccTable * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccTable_ccti_limit_get { ccTable * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccTable_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccTable_ccti_limit_get. Expected _ccTable_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net16_t *)_ib_cc_tbl_ccti_limit_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_cc_tbl_resv_set(_swigobj,_swigval) (_swigobj->resv = *(_swigval),_swigval)
+static int _wrap_ccTable_resv_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    ccTable * _arg0;
+    ib_net16_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_net16_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccTable_resv_set { ccTable * } { ib_net16_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccTable_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccTable_resv_set. Expected _ccTable_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net16_t *)_ib_cc_tbl_resv_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_cc_tbl_resv_get(_swigobj) (&_swigobj->resv)
+static int _wrap_ccTable_resv_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net16_t * _result;
+    ccTable * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccTable_resv_get { ccTable * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccTable_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccTable_resv_get. Expected _ccTable_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net16_t *)_ib_cc_tbl_resv_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_hton16(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+static ib_cc_tbl_entry_t * _ib_cc_tbl_entry_list_set(ccTable *obj, ib_cc_tbl_entry_t val[64]) {
+{
+	int i;
+	for (i=0; i <64 ; i++) {
+		obj->entry_list[i] = *(val+i);
+	}
+}
+    return (ib_cc_tbl_entry_t *) val;
+}
+static int _wrap_ccTable_entry_list_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_cc_tbl_entry_t * _result;
+    ccTable * _arg0;
+    ib_cc_tbl_entry_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_cc_tbl_entry_t  entrys[64];
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccTable_entry_list_set { ccTable * } { ib_cc_tbl_entry_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccTable_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccTable_entry_list_set. Expected _ccTable_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+	long int value;
+	long int entry_index = 0;
+	int countSubLists, numElements;
+	int i = 0;
+	int option = 0;
+	Tcl_Obj ** subListObjArray;
+	Tcl_Obj  * tclObj;
+
+	if (Tcl_ListObjGetElements(interp, objv[2], &countSubLists, &subListObjArray) != TCL_OK)
+	{
+		printf("Error: wrong format for CC Table: %s\n",
+			Tcl_GetStringFromObj(objv[2],NULL));
+		return TCL_ERROR;
+	}
+
+	/*
+	 * There are two options to configure entry_list:
+	 *   1. Configure the whole list by providing list of values:
+	 *        ccTableMad configure -entry_list {1 2 3 4 5 6}
+	 *   2. Configure specific items from the list by providing index and value:
+	 *        ccTableMad configure -entry_list {{1 3} {2 4} {7 16}}
+	 */
+
+	if (countSubLists > 0) {
+
+		/* check how many members does the first substring have */
+
+		if (Tcl_ListObjLength(interp, subListObjArray[0], &numElements) != TCL_OK) {
+			printf("Error: wrong format for CC Table Entry: %s\n",
+				Tcl_GetStringFromObj(subListObjArray[0],NULL));
+			return TCL_ERROR;
+		}
+
+		if (numElements == 1)
+			option = 1;
+		else if (numElements == 2)
+			option = 2;
+		else {
+			printf("Error: wrong number of elements for CC Table Entry: %s\n",
+				Tcl_GetStringFromObj(subListObjArray[0],NULL));
+			return TCL_ERROR;
+		}
+	}
+	else {
+		/* if the user didn't specify anything, use option 1,
+		   wich will effectively clear the whole list values */
+		option = 1;
+	}
+
+	for (i = 0; i < 64; i++)
+		entrys[i].shift_multiplier = 0;
+
+	if (option == 1) {
+		/*
+		 * first option - list of values
+		 */
+
+		for (i = 0; i < countSubLists; i++) {
+
+			if (Tcl_ListObjLength(interp, subListObjArray[i], &numElements) != TCL_OK) {
+				printf("Error: wrong format for CC Table Entry: %s\n",
+					Tcl_GetStringFromObj(subListObjArray[i],NULL));
+				return TCL_ERROR;
+			}
+
+			if (numElements != 1) {
+				printf("Error: wrong number of elements for CC Table Entry: %s\n",
+					Tcl_GetStringFromObj(subListObjArray[i],NULL));
+				return TCL_ERROR;
+			}
+
+			if (Tcl_ListObjIndex(interp, subListObjArray[i], 0, &tclObj) != TCL_OK) {
+				printf("Error: Fail to obtain the element of CC Table Entry: %s\n",
+					Tcl_GetStringFromObj(subListObjArray[i],NULL));
+				return TCL_ERROR;
+			}
+
+			value = strtol(Tcl_GetStringFromObj(tclObj, NULL), NULL, 0);
+
+			entrys[i].shift_multiplier = cl_hton16(value);
+		}
+
+	}
+	else {
+		/*
+		 * second option - index and value
+		 */
+
+		for (i = 0; i < countSubLists; i++) {
+
+			if (Tcl_ListObjLength(interp, subListObjArray[i], &numElements) != TCL_OK) {
+				printf("Error: wrong format for CC Table Entry: %s\n",
+					Tcl_GetStringFromObj(subListObjArray[i],NULL));
+				return TCL_ERROR;
+			}
+
+			if (numElements != 2) {
+				printf("Error: wrong number of elements for CC Table Entry: %s\n",
+					Tcl_GetStringFromObj(subListObjArray[i],NULL));
+				return TCL_ERROR;
+			}
+
+			if (Tcl_ListObjIndex(interp, subListObjArray[i], 0, &tclObj) != TCL_OK) {
+				printf("Error: Fail to obtain the element of CC Table Entry: %s\n",
+					Tcl_GetStringFromObj(subListObjArray[i],NULL));
+				return TCL_ERROR;
+			}
+
+			entry_index = strtol(Tcl_GetStringFromObj(tclObj, NULL), NULL, 0);
+
+			if (Tcl_ListObjIndex(interp, subListObjArray[i], 1, &tclObj) != TCL_OK) {
+				printf("Error: Fail to obtain the element of CC Table Entry: %s\n",
+					Tcl_GetStringFromObj(subListObjArray[i],NULL));
+				return TCL_ERROR;
+			}
+
+			value = strtol(Tcl_GetStringFromObj(tclObj, NULL), NULL, 0);
+
+			entrys[entry_index].shift_multiplier = cl_hton16(value);
+		}
+	}
+
+	_arg1 = entrys;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_cc_tbl_entry_t *)_ib_cc_tbl_entry_list_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+	int i;
+	char buff[99];
+
+	sprintf(buff, "-entry_list { ");
+	Tcl_AppendResult(interp, buff, NULL);
+
+	for (i=0; i <64 ; i++) {
+		sprintf(buff, "{#%02u: 0x%04x} ", i, cl_ntoh16(_result[i].shift_multiplier));
+		Tcl_AppendResult(interp, buff, NULL);
+	}
+
+	sprintf(buff, "} ");
+	Tcl_AppendResult(interp, buff, NULL);
+}
+    return TCL_OK;
+}
+#define _ib_cc_tbl_entry_list_get(_swigobj) ((ib_cc_tbl_entry_t *) _swigobj->entry_list)
+static int _wrap_ccTable_entry_list_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_cc_tbl_entry_t * _result;
+    ccTable * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccTable_entry_list_get { ccTable * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccTable_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccTable_entry_list_get. Expected _ccTable_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_cc_tbl_entry_t *)_ib_cc_tbl_entry_list_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+	int i;
+	char buff[99];
+
+	sprintf(buff, "-entry_list { ");
+	Tcl_AppendResult(interp, buff, NULL);
+
+	for (i=0; i <64 ; i++) {
+		sprintf(buff, "{#%02u: 0x%04x} ", i, cl_ntoh16(_result[i].shift_multiplier));
+		Tcl_AppendResult(interp, buff, NULL);
+	}
+
+	sprintf(buff, "} ");
+	Tcl_AppendResult(interp, buff, NULL);
+}
+    return TCL_OK;
+}
+static int  ccTable_getByLid(ccTable *self,uint16_t  lid,uint8_t  sn) {
+		return ibcc_send_mad_by_lid (
+			gp_ibcc,
+			IBCC_DEAFULT_KEY,
+			NULL,                    // log data
+			0,                       // log data size
+			(uint8_t *)self,         // mgt data
+			sizeof(ccTable),         // mgt data size
+			lid,
+			CL_NTOH16(IB_MAD_ATTR_CC_TBL),
+			sn,                      // attribute modifier
+			IB_MAD_METHOD_GET);
+	}
+static int _wrap_ccTable_getByLid(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    int  _result;
+    ccTable * _arg0;
+    uint16_t * _arg1;
+    uint8_t * _arg2;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint16_t  temp;
+    uint8_t  temp0;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 4) || (objc > 4)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccTable_getByLid { ccTable * } lid sn ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccTable_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccTable_getByLid. Expected _ccTable_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
+  _arg1 = &temp;
+}
+{
+  temp0 = strtoul(Tcl_GetStringFromObj(objv[3],NULL), NULL, 0);
+  _arg2 = &temp0;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (int )ccTable_getByLid(_arg0,*_arg1,*_arg2);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+    Tcl_SetIntObj(tcl_result,(long) _result);
+    return TCL_OK;
+}
+static int  ccTable_setByLid(ccTable *self,uint16_t  lid,uint8_t  sn) {
+		return ibcc_send_mad_by_lid (
+			gp_ibcc,
+			IBCC_DEAFULT_KEY,
+			NULL,                    // log data
+			0,                       // log data size
+			(uint8_t *)self,         // mgt data
+			sizeof(ccTable),         // mgt data size
+			lid,
+			CL_NTOH16(IB_MAD_ATTR_CC_TBL),
+			sn,                      // attribute modifier
+			IB_MAD_METHOD_SET);
+	}
+static int _wrap_ccTable_setByLid(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    int  _result;
+    ccTable * _arg0;
+    uint16_t * _arg1;
+    uint8_t * _arg2;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint16_t  temp;
+    uint8_t  temp0;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 4) || (objc > 4)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccTable_setByLid { ccTable * } lid sn ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccTable_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccTable_setByLid. Expected _ccTable_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
+  _arg1 = &temp;
+}
+{
+  temp0 = strtoul(Tcl_GetStringFromObj(objv[3],NULL), NULL, 0);
+  _arg2 = &temp0;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (int )ccTable_setByLid(_arg0,*_arg1,*_arg2);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+    Tcl_SetIntObj(tcl_result,(long) _result);
+    return TCL_OK;
+}
+/* methodcmd8.swg : Tcl8.x method invocation */
+
+static int TclccTableMethodCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST _objv[]) {
+  int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
+  char *_str;
+  int rcode;
+  Tcl_Obj **objv;
+  Tcl_Obj *oldarg,*tcl_result,*obj;
+  int length;
+  char c;
+
+  tcl_result = Tcl_GetObjResult(interp);
+  objv = (Tcl_Obj **) _objv;
+  if (objc < 2) {
+    Tcl_SetStringObj(tcl_result,"ccTable methods : { dump cget configure getByLid setByLid  }",-1);
+    return TCL_ERROR;
+  }
+  obj = Tcl_NewObj();
+  SWIG_SetPointerObj(obj,(void *) clientData,"_ccTable_p");
+  _str = Tcl_GetStringFromObj(objv[1],&length);
+  c = *_str;
+  if (0);
+      if (strcmp(_str,"getByLid") == 0) {
+        cmd = _wrap_ccTable_getByLid;
+    }    else if (strcmp(_str,"setByLid") == 0) {
+        cmd = _wrap_ccTable_setByLid;
+    }
+    else if ((c == 'c') && (strncmp(_str,"configure",length) == 0) && (length >= 2)) {
+      int i = 2;
+      cmd = 0;
+      while (i+1 < objc) {
+        _str = Tcl_GetStringFromObj(objv[i],&length);
+                        if (strcmp(_str,"-ccti_limit") == 0) {
+                    cmd = _wrap_ccTable_ccti_limit_set;
+                }  else if (strcmp(_str,"-resv") == 0) {
+                    cmd = _wrap_ccTable_resv_set;
+                }  else if (strcmp(_str,"-entry_list") == 0) {
+                    cmd = _wrap_ccTable_entry_list_set;
+                }
+          if (cmd) {
+            oldarg = objv[i];
+            objv[i] = obj;
+            rcode = (*cmd)(clientData,interp,3,&objv[i-1]);
+            objv[i] = oldarg;
+            if (rcode == TCL_ERROR) return rcode;
+            cmd = 0;
+          } else {
+            Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be { -ccti_limit -resv -entry_list  }",-1);
+            return TCL_ERROR;
+          }
+        i+=2;
+      }
+      if ((i < objc) || (i == 2)) {
+        Tcl_SetStringObj(tcl_result,"{ -ccti_limit -resv -entry_list  }",-1);
+        return TCL_ERROR;
+      }
+      return TCL_OK;
+    } else if ((c == 'c') && (strncmp(_str,"cget",length) == 0) && (length >= 2)) {
+      if (objc == 3) {
+        _str = Tcl_GetStringFromObj(objv[2],&length);
+        if (0) {}
+                        if (strcmp(_str,"-ccti_limit") == 0) {
+                    cmd = _wrap_ccTable_ccti_limit_get;
+                }  else if (strcmp(_str,"-resv") == 0) {
+                    cmd = _wrap_ccTable_resv_get;
+                }  else if (strcmp(_str,"-entry_list") == 0) {
+                    cmd = _wrap_ccTable_entry_list_get;
+                }
+          else if (strcmp(_str,"-this") == 0) {
+            SWIG_SetPointerObj(tcl_result,(void *) clientData, "_ccTable_p");
+            return TCL_OK;
+          }
+        if (cmd) {
+          oldarg = objv[2];
+          objv[2] = obj;
+          rcode = (*cmd)(clientData,interp,objc-1,&objv[1]);
+          objv[2] = oldarg;
+          return rcode;
+        } else {
+          Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this -ccti_limit -resv -entry_list  }",-1);
+          return TCL_ERROR;
+        }
+      } else {
+        Tcl_SetStringObj(tcl_result,"{ -this -ccti_limit -resv -entry_list  }", -1);
+        return TCL_ERROR;
+      }
+    } else if ((c == 'd') && (strncmp(_str,"dump",length) == 0) && (length >= 2)) {
+      if (objc == 2) {
+        Tcl_Obj *pDumpObj;
+        pDumpObj = Tcl_NewStringObj("",-1);
+        Tcl_IncrRefCount(pDumpObj);
+                cmd = _wrap_ccTable_ccti_limit_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-ccti_limit ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ccTable_resv_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-resv ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+        cmd = _wrap_ccTable_entry_list_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-entry_list ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+
+        Tcl_DecrRefCount(pDumpObj);
+        return TCL_OK;
+      } else {
+        Tcl_SetStringObj(tcl_result,"no parameters are allowed for dump", -1);
+        return TCL_ERROR;
+      }
+    }
+  if (!cmd) {
+    Tcl_SetStringObj(tcl_result,"Invalid Method. Must be { dump cget configure getByLid setByLid }",-1);
+    return TCL_ERROR;
+  }
+  oldarg = objv[1];
+  objv[1] = obj;
+  rcode = (*cmd)(clientData,interp,objc,objv);
+  objv[1] = oldarg;
+  return rcode;
+}
+
+
+
+/* objcmd8.swg : Tcl 8.x object creation */
+
+static int TclccTableCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+    void (*del)(ClientData) = 0;
+    char *name = 0;
+    int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
+    ccTable * newObj = 0;
+    int firstarg = 0;
+    int thisarg = 0;
+    int length;
+    char *_str;
+    Tcl_Obj *tcl_result;
+
+    tcl_result = Tcl_GetObjResult(interp);
+    if (objc == 1) {
+        cmd = 0;
+    } else {
+      _str = Tcl_GetStringFromObj(objv[1],&length);
+      if (strcmp(_str,"-this") == 0) thisarg = 2;
+      else if (strcmp(_str,"-args") == 0) {
+	firstarg = 1;
+	cmd = 0;
+      } else if (objc == 2) {
+	firstarg = 1;
+	name = _str;
+	cmd = 0;
+      } else if (objc >= 3) {
+	name = _str;
+	_str = Tcl_GetStringFromObj(objv[2],&length);
+	if (strcmp(_str,"-this") == 0) thisarg = 3;
+	else {
+	  firstarg = 1;
+	  cmd = 0;
+	}
+      }
+    }
+    if (cmd) {
+        int result;
+        result = (*cmd)(clientData,interp,objc-firstarg,&objv[firstarg]);
+        if (result == TCL_OK) {
+            SWIG_GetPointerObj(interp,tcl_result,(void **) &newObj,"_ccTable_p");
+        } else { return result; }
+        if (!name) name = Tcl_GetStringFromObj(tcl_result,&length);
+        del = 0;
+    } else if (thisarg > 0) {
+        if (thisarg < objc) {
+            char *r;
+            r = SWIG_GetPointerObj(interp,objv[thisarg],(void **) &newObj,"_ccTable_p");
+            if (r) {
+	      Tcl_SetStringObj(tcl_result,"Type error. not a ccTable object.",-1);
+	      return TCL_ERROR;
+            }
+        if (!name) name = Tcl_GetStringFromObj(objv[thisarg],&length);
+	Tcl_SetStringObj(tcl_result,name,-1);
+        } else {
+            Tcl_SetStringObj(tcl_result,"wrong # args.",-1);
+            return TCL_ERROR;
+        }
+    } else {
+        Tcl_SetStringObj(tcl_result,"No constructor available.",-1);
+        return TCL_ERROR;
+    }
+    {
+      Tcl_CmdInfo dummy;
+      if (!Tcl_GetCommandInfo(interp,name,&dummy)) {
+	Tcl_CreateObjCommand(interp,name, TclccTableMethodCmd, (ClientData) newObj, del);
+	return TCL_OK;
+      } else {
+	Tcl_SetStringObj(tcl_result,"Object name already exists!",-1);
+	return TCL_ERROR;
+      }
+    }
+}
+
+
+#define _ib_time_stamp_value_set(_swigobj,_swigval) (_swigobj->value = *(_swigval),_swigval)
+static int _wrap_ccTimeStamp_value_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net32_t * _result;
+    ccTimeStamp * _arg0;
+    ib_net32_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    ib_net32_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccTimeStamp_value_set { ccTimeStamp * } { ib_net32_t * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccTimeStamp_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccTimeStamp_value_set. Expected _ccTimeStamp_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = cl_hton32(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net32_t *)_ib_time_stamp_value_set(_arg0,_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_ntoh32(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+#define _ib_time_stamp_value_get(_swigobj) (&_swigobj->value)
+static int _wrap_ccTimeStamp_value_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    ib_net32_t * _result;
+    ccTimeStamp * _arg0;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 2) || (objc > 2)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccTimeStamp_value_get { ccTimeStamp * } ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccTimeStamp_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccTimeStamp_value_get. Expected _ccTimeStamp_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (ib_net32_t *)_ib_time_stamp_value_get(_arg0);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+{
+  char buff[20];
+  sprintf(buff, "%u", cl_ntoh32(*_result));
+  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
+}
+    return TCL_OK;
+}
+static int  ccTimeStamp_getByLid(ccTimeStamp *self,uint16_t  lid) {
+		return ibcc_send_mad_by_lid (
+			gp_ibcc,
+			IBCC_DEAFULT_KEY,
+			NULL,                    // log data
+			0,                       // log data size
+			(uint8_t *)self,         // mgt data
+			sizeof(ccTimeStamp),     // mgt data size
+			lid,
+			CL_NTOH16(IB_MAD_ATTR_TIME_STAMP),
+			0,                       // attribute modifier
+			IB_MAD_METHOD_GET);
+	}
+static int _wrap_ccTimeStamp_getByLid(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    int  _result;
+    ccTimeStamp * _arg0;
+    uint16_t * _arg1;
+    Tcl_Obj * tcl_result;
+    char * rettype;
+    uint16_t  temp;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccTimeStamp_getByLid { ccTimeStamp * } lid ",-1);
+        return TCL_ERROR;
+    }
+    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccTimeStamp_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccTimeStamp_getByLid. Expected _ccTimeStamp_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
+{
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
+  _arg1 = &temp;
+}
+{
+  /* we can check if IBIS was initialized here */
+  if (!IbisObj.initialized)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  if (! IbisObj.port_guid)
+  {
+    Tcl_SetStringObj(
+      Tcl_GetObjResult(interp),
+      " ibis was not yet initialized. please use ibis_set_port before.", -1);
+    return TCL_ERROR;
+  }
+
+  ibis_tcl_error = 0;
+      _result = (int )ccTimeStamp_getByLid(_arg0,*_arg1);
+;
+  if (ibis_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+    Tcl_SetIntObj(tcl_result,(long) _result);
+    return TCL_OK;
+}
+/* methodcmd8.swg : Tcl8.x method invocation */
+
+static int TclccTimeStampMethodCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST _objv[]) {
+  int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
+  char *_str;
+  int rcode;
+  Tcl_Obj **objv;
+  Tcl_Obj *oldarg,*tcl_result,*obj;
+  int length;
+  char c;
+
+  tcl_result = Tcl_GetObjResult(interp);
+  objv = (Tcl_Obj **) _objv;
+  if (objc < 2) {
+    Tcl_SetStringObj(tcl_result,"ccTimeStamp methods : { dump cget configure getByLid  }",-1);
+    return TCL_ERROR;
+  }
+  obj = Tcl_NewObj();
+  SWIG_SetPointerObj(obj,(void *) clientData,"_ccTimeStamp_p");
+  _str = Tcl_GetStringFromObj(objv[1],&length);
+  c = *_str;
+  if (0);
+      if (strcmp(_str,"getByLid") == 0) {
+        cmd = _wrap_ccTimeStamp_getByLid;
+    }
+    else if ((c == 'c') && (strncmp(_str,"configure",length) == 0) && (length >= 2)) {
+      int i = 2;
+      cmd = 0;
+      while (i+1 < objc) {
+        _str = Tcl_GetStringFromObj(objv[i],&length);
+                        if (strcmp(_str,"-value") == 0) {
+                    cmd = _wrap_ccTimeStamp_value_set;
+                }
+          if (cmd) {
+            oldarg = objv[i];
+            objv[i] = obj;
+            rcode = (*cmd)(clientData,interp,3,&objv[i-1]);
+            objv[i] = oldarg;
+            if (rcode == TCL_ERROR) return rcode;
+            cmd = 0;
+          } else {
+            Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be { -value  }",-1);
+            return TCL_ERROR;
+          }
+        i+=2;
+      }
+      if ((i < objc) || (i == 2)) {
+        Tcl_SetStringObj(tcl_result,"{ -value  }",-1);
+        return TCL_ERROR;
+      }
+      return TCL_OK;
+    } else if ((c == 'c') && (strncmp(_str,"cget",length) == 0) && (length >= 2)) {
+      if (objc == 3) {
+        _str = Tcl_GetStringFromObj(objv[2],&length);
+        if (0) {}
+                        if (strcmp(_str,"-value") == 0) {
+                    cmd = _wrap_ccTimeStamp_value_get;
+                }
+          else if (strcmp(_str,"-this") == 0) {
+            SWIG_SetPointerObj(tcl_result,(void *) clientData, "_ccTimeStamp_p");
+            return TCL_OK;
+          }
+        if (cmd) {
+          oldarg = objv[2];
+          objv[2] = obj;
+          rcode = (*cmd)(clientData,interp,objc-1,&objv[1]);
+          objv[2] = oldarg;
+          return rcode;
+        } else {
+          Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this -value  }",-1);
+          return TCL_ERROR;
+        }
+      } else {
+        Tcl_SetStringObj(tcl_result,"{ -this -value  }", -1);
+        return TCL_ERROR;
+      }
+    } else if ((c == 'd') && (strncmp(_str,"dump",length) == 0) && (length >= 2)) {
+      if (objc == 2) {
+        Tcl_Obj *pDumpObj;
+        pDumpObj = Tcl_NewStringObj("",-1);
+        Tcl_IncrRefCount(pDumpObj);
+                cmd = _wrap_ccTimeStamp_value_get;
+        oldarg = objv[2];
+        objv[2] = obj;
+        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
+        objv[2] = oldarg;
+        Tcl_AppendStringsToObj(pDumpObj, "-value ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
+
+        Tcl_DecrRefCount(pDumpObj);
+        return TCL_OK;
+      } else {
+        Tcl_SetStringObj(tcl_result,"no parameters are allowed for dump", -1);
+        return TCL_ERROR;
+      }
+    }
+  if (!cmd) {
+    Tcl_SetStringObj(tcl_result,"Invalid Method. Must be { dump cget configure getByLid }",-1);
+    return TCL_ERROR;
+  }
+  oldarg = objv[1];
+  objv[1] = obj;
+  rcode = (*cmd)(clientData,interp,objc,objv);
+  objv[1] = oldarg;
+  return rcode;
+}
+
+
+
+/* objcmd8.swg : Tcl 8.x object creation */
+
+static int TclccTimeStampCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+    void (*del)(ClientData) = 0;
+    char *name = 0;
+    int (*cmd)(ClientData, Tcl_Interp *, int, Tcl_Obj *CONST*) = 0;
+    ccTimeStamp * newObj = 0;
+    int firstarg = 0;
+    int thisarg = 0;
+    int length;
+    char *_str;
+    Tcl_Obj *tcl_result;
+
+    tcl_result = Tcl_GetObjResult(interp);
+    if (objc == 1) {
+        cmd = 0;
+    } else {
+      _str = Tcl_GetStringFromObj(objv[1],&length);
+      if (strcmp(_str,"-this") == 0) thisarg = 2;
+      else if (strcmp(_str,"-args") == 0) {
+	firstarg = 1;
+	cmd = 0;
+      } else if (objc == 2) {
+	firstarg = 1;
+	name = _str;
+	cmd = 0;
+      } else if (objc >= 3) {
+	name = _str;
+	_str = Tcl_GetStringFromObj(objv[2],&length);
+	if (strcmp(_str,"-this") == 0) thisarg = 3;
+	else {
+	  firstarg = 1;
+	  cmd = 0;
+	}
+      }
+    }
+    if (cmd) {
+        int result;
+        result = (*cmd)(clientData,interp,objc-firstarg,&objv[firstarg]);
+        if (result == TCL_OK) {
+            SWIG_GetPointerObj(interp,tcl_result,(void **) &newObj,"_ccTimeStamp_p");
+        } else { return result; }
+        if (!name) name = Tcl_GetStringFromObj(tcl_result,&length);
+        del = 0;
+    } else if (thisarg > 0) {
+        if (thisarg < objc) {
+            char *r;
+            r = SWIG_GetPointerObj(interp,objv[thisarg],(void **) &newObj,"_ccTimeStamp_p");
+            if (r) {
+	      Tcl_SetStringObj(tcl_result,"Type error. not a ccTimeStamp object.",-1);
+	      return TCL_ERROR;
+            }
+        if (!name) name = Tcl_GetStringFromObj(objv[thisarg],&length);
+	Tcl_SetStringObj(tcl_result,name,-1);
+        } else {
+            Tcl_SetStringObj(tcl_result,"wrong # args.",-1);
+            return TCL_ERROR;
+        }
+    } else {
+        Tcl_SetStringObj(tcl_result,"No constructor available.",-1);
+        return TCL_ERROR;
+    }
+    {
+      Tcl_CmdInfo dummy;
+      if (!Tcl_GetCommandInfo(interp,name,&dummy)) {
+	Tcl_CreateObjCommand(interp,name, TclccTimeStampMethodCmd, (ClientData) newObj, del);
 	return TCL_OK;
       } else {
 	Tcl_SetStringObj(tcl_result,"Object name already exists!",-1);
@@ -57801,6 +74158,28 @@ SWIGEXPORT(int,Ibis_Init)(Tcl_Interp *interp) {
       memset(&ibsm_pkey_table_obj, 0, sizeof(ib_pkey_table_t));
       memset(&ibsm_sm_info_obj, 0, sizeof(ib_sm_info_t));
 
+      /* ------------------ IBCC ---------------------- */
+
+      gp_ibcc = ibcc_construct();
+
+      if (gp_ibcc == NULL) {
+          printf("-E- Error from ibcc_construct.\n");
+          exit(1);
+      }
+
+      /* Initialize global records */
+      memset(&ibcc_class_port_info_obj, 0, sizeof(ib_class_port_info_t));
+      memset(&ibcc_notice_obj, 0, sizeof(ibcc_notice_attr_t));
+      memset(&ibcc_cong_info_obj, 0, sizeof(ib_cong_info_t));
+      memset(&ibcc_cong_key_info_obj, 0, sizeof(ib_cong_key_info_t));
+      memset(&ibcc_ca_cong_log_obj, 0, sizeof(ibcc_ca_cong_log_t));
+      memset(&ibcc_sw_cong_log_obj, 0, sizeof(ibcc_sw_cong_log_t));
+      memset(&ibcc_sw_cong_setting_obj, 0, sizeof(ib_sw_cong_setting_t));
+      memset(&ibcc_sw_port_cong_setting_obj, 0, sizeof(ib_sw_port_cong_setting_t));
+      memset(&ibcc_ca_cong_setting_obj, 0, sizeof(ib_ca_cong_setting_t));
+      memset(&ibcc_table_obj, 0, sizeof(ib_cc_tbl_t));
+      memset(&ibcc_time_stamp_obj, 0, sizeof(ib_time_stamp_t));
+
       /* ------------------ IBSAC ---------------------- */
 
       /* Initialize global records */
@@ -57906,6 +74285,9 @@ SWIGEXPORT(int,Ibis_Init)(Tcl_Interp *interp) {
 									 (ClientData)ibis_opt_p, 0);
 
     /* add commands for accessing the global query records */
+
+    /* ------------------ IBSM ---------------------- */
+
     Tcl_CreateObjCommand(interp,"smNodeInfoMad",
                          TclsmNodeInfoMethodCmd,
                          (ClientData)&ibsm_node_info_obj, 0);
@@ -57953,6 +74335,54 @@ SWIGEXPORT(int,Ibis_Init)(Tcl_Interp *interp) {
     Tcl_CreateObjCommand(interp,"smNoticeMad",
                          TclsmNoticeMethodCmd,
                          (ClientData)&ibsm_notice_obj, 0);
+
+    /* ------------------ IBCC ---------------------- */
+
+    Tcl_CreateObjCommand(interp,"ccClassPortInfoMad",
+                         TclccClassPortInfoMethodCmd,
+                         (ClientData)&ibcc_class_port_info_obj, 0);
+
+    Tcl_CreateObjCommand(interp,"ccNoticeMad",
+                         TclccNoticeMethodCmd,
+                         (ClientData)&ibcc_notice_obj, 0);
+
+    Tcl_CreateObjCommand(interp,"ccCongestionInfoMad",
+                         TclccCongestionInfoMethodCmd,
+                         (ClientData)&ibcc_cong_info_obj, 0);
+
+    Tcl_CreateObjCommand(interp,"ccCongestionKeyInfoMad",
+                         TclccCongestionKeyInfoMethodCmd,
+                         (ClientData)&ibcc_cong_key_info_obj, 0);
+
+    Tcl_CreateObjCommand(interp,"ccCACongestionLogMad",
+                         TclccCACongestionLogMethodCmd,
+                         (ClientData)&ibcc_ca_cong_log_obj, 0);
+
+    Tcl_CreateObjCommand(interp,"ccSWCongestionLogMad",
+                         TclccSWCongestionLogMethodCmd,
+                         (ClientData)&ibcc_sw_cong_log_obj, 0);
+
+    Tcl_CreateObjCommand(interp,"ccSWCongestionSettingMad",
+                         TclccSWCongestionSettingMethodCmd,
+                         (ClientData)&ibcc_sw_cong_setting_obj, 0);
+
+    Tcl_CreateObjCommand(interp,"ccSWPortCongestionSettingMad",
+                         TclccSWPortCongestionSettingMethodCmd,
+                         (ClientData)&ibcc_sw_port_cong_setting_obj, 0);
+
+    Tcl_CreateObjCommand(interp,"ccCACongestionSettingMad",
+                         TclccCACongestionSettingMethodCmd,
+                         (ClientData)&ibcc_ca_cong_setting_obj, 0);
+
+    Tcl_CreateObjCommand(interp,"ccTableMad",
+                         TclccTableMethodCmd,
+                         (ClientData)&ibcc_table_obj, 0);
+
+    Tcl_CreateObjCommand(interp,"ccTimeStampMad",
+                         TclccTimeStampMethodCmd,
+                         (ClientData)&ibcc_time_stamp_obj, 0);
+
+    /* ------------------ IBSAC --------------------- */
 
 	 Tcl_CreateObjCommand(interp,"sacNodeQuery",
 								 TclsacNodeRecMethodCmd,
@@ -58763,6 +75193,225 @@ SWIGEXPORT(int,Ibis_Init)(Tcl_Interp *interp) {
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "smNotice_data_details_ntc_259_port_no_set", _wrap_smNotice_data_details_ntc_259_port_no_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "smNotice_data_details_ntc_259_port_no_get", _wrap_smNotice_data_details_ntc_259_port_no_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp,SWIG_prefix "smNotice_data_details_ntc_259",TclsmNotice_data_details_ntc_259Cmd, (ClientData) NULL, NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccClassPortInfo_base_ver_set", _wrap_ccClassPortInfo_base_ver_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccClassPortInfo_base_ver_get", _wrap_ccClassPortInfo_base_ver_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccClassPortInfo_class_ver_set", _wrap_ccClassPortInfo_class_ver_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccClassPortInfo_class_ver_get", _wrap_ccClassPortInfo_class_ver_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccClassPortInfo_cap_mask_set", _wrap_ccClassPortInfo_cap_mask_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccClassPortInfo_cap_mask_get", _wrap_ccClassPortInfo_cap_mask_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccClassPortInfo_cap_mask2_resp_time_set", _wrap_ccClassPortInfo_cap_mask2_resp_time_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccClassPortInfo_cap_mask2_resp_time_get", _wrap_ccClassPortInfo_cap_mask2_resp_time_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccClassPortInfo_redir_gid_set", _wrap_ccClassPortInfo_redir_gid_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccClassPortInfo_redir_gid_get", _wrap_ccClassPortInfo_redir_gid_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccClassPortInfo_redir_tc_sl_fl_set", _wrap_ccClassPortInfo_redir_tc_sl_fl_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccClassPortInfo_redir_tc_sl_fl_get", _wrap_ccClassPortInfo_redir_tc_sl_fl_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccClassPortInfo_redir_lid_set", _wrap_ccClassPortInfo_redir_lid_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccClassPortInfo_redir_lid_get", _wrap_ccClassPortInfo_redir_lid_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccClassPortInfo_redir_pkey_set", _wrap_ccClassPortInfo_redir_pkey_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccClassPortInfo_redir_pkey_get", _wrap_ccClassPortInfo_redir_pkey_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccClassPortInfo_redir_qp_set", _wrap_ccClassPortInfo_redir_qp_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccClassPortInfo_redir_qp_get", _wrap_ccClassPortInfo_redir_qp_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccClassPortInfo_redir_qkey_set", _wrap_ccClassPortInfo_redir_qkey_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccClassPortInfo_redir_qkey_get", _wrap_ccClassPortInfo_redir_qkey_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccClassPortInfo_trap_gid_set", _wrap_ccClassPortInfo_trap_gid_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccClassPortInfo_trap_gid_get", _wrap_ccClassPortInfo_trap_gid_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccClassPortInfo_trap_tc_sl_fl_set", _wrap_ccClassPortInfo_trap_tc_sl_fl_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccClassPortInfo_trap_tc_sl_fl_get", _wrap_ccClassPortInfo_trap_tc_sl_fl_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccClassPortInfo_trap_lid_set", _wrap_ccClassPortInfo_trap_lid_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccClassPortInfo_trap_lid_get", _wrap_ccClassPortInfo_trap_lid_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccClassPortInfo_trap_pkey_set", _wrap_ccClassPortInfo_trap_pkey_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccClassPortInfo_trap_pkey_get", _wrap_ccClassPortInfo_trap_pkey_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccClassPortInfo_trap_hop_qp_set", _wrap_ccClassPortInfo_trap_hop_qp_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccClassPortInfo_trap_hop_qp_get", _wrap_ccClassPortInfo_trap_hop_qp_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccClassPortInfo_trap_qkey_set", _wrap_ccClassPortInfo_trap_qkey_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccClassPortInfo_trap_qkey_get", _wrap_ccClassPortInfo_trap_qkey_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccClassPortInfo_getByLid", _wrap_ccClassPortInfo_getByLid, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccClassPortInfo_setByLid", _wrap_ccClassPortInfo_setByLid, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp,SWIG_prefix "ccClassPortInfo",TclccClassPortInfoCmd, (ClientData) NULL, NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccNotice_generic_type_set", _wrap_ccNotice_generic_type_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccNotice_generic_type_get", _wrap_ccNotice_generic_type_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccNotice_generic__prod_type_msb_set", _wrap_ccNotice_generic__prod_type_msb_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccNotice_generic__prod_type_msb_get", _wrap_ccNotice_generic__prod_type_msb_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccNotice_generic__prod_type_lsb_set", _wrap_ccNotice_generic__prod_type_lsb_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccNotice_generic__prod_type_lsb_get", _wrap_ccNotice_generic__prod_type_lsb_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccNotice_generic__trap_num_set", _wrap_ccNotice_generic__trap_num_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccNotice_generic__trap_num_get", _wrap_ccNotice_generic__trap_num_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccNotice_issuer_lid_set", _wrap_ccNotice_issuer_lid_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccNotice_issuer_lid_get", _wrap_ccNotice_issuer_lid_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccNotice_toggle_count_set", _wrap_ccNotice_toggle_count_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccNotice_toggle_count_get", _wrap_ccNotice_toggle_count_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccNotice_ntc0__source_lid_set", _wrap_ccNotice_ntc0__source_lid_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccNotice_ntc0__source_lid_get", _wrap_ccNotice_ntc0__source_lid_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccNotice_ntc0__method_set", _wrap_ccNotice_ntc0__method_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccNotice_ntc0__method_get", _wrap_ccNotice_ntc0__method_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccNotice_ntc0__resv0_set", _wrap_ccNotice_ntc0__resv0_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccNotice_ntc0__resv0_get", _wrap_ccNotice_ntc0__resv0_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccNotice_ntc0__attr_id_set", _wrap_ccNotice_ntc0__attr_id_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccNotice_ntc0__attr_id_get", _wrap_ccNotice_ntc0__attr_id_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccNotice_ntc0__resv1_set", _wrap_ccNotice_ntc0__resv1_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccNotice_ntc0__resv1_get", _wrap_ccNotice_ntc0__resv1_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccNotice_ntc0__attr_mod_set", _wrap_ccNotice_ntc0__attr_mod_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccNotice_ntc0__attr_mod_get", _wrap_ccNotice_ntc0__attr_mod_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccNotice_ntc0__qp_set", _wrap_ccNotice_ntc0__qp_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccNotice_ntc0__qp_get", _wrap_ccNotice_ntc0__qp_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccNotice_ntc0__cc_key_set", _wrap_ccNotice_ntc0__cc_key_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccNotice_ntc0__cc_key_get", _wrap_ccNotice_ntc0__cc_key_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccNotice_ntc0__source_gid_set", _wrap_ccNotice_ntc0__source_gid_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccNotice_ntc0__source_gid_get", _wrap_ccNotice_ntc0__source_gid_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccNotice_ntc0__padding_set", _wrap_ccNotice_ntc0__padding_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccNotice_ntc0__padding_get", _wrap_ccNotice_ntc0__padding_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccNotice_issuer_gid_set", _wrap_ccNotice_issuer_gid_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccNotice_issuer_gid_get", _wrap_ccNotice_issuer_gid_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccNotice_trapByLid", _wrap_ccNotice_trapByLid, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp,SWIG_prefix "ccNotice",TclccNoticeCmd, (ClientData) NULL, NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccCongestionInfo_cong_info_set", _wrap_ccCongestionInfo_cong_info_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccCongestionInfo_cong_info_get", _wrap_ccCongestionInfo_cong_info_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccCongestionInfo_resv_set", _wrap_ccCongestionInfo_resv_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccCongestionInfo_resv_get", _wrap_ccCongestionInfo_resv_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccCongestionInfo_ctrl_table_cap_set", _wrap_ccCongestionInfo_ctrl_table_cap_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccCongestionInfo_ctrl_table_cap_get", _wrap_ccCongestionInfo_ctrl_table_cap_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccCongestionInfo_getByLid", _wrap_ccCongestionInfo_getByLid, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp,SWIG_prefix "ccCongestionInfo",TclccCongestionInfoCmd, (ClientData) NULL, NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccCongestionKeyInfo_cc_key_set", _wrap_ccCongestionKeyInfo_cc_key_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccCongestionKeyInfo_cc_key_get", _wrap_ccCongestionKeyInfo_cc_key_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccCongestionKeyInfo_protect_bit_set", _wrap_ccCongestionKeyInfo_protect_bit_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccCongestionKeyInfo_protect_bit_get", _wrap_ccCongestionKeyInfo_protect_bit_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccCongestionKeyInfo_resv_set", _wrap_ccCongestionKeyInfo_resv_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccCongestionKeyInfo_resv_get", _wrap_ccCongestionKeyInfo_resv_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccCongestionKeyInfo_lease_period_set", _wrap_ccCongestionKeyInfo_lease_period_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccCongestionKeyInfo_lease_period_get", _wrap_ccCongestionKeyInfo_lease_period_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccCongestionKeyInfo_violations_set", _wrap_ccCongestionKeyInfo_violations_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccCongestionKeyInfo_violations_get", _wrap_ccCongestionKeyInfo_violations_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccCongestionKeyInfo_getByLid", _wrap_ccCongestionKeyInfo_getByLid, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccCongestionKeyInfo_setByLid", _wrap_ccCongestionKeyInfo_setByLid, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp,SWIG_prefix "ccCongestionKeyInfo",TclccCongestionKeyInfoCmd, (ClientData) NULL, NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ib_cong_log_event_sw_t_slid_set", _wrap_ib_cong_log_event_sw_t_slid_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ib_cong_log_event_sw_t_slid_get", _wrap_ib_cong_log_event_sw_t_slid_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ib_cong_log_event_sw_t_dlid_set", _wrap_ib_cong_log_event_sw_t_dlid_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ib_cong_log_event_sw_t_dlid_get", _wrap_ib_cong_log_event_sw_t_dlid_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ib_cong_log_event_sw_t_resv0_sl_set", _wrap_ib_cong_log_event_sw_t_resv0_sl_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ib_cong_log_event_sw_t_resv0_sl_get", _wrap_ib_cong_log_event_sw_t_resv0_sl_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ib_cong_log_event_sw_t_resv1_set", _wrap_ib_cong_log_event_sw_t_resv1_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ib_cong_log_event_sw_t_resv1_get", _wrap_ib_cong_log_event_sw_t_resv1_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ib_cong_log_event_sw_t_resv2_set", _wrap_ib_cong_log_event_sw_t_resv2_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ib_cong_log_event_sw_t_resv2_get", _wrap_ib_cong_log_event_sw_t_resv2_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ib_cong_log_event_sw_t_time_stamp_set", _wrap_ib_cong_log_event_sw_t_time_stamp_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ib_cong_log_event_sw_t_time_stamp_get", _wrap_ib_cong_log_event_sw_t_time_stamp_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp,SWIG_prefix "ib_cong_log_event_sw_t",Tclib_cong_log_event_sw_tCmd, (ClientData) NULL, NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ib_cong_log_event_ca_t_resv0_local_qp_set", _wrap_ib_cong_log_event_ca_t_resv0_local_qp_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ib_cong_log_event_ca_t_resv0_local_qp_get", _wrap_ib_cong_log_event_ca_t_resv0_local_qp_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ib_cong_log_event_ca_t_remote_qp_sl_service_type_set", _wrap_ib_cong_log_event_ca_t_remote_qp_sl_service_type_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ib_cong_log_event_ca_t_remote_qp_sl_service_type_get", _wrap_ib_cong_log_event_ca_t_remote_qp_sl_service_type_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ib_cong_log_event_ca_t_remote_lid_set", _wrap_ib_cong_log_event_ca_t_remote_lid_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ib_cong_log_event_ca_t_remote_lid_get", _wrap_ib_cong_log_event_ca_t_remote_lid_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ib_cong_log_event_ca_t_resv1_set", _wrap_ib_cong_log_event_ca_t_resv1_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ib_cong_log_event_ca_t_resv1_get", _wrap_ib_cong_log_event_ca_t_resv1_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ib_cong_log_event_ca_t_time_stamp_set", _wrap_ib_cong_log_event_ca_t_time_stamp_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ib_cong_log_event_ca_t_time_stamp_get", _wrap_ib_cong_log_event_ca_t_time_stamp_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp,SWIG_prefix "ib_cong_log_event_ca_t",Tclib_cong_log_event_ca_tCmd, (ClientData) NULL, NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccSWCongestionLog_log_type_set", _wrap_ccSWCongestionLog_log_type_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccSWCongestionLog_log_type_get", _wrap_ccSWCongestionLog_log_type_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccSWCongestionLog_cong_flags_set", _wrap_ccSWCongestionLog_cong_flags_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccSWCongestionLog_cong_flags_get", _wrap_ccSWCongestionLog_cong_flags_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccSWCongestionLog_event_counter_set", _wrap_ccSWCongestionLog_event_counter_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccSWCongestionLog_event_counter_get", _wrap_ccSWCongestionLog_event_counter_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccSWCongestionLog_time_stamp_set", _wrap_ccSWCongestionLog_time_stamp_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccSWCongestionLog_time_stamp_get", _wrap_ccSWCongestionLog_time_stamp_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccSWCongestionLog_port_map_set", _wrap_ccSWCongestionLog_port_map_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccSWCongestionLog_port_map_get", _wrap_ccSWCongestionLog_port_map_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccSWCongestionLog_entry_list_set", _wrap_ccSWCongestionLog_entry_list_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccSWCongestionLog_entry_list_get", _wrap_ccSWCongestionLog_entry_list_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccSWCongestionLog_getByLid", _wrap_ccSWCongestionLog_getByLid, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp,SWIG_prefix "ccSWCongestionLog",TclccSWCongestionLogCmd, (ClientData) NULL, NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccCACongestionLog_log_type_set", _wrap_ccCACongestionLog_log_type_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccCACongestionLog_log_type_get", _wrap_ccCACongestionLog_log_type_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccCACongestionLog_cong_flags_set", _wrap_ccCACongestionLog_cong_flags_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccCACongestionLog_cong_flags_get", _wrap_ccCACongestionLog_cong_flags_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccCACongestionLog_event_counter_set", _wrap_ccCACongestionLog_event_counter_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccCACongestionLog_event_counter_get", _wrap_ccCACongestionLog_event_counter_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccCACongestionLog_event_map_set", _wrap_ccCACongestionLog_event_map_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccCACongestionLog_event_map_get", _wrap_ccCACongestionLog_event_map_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccCACongestionLog_resv_set", _wrap_ccCACongestionLog_resv_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccCACongestionLog_resv_get", _wrap_ccCACongestionLog_resv_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccCACongestionLog_time_stamp_set", _wrap_ccCACongestionLog_time_stamp_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccCACongestionLog_time_stamp_get", _wrap_ccCACongestionLog_time_stamp_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccCACongestionLog_log_event_set", _wrap_ccCACongestionLog_log_event_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccCACongestionLog_log_event_get", _wrap_ccCACongestionLog_log_event_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccCACongestionLog_getByLid", _wrap_ccCACongestionLog_getByLid, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp,SWIG_prefix "ccCACongestionLog",TclccCACongestionLogCmd, (ClientData) NULL, NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccSWCongestionSetting_control_map_set", _wrap_ccSWCongestionSetting_control_map_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccSWCongestionSetting_control_map_get", _wrap_ccSWCongestionSetting_control_map_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccSWCongestionSetting_victim_mask_set", _wrap_ccSWCongestionSetting_victim_mask_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccSWCongestionSetting_victim_mask_get", _wrap_ccSWCongestionSetting_victim_mask_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccSWCongestionSetting_credit_mask_set", _wrap_ccSWCongestionSetting_credit_mask_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccSWCongestionSetting_credit_mask_get", _wrap_ccSWCongestionSetting_credit_mask_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccSWCongestionSetting_threshold_set", _wrap_ccSWCongestionSetting_threshold_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccSWCongestionSetting_threshold_get", _wrap_ccSWCongestionSetting_threshold_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccSWCongestionSetting_packet_size_set", _wrap_ccSWCongestionSetting_packet_size_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccSWCongestionSetting_packet_size_get", _wrap_ccSWCongestionSetting_packet_size_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccSWCongestionSetting_cs_threshold_set", _wrap_ccSWCongestionSetting_cs_threshold_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccSWCongestionSetting_cs_threshold_get", _wrap_ccSWCongestionSetting_cs_threshold_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccSWCongestionSetting_resv0_set", _wrap_ccSWCongestionSetting_resv0_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccSWCongestionSetting_resv0_get", _wrap_ccSWCongestionSetting_resv0_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccSWCongestionSetting_cs_return_delay_set", _wrap_ccSWCongestionSetting_cs_return_delay_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccSWCongestionSetting_cs_return_delay_get", _wrap_ccSWCongestionSetting_cs_return_delay_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccSWCongestionSetting_marking_rate_set", _wrap_ccSWCongestionSetting_marking_rate_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccSWCongestionSetting_marking_rate_get", _wrap_ccSWCongestionSetting_marking_rate_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccSWCongestionSetting_getByLid", _wrap_ccSWCongestionSetting_getByLid, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccSWCongestionSetting_setByLid", _wrap_ccSWCongestionSetting_setByLid, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp,SWIG_prefix "ccSWCongestionSetting",TclccSWCongestionSettingCmd, (ClientData) NULL, NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ib_sw_port_cong_setting_element_t_valid_ctrl_type_res_threshold_set", _wrap_ib_sw_port_cong_setting_element_t_valid_ctrl_type_res_threshold_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ib_sw_port_cong_setting_element_t_valid_ctrl_type_res_threshold_get", _wrap_ib_sw_port_cong_setting_element_t_valid_ctrl_type_res_threshold_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ib_sw_port_cong_setting_element_t_packet_size_set", _wrap_ib_sw_port_cong_setting_element_t_packet_size_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ib_sw_port_cong_setting_element_t_packet_size_get", _wrap_ib_sw_port_cong_setting_element_t_packet_size_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ib_sw_port_cong_setting_element_t_cong_param_set", _wrap_ib_sw_port_cong_setting_element_t_cong_param_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ib_sw_port_cong_setting_element_t_cong_param_get", _wrap_ib_sw_port_cong_setting_element_t_cong_param_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp,SWIG_prefix "ib_sw_port_cong_setting_element_t",Tclib_sw_port_cong_setting_element_tCmd, (ClientData) NULL, NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccSWPortCongestionSetting_block_set", _wrap_ccSWPortCongestionSetting_block_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccSWPortCongestionSetting_block_get", _wrap_ccSWPortCongestionSetting_block_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccSWPortCongestionSetting_getByLid", _wrap_ccSWPortCongestionSetting_getByLid, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccSWPortCongestionSetting_setByLid", _wrap_ccSWPortCongestionSetting_setByLid, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp,SWIG_prefix "ccSWPortCongestionSetting",TclccSWPortCongestionSettingCmd, (ClientData) NULL, NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ib_ca_cong_entry_t_ccti_timer_set", _wrap_ib_ca_cong_entry_t_ccti_timer_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ib_ca_cong_entry_t_ccti_timer_get", _wrap_ib_ca_cong_entry_t_ccti_timer_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ib_ca_cong_entry_t_ccti_increase_set", _wrap_ib_ca_cong_entry_t_ccti_increase_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ib_ca_cong_entry_t_ccti_increase_get", _wrap_ib_ca_cong_entry_t_ccti_increase_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ib_ca_cong_entry_t_trigger_threshold_set", _wrap_ib_ca_cong_entry_t_trigger_threshold_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ib_ca_cong_entry_t_trigger_threshold_get", _wrap_ib_ca_cong_entry_t_trigger_threshold_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ib_ca_cong_entry_t_ccti_min_set", _wrap_ib_ca_cong_entry_t_ccti_min_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ib_ca_cong_entry_t_ccti_min_get", _wrap_ib_ca_cong_entry_t_ccti_min_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ib_ca_cong_entry_t_resv0_set", _wrap_ib_ca_cong_entry_t_resv0_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ib_ca_cong_entry_t_resv0_get", _wrap_ib_ca_cong_entry_t_resv0_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ib_ca_cong_entry_t_resv1_set", _wrap_ib_ca_cong_entry_t_resv1_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ib_ca_cong_entry_t_resv1_get", _wrap_ib_ca_cong_entry_t_resv1_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp,SWIG_prefix "ib_ca_cong_entry_t",Tclib_ca_cong_entry_tCmd, (ClientData) NULL, NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccCACongestionSetting_port_control_set", _wrap_ccCACongestionSetting_port_control_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccCACongestionSetting_port_control_get", _wrap_ccCACongestionSetting_port_control_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccCACongestionSetting_resv0_set", _wrap_ccCACongestionSetting_resv0_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccCACongestionSetting_resv0_get", _wrap_ccCACongestionSetting_resv0_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccCACongestionSetting_control_map_set", _wrap_ccCACongestionSetting_control_map_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccCACongestionSetting_control_map_get", _wrap_ccCACongestionSetting_control_map_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccCACongestionSetting_entry_list_set", _wrap_ccCACongestionSetting_entry_list_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccCACongestionSetting_entry_list_get", _wrap_ccCACongestionSetting_entry_list_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccCACongestionSetting_getByLid", _wrap_ccCACongestionSetting_getByLid, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccCACongestionSetting_setByLid", _wrap_ccCACongestionSetting_setByLid, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp,SWIG_prefix "ccCACongestionSetting",TclccCACongestionSettingCmd, (ClientData) NULL, NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ib_cc_tbl_entry_t_shift_multiplier_set", _wrap_ib_cc_tbl_entry_t_shift_multiplier_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ib_cc_tbl_entry_t_shift_multiplier_get", _wrap_ib_cc_tbl_entry_t_shift_multiplier_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp,SWIG_prefix "ib_cc_tbl_entry_t",Tclib_cc_tbl_entry_tCmd, (ClientData) NULL, NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccTable_ccti_limit_set", _wrap_ccTable_ccti_limit_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccTable_ccti_limit_get", _wrap_ccTable_ccti_limit_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccTable_resv_set", _wrap_ccTable_resv_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccTable_resv_get", _wrap_ccTable_resv_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccTable_entry_list_set", _wrap_ccTable_entry_list_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccTable_entry_list_get", _wrap_ccTable_entry_list_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccTable_getByLid", _wrap_ccTable_getByLid, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccTable_setByLid", _wrap_ccTable_setByLid, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp,SWIG_prefix "ccTable",TclccTableCmd, (ClientData) NULL, NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccTimeStamp_value_set", _wrap_ccTimeStamp_value_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccTimeStamp_value_get", _wrap_ccTimeStamp_value_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccTimeStamp_getByLid", _wrap_ccTimeStamp_getByLid, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp,SWIG_prefix "ccTimeStamp",TclccTimeStampCmd, (ClientData) NULL, NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ibis_opt_t_single_thread_set", _wrap_ibis_opt_t_single_thread_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ibis_opt_t_single_thread_get", _wrap_ibis_opt_t_single_thread_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ibis_opt_t_force_log_flush_set", _wrap_ibis_opt_t_force_log_flush_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
@@ -58784,6 +75433,10 @@ SWIGEXPORT(int,Ibis_Init)(Tcl_Interp *interp) {
  */
 	 SWIG_RegisterMapping("_struct__ibsm_sm_info","_smSMInfo",0);
 	 SWIG_RegisterMapping("_struct__ibsm_sm_info","__ibsm_sm_info",0);
+	 SWIG_RegisterMapping("__ibcc_class_port_info","_ccClassPortInfo",0);
+	 SWIG_RegisterMapping("__ibcc_class_port_info","_struct__ibcc_class_port_info",0);
+	 SWIG_RegisterMapping("_struct__ibcc_notice","_ccNotice",0);
+	 SWIG_RegisterMapping("_struct__ibcc_notice","__ibcc_notice",0);
 	 SWIG_RegisterMapping("_signed_long","_long",0);
 	 SWIG_RegisterMapping("_struct__ibsm_vl_arb_table","_smVlArbTable",0);
 	 SWIG_RegisterMapping("_struct__ibsm_vl_arb_table","__ibsm_vl_arb_table",0);
@@ -58793,12 +75446,18 @@ SWIGEXPORT(int,Ibis_Init)(Tcl_Interp *interp) {
 	 SWIG_RegisterMapping("_sacPortInfo","__ib_port_info",0);
 	 SWIG_RegisterMapping("_struct__ib_pkey_table","_sacPKeyTbl",0);
 	 SWIG_RegisterMapping("_struct__ib_pkey_table","__ib_pkey_table",0);
+	 SWIG_RegisterMapping("_ccTimeStamp","_struct__ib_time_stamp",0);
+	 SWIG_RegisterMapping("_ccTimeStamp","__ib_time_stamp",0);
 	 SWIG_RegisterMapping("_sacNodeInfo","_struct__ib_node_info",0);
 	 SWIG_RegisterMapping("_sacNodeInfo","__ib_node_info",0);
 	 SWIG_RegisterMapping("_struct__ib_portinfo_record","_sacPortRec",0);
 	 SWIG_RegisterMapping("_struct__ib_portinfo_record","__ib_portinfo_record",0);
+	 SWIG_RegisterMapping("__ibcc_notice","_ccNotice",0);
+	 SWIG_RegisterMapping("__ibcc_notice","_struct__ibcc_notice",0);
 	 SWIG_RegisterMapping("_struct__ib_port_info","_sacPortInfo",0);
 	 SWIG_RegisterMapping("_struct__ib_port_info","__ib_port_info",0);
+	 SWIG_RegisterMapping("_struct__ib_cong_log_event_ca","_ib_cong_log_event_ca_t",0);
+	 SWIG_RegisterMapping("_struct__ib_cong_log_event_ca","__ib_cong_log_event_ca",0);
 	 SWIG_RegisterMapping("_struct__ib_switch_info","_sacSwInfo",0);
 	 SWIG_RegisterMapping("_struct__ib_switch_info","__ib_switch_info",0);
 	 SWIG_RegisterMapping("_sacNodeRec","_struct__ib_node_record_t",0);
@@ -58807,14 +75466,22 @@ SWIGEXPORT(int,Ibis_Init)(Tcl_Interp *interp) {
 	 SWIG_RegisterMapping("__ib_switch_info","_struct__ib_switch_info",0);
 	 SWIG_RegisterMapping("_struct__ibsm_mft_block","_smMftBlock",0);
 	 SWIG_RegisterMapping("_struct__ibsm_mft_block","__ibsm_mft_block",0);
+	 SWIG_RegisterMapping("_struct__ibcc_class_port_info","_ccClassPortInfo",0);
+	 SWIG_RegisterMapping("_struct__ibcc_class_port_info","__ibcc_class_port_info",0);
 	 SWIG_RegisterMapping("__ibsm_mft_block","_smMftBlock",0);
 	 SWIG_RegisterMapping("__ibsm_mft_block","_struct__ibsm_mft_block",0);
+	 SWIG_RegisterMapping("_ib_cong_log_event_sw_t","_struct__ib_cong_log_event_sw",0);
+	 SWIG_RegisterMapping("_ib_cong_log_event_sw_t","__ib_cong_log_event_sw",0);
 	 SWIG_RegisterMapping("_long","_unsigned_long",0);
 	 SWIG_RegisterMapping("_long","_signed_long",0);
+	 SWIG_RegisterMapping("_ib_cong_log_event_ca_t","_struct__ib_cong_log_event_ca",0);
+	 SWIG_RegisterMapping("_ib_cong_log_event_ca_t","__ib_cong_log_event_ca",0);
 	 SWIG_RegisterMapping("_sacSlVlTbl","_struct__ib_slvl_table",0);
 	 SWIG_RegisterMapping("_sacSlVlTbl","__ib_slvl_table",0);
 	 SWIG_RegisterMapping("_smNotice","_struct__ibsm_notice",0);
 	 SWIG_RegisterMapping("_smNotice","__ibsm_notice",0);
+	 SWIG_RegisterMapping("_struct__ib_sw_cong_setting","_ccSWCongestionSetting",0);
+	 SWIG_RegisterMapping("_struct__ib_sw_cong_setting","__ib_sw_cong_setting",0);
 	 SWIG_RegisterMapping("_struct__ibsm_port_info","_smPortInfo",0);
 	 SWIG_RegisterMapping("_struct__ibsm_port_info","__ibsm_port_info",0);
 	 SWIG_RegisterMapping("_struct__ib_node_info","_sacNodeInfo",0);
@@ -58843,26 +75510,56 @@ SWIGEXPORT(int,Ibis_Init)(Tcl_Interp *interp) {
 	 SWIG_RegisterMapping("__ibsm_switch_info","_struct__ibsm_switch_info",0);
 	 SWIG_RegisterMapping("__ibsm_node_info","_smNodeInfo",0);
 	 SWIG_RegisterMapping("__ibsm_node_info","_struct__ibsm_node_info",0);
+	 SWIG_RegisterMapping("_ccSWCongestionSetting","_struct__ib_sw_cong_setting",0);
+	 SWIG_RegisterMapping("_ccSWCongestionSetting","__ib_sw_cong_setting",0);
 	 SWIG_RegisterMapping("__ib_member_rec","_sacMCMRec",0);
 	 SWIG_RegisterMapping("__ib_member_rec","_struct__ib_member_rec",0);
+	 SWIG_RegisterMapping("__ib_sw_port_cong_setting","_ccSWPortCongestionSetting",0);
+	 SWIG_RegisterMapping("__ib_sw_port_cong_setting","_struct__ib_sw_port_cong_setting",0);
 	 SWIG_RegisterMapping("__ibis_opt","_ibis_opt_t",0);
 	 SWIG_RegisterMapping("__ibis_opt","_struct__ibis_opt",0);
+	 SWIG_RegisterMapping("_struct__ib_time_stamp","_ccTimeStamp",0);
+	 SWIG_RegisterMapping("_struct__ib_time_stamp","__ib_time_stamp",0);
+	 SWIG_RegisterMapping("__ib_sw_cong_setting","_ccSWCongestionSetting",0);
+	 SWIG_RegisterMapping("__ib_sw_cong_setting","_struct__ib_sw_cong_setting",0);
 	 SWIG_RegisterMapping("_sacServiceRec","_struct__ib_service_record",0);
 	 SWIG_RegisterMapping("_sacServiceRec","__ib_service_record",0);
+	 SWIG_RegisterMapping("_ib_cc_tbl_entry_t","_struct__ibcc_tbl_entry",0);
+	 SWIG_RegisterMapping("_ib_cc_tbl_entry_t","__ibcc_tbl_entry",0);
+	 SWIG_RegisterMapping("_struct__ib_sw_cong_log","_ccSWCongestionLog",0);
+	 SWIG_RegisterMapping("_struct__ib_sw_cong_log","__ib_sw_cong_log",0);
+	 SWIG_RegisterMapping("__ib_sw_cong_log","_ccSWCongestionLog",0);
+	 SWIG_RegisterMapping("__ib_sw_cong_log","_struct__ib_sw_cong_log",0);
 	 SWIG_RegisterMapping("_struct__ib_path_rec","_sacPathRec",0);
 	 SWIG_RegisterMapping("_struct__ib_path_rec","__ib_path_rec",0);
+	 SWIG_RegisterMapping("_struct__ib_ca_cong_log","_ccCACongestionLog",0);
+	 SWIG_RegisterMapping("_struct__ib_ca_cong_log","__ib_ca_cong_log",0);
+	 SWIG_RegisterMapping("__ib_cong_key_info","_ccCongestionKeyInfo",0);
+	 SWIG_RegisterMapping("__ib_cong_key_info","_struct__ib_cong_key_info",0);
+	 SWIG_RegisterMapping("__ib_ca_cong_log","_ccCACongestionLog",0);
+	 SWIG_RegisterMapping("__ib_ca_cong_log","_struct__ib_ca_cong_log",0);
 	 SWIG_RegisterMapping("_struct__ibsac_class_port_info","_sacClassPortInfo",0);
 	 SWIG_RegisterMapping("_struct__ibsac_class_port_info","__ibsac_class_port_info",0);
 	 SWIG_RegisterMapping("_struct__ibsm_node_desc","_smNodeDesc",0);
 	 SWIG_RegisterMapping("_struct__ibsm_node_desc","__ibsm_node_desc",0);
+	 SWIG_RegisterMapping("_struct__ib_sw_port_cong_setting_element","_ib_sw_port_cong_setting_element_t",0);
+	 SWIG_RegisterMapping("_struct__ib_sw_port_cong_setting_element","__ib_sw_port_cong_setting_element",0);
 	 SWIG_RegisterMapping("_sacSmInfo","_struct__ib_sm_info",0);
 	 SWIG_RegisterMapping("_sacSmInfo","__ib_sm_info",0);
 	 SWIG_RegisterMapping("__ibsm_node_desc","_smNodeDesc",0);
 	 SWIG_RegisterMapping("__ibsm_node_desc","_struct__ibsm_node_desc",0);
 	 SWIG_RegisterMapping("__ibsac_class_port_info","_sacClassPortInfo",0);
 	 SWIG_RegisterMapping("__ibsac_class_port_info","_struct__ibsac_class_port_info",0);
+	 SWIG_RegisterMapping("__ib_cong_log_event_sw","_ib_cong_log_event_sw_t",0);
+	 SWIG_RegisterMapping("__ib_cong_log_event_sw","_struct__ib_cong_log_event_sw",0);
+	 SWIG_RegisterMapping("_ccCongestionKeyInfo","_struct__ib_cong_key_info",0);
+	 SWIG_RegisterMapping("_ccCongestionKeyInfo","__ib_cong_key_info",0);
 	 SWIG_RegisterMapping("__ib_path_rec","_sacPathRec",0);
 	 SWIG_RegisterMapping("__ib_path_rec","_struct__ib_path_rec",0);
+	 SWIG_RegisterMapping("_struct__ib_ca_cong_setting","_ccCACongestionSetting",0);
+	 SWIG_RegisterMapping("_struct__ib_ca_cong_setting","__ib_ca_cong_setting",0);
+	 SWIG_RegisterMapping("__ib_cong_info","_ccCongestionInfo",0);
+	 SWIG_RegisterMapping("__ib_cong_info","_struct__ib_cong_info",0);
 	 SWIG_RegisterMapping("__ib_slvl_table","_sacSlVlTbl",0);
 	 SWIG_RegisterMapping("__ib_slvl_table","_struct__ib_slvl_table",0);
 	 SWIG_RegisterMapping("_unsigned_long","_long",0);
@@ -58870,8 +75567,14 @@ SWIGEXPORT(int,Ibis_Init)(Tcl_Interp *interp) {
 	 SWIG_RegisterMapping("_smPkeyTable","__ibsm_pkey_table",0);
 	 SWIG_RegisterMapping("_struct__ib_lft_record","_sacLFTRec",0);
 	 SWIG_RegisterMapping("_struct__ib_lft_record","__ib_lft_record",0);
+	 SWIG_RegisterMapping("_struct__ibcc_tbl_entry","_ib_cc_tbl_entry_t",0);
+	 SWIG_RegisterMapping("_struct__ibcc_tbl_entry","__ibcc_tbl_entry",0);
 	 SWIG_RegisterMapping("_sacPathRec","_struct__ib_path_rec",0);
 	 SWIG_RegisterMapping("_sacPathRec","__ib_path_rec",0);
+	 SWIG_RegisterMapping("_struct__ib_cong_log_event_sw","_ib_cong_log_event_sw_t",0);
+	 SWIG_RegisterMapping("_struct__ib_cong_log_event_sw","__ib_cong_log_event_sw",0);
+	 SWIG_RegisterMapping("__ibcc_tbl_entry","_ib_cc_tbl_entry_t",0);
+	 SWIG_RegisterMapping("__ibcc_tbl_entry","_struct__ibcc_tbl_entry",0);
 	 SWIG_RegisterMapping("_smPortInfo","_struct__ibsm_port_info",0);
 	 SWIG_RegisterMapping("_smPortInfo","__ibsm_port_info",0);
 	 SWIG_RegisterMapping("_smNodeInfo","_struct__ibsm_node_info",0);
@@ -58881,16 +75584,24 @@ SWIGEXPORT(int,Ibis_Init)(Tcl_Interp *interp) {
 	 SWIG_RegisterMapping("_signed_int","_int",0);
 	 SWIG_RegisterMapping("_struct__ibsm_guid_info","_smGuidInfo",0);
 	 SWIG_RegisterMapping("_struct__ibsm_guid_info","__ibsm_guid_info",0);
+	 SWIG_RegisterMapping("_ccSWCongestionLog","_struct__ib_sw_cong_log",0);
+	 SWIG_RegisterMapping("_ccSWCongestionLog","__ib_sw_cong_log",0);
 	 SWIG_RegisterMapping("__ibsm_guid_info","_smGuidInfo",0);
 	 SWIG_RegisterMapping("__ibsm_guid_info","_struct__ibsm_guid_info",0);
 	 SWIG_RegisterMapping("_struct__ib_node_record_t","_sacNodeRec",0);
 	 SWIG_RegisterMapping("_struct__ib_node_record_t","__ib_node_record_t",0);
 	 SWIG_RegisterMapping("__ib_slvl_table_record","_sacSlVlRec",0);
 	 SWIG_RegisterMapping("__ib_slvl_table_record","_struct__ib_slvl_table_record",0);
+	 SWIG_RegisterMapping("_ccClassPortInfo","_struct__ibcc_class_port_info",0);
+	 SWIG_RegisterMapping("_ccClassPortInfo","__ibcc_class_port_info",0);
+	 SWIG_RegisterMapping("_ccCACongestionSetting","_struct__ib_ca_cong_setting",0);
+	 SWIG_RegisterMapping("_ccCACongestionSetting","__ib_ca_cong_setting",0);
 	 SWIG_RegisterMapping("_sacInformInfo","_struct__ibsac_inform_info",0);
 	 SWIG_RegisterMapping("_sacInformInfo","__ibsac_inform_info",0);
 	 SWIG_RegisterMapping("_struct__ibsm_switch_info","_smSwInfo",0);
 	 SWIG_RegisterMapping("_struct__ibsm_switch_info","__ibsm_switch_info",0);
+	 SWIG_RegisterMapping("__ib_ca_cong_setting","_ccCACongestionSetting",0);
+	 SWIG_RegisterMapping("__ib_ca_cong_setting","_struct__ib_ca_cong_setting",0);
 	 SWIG_RegisterMapping("_unsigned_short","_short",0);
 	 SWIG_RegisterMapping("_smSwInfo","_struct__ibsm_switch_info",0);
 	 SWIG_RegisterMapping("_smSwInfo","__ibsm_switch_info",0);
@@ -58913,12 +75624,16 @@ SWIGEXPORT(int,Ibis_Init)(Tcl_Interp *interp) {
 	 SWIG_RegisterMapping("__ib_pkey_table_record","_struct__ib_pkey_table_record",0);
 	 SWIG_RegisterMapping("__ib_sminfo_record","_sacSmRec",0);
 	 SWIG_RegisterMapping("__ib_sminfo_record","_struct__ib_sminfo_record",0);
+	 SWIG_RegisterMapping("__ib_ca_cong_entry","_ib_ca_cong_entry_t",0);
+	 SWIG_RegisterMapping("__ib_ca_cong_entry","_struct__ib_ca_cong_entry",0);
 	 SWIG_RegisterMapping("_sacPortRec","_struct__ib_portinfo_record",0);
 	 SWIG_RegisterMapping("_sacPortRec","__ib_portinfo_record",0);
 	 SWIG_RegisterMapping("_struct__ibsm_pkey_table","_smPkeyTable",0);
 	 SWIG_RegisterMapping("_struct__ibsm_pkey_table","__ibsm_pkey_table",0);
 	 SWIG_RegisterMapping("__ibsm_notice","_smNotice",0);
 	 SWIG_RegisterMapping("__ibsm_notice","_struct__ibsm_notice",0);
+	 SWIG_RegisterMapping("_struct__ib_cong_key_info","_ccCongestionKeyInfo",0);
+	 SWIG_RegisterMapping("_struct__ib_cong_key_info","__ib_cong_key_info",0);
 	 SWIG_RegisterMapping("_unsigned_int","_int",0);
 	 SWIG_RegisterMapping("__ibsm_slvl_table","_smSlVlTable",0);
 	 SWIG_RegisterMapping("__ibsm_slvl_table","_struct__ibsm_slvl_table",0);
@@ -58926,6 +75641,8 @@ SWIGEXPORT(int,Ibis_Init)(Tcl_Interp *interp) {
 	 SWIG_RegisterMapping("_short","_signed_short",0);
 	 SWIG_RegisterMapping("__ib_port_info","_sacPortInfo",0);
 	 SWIG_RegisterMapping("__ib_port_info","_struct__ib_port_info",0);
+	 SWIG_RegisterMapping("_ccCongestionInfo","_struct__ib_cong_info",0);
+	 SWIG_RegisterMapping("_ccCongestionInfo","__ib_cong_info",0);
 	 SWIG_RegisterMapping("_sacSmRec","_struct__ib_sminfo_record",0);
 	 SWIG_RegisterMapping("_sacSmRec","__ib_sminfo_record",0);
 	 SWIG_RegisterMapping("__ib_service_record","_sacServiceRec",0);
@@ -58936,6 +75653,10 @@ SWIGEXPORT(int,Ibis_Init)(Tcl_Interp *interp) {
 	 SWIG_RegisterMapping("_struct__ibsac_inform_info","__ibsac_inform_info",0);
 	 SWIG_RegisterMapping("_struct__ib_vl_arb_table_record","_sacVlArbRec",0);
 	 SWIG_RegisterMapping("_struct__ib_vl_arb_table_record","__ib_vl_arb_table_record",0);
+	 SWIG_RegisterMapping("_ccSWPortCongestionSetting","_struct__ib_sw_port_cong_setting",0);
+	 SWIG_RegisterMapping("_ccSWPortCongestionSetting","__ib_sw_port_cong_setting",0);
+	 SWIG_RegisterMapping("__ib_time_stamp","_ccTimeStamp",0);
+	 SWIG_RegisterMapping("__ib_time_stamp","_struct__ib_time_stamp",0);
 	 SWIG_RegisterMapping("_sacMCMRec","_struct__ib_member_rec",0);
 	 SWIG_RegisterMapping("_sacMCMRec","__ib_member_rec",0);
 	 SWIG_RegisterMapping("_struct__ibis_opt","_ibis_opt_t",0);
@@ -58946,16 +75667,26 @@ SWIGEXPORT(int,Ibis_Init)(Tcl_Interp *interp) {
 	 SWIG_RegisterMapping("__ibsm_pkey_table","_struct__ibsm_pkey_table",0);
 	 SWIG_RegisterMapping("_int","_unsigned_int",0);
 	 SWIG_RegisterMapping("_int","_signed_int",0);
+	 SWIG_RegisterMapping("_ib_ca_cong_entry_t","_struct__ib_ca_cong_entry",0);
+	 SWIG_RegisterMapping("_ib_ca_cong_entry_t","__ib_ca_cong_entry",0);
 	 SWIG_RegisterMapping("_struct__ib_pkey_table_record","_sacPKeyRec",0);
 	 SWIG_RegisterMapping("_struct__ib_pkey_table_record","__ib_pkey_table_record",0);
 	 SWIG_RegisterMapping("__ib_node_info","_sacNodeInfo",0);
 	 SWIG_RegisterMapping("__ib_node_info","_struct__ib_node_info",0);
+	 SWIG_RegisterMapping("_ccCACongestionLog","_struct__ib_ca_cong_log",0);
+	 SWIG_RegisterMapping("_ccCACongestionLog","__ib_ca_cong_log",0);
 	 SWIG_RegisterMapping("_sacLFTRec","_struct__ib_lft_record",0);
 	 SWIG_RegisterMapping("_sacLFTRec","__ib_lft_record",0);
 	 SWIG_RegisterMapping("_struct__ib_member_rec","_sacMCMRec",0);
 	 SWIG_RegisterMapping("_struct__ib_member_rec","__ib_member_rec",0);
+	 SWIG_RegisterMapping("__ib_cc_tbl","_ccTable",0);
+	 SWIG_RegisterMapping("__ib_cc_tbl","_struct__ib_cc_tbl",0);
+	 SWIG_RegisterMapping("_struct__ib_cong_info","_ccCongestionInfo",0);
+	 SWIG_RegisterMapping("_struct__ib_cong_info","__ib_cong_info",0);
 	 SWIG_RegisterMapping("__ibsac_inform_info","_sacInformInfo",0);
 	 SWIG_RegisterMapping("__ibsac_inform_info","_struct__ibsac_inform_info",0);
+	 SWIG_RegisterMapping("_ccTable","_struct__ib_cc_tbl",0);
+	 SWIG_RegisterMapping("_ccTable","__ib_cc_tbl",0);
 	 SWIG_RegisterMapping("_struct__ib_switch_info_record","_sacSwRec",0);
 	 SWIG_RegisterMapping("_struct__ib_switch_info_record","__ib_switch_info_record",0);
 	 SWIG_RegisterMapping("_sacVlArbRec","_struct__ib_vl_arb_table_record",0);
@@ -58966,6 +75697,10 @@ SWIGEXPORT(int,Ibis_Init)(Tcl_Interp *interp) {
 	 SWIG_RegisterMapping("__ib_switch_info_record","_struct__ib_switch_info_record",0);
 	 SWIG_RegisterMapping("__ib_vl_arb_table_record","_sacVlArbRec",0);
 	 SWIG_RegisterMapping("__ib_vl_arb_table_record","_struct__ib_vl_arb_table_record",0);
+	 SWIG_RegisterMapping("__ib_sw_port_cong_setting_element","_ib_sw_port_cong_setting_element_t",0);
+	 SWIG_RegisterMapping("__ib_sw_port_cong_setting_element","_struct__ib_sw_port_cong_setting_element",0);
+	 SWIG_RegisterMapping("_struct__ib_sw_port_cong_setting","_ccSWPortCongestionSetting",0);
+	 SWIG_RegisterMapping("_struct__ib_sw_port_cong_setting","__ib_sw_port_cong_setting",0);
 	 SWIG_RegisterMapping("__ib_lft_record","_sacLFTRec",0);
 	 SWIG_RegisterMapping("__ib_lft_record","_struct__ib_lft_record",0);
 	 SWIG_RegisterMapping("_smSMInfo","_struct__ibsm_sm_info",0);
@@ -58978,16 +75713,26 @@ SWIGEXPORT(int,Ibis_Init)(Tcl_Interp *interp) {
 	 SWIG_RegisterMapping("_smMftBlock","__ibsm_mft_block",0);
 	 SWIG_RegisterMapping("_sacSwRec","_struct__ib_switch_info_record",0);
 	 SWIG_RegisterMapping("_sacSwRec","__ib_switch_info_record",0);
+	 SWIG_RegisterMapping("_struct__ib_cc_tbl","_ccTable",0);
+	 SWIG_RegisterMapping("_struct__ib_cc_tbl","__ib_cc_tbl",0);
 	 SWIG_RegisterMapping("_struct__ib_link_record","_sacLinkRec",0);
 	 SWIG_RegisterMapping("_struct__ib_link_record","__ib_link_record",0);
 	 SWIG_RegisterMapping("_struct__ibsm_lft_block","_smLftBlock",0);
 	 SWIG_RegisterMapping("_struct__ibsm_lft_block","__ibsm_lft_block",0);
+	 SWIG_RegisterMapping("_ccNotice","_struct__ibcc_notice",0);
+	 SWIG_RegisterMapping("_ccNotice","__ibcc_notice",0);
+	 SWIG_RegisterMapping("_ib_sw_port_cong_setting_element_t","_struct__ib_sw_port_cong_setting_element",0);
+	 SWIG_RegisterMapping("_ib_sw_port_cong_setting_element_t","__ib_sw_port_cong_setting_element",0);
 	 SWIG_RegisterMapping("_struct__ib_sminfo_record","_sacSmRec",0);
 	 SWIG_RegisterMapping("_struct__ib_sminfo_record","__ib_sminfo_record",0);
 	 SWIG_RegisterMapping("__ib_link_record","_sacLinkRec",0);
 	 SWIG_RegisterMapping("__ib_link_record","_struct__ib_link_record",0);
 	 SWIG_RegisterMapping("__ibsm_lft_block","_smLftBlock",0);
 	 SWIG_RegisterMapping("__ibsm_lft_block","_struct__ibsm_lft_block",0);
+	 SWIG_RegisterMapping("__ib_cong_log_event_ca","_ib_cong_log_event_ca_t",0);
+	 SWIG_RegisterMapping("__ib_cong_log_event_ca","_struct__ib_cong_log_event_ca",0);
+	 SWIG_RegisterMapping("_struct__ib_ca_cong_entry","_ib_ca_cong_entry_t",0);
+	 SWIG_RegisterMapping("_struct__ib_ca_cong_entry","__ib_ca_cong_entry",0);
 	 SWIG_RegisterMapping("_sacPKeyRec","_struct__ib_pkey_table_record",0);
 	 SWIG_RegisterMapping("_sacPKeyRec","__ib_pkey_table_record",0);
 	 SWIG_RegisterMapping("_struct__ib_slvl_table","_sacSlVlTbl",0);

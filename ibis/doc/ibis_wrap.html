@@ -62,17 +62,35 @@ IBIS Tcl Extension</TITLE>
 <LI> <A HREF="#s8_23_">8.23. class smNotice_data_details_ntc_256</A>
 <LI> <A HREF="#s8_24_">8.24. class smNotice_data_details_ntc_257_258</A>
 <LI> <A HREF="#s8_25_">8.25. class smNotice_data_details_ntc_259</A>
-</UL><LI> <A HREF="#s9_">9. IBIS Constants</A>
-<UL><LI> <A HREF="#s9_1_">9.1. Log Verbosity Flags</A>
-</UL><LI> <A HREF="#s10_">10. IBIS Execution Flags</A>
-<LI> <A HREF="#s11_">11. IBIS Functions</A>
-<UL><LI> <A HREF="#s11_1_">11.1. class ibis_opt_t</A>
+</UL><LI> <A HREF="#s9_">9. IBCC Constants</A>
+<LI> <A HREF="#s10_">10. IBCC Objects</A>
+<UL><LI> <A HREF="#s10_1_">10.1. class ccClassPortInfo</A>
+<LI> <A HREF="#s10_2_">10.2. class ccNotice</A>
+<LI> <A HREF="#s10_3_">10.3. class ccCongestionInfo</A>
+<LI> <A HREF="#s10_4_">10.4. class ccCongestionKeyInfo</A>
+<LI> <A HREF="#s10_5_">10.5. class ib_cong_log_event_sw_t</A>
+<LI> <A HREF="#s10_6_">10.6. class ib_cong_log_event_ca_t</A>
+<LI> <A HREF="#s10_7_">10.7. class ccSWCongestionLog</A>
+<LI> <A HREF="#s10_8_">10.8. class ccCACongestionLog</A>
+<LI> <A HREF="#s10_9_">10.9. class ccSWCongestionSetting</A>
+<LI> <A HREF="#s10_10_">10.10. class ib_sw_port_cong_setting_element_t</A>
+<LI> <A HREF="#s10_11_">10.11. class ccSWPortCongestionSetting</A>
+<LI> <A HREF="#s10_12_">10.12. class ib_ca_cong_entry_t</A>
+<LI> <A HREF="#s10_13_">10.13. class ccCACongestionSetting</A>
+<LI> <A HREF="#s10_14_">10.14. class ib_cc_tbl_entry_t</A>
+<LI> <A HREF="#s10_15_">10.15. class ccTable</A>
+<LI> <A HREF="#s10_16_">10.16. class ccTimeStamp</A>
+</UL><LI> <A HREF="#s11_">11. IBIS Constants</A>
+<UL><LI> <A HREF="#s11_1_">11.1. Log Verbosity Flags</A>
+</UL><LI> <A HREF="#s12_">12. IBIS Execution Flags</A>
+<LI> <A HREF="#s13_">13. IBIS Functions</A>
+<UL><LI> <A HREF="#s13_1_">13.1. class ibis_opt_t</A>
 </UL>
 </UL>
 
 <A name="s1_">
 <HR><H2>1. IBCR Functions</H2></A>
-<PRE>   IBCR UI functions
+<PRE>   IBCR UI functions   
 
 </PRE>
 <P><PRE>
@@ -105,7 +123,7 @@ They all return 0 on succes.</PRE>
 
 <A name="s2_">
 <HR><H2>2. IBPM Functions</H2></A>
-<PRE>   IBPM UI functions
+<PRE>   IBPM UI functions   
 
 </PRE>
 <P><PRE>
@@ -138,7 +156,7 @@ They all return 0 on succes.</PRE>
 
 <A name="s3_">
 <HR><H2>3. IB Vendor Specific Functions</H2></A>
-<PRE>   IBVS UI functions
+<PRE>   IBVS UI functions   
 
 </PRE>
 <P><PRE>
@@ -209,9 +227,25 @@ They all return 0 on succes.</PRE>
 <BLOCKQUOTE><PRE>[ returns int  ]
 </PRE></BLOCKQUOTE>
 
+<P><TT><B>vsMirrorRead lid </B></TT>
+<BLOCKQUOTE><PRE>[ returns int  ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>vsMirrorWrite lid rx_mirror tx_mirror </B></TT>
+<BLOCKQUOTE><PRE>[ returns int  ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>vsGetGeneralInfo lid </B></TT>
+<BLOCKQUOTE><PRE>[ returns int  ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>vsGetPrivateLFTMap lid upper_ports </B></TT>
+<BLOCKQUOTE><PRE>[ returns int  ]
+</PRE></BLOCKQUOTE>
+
 <A name="s4_">
 <HR><H2>4. IBBBM Functions</H2></A>
-<PRE>   IBBBM UI functions
+<PRE>   IBBBM UI functions   
 
 </PRE>
 <P><PRE>
@@ -248,11 +282,11 @@ They all return 0 on succes.</PRE>
 
 <A name="s5_">
 <HR><H2>5. IBSAC Constants</H2></A>
-   These constants are provided by IBIS:
+   These constants are provided by IBIS:   
 
 <A name="s6_">
 <HR><H2>6. IBSAC Objects</H2></A>
-<PRE>   This section describes the various object types exposed by IBSAC.
+<PRE>   This section describes the various object types exposed by IBSAC.   
 
 </PRE>
 <P><PRE>
@@ -1179,6 +1213,11 @@ VlCap and InitType
 <H3>6.10. class sacPathRec</H3></A>
 <PRE>[ created from struct sacPathRec ]
 </PRE>
+<P><TT><B>-service_id
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns ib_net64_t * ]
+</PRE></BLOCKQUOTE>
+
 <P><TT><B>-dgid
 </B></TT>
 <BLOCKQUOTE><PRE>[ Member data: returns ib_gid_t * ]
@@ -1219,7 +1258,7 @@ VlCap and InitType
 <BLOCKQUOTE><PRE>[ Member data: returns ib_net16_t * ]
 </PRE></BLOCKQUOTE>
 
-<P><TT><B>-sl
+<P><TT><B>-qos_class_sl
 </B></TT>
 <BLOCKQUOTE><PRE>[ Member data: returns ib_net16_t * ]
 </PRE></BLOCKQUOTE>
@@ -1478,7 +1517,7 @@ uint8_t                              proxy_join:1; bit fields are not supported.
 <BLOCKQUOTE><PRE>[ Member data: returns ib_net16_t * ]
 </PRE></BLOCKQUOTE>
 
-<P><TT><B>-resp_time_val
+<P><TT><B>-cap_mask2_resp_time
 </B></TT>
 <BLOCKQUOTE><PRE>[ Member data: returns ib_net32_t * ]
 </PRE></BLOCKQUOTE>
@@ -2108,11 +2147,11 @@ for switch: port number, for CA: reserved
 
 <A name="s7_">
 <HR><H2>7. IBSM Constants</H2></A>
-   These constants are provided by IBSM:
+   These constants are provided by IBSM:   
 
 <A name="s8_">
 <HR><H2>8. IBSM Objects</H2></A>
-<PRE>   This section describes the various object types exposed by IBSM.
+<PRE>   This section describes the various object types exposed by IBSM.   
 
 </PRE>
 <P><PRE>
@@ -3078,12 +3117,643 @@ new system image guid
 <BLOCKQUOTE><PRE>[ Member data: returns uint8_t * ]
 </PRE></BLOCKQUOTE>
 
-<A name="s9_">
-<HR><H2>9. IBIS Constants</H2></A>
-   These constants are provided by IBIS:
+<P><PRE>
 
-<A name="s9_1_">
-<H3>9.1. Log Verbosity Flags</H3></A>
+  Congestion Control:
+    The CC interface supports sending Congestion Control Packets to
+    the fabric devices.
+
+    A set of object types is defined. The user can allocate a new attribute
+    object. Then the object can be set using configure or the direct
+    manipulation methods.
+
+    Extra methods are provided for each object:
+    setByLid &lt;lid&gt; &lt;attrMod&gt;
+    getByLid &lt;lid&gt; &lt;attrMod&gt;</PRE>
+
+<A name="s9_">
+<HR><H2>9. IBCC Constants</H2></A>
+   These constants are provided by IBCC:   
+
+<A name="s10_">
+<HR><H2>10. IBCC Objects</H2></A>
+<PRE>   This section describes the various object types exposed by IBCC.   
+
+</PRE>
+<P><PRE>
+</PRE>
+
+<A name="s10_1_">
+<H3>10.1. class ccClassPortInfo</H3></A>
+<PRE>[ created from struct ccClassPortInfo ]
+</PRE>
+<P><TT><B>-base_ver
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns uint8_t * ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>-class_ver
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns uint8_t * ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>-cap_mask
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns ib_net16_t * ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>-cap_mask2_resp_time
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns ib_net32_t * ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>-redir_gid
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns ib_gid_t * ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>-redir_tc_sl_fl
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns ib_net32_t * ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>-redir_lid
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns ib_net16_t * ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>-redir_pkey
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns ib_net16_t * ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>-redir_qp
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns ib_net32_t * ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>-redir_qkey
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns ib_net32_t * ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>-trap_gid
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns ib_gid_t * ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>-trap_tc_sl_fl
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns ib_net32_t * ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>-trap_lid
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns ib_net16_t * ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>-trap_pkey
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns ib_net16_t * ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>-trap_hop_qp
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns ib_net32_t * ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>-trap_qkey
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns ib_net32_t * ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>getByLid lid </B></TT>
+<BLOCKQUOTE><PRE>[ Member : returns int  ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>setByLid lid </B></TT>
+<BLOCKQUOTE><PRE>[ Member : returns int  ]
+</PRE></BLOCKQUOTE>
+
+<A name="s10_2_">
+<H3>10.2. class ccNotice</H3></A>
+<PRE>[ created from struct ccNotice ]
+</PRE>
+<P><TT><B>-generic_type
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns uint8_t * ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>-generic__prod_type_msb
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns uint8_t * ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>-generic__prod_type_lsb
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns ib_net16_t * ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>-generic__trap_num
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns ib_net16_t * ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>-issuer_lid
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns ib_net16_t * ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>-toggle_count
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns ib_net16_t * ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>-ntc0__source_lid
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns ib_net16_t * ]
+Source LID from offending packet LRH
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>-ntc0__method
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns uint8_t * ]
+Method, from common MAD header
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>-ntc0__resv0
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns uint8_t * ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>-ntc0__attr_id
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns ib_net16_t * ]
+Attribute ID, from common MAD header
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>-ntc0__resv1
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns ib_net16_t * ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>-ntc0__attr_mod
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns ib_net32_t * ]
+Attribute Modif, from common MAD header
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>-ntc0__qp
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns ib_net32_t * ]
+8b pad, 24b dest QP from BTH
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>-ntc0__cc_key
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns ib_net64_t * ]
+CC key of the offending packet
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>-ntc0__source_gid
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns ib_gid_t * ]
+GID from GRH of the offending packet
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>-ntc0__padding
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns uint8_array_t * ]
+Padding - ignored on read
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>-issuer_gid
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns ib_gid_t * ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>trapByLid lid </B></TT>
+<BLOCKQUOTE><PRE>[ Member : returns int  ]
+</PRE></BLOCKQUOTE>
+
+<A name="s10_3_">
+<H3>10.3. class ccCongestionInfo</H3></A>
+<PRE>[ created from struct ccCongestionInfo ]
+</PRE>
+<P><TT><B>-cong_info
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns uint8_t * ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>-resv
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns uint8_t * ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>-ctrl_table_cap
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns uint8_t * ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>getByLid lid </B></TT>
+<BLOCKQUOTE><PRE>[ Member : returns int  ]
+</PRE></BLOCKQUOTE>
+
+<A name="s10_4_">
+<H3>10.4. class ccCongestionKeyInfo</H3></A>
+<PRE>[ created from struct ccCongestionKeyInfo ]
+</PRE>
+<P><TT><B>-cc_key
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns ib_net64_t * ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>-protect_bit
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns uint8_t * ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>-resv
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns uint8_t * ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>-lease_period
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns ib_net16_t * ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>-violations
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns ib_net16_t * ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>getByLid lid </B></TT>
+<BLOCKQUOTE><PRE>[ Member : returns int  ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>setByLid lid </B></TT>
+<BLOCKQUOTE><PRE>[ Member : returns int  ]
+</PRE></BLOCKQUOTE>
+
+<A name="s10_5_">
+<H3>10.5. class ib_cong_log_event_sw_t</H3></A>
+<PRE>[ created from struct ib_cong_log_event_sw_t ]
+</PRE>
+<P><TT><B>-slid
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns ib_net16_t * ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>-dlid
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns ib_net16_t * ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>-resv0_sl
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns uint8_t * ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>-resv1
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns uint8_t * ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>-resv2
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns ib_net16_t * ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>-time_stamp
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns ib_net32_t * ]
+</PRE></BLOCKQUOTE>
+
+<A name="s10_6_">
+<H3>10.6. class ib_cong_log_event_ca_t</H3></A>
+<PRE>[ created from struct ib_cong_log_event_ca_t ]
+</PRE>
+<P><TT><B>-resv0_local_qp
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns ib_net32_t * ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>-remote_qp_sl_service_type
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns ib_net32_t * ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>-remote_lid
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns ib_net16_t * ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>-resv1
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns ib_net16_t * ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>-time_stamp
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns ib_net32_t * ]
+</PRE></BLOCKQUOTE>
+
+<A name="s10_7_">
+<H3>10.7. class ccSWCongestionLog</H3></A>
+<PRE>[ created from struct ccSWCongestionLog ]
+</PRE>
+<P><TT><B>-log_type
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns uint8_t * ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>-cong_flags
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns uint8_t * ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>-event_counter
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns ib_net16_t * ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>-time_stamp
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns ib_net32_t * ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>-port_map
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns uint8_array_t * ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>-entry_list
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns ib_cong_log_event_sw_t * ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>getByLid lid </B></TT>
+<BLOCKQUOTE><PRE>[ Member : returns int  ]
+</PRE></BLOCKQUOTE>
+
+<A name="s10_8_">
+<H3>10.8. class ccCACongestionLog</H3></A>
+<PRE>[ created from struct ccCACongestionLog ]
+</PRE>
+<P><TT><B>-log_type
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns uint8_t * ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>-cong_flags
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns uint8_t * ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>-event_counter
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns ib_net16_t * ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>-event_map
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns ib_net16_t * ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>-resv
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns ib_net16_t * ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>-time_stamp
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns ib_net32_t * ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>-log_event
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns ib_cong_log_event_ca_t * ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>getByLid lid </B></TT>
+<BLOCKQUOTE><PRE>[ Member : returns int  ]
+</PRE></BLOCKQUOTE>
+
+<A name="s10_9_">
+<H3>10.9. class ccSWCongestionSetting</H3></A>
+<PRE>[ created from struct ccSWCongestionSetting ]
+</PRE>
+<P><TT><B>-control_map
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns ib_net32_t * ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>-victim_mask
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns uint8_array_t * ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>-credit_mask
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns uint8_array_t * ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>-threshold
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns uint8_t * ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>-packet_size
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns uint8_t * ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>-cs_threshold
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns uint8_t * ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>-resv0
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns uint8_t * ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>-cs_return_delay
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns ib_net16_t * ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>-marking_rate
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns ib_net16_t * ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>getByLid lid </B></TT>
+<BLOCKQUOTE><PRE>[ Member : returns int  ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>setByLid lid </B></TT>
+<BLOCKQUOTE><PRE>[ Member : returns int  ]
+</PRE></BLOCKQUOTE>
+
+<A name="s10_10_">
+<H3>10.10. class ib_sw_port_cong_setting_element_t</H3></A>
+<PRE>[ created from struct ib_sw_port_cong_setting_element_t ]
+</PRE>
+<P><TT><B>-valid_ctrl_type_res_threshold
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns uint8_t * ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>-packet_size
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns uint8_t * ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>-cong_param
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns ib_net16_t * ]
+</PRE></BLOCKQUOTE>
+
+<A name="s10_11_">
+<H3>10.11. class ccSWPortCongestionSetting</H3></A>
+<PRE>[ created from struct ccSWPortCongestionSetting ]
+</PRE>
+<P><TT><B>-block
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns ib_sw_port_cong_setting_element_t * ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>getByLid lid block </B></TT>
+<BLOCKQUOTE><PRE>[ Member : returns int  ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>setByLid lid block </B></TT>
+<BLOCKQUOTE><PRE>[ Member : returns int  ]
+</PRE></BLOCKQUOTE>
+
+<A name="s10_12_">
+<H3>10.12. class ib_ca_cong_entry_t</H3></A>
+<PRE>[ created from struct ib_ca_cong_entry_t ]
+</PRE>
+<P><TT><B>-ccti_timer
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns ib_net16_t * ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>-ccti_increase
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns uint8_t * ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>-trigger_threshold
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns uint8_t * ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>-ccti_min
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns uint8_t * ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>-resv0
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns uint8_t * ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>-resv1
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns ib_net16_t * ]
+</PRE></BLOCKQUOTE>
+
+<A name="s10_13_">
+<H3>10.13. class ccCACongestionSetting</H3></A>
+<PRE>[ created from struct ccCACongestionSetting ]
+</PRE>
+<P><TT><B>-port_control
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns uint8_t * ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>-resv0
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns uint8_t * ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>-control_map
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns ib_net16_t * ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>-entry_list
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns ib_ca_cong_entry_t * ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>getByLid lid </B></TT>
+<BLOCKQUOTE><PRE>[ Member : returns int  ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>setByLid lid </B></TT>
+<BLOCKQUOTE><PRE>[ Member : returns int  ]
+</PRE></BLOCKQUOTE>
+
+<A name="s10_14_">
+<H3>10.14. class ib_cc_tbl_entry_t</H3></A>
+<PRE>[ created from struct ib_cc_tbl_entry_t ]
+</PRE>
+<P><TT><B>-shift_multiplier
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns ib_net16_t * ]
+</PRE></BLOCKQUOTE>
+
+<A name="s10_15_">
+<H3>10.15. class ccTable</H3></A>
+<PRE>[ created from struct ccTable ]
+</PRE>
+<P><TT><B>-ccti_limit
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns ib_net16_t * ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>-resv
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns ib_net16_t * ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>-entry_list
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns ib_cc_tbl_entry_t * ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>getByLid lid sn </B></TT>
+<BLOCKQUOTE><PRE>[ Member : returns int  ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>setByLid lid sn </B></TT>
+<BLOCKQUOTE><PRE>[ Member : returns int  ]
+</PRE></BLOCKQUOTE>
+
+<A name="s10_16_">
+<H3>10.16. class ccTimeStamp</H3></A>
+<PRE>[ created from struct ccTimeStamp ]
+</PRE>
+<P><TT><B>-value
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns ib_net32_t * ]
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>getByLid lid </B></TT>
+<BLOCKQUOTE><PRE>[ Member : returns int  ]
+</PRE></BLOCKQUOTE>
+
+<A name="s11_">
+<HR><H2>11. IBIS Constants</H2></A>
+   These constants are provided by IBIS:   
+
+<A name="s11_1_">
+<H3>11.1. Log Verbosity Flags</H3></A>
 <PRE></PRE>
 <P><TT><B>$IBIS_LOG_NONE = 0x00</B></TT>
 <BLOCKQUOTE><PRE>[ Constant : int  ]
@@ -3113,12 +3783,12 @@ new system image guid
 <BLOCKQUOTE><PRE>[ Constant : int  ]
 </PRE></BLOCKQUOTE>
 
-<A name="s10_">
-<HR><H2>10. IBIS Execution Flags</H2></A>
+<A name="s12_">
+<HR><H2>12. IBIS Execution Flags</H2></A>
 <PRE></PRE>
-<A name="s11_">
-<HR><H2>11. IBIS Functions</H2></A>
-<PRE>   IBIS UI functions
+<A name="s13_">
+<HR><H2>13. IBIS Functions</H2></A>
+<PRE>   IBIS UI functions   
 
 </PRE>
 <P><PRE>
@@ -3127,77 +3797,99 @@ They all return 0 on succes.</PRE>
 
 <P><TT><B>ibis_puts verbosity msg </B></TT>
 <BLOCKQUOTE><PRE>[ returns int  ]
-Append a message to the OpenSM log
+Append a message to the OpenSM log   
 </PRE></BLOCKQUOTE>
 
-<A name="s11_1_">
-<H3>11.1. class ibis_opt_t</H3></A>
+<A name="s13_1_">
+<H3>13.1. class ibis_opt_t</H3></A>
 <PRE>[ created from struct ibis_opt_t ]
 IBIS Options:
 The IBIS options are available through the predefined object: ibis_opts.
 It can be manipulated using the standard Tcl methods: cget and configure.
 Examples: ibis_opts cget -force_log_flush
-          ibis_opts configure -force_log_flush TRUE
+          ibis_opts configure -force_log_flush TRUE   
 
 </PRE>
 <P><TT><B>-single_thread
 </B></TT>
 <BLOCKQUOTE><PRE>[ Member data: returns boolean_t * ]
-run single threaded
+run single threaded   
 </PRE></BLOCKQUOTE>
 
 <P><TT><B>-force_log_flush
 </B></TT>
 <BLOCKQUOTE><PRE>[ Member data: returns boolean_t * ]
-If TRUE - forces flash after each log message (TRUE).
+If TRUE - forces flash after each log message (TRUE).   
 </PRE></BLOCKQUOTE>
 
 <P><TT><B>-log_flags
 </B></TT>
 <BLOCKQUOTE><PRE>[ Member data: returns uint8_t * ]
-The log levels to be used
+The log levels to be used   
 </PRE></BLOCKQUOTE>
 
 <P><TT><B>-log_file
 </B></TT>
 <BLOCKQUOTE><PRE>[ Member data: returns char * ]
-The name of the log file used (read only)
+The name of the log file used (read only)   
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>-sm_key
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns uint64_t * ]
+The SM_Key to be used when sending SubnetMgt and SubnetAdmin MADs   
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>-m_key
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns uint64_t * ]
+The M_Key to be used when sending SubnetMgt   
+</PRE></BLOCKQUOTE>
+
+<P><TT><B>-v_key
+</B></TT>
+<BLOCKQUOTE><PRE>[ Member data: returns uint64_t * ]
+The Vendor Key to be used when sending Vendor Specific MADs.   
 </PRE></BLOCKQUOTE>
 
 <P><TT><B>ibis_init </B></TT>
 <BLOCKQUOTE><PRE>[ returns int  ]
-Initialize ibis object
+Initialize ibis object   
 </PRE></BLOCKQUOTE>
 
 <P><TT><B>ibis_set_verbosity level </B></TT>
 <BLOCKQUOTE><PRE>[ returns int  ]
-Change the log verbosity
+Change the log verbosity   
 </PRE></BLOCKQUOTE>
 
 <P><TT><B>ibis_set_port guid </B></TT>
 <BLOCKQUOTE><PRE>[ returns int  ]
-Set the port IBIS is attached to and initialize all sub packages
+Set the port IBIS is attached to and initialize all sub packages   
 </PRE></BLOCKQUOTE>
 
 <P><TT><B>ibis_get_port </B></TT>
 <BLOCKQUOTE><PRE>[ returns new_uint64_t  ]
-Provide the GUID of the port IBIS is attached to
+Provide the GUID of the port IBIS is attached to   
 </PRE></BLOCKQUOTE>
 
 <P><TT><B>ibis_set_transaction_timeout timeout_ms </B></TT>
 <BLOCKQUOTE><PRE>[ returns int  ]
-Set the transaction time out in [msec]
+Set the transaction time out in [msec]   
 </PRE></BLOCKQUOTE>
 
 <P><TT><B>ibis_exit </B></TT>
 <BLOCKQUOTE><PRE>[ returns int  ]
-Exit IBIS.
+Exit IBIS.   
 </PRE></BLOCKQUOTE>
 
 <P><PRE>
 ibis_get_local_ports_info
    [return list]
-   Return the list of available IB ports with GUID, LID and State.  </PRE>
+   Return the list of available IB ports with GUID, LID and State.</PRE>
+
+<P><TT><B>$ibisSourceVersion</B></TT>
+<BLOCKQUOTE><PRE>[ Global : char * ibisSourceVersion ]
+</PRE></BLOCKQUOTE>
 
 
 </BODY>
