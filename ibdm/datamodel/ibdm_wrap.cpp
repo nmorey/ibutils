@@ -3782,11 +3782,11 @@ static int _wrap_ibdmCongTrace(ClientData clientData, Tcl_Interp *interp, int ob
   }
 }
 {
-  temp = atoi(Tcl_GetStringFromObj(objv[2],NULL));
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
   _arg1 = &temp;
 }
 {
-  temp0 = atoi(Tcl_GetStringFromObj(objv[3],NULL));
+  temp0 = strtoul(Tcl_GetStringFromObj(objv[3],NULL), NULL, 0);
   _arg2 = &temp0;
 }
 {
@@ -7997,7 +7997,7 @@ static int _wrap_IBNode_rank_set(ClientData clientData, Tcl_Interp *interp, int 
   }
 }
 {
-  temp = atoi(Tcl_GetStringFromObj(objv[2],NULL));
+  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
   _arg1 = &temp;
 }
 {
