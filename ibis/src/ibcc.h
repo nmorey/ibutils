@@ -557,8 +557,7 @@ typedef struct _ib_cong_info {
 #include <complib/cl_packon.h>
 typedef struct _ib_cong_key_info {
 	ib_net64_t cc_key;
-	uint8_t protect_bit;
-	uint8_t resv;
+	ib_net16_t protect_bit;
 	ib_net16_t lease_period;
 	ib_net16_t violations;
 } PACK_SUFFIX ib_cong_key_info_t;
@@ -569,7 +568,7 @@ typedef struct _ib_cong_key_info {
 *		8-byte CC Key.
 *
 *	protect_bit
-*		LSB is a CC Key Protect Bit, other 7 bits are reserved.
+*		Bit 0 is a CC Key Protect Bit, other 15 bits are reserved.
 *
 *	lease_period
 *		How long the CC Key protect bit is to remain non-zero.
@@ -594,9 +593,7 @@ typedef struct _ib_cong_key_info {
 typedef struct _ib_cong_log_event_sw {
 	ib_net16_t slid;
 	ib_net16_t dlid;
-	uint8_t resv0_sl;
-	uint8_t resv1;
-	ib_net16_t resv2;
+	ib_net32_t sl;
 	ib_net32_t time_stamp;
 } PACK_SUFFIX ib_cong_log_event_sw_t;
 #include <complib/cl_packoff.h>
@@ -609,8 +606,8 @@ typedef struct _ib_cong_log_event_sw {
 *		Destination LID of congestion event.
 *
 *	sl
-*		bits [3:0] SL of congestion event.
-*		bits [7:4] reserved.
+*		4 bits - SL of congestion event.
+*		rest of the bits are reserved.
 *
 *	time_stamp
 *		Timestamp of congestion event.
@@ -630,7 +627,7 @@ typedef struct _ib_cong_log_event_sw {
 */
 #include <complib/cl_packon.h>
 typedef struct _ib_cong_log_event_ca {
-	ib_net32_t resv0_local_qp;
+	ib_net32_t local_qp_resv0;
 	ib_net32_t remote_qp_sl_service_type;
 	ib_net16_t remote_lid;
 	ib_net16_t resv1;
@@ -640,13 +637,13 @@ typedef struct _ib_cong_log_event_ca {
 /*
 * FIELDS
 *	resv0_local_qp
-*		bits [23:0] local QP that reached CN threshold.
-*		bits [31:24] reserved.
+*		bits [31:8] local QP that reached CN threshold.
+*		bits [7:0] reserved.
 *
 *	remote_qp_sl_service_type
-*		bits [23:0] remote QP that is connected to local QP.
-*		bits [27:24] SL of the local QP.
-*		bits [31:28] Service Type of the local QP.
+*		bits [31:8] remote QP that is connected to local QP.
+*		bits [7:4] SL of the local QP.
+*		bits [3:0] Service Type of the local QP.
 *
 *	remote_lid
 *		LID of the remote port that is connected to local QP.
@@ -742,8 +739,7 @@ typedef struct _ib_sw_cong_setting {
 	uint8_t credit_mask[32];
 	uint8_t threshold;
 	uint8_t packet_size;
-	uint8_t cs_threshold;
-	uint8_t resv0;
+	ib_net16_t cs_threshold;
 	ib_net16_t cs_return_delay;
 	ib_net16_t marking_rate;
 } PACK_SUFFIX ib_sw_cong_setting_t;
@@ -771,15 +767,15 @@ typedef struct _ib_sw_cong_setting {
 *		  bit 255: reserved
 *
 *	threshold
-*		bits [3..0] Indicates how agressive cong. marking should be
-*		bits [7..4] Reserved
+*		bits [15..12] Indicates how agressive cong. marking should be
+*		bits [11..0] Reserved
 *
 *	packet_size
 *		Any packet less than this size won't be marked with FECN
 *
 *	cs_threshold
-*		bits [3..0] How agressive Credit Starvation should be
-*		bits [7..4] Reserved
+*		bits [7..4] How agressive Credit Starvation should be
+*		bits [3..0] Reserved
 *
 *	cs_return_delay
 *		Value that controls credit return rate.
@@ -812,15 +808,15 @@ typedef struct _ib_sw_port_cong_setting_element {
 * FIELDS
 *
 *	valid_ctrl_type_res_threshold
-*		bit 0: "Valid"
+*		bit 7: "Valid"
 *			when set to 1, indicates this switch
 *			port congestion setting element is valid.
-*		bit 1: "Control Type"
+*		bit 6: "Control Type"
 *			Indicates which type of attribute is being set:
 *			0b = Congestion Control parameters are being set.
 *			1b = Credit Starvation parameters are being set.
-*		bits [3..2]: reserved
-*		bits [7..4]: "Threshold"
+*		bits [5..4]: reserved
+*		bits [3..0]: "Threshold"
 *			When Control Type is 0, contains the congestion
 *			threshold value (Threshold) for this port.
 *			When Control Type is 1, contains the credit
@@ -930,8 +926,7 @@ typedef struct _ib_ca_cong_entry {
 */
 #include <complib/cl_packon.h>
 typedef struct _ib_ca_cong_setting {
-	uint8_t port_control;
-	uint8_t resv0;
+	ib_net16_t port_control;
 	ib_net16_t control_map;
 	ib_ca_cong_entry_t entry_list[16];
 } PACK_SUFFIX ib_ca_cong_setting_t;
@@ -941,8 +936,8 @@ typedef struct _ib_ca_cong_setting {
 *
 *	port_control
 *		Congestion attributes for this port:
-*		  LSB = 0: QP based CC
-*		  LSB = 1: SL/Port based CC
+*		  bit0 = 0: QP based CC
+*		  bit0 = 1: SL/Port based CC
 *		All other bits are reserved
 *
 *	control_map
@@ -974,9 +969,9 @@ typedef struct _ib_cc_tbl_entry {
 * FIELDS
 *
 *	shift_multiplier
-*		bits [1..0] - CCT Shift
+*		bits [15..14] - CCT Shift
 *		  used when calculating the injection rate delay
-*		bits [15..2] - CCT Multiplier
+*		bits [13..0] - CCT Multiplier
 *		  used when calculating the injection rate delay
 *
 * SEE ALSO

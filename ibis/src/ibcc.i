@@ -272,8 +272,7 @@ typedef struct _ib_cong_info {
 
 typedef struct _ib_cong_key_info {
 	ib_net64_t cc_key;
-	uint8_t protect_bit;
-	uint8_t resv;
+	ib_net16_t protect_bit;
 	ib_net16_t lease_period;
 	ib_net16_t violations;
 } ccCongestionKeyInfo;
@@ -402,7 +401,7 @@ typedef struct _ib_cong_key_info {
 	for (i = 0; i < $dim0; i++) {
 		entrys[i].slid = 0;
 		entrys[i].dlid = 0;
-		entrys[i].resv0_sl = 0;
+		entrys[i].sl = 0;
 		entrys[i].time_stamp = 0;
 	}
 
@@ -436,7 +435,7 @@ typedef struct _ib_cong_key_info {
 				switch (k) {
 					case 0: entrys[i].slid = cl_hton16(value); break;
 					case 1: entrys[i].dlid = cl_hton16(value); break;
-					case 2: entrys[i].resv0_sl = value; break;
+					case 2: entrys[i].sl = cl_hton32(value); break;
 					case 3: entrys[i].time_stamp = cl_hton32(value); break;
 					default: break;
 				}
@@ -475,7 +474,7 @@ typedef struct _ib_cong_key_info {
 					case 0: entry_index = value; break;
 					case 1: entrys[entry_index].slid = cl_hton16(value); break;
 					case 2: entrys[entry_index].dlid = cl_hton16(value); break;
-					case 3: entrys[entry_index].resv0_sl = value; break;
+					case 3: entrys[entry_index].sl = cl_hton32(value); break;
 					case 4: entrys[entry_index].time_stamp = cl_hton32(value); break;
 					default: break;
 				}
@@ -511,7 +510,7 @@ typedef struct _ib_cong_key_info {
 		sprintf(buff, " -dlid 0x%04x", cl_ntoh16($source[i].dlid));
 		Tcl_AppendResult(interp, buff, NULL);
 
-		sprintf(buff, " -resv0_sl 0x%02x", $source[i].resv0_sl);
+		sprintf(buff, " -sl 0x%08x", cl_ntoh32($source[i].sl));
 		Tcl_AppendResult(interp, buff, NULL);
 
 		sprintf(buff, " -time_stamp 0x%08x", cl_ntoh32($source[i].time_stamp));
@@ -525,9 +524,7 @@ typedef struct _ib_cong_key_info {
 typedef struct _ib_cong_log_event_sw {
 	ib_net16_t slid;
 	ib_net16_t dlid;
-	uint8_t resv0_sl;
-	uint8_t resv1;
-	ib_net16_t resv2;
+	ib_net32_t sl;
 	ib_net32_t time_stamp;
 } ib_cong_log_event_sw_t;
 
@@ -585,7 +582,7 @@ typedef struct _ib_cong_log_event_sw {
 	}
 
 	for (i = 0; i < $dim0; i++) {
-		entrys[i].resv0_local_qp = 0;
+		entrys[i].local_qp_resv0 = 0;
 		entrys[i].remote_qp_sl_service_type = 0;
 		entrys[i].remote_lid = 0;
 		entrys[i].time_stamp = 0;
@@ -619,7 +616,7 @@ typedef struct _ib_cong_log_event_sw {
 				}
 				value = strtol(Tcl_GetStringFromObj(tclObj, NULL), NULL, 0);
 				switch (k) {
-					case 0: entrys[i].resv0_local_qp = cl_hton32(value); break;
+					case 0: entrys[i].local_qp_resv0 = cl_hton32(value); break;
 					case 1: entrys[i].remote_qp_sl_service_type = cl_hton32(value); break;
 					case 2: entrys[i].remote_lid = cl_hton16(value); break;
 					case 3: entrys[i].time_stamp = cl_hton32(value); break;
@@ -658,7 +655,7 @@ typedef struct _ib_cong_log_event_sw {
 				value = strtol(Tcl_GetStringFromObj(tclObj, NULL), NULL, 0);
 				switch (k) {
 					case 0: entry_index = value; break;
-					case 1: entrys[entry_index].resv0_local_qp = cl_hton32(value); break;
+					case 1: entrys[entry_index].local_qp_resv0 = cl_hton32(value); break;
 					case 2: entrys[entry_index].remote_qp_sl_service_type = cl_hton32(value); break;
 					case 3: entrys[entry_index].remote_lid = cl_hton16(value); break;
 					case 4: entrys[entry_index].time_stamp = cl_hton32(value); break;
@@ -690,7 +687,7 @@ typedef struct _ib_cong_log_event_sw {
 		sprintf(buff, " {#%02u:", i);
 		Tcl_AppendResult(interp, buff, NULL);
 
-		sprintf(buff, " -resv0_local_qp 0x%08x", cl_ntoh32($source[i].resv0_local_qp));
+		sprintf(buff, " -local_qp_resv0 0x%08x", cl_ntoh32($source[i].local_qp_resv0));
 		Tcl_AppendResult(interp, buff, NULL);
 
 		sprintf(buff, " -remote_qp_sl_service_type 0x%08x", cl_ntoh32($source[i].remote_qp_sl_service_type));
@@ -708,7 +705,7 @@ typedef struct _ib_cong_log_event_sw {
 }
 
 typedef struct _ib_cong_log_event_ca {
-	ib_net32_t resv0_local_qp;
+	ib_net32_t local_qp_resv0;
 	ib_net32_t remote_qp_sl_service_type;
 	ib_net16_t remote_lid;
 	ib_net16_t resv1;
@@ -779,8 +776,7 @@ typedef struct _ib_sw_cong_setting {
 	uint8_array_t credit_mask[32];
 	uint8_t threshold;
 	uint8_t packet_size;
-	uint8_t cs_threshold;
-	uint8_t resv0;
+	ib_net16_t cs_threshold;
 	ib_net16_t cs_return_delay;
 	ib_net16_t marking_rate;
 } ccSWCongestionSetting;
@@ -1220,8 +1216,7 @@ typedef struct _ib_ca_cong_entry {
 } ib_ca_cong_entry_t;
 
 typedef struct _ib_ca_cong_setting {
-	uint8_t port_control;
-	uint8_t resv0;
+	ib_net16_t port_control;
 	ib_net16_t control_map;
 	ib_ca_cong_entry_t entry_list[16];
 } ccCACongestionSetting;
