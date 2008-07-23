@@ -364,6 +364,14 @@ typedef struct _ib_cong_key_info {
 		return TCL_ERROR;
 	}
 
+	/* SW Congestion Log Event List should have up to 15 events */
+	if (countSubLists > 15)
+	{
+		printf("Error: SW Congestion Log Event List should have up to %d events (provided %d)\n",
+			15, countSubLists);
+		return TCL_ERROR;
+	}
+
 	/*
 	 * There are two options to configure log_event:
 	 *   1. Configure the whole list by providing list of value groups:
@@ -544,6 +552,14 @@ typedef struct _ib_cong_log_event_sw {
 	{
 		printf("Error: wrong format for CA Congestion Log Event: %s\n",
 			Tcl_GetStringFromObj($source,NULL));
+		return TCL_ERROR;
+	}
+
+	/* CA Congestion Log Event List should have up to 13 events */
+	if (countSubLists > 13)
+	{
+		printf("Error: CA Congestion Log Event List should have up to %d events (provided %d)\n",
+			13, countSubLists);
 		return TCL_ERROR;
 	}
 
@@ -835,6 +851,14 @@ typedef struct _ib_sw_cong_setting {
 		return TCL_ERROR;
 	}
 
+	/* SwitchPortCongestionSetting Block list should have up to 32 blocks */
+	if (countSubLists > 32)
+	{
+		printf("Error: SwitchPortCongestionSetting Block list should have up to %d blocks (provided %d)\n",
+			32, countSubLists);
+		return TCL_ERROR;
+	}
+
 	/*
 	 * There are two options to configure entry_list:
 	 *   1. Configure the whole list by providing list of value groups:
@@ -1046,6 +1070,14 @@ typedef struct _ib_sw_port_cong_setting {
 	{
 		printf("Error: wrong format for CA Congestion Setting: %s\n",
 			Tcl_GetStringFromObj($source,NULL));
+		return TCL_ERROR;
+	}
+
+	/* CA Congestion Setting Entry List should have up to 16 entries */
+	if (countSubLists > 16)
+	{
+		printf("Error: CA Congestion Setting Entry List should have up to %d entries (provided %d)\n",
+			16, countSubLists);
 		return TCL_ERROR;
 	}
 
@@ -1271,6 +1303,14 @@ typedef struct _ib_ca_cong_setting {
 	{
 		printf("Error: wrong format for CC Table: %s\n",
 			Tcl_GetStringFromObj($source,NULL));
+		return TCL_ERROR;
+	}
+
+	/* Congestion Control Table Entry List should have up to 64 entries */
+	if (countSubLists > 64)
+	{
+		printf("Error: Congestion Control Table Entry List should have up to %d entries (provided %d)\n",
+			64, countSubLists);
 		return TCL_ERROR;
 	}
 
