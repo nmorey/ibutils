@@ -62235,17 +62235,17 @@ static int _wrap_ccCongestionKeyInfo_cc_key_get(ClientData clientData, Tcl_Inter
 #define _ib_cong_key_info_protect_bit_set(_swigobj,_swigval) (_swigobj->protect_bit = *(_swigval),_swigval)
 static int _wrap_ccCongestionKeyInfo_protect_bit_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
 
-    uint8_t * _result;
+    ib_net16_t * _result;
     ccCongestionKeyInfo * _arg0;
-    uint8_t * _arg1;
+    ib_net16_t * _arg1;
     Tcl_Obj * tcl_result;
     char * rettype;
-    uint8_t  temp;
+    ib_net16_t  temp;
 
     clientData = clientData; objv = objv;
     tcl_result = Tcl_GetObjResult(interp);
     if ((objc < 3) || (objc > 3)) {
-        Tcl_SetStringObj(tcl_result,"Wrong # args. ccCongestionKeyInfo_protect_bit_set { ccCongestionKeyInfo * } { uint8_t * } ",-1);
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccCongestionKeyInfo_protect_bit_set { ccCongestionKeyInfo * } { ib_net16_t * } ",-1);
         return TCL_ERROR;
     }
     if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccCongestionKeyInfo_p"))) {
@@ -62254,7 +62254,7 @@ static int _wrap_ccCongestionKeyInfo_protect_bit_set(ClientData clientData, Tcl_
         return TCL_ERROR;
     }
 {
-  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -62276,7 +62276,7 @@ static int _wrap_ccCongestionKeyInfo_protect_bit_set(ClientData clientData, Tcl_
   }
 
   ibis_tcl_error = 0;
-      _result = (uint8_t *)_ib_cong_key_info_protect_bit_set(_arg0,_arg1);
+      _result = (ib_net16_t *)_ib_cong_key_info_protect_bit_set(_arg0,_arg1);
 ;
   if (ibis_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
@@ -62285,7 +62285,7 @@ static int _wrap_ccCongestionKeyInfo_protect_bit_set(ClientData clientData, Tcl_
 }    tcl_result = Tcl_GetObjResult(interp);
 {
   char buff[20];
-  sprintf(buff, "%u", *_result);
+  sprintf(buff, "%u", cl_hton16(*_result));
   Tcl_SetStringObj(tcl_result,buff,strlen(buff));
 }
     return TCL_OK;
@@ -62293,7 +62293,7 @@ static int _wrap_ccCongestionKeyInfo_protect_bit_set(ClientData clientData, Tcl_
 #define _ib_cong_key_info_protect_bit_get(_swigobj) (&_swigobj->protect_bit)
 static int _wrap_ccCongestionKeyInfo_protect_bit_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
 
-    uint8_t * _result;
+    ib_net16_t * _result;
     ccCongestionKeyInfo * _arg0;
     Tcl_Obj * tcl_result;
     char * rettype;
@@ -62328,7 +62328,7 @@ static int _wrap_ccCongestionKeyInfo_protect_bit_get(ClientData clientData, Tcl_
   }
 
   ibis_tcl_error = 0;
-      _result = (uint8_t *)_ib_cong_key_info_protect_bit_get(_arg0);
+      _result = (ib_net16_t *)_ib_cong_key_info_protect_bit_get(_arg0);
 ;
   if (ibis_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
@@ -62337,117 +62337,7 @@ static int _wrap_ccCongestionKeyInfo_protect_bit_get(ClientData clientData, Tcl_
 }    tcl_result = Tcl_GetObjResult(interp);
 {
   char buff[20];
-  sprintf(buff, "%u", *_result);
-  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
-}
-    return TCL_OK;
-}
-#define _ib_cong_key_info_resv_set(_swigobj,_swigval) (_swigobj->resv = *(_swigval),_swigval)
-static int _wrap_ccCongestionKeyInfo_resv_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
-
-    uint8_t * _result;
-    ccCongestionKeyInfo * _arg0;
-    uint8_t * _arg1;
-    Tcl_Obj * tcl_result;
-    char * rettype;
-    uint8_t  temp;
-
-    clientData = clientData; objv = objv;
-    tcl_result = Tcl_GetObjResult(interp);
-    if ((objc < 3) || (objc > 3)) {
-        Tcl_SetStringObj(tcl_result,"Wrong # args. ccCongestionKeyInfo_resv_set { ccCongestionKeyInfo * } { uint8_t * } ",-1);
-        return TCL_ERROR;
-    }
-    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccCongestionKeyInfo_p"))) {
-        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccCongestionKeyInfo_resv_set. Expected _ccCongestionKeyInfo_p, received ", -1);
-        Tcl_AppendToObj(tcl_result, rettype, -1);
-        return TCL_ERROR;
-    }
-{
-  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
-  _arg1 = &temp;
-}
-{
-  /* we can check if IBIS was initialized here */
-  if (!IbisObj.initialized)
-  {
-    Tcl_SetStringObj(
-      Tcl_GetObjResult(interp),
-      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
-    return TCL_ERROR;
-  }
-
-  if (! IbisObj.port_guid)
-  {
-    Tcl_SetStringObj(
-      Tcl_GetObjResult(interp),
-      " ibis was not yet initialized. please use ibis_set_port before.", -1);
-    return TCL_ERROR;
-  }
-
-  ibis_tcl_error = 0;
-      _result = (uint8_t *)_ib_cong_key_info_resv_set(_arg0,_arg1);
-;
-  if (ibis_tcl_error) {
-	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
- 	 return TCL_ERROR;
-  }
-}    tcl_result = Tcl_GetObjResult(interp);
-{
-  char buff[20];
-  sprintf(buff, "%u", *_result);
-  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
-}
-    return TCL_OK;
-}
-#define _ib_cong_key_info_resv_get(_swigobj) (&_swigobj->resv)
-static int _wrap_ccCongestionKeyInfo_resv_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
-
-    uint8_t * _result;
-    ccCongestionKeyInfo * _arg0;
-    Tcl_Obj * tcl_result;
-    char * rettype;
-
-    clientData = clientData; objv = objv;
-    tcl_result = Tcl_GetObjResult(interp);
-    if ((objc < 2) || (objc > 2)) {
-        Tcl_SetStringObj(tcl_result,"Wrong # args. ccCongestionKeyInfo_resv_get { ccCongestionKeyInfo * } ",-1);
-        return TCL_ERROR;
-    }
-    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccCongestionKeyInfo_p"))) {
-        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccCongestionKeyInfo_resv_get. Expected _ccCongestionKeyInfo_p, received ", -1);
-        Tcl_AppendToObj(tcl_result, rettype, -1);
-        return TCL_ERROR;
-    }
-{
-  /* we can check if IBIS was initialized here */
-  if (!IbisObj.initialized)
-  {
-    Tcl_SetStringObj(
-      Tcl_GetObjResult(interp),
-      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
-    return TCL_ERROR;
-  }
-
-  if (! IbisObj.port_guid)
-  {
-    Tcl_SetStringObj(
-      Tcl_GetObjResult(interp),
-      " ibis was not yet initialized. please use ibis_set_port before.", -1);
-    return TCL_ERROR;
-  }
-
-  ibis_tcl_error = 0;
-      _result = (uint8_t *)_ib_cong_key_info_resv_get(_arg0);
-;
-  if (ibis_tcl_error) {
-	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
- 	 return TCL_ERROR;
-  }
-}    tcl_result = Tcl_GetObjResult(interp);
-{
-  char buff[20];
-  sprintf(buff, "%u", *_result);
+  sprintf(buff, "%u", cl_hton16(*_result));
   Tcl_SetStringObj(tcl_result,buff,strlen(buff));
 }
     return TCL_OK;
@@ -62840,8 +62730,6 @@ static int TclccCongestionKeyInfoMethodCmd(ClientData clientData, Tcl_Interp *in
                     cmd = _wrap_ccCongestionKeyInfo_cc_key_set;
                 }  else if (strcmp(_str,"-protect_bit") == 0) {
                     cmd = _wrap_ccCongestionKeyInfo_protect_bit_set;
-                }  else if (strcmp(_str,"-resv") == 0) {
-                    cmd = _wrap_ccCongestionKeyInfo_resv_set;
                 }  else if (strcmp(_str,"-lease_period") == 0) {
                     cmd = _wrap_ccCongestionKeyInfo_lease_period_set;
                 }  else if (strcmp(_str,"-violations") == 0) {
@@ -62855,13 +62743,13 @@ static int TclccCongestionKeyInfoMethodCmd(ClientData clientData, Tcl_Interp *in
             if (rcode == TCL_ERROR) return rcode;
             cmd = 0;
           } else {
-            Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be { -cc_key -protect_bit -resv -lease_period -violations  }",-1);
+            Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be { -cc_key -protect_bit -lease_period -violations  }",-1);
             return TCL_ERROR;
           }
         i+=2;
       }
       if ((i < objc) || (i == 2)) {
-        Tcl_SetStringObj(tcl_result,"{ -cc_key -protect_bit -resv -lease_period -violations  }",-1);
+        Tcl_SetStringObj(tcl_result,"{ -cc_key -protect_bit -lease_period -violations  }",-1);
         return TCL_ERROR;
       }
       return TCL_OK;
@@ -62873,8 +62761,6 @@ static int TclccCongestionKeyInfoMethodCmd(ClientData clientData, Tcl_Interp *in
                     cmd = _wrap_ccCongestionKeyInfo_cc_key_get;
                 }  else if (strcmp(_str,"-protect_bit") == 0) {
                     cmd = _wrap_ccCongestionKeyInfo_protect_bit_get;
-                }  else if (strcmp(_str,"-resv") == 0) {
-                    cmd = _wrap_ccCongestionKeyInfo_resv_get;
                 }  else if (strcmp(_str,"-lease_period") == 0) {
                     cmd = _wrap_ccCongestionKeyInfo_lease_period_get;
                 }  else if (strcmp(_str,"-violations") == 0) {
@@ -62891,11 +62777,11 @@ static int TclccCongestionKeyInfoMethodCmd(ClientData clientData, Tcl_Interp *in
           objv[2] = oldarg;
           return rcode;
         } else {
-          Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this -cc_key -protect_bit -resv -lease_period -violations  }",-1);
+          Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this -cc_key -protect_bit -lease_period -violations  }",-1);
           return TCL_ERROR;
         }
       } else {
-        Tcl_SetStringObj(tcl_result,"{ -this -cc_key -protect_bit -resv -lease_period -violations  }", -1);
+        Tcl_SetStringObj(tcl_result,"{ -this -cc_key -protect_bit -lease_period -violations  }", -1);
         return TCL_ERROR;
       }
     } else if ((c == 'd') && (strncmp(_str,"dump",length) == 0) && (length >= 2)) {
@@ -62916,13 +62802,6 @@ static int TclccCongestionKeyInfoMethodCmd(ClientData clientData, Tcl_Interp *in
         rcode = (*cmd)(clientData,interp,objc,&objv[1]);
         objv[2] = oldarg;
         Tcl_AppendStringsToObj(pDumpObj, "-protect_bit ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
-        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
-        cmd = _wrap_ccCongestionKeyInfo_resv_get;
-        oldarg = objv[2];
-        objv[2] = obj;
-        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
-        objv[2] = oldarg;
-        Tcl_AppendStringsToObj(pDumpObj, "-resv ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
         Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
         cmd = _wrap_ccCongestionKeyInfo_lease_period_get;
         oldarg = objv[2];
@@ -63254,29 +63133,29 @@ static int _wrap_ib_cong_log_event_sw_t_dlid_get(ClientData clientData, Tcl_Inte
 }
     return TCL_OK;
 }
-#define _ib_cong_log_event_sw_resv0_sl_set(_swigobj,_swigval) (_swigobj->resv0_sl = *(_swigval),_swigval)
-static int _wrap_ib_cong_log_event_sw_t_resv0_sl_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+#define _ib_cong_log_event_sw_sl_set(_swigobj,_swigval) (_swigobj->sl = *(_swigval),_swigval)
+static int _wrap_ib_cong_log_event_sw_t_sl_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
 
-    uint8_t * _result;
+    ib_net32_t * _result;
     ib_cong_log_event_sw_t * _arg0;
-    uint8_t * _arg1;
+    ib_net32_t * _arg1;
     Tcl_Obj * tcl_result;
     char * rettype;
-    uint8_t  temp;
+    ib_net32_t  temp;
 
     clientData = clientData; objv = objv;
     tcl_result = Tcl_GetObjResult(interp);
     if ((objc < 3) || (objc > 3)) {
-        Tcl_SetStringObj(tcl_result,"Wrong # args. ib_cong_log_event_sw_t_resv0_sl_set { ib_cong_log_event_sw_t * } { uint8_t * } ",-1);
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ib_cong_log_event_sw_t_sl_set { ib_cong_log_event_sw_t * } { ib_net32_t * } ",-1);
         return TCL_ERROR;
     }
     if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ib_cong_log_event_sw_t_p"))) {
-        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ib_cong_log_event_sw_t_resv0_sl_set. Expected _ib_cong_log_event_sw_t_p, received ", -1);
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ib_cong_log_event_sw_t_sl_set. Expected _ib_cong_log_event_sw_t_p, received ", -1);
         Tcl_AppendToObj(tcl_result, rettype, -1);
         return TCL_ERROR;
     }
 {
-  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
+  temp = cl_hton32(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -63298,7 +63177,7 @@ static int _wrap_ib_cong_log_event_sw_t_resv0_sl_set(ClientData clientData, Tcl_
   }
 
   ibis_tcl_error = 0;
-      _result = (uint8_t *)_ib_cong_log_event_sw_resv0_sl_set(_arg0,_arg1);
+      _result = (ib_net32_t *)_ib_cong_log_event_sw_sl_set(_arg0,_arg1);
 ;
   if (ibis_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
@@ -63307,15 +63186,15 @@ static int _wrap_ib_cong_log_event_sw_t_resv0_sl_set(ClientData clientData, Tcl_
 }    tcl_result = Tcl_GetObjResult(interp);
 {
   char buff[20];
-  sprintf(buff, "%u", *_result);
+  sprintf(buff, "%u", cl_ntoh32(*_result));
   Tcl_SetStringObj(tcl_result,buff,strlen(buff));
 }
     return TCL_OK;
 }
-#define _ib_cong_log_event_sw_resv0_sl_get(_swigobj) (&_swigobj->resv0_sl)
-static int _wrap_ib_cong_log_event_sw_t_resv0_sl_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+#define _ib_cong_log_event_sw_sl_get(_swigobj) (&_swigobj->sl)
+static int _wrap_ib_cong_log_event_sw_t_sl_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
 
-    uint8_t * _result;
+    ib_net32_t * _result;
     ib_cong_log_event_sw_t * _arg0;
     Tcl_Obj * tcl_result;
     char * rettype;
@@ -63323,11 +63202,11 @@ static int _wrap_ib_cong_log_event_sw_t_resv0_sl_get(ClientData clientData, Tcl_
     clientData = clientData; objv = objv;
     tcl_result = Tcl_GetObjResult(interp);
     if ((objc < 2) || (objc > 2)) {
-        Tcl_SetStringObj(tcl_result,"Wrong # args. ib_cong_log_event_sw_t_resv0_sl_get { ib_cong_log_event_sw_t * } ",-1);
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ib_cong_log_event_sw_t_sl_get { ib_cong_log_event_sw_t * } ",-1);
         return TCL_ERROR;
     }
     if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ib_cong_log_event_sw_t_p"))) {
-        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ib_cong_log_event_sw_t_resv0_sl_get. Expected _ib_cong_log_event_sw_t_p, received ", -1);
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ib_cong_log_event_sw_t_sl_get. Expected _ib_cong_log_event_sw_t_p, received ", -1);
         Tcl_AppendToObj(tcl_result, rettype, -1);
         return TCL_ERROR;
     }
@@ -63350,7 +63229,7 @@ static int _wrap_ib_cong_log_event_sw_t_resv0_sl_get(ClientData clientData, Tcl_
   }
 
   ibis_tcl_error = 0;
-      _result = (uint8_t *)_ib_cong_log_event_sw_resv0_sl_get(_arg0);
+      _result = (ib_net32_t *)_ib_cong_log_event_sw_sl_get(_arg0);
 ;
   if (ibis_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
@@ -63359,227 +63238,7 @@ static int _wrap_ib_cong_log_event_sw_t_resv0_sl_get(ClientData clientData, Tcl_
 }    tcl_result = Tcl_GetObjResult(interp);
 {
   char buff[20];
-  sprintf(buff, "%u", *_result);
-  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
-}
-    return TCL_OK;
-}
-#define _ib_cong_log_event_sw_resv1_set(_swigobj,_swigval) (_swigobj->resv1 = *(_swigval),_swigval)
-static int _wrap_ib_cong_log_event_sw_t_resv1_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
-
-    uint8_t * _result;
-    ib_cong_log_event_sw_t * _arg0;
-    uint8_t * _arg1;
-    Tcl_Obj * tcl_result;
-    char * rettype;
-    uint8_t  temp;
-
-    clientData = clientData; objv = objv;
-    tcl_result = Tcl_GetObjResult(interp);
-    if ((objc < 3) || (objc > 3)) {
-        Tcl_SetStringObj(tcl_result,"Wrong # args. ib_cong_log_event_sw_t_resv1_set { ib_cong_log_event_sw_t * } { uint8_t * } ",-1);
-        return TCL_ERROR;
-    }
-    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ib_cong_log_event_sw_t_p"))) {
-        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ib_cong_log_event_sw_t_resv1_set. Expected _ib_cong_log_event_sw_t_p, received ", -1);
-        Tcl_AppendToObj(tcl_result, rettype, -1);
-        return TCL_ERROR;
-    }
-{
-  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
-  _arg1 = &temp;
-}
-{
-  /* we can check if IBIS was initialized here */
-  if (!IbisObj.initialized)
-  {
-    Tcl_SetStringObj(
-      Tcl_GetObjResult(interp),
-      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
-    return TCL_ERROR;
-  }
-
-  if (! IbisObj.port_guid)
-  {
-    Tcl_SetStringObj(
-      Tcl_GetObjResult(interp),
-      " ibis was not yet initialized. please use ibis_set_port before.", -1);
-    return TCL_ERROR;
-  }
-
-  ibis_tcl_error = 0;
-      _result = (uint8_t *)_ib_cong_log_event_sw_resv1_set(_arg0,_arg1);
-;
-  if (ibis_tcl_error) {
-	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
- 	 return TCL_ERROR;
-  }
-}    tcl_result = Tcl_GetObjResult(interp);
-{
-  char buff[20];
-  sprintf(buff, "%u", *_result);
-  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
-}
-    return TCL_OK;
-}
-#define _ib_cong_log_event_sw_resv1_get(_swigobj) (&_swigobj->resv1)
-static int _wrap_ib_cong_log_event_sw_t_resv1_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
-
-    uint8_t * _result;
-    ib_cong_log_event_sw_t * _arg0;
-    Tcl_Obj * tcl_result;
-    char * rettype;
-
-    clientData = clientData; objv = objv;
-    tcl_result = Tcl_GetObjResult(interp);
-    if ((objc < 2) || (objc > 2)) {
-        Tcl_SetStringObj(tcl_result,"Wrong # args. ib_cong_log_event_sw_t_resv1_get { ib_cong_log_event_sw_t * } ",-1);
-        return TCL_ERROR;
-    }
-    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ib_cong_log_event_sw_t_p"))) {
-        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ib_cong_log_event_sw_t_resv1_get. Expected _ib_cong_log_event_sw_t_p, received ", -1);
-        Tcl_AppendToObj(tcl_result, rettype, -1);
-        return TCL_ERROR;
-    }
-{
-  /* we can check if IBIS was initialized here */
-  if (!IbisObj.initialized)
-  {
-    Tcl_SetStringObj(
-      Tcl_GetObjResult(interp),
-      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
-    return TCL_ERROR;
-  }
-
-  if (! IbisObj.port_guid)
-  {
-    Tcl_SetStringObj(
-      Tcl_GetObjResult(interp),
-      " ibis was not yet initialized. please use ibis_set_port before.", -1);
-    return TCL_ERROR;
-  }
-
-  ibis_tcl_error = 0;
-      _result = (uint8_t *)_ib_cong_log_event_sw_resv1_get(_arg0);
-;
-  if (ibis_tcl_error) {
-	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
- 	 return TCL_ERROR;
-  }
-}    tcl_result = Tcl_GetObjResult(interp);
-{
-  char buff[20];
-  sprintf(buff, "%u", *_result);
-  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
-}
-    return TCL_OK;
-}
-#define _ib_cong_log_event_sw_resv2_set(_swigobj,_swigval) (_swigobj->resv2 = *(_swigval),_swigval)
-static int _wrap_ib_cong_log_event_sw_t_resv2_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
-
-    ib_net16_t * _result;
-    ib_cong_log_event_sw_t * _arg0;
-    ib_net16_t * _arg1;
-    Tcl_Obj * tcl_result;
-    char * rettype;
-    ib_net16_t  temp;
-
-    clientData = clientData; objv = objv;
-    tcl_result = Tcl_GetObjResult(interp);
-    if ((objc < 3) || (objc > 3)) {
-        Tcl_SetStringObj(tcl_result,"Wrong # args. ib_cong_log_event_sw_t_resv2_set { ib_cong_log_event_sw_t * } { ib_net16_t * } ",-1);
-        return TCL_ERROR;
-    }
-    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ib_cong_log_event_sw_t_p"))) {
-        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ib_cong_log_event_sw_t_resv2_set. Expected _ib_cong_log_event_sw_t_p, received ", -1);
-        Tcl_AppendToObj(tcl_result, rettype, -1);
-        return TCL_ERROR;
-    }
-{
-  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
-  _arg1 = &temp;
-}
-{
-  /* we can check if IBIS was initialized here */
-  if (!IbisObj.initialized)
-  {
-    Tcl_SetStringObj(
-      Tcl_GetObjResult(interp),
-      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
-    return TCL_ERROR;
-  }
-
-  if (! IbisObj.port_guid)
-  {
-    Tcl_SetStringObj(
-      Tcl_GetObjResult(interp),
-      " ibis was not yet initialized. please use ibis_set_port before.", -1);
-    return TCL_ERROR;
-  }
-
-  ibis_tcl_error = 0;
-      _result = (ib_net16_t *)_ib_cong_log_event_sw_resv2_set(_arg0,_arg1);
-;
-  if (ibis_tcl_error) {
-	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
- 	 return TCL_ERROR;
-  }
-}    tcl_result = Tcl_GetObjResult(interp);
-{
-  char buff[20];
-  sprintf(buff, "%u", cl_hton16(*_result));
-  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
-}
-    return TCL_OK;
-}
-#define _ib_cong_log_event_sw_resv2_get(_swigobj) (&_swigobj->resv2)
-static int _wrap_ib_cong_log_event_sw_t_resv2_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
-
-    ib_net16_t * _result;
-    ib_cong_log_event_sw_t * _arg0;
-    Tcl_Obj * tcl_result;
-    char * rettype;
-
-    clientData = clientData; objv = objv;
-    tcl_result = Tcl_GetObjResult(interp);
-    if ((objc < 2) || (objc > 2)) {
-        Tcl_SetStringObj(tcl_result,"Wrong # args. ib_cong_log_event_sw_t_resv2_get { ib_cong_log_event_sw_t * } ",-1);
-        return TCL_ERROR;
-    }
-    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ib_cong_log_event_sw_t_p"))) {
-        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ib_cong_log_event_sw_t_resv2_get. Expected _ib_cong_log_event_sw_t_p, received ", -1);
-        Tcl_AppendToObj(tcl_result, rettype, -1);
-        return TCL_ERROR;
-    }
-{
-  /* we can check if IBIS was initialized here */
-  if (!IbisObj.initialized)
-  {
-    Tcl_SetStringObj(
-      Tcl_GetObjResult(interp),
-      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
-    return TCL_ERROR;
-  }
-
-  if (! IbisObj.port_guid)
-  {
-    Tcl_SetStringObj(
-      Tcl_GetObjResult(interp),
-      " ibis was not yet initialized. please use ibis_set_port before.", -1);
-    return TCL_ERROR;
-  }
-
-  ibis_tcl_error = 0;
-      _result = (ib_net16_t *)_ib_cong_log_event_sw_resv2_get(_arg0);
-;
-  if (ibis_tcl_error) {
-	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
- 	 return TCL_ERROR;
-  }
-}    tcl_result = Tcl_GetObjResult(interp);
-{
-  char buff[20];
-  sprintf(buff, "%u", cl_hton16(*_result));
+  sprintf(buff, "%u", cl_ntoh32(*_result));
   Tcl_SetStringObj(tcl_result,buff,strlen(buff));
 }
     return TCL_OK;
@@ -63726,12 +63385,8 @@ static int Tclib_cong_log_event_sw_tMethodCmd(ClientData clientData, Tcl_Interp 
                     cmd = _wrap_ib_cong_log_event_sw_t_slid_set;
                 }  else if (strcmp(_str,"-dlid") == 0) {
                     cmd = _wrap_ib_cong_log_event_sw_t_dlid_set;
-                }  else if (strcmp(_str,"-resv0_sl") == 0) {
-                    cmd = _wrap_ib_cong_log_event_sw_t_resv0_sl_set;
-                }  else if (strcmp(_str,"-resv1") == 0) {
-                    cmd = _wrap_ib_cong_log_event_sw_t_resv1_set;
-                }  else if (strcmp(_str,"-resv2") == 0) {
-                    cmd = _wrap_ib_cong_log_event_sw_t_resv2_set;
+                }  else if (strcmp(_str,"-sl") == 0) {
+                    cmd = _wrap_ib_cong_log_event_sw_t_sl_set;
                 }  else if (strcmp(_str,"-time_stamp") == 0) {
                     cmd = _wrap_ib_cong_log_event_sw_t_time_stamp_set;
                 }
@@ -63743,13 +63398,13 @@ static int Tclib_cong_log_event_sw_tMethodCmd(ClientData clientData, Tcl_Interp 
             if (rcode == TCL_ERROR) return rcode;
             cmd = 0;
           } else {
-            Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be { -slid -dlid -resv0_sl -resv1 -resv2 -time_stamp  }",-1);
+            Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be { -slid -dlid -sl -time_stamp  }",-1);
             return TCL_ERROR;
           }
         i+=2;
       }
       if ((i < objc) || (i == 2)) {
-        Tcl_SetStringObj(tcl_result,"{ -slid -dlid -resv0_sl -resv1 -resv2 -time_stamp  }",-1);
+        Tcl_SetStringObj(tcl_result,"{ -slid -dlid -sl -time_stamp  }",-1);
         return TCL_ERROR;
       }
       return TCL_OK;
@@ -63761,12 +63416,8 @@ static int Tclib_cong_log_event_sw_tMethodCmd(ClientData clientData, Tcl_Interp 
                     cmd = _wrap_ib_cong_log_event_sw_t_slid_get;
                 }  else if (strcmp(_str,"-dlid") == 0) {
                     cmd = _wrap_ib_cong_log_event_sw_t_dlid_get;
-                }  else if (strcmp(_str,"-resv0_sl") == 0) {
-                    cmd = _wrap_ib_cong_log_event_sw_t_resv0_sl_get;
-                }  else if (strcmp(_str,"-resv1") == 0) {
-                    cmd = _wrap_ib_cong_log_event_sw_t_resv1_get;
-                }  else if (strcmp(_str,"-resv2") == 0) {
-                    cmd = _wrap_ib_cong_log_event_sw_t_resv2_get;
+                }  else if (strcmp(_str,"-sl") == 0) {
+                    cmd = _wrap_ib_cong_log_event_sw_t_sl_get;
                 }  else if (strcmp(_str,"-time_stamp") == 0) {
                     cmd = _wrap_ib_cong_log_event_sw_t_time_stamp_get;
                 }
@@ -63781,11 +63432,11 @@ static int Tclib_cong_log_event_sw_tMethodCmd(ClientData clientData, Tcl_Interp 
           objv[2] = oldarg;
           return rcode;
         } else {
-          Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this -slid -dlid -resv0_sl -resv1 -resv2 -time_stamp  }",-1);
+          Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this -slid -dlid -sl -time_stamp  }",-1);
           return TCL_ERROR;
         }
       } else {
-        Tcl_SetStringObj(tcl_result,"{ -this -slid -dlid -resv0_sl -resv1 -resv2 -time_stamp  }", -1);
+        Tcl_SetStringObj(tcl_result,"{ -this -slid -dlid -sl -time_stamp  }", -1);
         return TCL_ERROR;
       }
     } else if ((c == 'd') && (strncmp(_str,"dump",length) == 0) && (length >= 2)) {
@@ -63807,26 +63458,12 @@ static int Tclib_cong_log_event_sw_tMethodCmd(ClientData clientData, Tcl_Interp 
         objv[2] = oldarg;
         Tcl_AppendStringsToObj(pDumpObj, "-dlid ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
         Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
-        cmd = _wrap_ib_cong_log_event_sw_t_resv0_sl_get;
+        cmd = _wrap_ib_cong_log_event_sw_t_sl_get;
         oldarg = objv[2];
         objv[2] = obj;
         rcode = (*cmd)(clientData,interp,objc,&objv[1]);
         objv[2] = oldarg;
-        Tcl_AppendStringsToObj(pDumpObj, "-resv0_sl ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
-        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
-        cmd = _wrap_ib_cong_log_event_sw_t_resv1_get;
-        oldarg = objv[2];
-        objv[2] = obj;
-        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
-        objv[2] = oldarg;
-        Tcl_AppendStringsToObj(pDumpObj, "-resv1 ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
-        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
-        cmd = _wrap_ib_cong_log_event_sw_t_resv2_get;
-        oldarg = objv[2];
-        objv[2] = obj;
-        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
-        objv[2] = oldarg;
-        Tcl_AppendStringsToObj(pDumpObj, "-resv2 ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_AppendStringsToObj(pDumpObj, "-sl ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
         Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
         cmd = _wrap_ib_cong_log_event_sw_t_time_stamp_get;
         oldarg = objv[2];
@@ -63931,8 +63568,8 @@ static int Tclib_cong_log_event_sw_tCmd(ClientData clientData, Tcl_Interp *inter
 }
 
 
-#define _ib_cong_log_event_ca_resv0_local_qp_set(_swigobj,_swigval) (_swigobj->resv0_local_qp = *(_swigval),_swigval)
-static int _wrap_ib_cong_log_event_ca_t_resv0_local_qp_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+#define _ib_cong_log_event_ca_local_qp_resv0_set(_swigobj,_swigval) (_swigobj->local_qp_resv0 = *(_swigval),_swigval)
+static int _wrap_ib_cong_log_event_ca_t_local_qp_resv0_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
 
     ib_net32_t * _result;
     ib_cong_log_event_ca_t * _arg0;
@@ -63944,11 +63581,11 @@ static int _wrap_ib_cong_log_event_ca_t_resv0_local_qp_set(ClientData clientData
     clientData = clientData; objv = objv;
     tcl_result = Tcl_GetObjResult(interp);
     if ((objc < 3) || (objc > 3)) {
-        Tcl_SetStringObj(tcl_result,"Wrong # args. ib_cong_log_event_ca_t_resv0_local_qp_set { ib_cong_log_event_ca_t * } { ib_net32_t * } ",-1);
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ib_cong_log_event_ca_t_local_qp_resv0_set { ib_cong_log_event_ca_t * } { ib_net32_t * } ",-1);
         return TCL_ERROR;
     }
     if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ib_cong_log_event_ca_t_p"))) {
-        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ib_cong_log_event_ca_t_resv0_local_qp_set. Expected _ib_cong_log_event_ca_t_p, received ", -1);
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ib_cong_log_event_ca_t_local_qp_resv0_set. Expected _ib_cong_log_event_ca_t_p, received ", -1);
         Tcl_AppendToObj(tcl_result, rettype, -1);
         return TCL_ERROR;
     }
@@ -63975,7 +63612,7 @@ static int _wrap_ib_cong_log_event_ca_t_resv0_local_qp_set(ClientData clientData
   }
 
   ibis_tcl_error = 0;
-      _result = (ib_net32_t *)_ib_cong_log_event_ca_resv0_local_qp_set(_arg0,_arg1);
+      _result = (ib_net32_t *)_ib_cong_log_event_ca_local_qp_resv0_set(_arg0,_arg1);
 ;
   if (ibis_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
@@ -63989,8 +63626,8 @@ static int _wrap_ib_cong_log_event_ca_t_resv0_local_qp_set(ClientData clientData
 }
     return TCL_OK;
 }
-#define _ib_cong_log_event_ca_resv0_local_qp_get(_swigobj) (&_swigobj->resv0_local_qp)
-static int _wrap_ib_cong_log_event_ca_t_resv0_local_qp_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+#define _ib_cong_log_event_ca_local_qp_resv0_get(_swigobj) (&_swigobj->local_qp_resv0)
+static int _wrap_ib_cong_log_event_ca_t_local_qp_resv0_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
 
     ib_net32_t * _result;
     ib_cong_log_event_ca_t * _arg0;
@@ -64000,11 +63637,11 @@ static int _wrap_ib_cong_log_event_ca_t_resv0_local_qp_get(ClientData clientData
     clientData = clientData; objv = objv;
     tcl_result = Tcl_GetObjResult(interp);
     if ((objc < 2) || (objc > 2)) {
-        Tcl_SetStringObj(tcl_result,"Wrong # args. ib_cong_log_event_ca_t_resv0_local_qp_get { ib_cong_log_event_ca_t * } ",-1);
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ib_cong_log_event_ca_t_local_qp_resv0_get { ib_cong_log_event_ca_t * } ",-1);
         return TCL_ERROR;
     }
     if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ib_cong_log_event_ca_t_p"))) {
-        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ib_cong_log_event_ca_t_resv0_local_qp_get. Expected _ib_cong_log_event_ca_t_p, received ", -1);
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ib_cong_log_event_ca_t_local_qp_resv0_get. Expected _ib_cong_log_event_ca_t_p, received ", -1);
         Tcl_AppendToObj(tcl_result, rettype, -1);
         return TCL_ERROR;
     }
@@ -64027,7 +63664,7 @@ static int _wrap_ib_cong_log_event_ca_t_resv0_local_qp_get(ClientData clientData
   }
 
   ibis_tcl_error = 0;
-      _result = (ib_net32_t *)_ib_cong_log_event_ca_resv0_local_qp_get(_arg0);
+      _result = (ib_net32_t *)_ib_cong_log_event_ca_local_qp_resv0_get(_arg0);
 ;
   if (ibis_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
@@ -64509,8 +64146,8 @@ static int Tclib_cong_log_event_ca_tMethodCmd(ClientData clientData, Tcl_Interp 
       cmd = 0;
       while (i+1 < objc) {
         _str = Tcl_GetStringFromObj(objv[i],&length);
-                        if (strcmp(_str,"-resv0_local_qp") == 0) {
-                    cmd = _wrap_ib_cong_log_event_ca_t_resv0_local_qp_set;
+                        if (strcmp(_str,"-local_qp_resv0") == 0) {
+                    cmd = _wrap_ib_cong_log_event_ca_t_local_qp_resv0_set;
                 }  else if (strcmp(_str,"-remote_qp_sl_service_type") == 0) {
                     cmd = _wrap_ib_cong_log_event_ca_t_remote_qp_sl_service_type_set;
                 }  else if (strcmp(_str,"-remote_lid") == 0) {
@@ -64528,13 +64165,13 @@ static int Tclib_cong_log_event_ca_tMethodCmd(ClientData clientData, Tcl_Interp 
             if (rcode == TCL_ERROR) return rcode;
             cmd = 0;
           } else {
-            Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be { -resv0_local_qp -remote_qp_sl_service_type -remote_lid -resv1 -time_stamp  }",-1);
+            Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be { -local_qp_resv0 -remote_qp_sl_service_type -remote_lid -resv1 -time_stamp  }",-1);
             return TCL_ERROR;
           }
         i+=2;
       }
       if ((i < objc) || (i == 2)) {
-        Tcl_SetStringObj(tcl_result,"{ -resv0_local_qp -remote_qp_sl_service_type -remote_lid -resv1 -time_stamp  }",-1);
+        Tcl_SetStringObj(tcl_result,"{ -local_qp_resv0 -remote_qp_sl_service_type -remote_lid -resv1 -time_stamp  }",-1);
         return TCL_ERROR;
       }
       return TCL_OK;
@@ -64542,8 +64179,8 @@ static int Tclib_cong_log_event_ca_tMethodCmd(ClientData clientData, Tcl_Interp 
       if (objc == 3) {
         _str = Tcl_GetStringFromObj(objv[2],&length);
         if (0) {}
-                        if (strcmp(_str,"-resv0_local_qp") == 0) {
-                    cmd = _wrap_ib_cong_log_event_ca_t_resv0_local_qp_get;
+                        if (strcmp(_str,"-local_qp_resv0") == 0) {
+                    cmd = _wrap_ib_cong_log_event_ca_t_local_qp_resv0_get;
                 }  else if (strcmp(_str,"-remote_qp_sl_service_type") == 0) {
                     cmd = _wrap_ib_cong_log_event_ca_t_remote_qp_sl_service_type_get;
                 }  else if (strcmp(_str,"-remote_lid") == 0) {
@@ -64564,11 +64201,11 @@ static int Tclib_cong_log_event_ca_tMethodCmd(ClientData clientData, Tcl_Interp 
           objv[2] = oldarg;
           return rcode;
         } else {
-          Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this -resv0_local_qp -remote_qp_sl_service_type -remote_lid -resv1 -time_stamp  }",-1);
+          Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this -local_qp_resv0 -remote_qp_sl_service_type -remote_lid -resv1 -time_stamp  }",-1);
           return TCL_ERROR;
         }
       } else {
-        Tcl_SetStringObj(tcl_result,"{ -this -resv0_local_qp -remote_qp_sl_service_type -remote_lid -resv1 -time_stamp  }", -1);
+        Tcl_SetStringObj(tcl_result,"{ -this -local_qp_resv0 -remote_qp_sl_service_type -remote_lid -resv1 -time_stamp  }", -1);
         return TCL_ERROR;
       }
     } else if ((c == 'd') && (strncmp(_str,"dump",length) == 0) && (length >= 2)) {
@@ -64576,12 +64213,12 @@ static int Tclib_cong_log_event_ca_tMethodCmd(ClientData clientData, Tcl_Interp 
         Tcl_Obj *pDumpObj;
         pDumpObj = Tcl_NewStringObj("",-1);
         Tcl_IncrRefCount(pDumpObj);
-                cmd = _wrap_ib_cong_log_event_ca_t_resv0_local_qp_get;
+                cmd = _wrap_ib_cong_log_event_ca_t_local_qp_resv0_get;
         oldarg = objv[2];
         objv[2] = obj;
         rcode = (*cmd)(clientData,interp,objc,&objv[1]);
         objv[2] = oldarg;
-        Tcl_AppendStringsToObj(pDumpObj, "-resv0_local_qp ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_AppendStringsToObj(pDumpObj, "-local_qp_resv0 ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
         Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
         cmd = _wrap_ib_cong_log_event_ca_t_remote_qp_sl_service_type_get;
         oldarg = objv[2];
@@ -65339,6 +64976,14 @@ static int _wrap_ccSWCongestionLog_entry_list_set(ClientData clientData, Tcl_Int
 		return TCL_ERROR;
 	}
 
+	/* SW Congestion Log Event List should have up to 15 events */
+	if (countSubLists > 15)
+	{
+		printf("Error: SW Congestion Log Event List should have up to %d events (provided %d)\n",
+			15, countSubLists);
+		return TCL_ERROR;
+	}
+
 	/*
 	 * There are two options to configure log_event:
 	 *   1. Configure the whole list by providing list of value groups:
@@ -65376,7 +65021,7 @@ static int _wrap_ccSWCongestionLog_entry_list_set(ClientData clientData, Tcl_Int
 	for (i = 0; i < 15; i++) {
 		entrys[i].slid = 0;
 		entrys[i].dlid = 0;
-		entrys[i].resv0_sl = 0;
+		entrys[i].sl = 0;
 		entrys[i].time_stamp = 0;
 	}
 
@@ -65410,7 +65055,7 @@ static int _wrap_ccSWCongestionLog_entry_list_set(ClientData clientData, Tcl_Int
 				switch (k) {
 					case 0: entrys[i].slid = cl_hton16(value); break;
 					case 1: entrys[i].dlid = cl_hton16(value); break;
-					case 2: entrys[i].resv0_sl = value; break;
+					case 2: entrys[i].sl = cl_hton32(value); break;
 					case 3: entrys[i].time_stamp = cl_hton32(value); break;
 					default: break;
 				}
@@ -65449,7 +65094,7 @@ static int _wrap_ccSWCongestionLog_entry_list_set(ClientData clientData, Tcl_Int
 					case 0: entry_index = value; break;
 					case 1: entrys[entry_index].slid = cl_hton16(value); break;
 					case 2: entrys[entry_index].dlid = cl_hton16(value); break;
-					case 3: entrys[entry_index].resv0_sl = value; break;
+					case 3: entrys[entry_index].sl = cl_hton32(value); break;
 					case 4: entrys[entry_index].time_stamp = cl_hton32(value); break;
 					default: break;
 				}
@@ -65503,7 +65148,7 @@ static int _wrap_ccSWCongestionLog_entry_list_set(ClientData clientData, Tcl_Int
 		sprintf(buff, " -dlid 0x%04x", cl_ntoh16(_result[i].dlid));
 		Tcl_AppendResult(interp, buff, NULL);
 
-		sprintf(buff, " -resv0_sl 0x%02x", _result[i].resv0_sl);
+		sprintf(buff, " -sl 0x%08x", cl_ntoh32(_result[i].sl));
 		Tcl_AppendResult(interp, buff, NULL);
 
 		sprintf(buff, " -time_stamp 0x%08x", cl_ntoh32(_result[i].time_stamp));
@@ -65577,7 +65222,7 @@ static int _wrap_ccSWCongestionLog_entry_list_get(ClientData clientData, Tcl_Int
 		sprintf(buff, " -dlid 0x%04x", cl_ntoh16(_result[i].dlid));
 		Tcl_AppendResult(interp, buff, NULL);
 
-		sprintf(buff, " -resv0_sl 0x%02x", _result[i].resv0_sl);
+		sprintf(buff, " -sl 0x%08x", cl_ntoh32(_result[i].sl));
 		Tcl_AppendResult(interp, buff, NULL);
 
 		sprintf(buff, " -time_stamp 0x%08x", cl_ntoh32(_result[i].time_stamp));
@@ -66600,6 +66245,14 @@ static int _wrap_ccCACongestionLog_log_event_set(ClientData clientData, Tcl_Inte
 		return TCL_ERROR;
 	}
 
+	/* CA Congestion Log Event List should have up to 13 events */
+	if (countSubLists > 13)
+	{
+		printf("Error: CA Congestion Log Event List should have up to %d events (provided %d)\n",
+			13, countSubLists);
+		return TCL_ERROR;
+	}
+
 	/*
 	 * There are two options to configure log_event:
 	 *   1. Configure the whole list by providing list of value groups:
@@ -66635,7 +66288,7 @@ static int _wrap_ccCACongestionLog_log_event_set(ClientData clientData, Tcl_Inte
 	}
 
 	for (i = 0; i < 13; i++) {
-		entrys[i].resv0_local_qp = 0;
+		entrys[i].local_qp_resv0 = 0;
 		entrys[i].remote_qp_sl_service_type = 0;
 		entrys[i].remote_lid = 0;
 		entrys[i].time_stamp = 0;
@@ -66669,7 +66322,7 @@ static int _wrap_ccCACongestionLog_log_event_set(ClientData clientData, Tcl_Inte
 				}
 				value = strtol(Tcl_GetStringFromObj(tclObj, NULL), NULL, 0);
 				switch (k) {
-					case 0: entrys[i].resv0_local_qp = cl_hton32(value); break;
+					case 0: entrys[i].local_qp_resv0 = cl_hton32(value); break;
 					case 1: entrys[i].remote_qp_sl_service_type = cl_hton32(value); break;
 					case 2: entrys[i].remote_lid = cl_hton16(value); break;
 					case 3: entrys[i].time_stamp = cl_hton32(value); break;
@@ -66708,7 +66361,7 @@ static int _wrap_ccCACongestionLog_log_event_set(ClientData clientData, Tcl_Inte
 				value = strtol(Tcl_GetStringFromObj(tclObj, NULL), NULL, 0);
 				switch (k) {
 					case 0: entry_index = value; break;
-					case 1: entrys[entry_index].resv0_local_qp = cl_hton32(value); break;
+					case 1: entrys[entry_index].local_qp_resv0 = cl_hton32(value); break;
 					case 2: entrys[entry_index].remote_qp_sl_service_type = cl_hton32(value); break;
 					case 3: entrys[entry_index].remote_lid = cl_hton16(value); break;
 					case 4: entrys[entry_index].time_stamp = cl_hton32(value); break;
@@ -66758,7 +66411,7 @@ static int _wrap_ccCACongestionLog_log_event_set(ClientData clientData, Tcl_Inte
 		sprintf(buff, " {#%02u:", i);
 		Tcl_AppendResult(interp, buff, NULL);
 
-		sprintf(buff, " -resv0_local_qp 0x%08x", cl_ntoh32(_result[i].resv0_local_qp));
+		sprintf(buff, " -local_qp_resv0 0x%08x", cl_ntoh32(_result[i].local_qp_resv0));
 		Tcl_AppendResult(interp, buff, NULL);
 
 		sprintf(buff, " -remote_qp_sl_service_type 0x%08x", cl_ntoh32(_result[i].remote_qp_sl_service_type));
@@ -66832,7 +66485,7 @@ static int _wrap_ccCACongestionLog_log_event_get(ClientData clientData, Tcl_Inte
 		sprintf(buff, " {#%02u:", i);
 		Tcl_AppendResult(interp, buff, NULL);
 
-		sprintf(buff, " -resv0_local_qp 0x%08x", cl_ntoh32(_result[i].resv0_local_qp));
+		sprintf(buff, " -local_qp_resv0 0x%08x", cl_ntoh32(_result[i].local_qp_resv0));
 		Tcl_AppendResult(interp, buff, NULL);
 
 		sprintf(buff, " -remote_qp_sl_service_type 0x%08x", cl_ntoh32(_result[i].remote_qp_sl_service_type));
@@ -67791,17 +67444,17 @@ static int _wrap_ccSWCongestionSetting_packet_size_get(ClientData clientData, Tc
 #define _ib_sw_cong_setting_cs_threshold_set(_swigobj,_swigval) (_swigobj->cs_threshold = *(_swigval),_swigval)
 static int _wrap_ccSWCongestionSetting_cs_threshold_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
 
-    uint8_t * _result;
+    ib_net16_t * _result;
     ccSWCongestionSetting * _arg0;
-    uint8_t * _arg1;
+    ib_net16_t * _arg1;
     Tcl_Obj * tcl_result;
     char * rettype;
-    uint8_t  temp;
+    ib_net16_t  temp;
 
     clientData = clientData; objv = objv;
     tcl_result = Tcl_GetObjResult(interp);
     if ((objc < 3) || (objc > 3)) {
-        Tcl_SetStringObj(tcl_result,"Wrong # args. ccSWCongestionSetting_cs_threshold_set { ccSWCongestionSetting * } { uint8_t * } ",-1);
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccSWCongestionSetting_cs_threshold_set { ccSWCongestionSetting * } { ib_net16_t * } ",-1);
         return TCL_ERROR;
     }
     if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccSWCongestionSetting_p"))) {
@@ -67810,7 +67463,7 @@ static int _wrap_ccSWCongestionSetting_cs_threshold_set(ClientData clientData, T
         return TCL_ERROR;
     }
 {
-  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -67832,7 +67485,7 @@ static int _wrap_ccSWCongestionSetting_cs_threshold_set(ClientData clientData, T
   }
 
   ibis_tcl_error = 0;
-      _result = (uint8_t *)_ib_sw_cong_setting_cs_threshold_set(_arg0,_arg1);
+      _result = (ib_net16_t *)_ib_sw_cong_setting_cs_threshold_set(_arg0,_arg1);
 ;
   if (ibis_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
@@ -67841,7 +67494,7 @@ static int _wrap_ccSWCongestionSetting_cs_threshold_set(ClientData clientData, T
 }    tcl_result = Tcl_GetObjResult(interp);
 {
   char buff[20];
-  sprintf(buff, "%u", *_result);
+  sprintf(buff, "%u", cl_hton16(*_result));
   Tcl_SetStringObj(tcl_result,buff,strlen(buff));
 }
     return TCL_OK;
@@ -67849,7 +67502,7 @@ static int _wrap_ccSWCongestionSetting_cs_threshold_set(ClientData clientData, T
 #define _ib_sw_cong_setting_cs_threshold_get(_swigobj) (&_swigobj->cs_threshold)
 static int _wrap_ccSWCongestionSetting_cs_threshold_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
 
-    uint8_t * _result;
+    ib_net16_t * _result;
     ccSWCongestionSetting * _arg0;
     Tcl_Obj * tcl_result;
     char * rettype;
@@ -67884,7 +67537,7 @@ static int _wrap_ccSWCongestionSetting_cs_threshold_get(ClientData clientData, T
   }
 
   ibis_tcl_error = 0;
-      _result = (uint8_t *)_ib_sw_cong_setting_cs_threshold_get(_arg0);
+      _result = (ib_net16_t *)_ib_sw_cong_setting_cs_threshold_get(_arg0);
 ;
   if (ibis_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
@@ -67893,117 +67546,7 @@ static int _wrap_ccSWCongestionSetting_cs_threshold_get(ClientData clientData, T
 }    tcl_result = Tcl_GetObjResult(interp);
 {
   char buff[20];
-  sprintf(buff, "%u", *_result);
-  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
-}
-    return TCL_OK;
-}
-#define _ib_sw_cong_setting_resv0_set(_swigobj,_swigval) (_swigobj->resv0 = *(_swigval),_swigval)
-static int _wrap_ccSWCongestionSetting_resv0_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
-
-    uint8_t * _result;
-    ccSWCongestionSetting * _arg0;
-    uint8_t * _arg1;
-    Tcl_Obj * tcl_result;
-    char * rettype;
-    uint8_t  temp;
-
-    clientData = clientData; objv = objv;
-    tcl_result = Tcl_GetObjResult(interp);
-    if ((objc < 3) || (objc > 3)) {
-        Tcl_SetStringObj(tcl_result,"Wrong # args. ccSWCongestionSetting_resv0_set { ccSWCongestionSetting * } { uint8_t * } ",-1);
-        return TCL_ERROR;
-    }
-    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccSWCongestionSetting_p"))) {
-        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccSWCongestionSetting_resv0_set. Expected _ccSWCongestionSetting_p, received ", -1);
-        Tcl_AppendToObj(tcl_result, rettype, -1);
-        return TCL_ERROR;
-    }
-{
-  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
-  _arg1 = &temp;
-}
-{
-  /* we can check if IBIS was initialized here */
-  if (!IbisObj.initialized)
-  {
-    Tcl_SetStringObj(
-      Tcl_GetObjResult(interp),
-      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
-    return TCL_ERROR;
-  }
-
-  if (! IbisObj.port_guid)
-  {
-    Tcl_SetStringObj(
-      Tcl_GetObjResult(interp),
-      " ibis was not yet initialized. please use ibis_set_port before.", -1);
-    return TCL_ERROR;
-  }
-
-  ibis_tcl_error = 0;
-      _result = (uint8_t *)_ib_sw_cong_setting_resv0_set(_arg0,_arg1);
-;
-  if (ibis_tcl_error) {
-	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
- 	 return TCL_ERROR;
-  }
-}    tcl_result = Tcl_GetObjResult(interp);
-{
-  char buff[20];
-  sprintf(buff, "%u", *_result);
-  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
-}
-    return TCL_OK;
-}
-#define _ib_sw_cong_setting_resv0_get(_swigobj) (&_swigobj->resv0)
-static int _wrap_ccSWCongestionSetting_resv0_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
-
-    uint8_t * _result;
-    ccSWCongestionSetting * _arg0;
-    Tcl_Obj * tcl_result;
-    char * rettype;
-
-    clientData = clientData; objv = objv;
-    tcl_result = Tcl_GetObjResult(interp);
-    if ((objc < 2) || (objc > 2)) {
-        Tcl_SetStringObj(tcl_result,"Wrong # args. ccSWCongestionSetting_resv0_get { ccSWCongestionSetting * } ",-1);
-        return TCL_ERROR;
-    }
-    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccSWCongestionSetting_p"))) {
-        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccSWCongestionSetting_resv0_get. Expected _ccSWCongestionSetting_p, received ", -1);
-        Tcl_AppendToObj(tcl_result, rettype, -1);
-        return TCL_ERROR;
-    }
-{
-  /* we can check if IBIS was initialized here */
-  if (!IbisObj.initialized)
-  {
-    Tcl_SetStringObj(
-      Tcl_GetObjResult(interp),
-      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
-    return TCL_ERROR;
-  }
-
-  if (! IbisObj.port_guid)
-  {
-    Tcl_SetStringObj(
-      Tcl_GetObjResult(interp),
-      " ibis was not yet initialized. please use ibis_set_port before.", -1);
-    return TCL_ERROR;
-  }
-
-  ibis_tcl_error = 0;
-      _result = (uint8_t *)_ib_sw_cong_setting_resv0_get(_arg0);
-;
-  if (ibis_tcl_error) {
-	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
- 	 return TCL_ERROR;
-  }
-}    tcl_result = Tcl_GetObjResult(interp);
-{
-  char buff[20];
-  sprintf(buff, "%u", *_result);
+  sprintf(buff, "%u", cl_hton16(*_result));
   Tcl_SetStringObj(tcl_result,buff,strlen(buff));
 }
     return TCL_OK;
@@ -68404,8 +67947,6 @@ static int TclccSWCongestionSettingMethodCmd(ClientData clientData, Tcl_Interp *
                     cmd = _wrap_ccSWCongestionSetting_packet_size_set;
                 }  else if (strcmp(_str,"-cs_threshold") == 0) {
                     cmd = _wrap_ccSWCongestionSetting_cs_threshold_set;
-                }  else if (strcmp(_str,"-resv0") == 0) {
-                    cmd = _wrap_ccSWCongestionSetting_resv0_set;
                 }  else if (strcmp(_str,"-cs_return_delay") == 0) {
                     cmd = _wrap_ccSWCongestionSetting_cs_return_delay_set;
                 }  else if (strcmp(_str,"-marking_rate") == 0) {
@@ -68419,13 +67960,13 @@ static int TclccSWCongestionSettingMethodCmd(ClientData clientData, Tcl_Interp *
             if (rcode == TCL_ERROR) return rcode;
             cmd = 0;
           } else {
-            Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be { -control_map -victim_mask -credit_mask -threshold -packet_size -cs_threshold -resv0 -cs_return_delay -marking_rate  }",-1);
+            Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be { -control_map -victim_mask -credit_mask -threshold -packet_size -cs_threshold -cs_return_delay -marking_rate  }",-1);
             return TCL_ERROR;
           }
         i+=2;
       }
       if ((i < objc) || (i == 2)) {
-        Tcl_SetStringObj(tcl_result,"{ -control_map -victim_mask -credit_mask -threshold -packet_size -cs_threshold -resv0 -cs_return_delay -marking_rate  }",-1);
+        Tcl_SetStringObj(tcl_result,"{ -control_map -victim_mask -credit_mask -threshold -packet_size -cs_threshold -cs_return_delay -marking_rate  }",-1);
         return TCL_ERROR;
       }
       return TCL_OK;
@@ -68445,8 +67986,6 @@ static int TclccSWCongestionSettingMethodCmd(ClientData clientData, Tcl_Interp *
                     cmd = _wrap_ccSWCongestionSetting_packet_size_get;
                 }  else if (strcmp(_str,"-cs_threshold") == 0) {
                     cmd = _wrap_ccSWCongestionSetting_cs_threshold_get;
-                }  else if (strcmp(_str,"-resv0") == 0) {
-                    cmd = _wrap_ccSWCongestionSetting_resv0_get;
                 }  else if (strcmp(_str,"-cs_return_delay") == 0) {
                     cmd = _wrap_ccSWCongestionSetting_cs_return_delay_get;
                 }  else if (strcmp(_str,"-marking_rate") == 0) {
@@ -68463,11 +68002,11 @@ static int TclccSWCongestionSettingMethodCmd(ClientData clientData, Tcl_Interp *
           objv[2] = oldarg;
           return rcode;
         } else {
-          Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this -control_map -victim_mask -credit_mask -threshold -packet_size -cs_threshold -resv0 -cs_return_delay -marking_rate  }",-1);
+          Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this -control_map -victim_mask -credit_mask -threshold -packet_size -cs_threshold -cs_return_delay -marking_rate  }",-1);
           return TCL_ERROR;
         }
       } else {
-        Tcl_SetStringObj(tcl_result,"{ -this -control_map -victim_mask -credit_mask -threshold -packet_size -cs_threshold -resv0 -cs_return_delay -marking_rate  }", -1);
+        Tcl_SetStringObj(tcl_result,"{ -this -control_map -victim_mask -credit_mask -threshold -packet_size -cs_threshold -cs_return_delay -marking_rate  }", -1);
         return TCL_ERROR;
       }
     } else if ((c == 'd') && (strncmp(_str,"dump",length) == 0) && (length >= 2)) {
@@ -68516,13 +68055,6 @@ static int TclccSWCongestionSettingMethodCmd(ClientData clientData, Tcl_Interp *
         rcode = (*cmd)(clientData,interp,objc,&objv[1]);
         objv[2] = oldarg;
         Tcl_AppendStringsToObj(pDumpObj, "-cs_threshold ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
-        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
-        cmd = _wrap_ccSWCongestionSetting_resv0_get;
-        oldarg = objv[2];
-        objv[2] = obj;
-        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
-        objv[2] = oldarg;
-        Tcl_AppendStringsToObj(pDumpObj, "-resv0 ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
         Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
         cmd = _wrap_ccSWCongestionSetting_cs_return_delay_get;
         oldarg = objv[2];
@@ -69211,6 +68743,14 @@ static int _wrap_ccSWPortCongestionSetting_block_set(ClientData clientData, Tcl_
 	{
 		printf("Error: wrong format for SW Port Congestion Setting Element: %s\n",
 			Tcl_GetStringFromObj(objv[2],NULL));
+		return TCL_ERROR;
+	}
+
+	/* SwitchPortCongestionSetting Block list should have up to 32 blocks */
+	if (countSubLists > 32)
+	{
+		printf("Error: SwitchPortCongestionSetting Block list should have up to %d blocks (provided %d)\n",
+			32, countSubLists);
 		return TCL_ERROR;
 	}
 
@@ -70685,17 +70225,17 @@ static int Tclib_ca_cong_entry_tCmd(ClientData clientData, Tcl_Interp *interp, i
 #define _ib_ca_cong_setting_port_control_set(_swigobj,_swigval) (_swigobj->port_control = *(_swigval),_swigval)
 static int _wrap_ccCACongestionSetting_port_control_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
 
-    uint8_t * _result;
+    ib_net16_t * _result;
     ccCACongestionSetting * _arg0;
-    uint8_t * _arg1;
+    ib_net16_t * _arg1;
     Tcl_Obj * tcl_result;
     char * rettype;
-    uint8_t  temp;
+    ib_net16_t  temp;
 
     clientData = clientData; objv = objv;
     tcl_result = Tcl_GetObjResult(interp);
     if ((objc < 3) || (objc > 3)) {
-        Tcl_SetStringObj(tcl_result,"Wrong # args. ccCACongestionSetting_port_control_set { ccCACongestionSetting * } { uint8_t * } ",-1);
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccCACongestionSetting_port_control_set { ccCACongestionSetting * } { ib_net16_t * } ",-1);
         return TCL_ERROR;
     }
     if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccCACongestionSetting_p"))) {
@@ -70704,7 +70244,7 @@ static int _wrap_ccCACongestionSetting_port_control_set(ClientData clientData, T
         return TCL_ERROR;
     }
 {
-  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -70726,7 +70266,7 @@ static int _wrap_ccCACongestionSetting_port_control_set(ClientData clientData, T
   }
 
   ibis_tcl_error = 0;
-      _result = (uint8_t *)_ib_ca_cong_setting_port_control_set(_arg0,_arg1);
+      _result = (ib_net16_t *)_ib_ca_cong_setting_port_control_set(_arg0,_arg1);
 ;
   if (ibis_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
@@ -70735,7 +70275,7 @@ static int _wrap_ccCACongestionSetting_port_control_set(ClientData clientData, T
 }    tcl_result = Tcl_GetObjResult(interp);
 {
   char buff[20];
-  sprintf(buff, "%u", *_result);
+  sprintf(buff, "%u", cl_hton16(*_result));
   Tcl_SetStringObj(tcl_result,buff,strlen(buff));
 }
     return TCL_OK;
@@ -70743,7 +70283,7 @@ static int _wrap_ccCACongestionSetting_port_control_set(ClientData clientData, T
 #define _ib_ca_cong_setting_port_control_get(_swigobj) (&_swigobj->port_control)
 static int _wrap_ccCACongestionSetting_port_control_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
 
-    uint8_t * _result;
+    ib_net16_t * _result;
     ccCACongestionSetting * _arg0;
     Tcl_Obj * tcl_result;
     char * rettype;
@@ -70778,7 +70318,7 @@ static int _wrap_ccCACongestionSetting_port_control_get(ClientData clientData, T
   }
 
   ibis_tcl_error = 0;
-      _result = (uint8_t *)_ib_ca_cong_setting_port_control_get(_arg0);
+      _result = (ib_net16_t *)_ib_ca_cong_setting_port_control_get(_arg0);
 ;
   if (ibis_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
@@ -70787,117 +70327,7 @@ static int _wrap_ccCACongestionSetting_port_control_get(ClientData clientData, T
 }    tcl_result = Tcl_GetObjResult(interp);
 {
   char buff[20];
-  sprintf(buff, "%u", *_result);
-  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
-}
-    return TCL_OK;
-}
-#define _ib_ca_cong_setting_resv0_set(_swigobj,_swigval) (_swigobj->resv0 = *(_swigval),_swigval)
-static int _wrap_ccCACongestionSetting_resv0_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
-
-    uint8_t * _result;
-    ccCACongestionSetting * _arg0;
-    uint8_t * _arg1;
-    Tcl_Obj * tcl_result;
-    char * rettype;
-    uint8_t  temp;
-
-    clientData = clientData; objv = objv;
-    tcl_result = Tcl_GetObjResult(interp);
-    if ((objc < 3) || (objc > 3)) {
-        Tcl_SetStringObj(tcl_result,"Wrong # args. ccCACongestionSetting_resv0_set { ccCACongestionSetting * } { uint8_t * } ",-1);
-        return TCL_ERROR;
-    }
-    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccCACongestionSetting_p"))) {
-        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccCACongestionSetting_resv0_set. Expected _ccCACongestionSetting_p, received ", -1);
-        Tcl_AppendToObj(tcl_result, rettype, -1);
-        return TCL_ERROR;
-    }
-{
-  temp = strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0);
-  _arg1 = &temp;
-}
-{
-  /* we can check if IBIS was initialized here */
-  if (!IbisObj.initialized)
-  {
-    Tcl_SetStringObj(
-      Tcl_GetObjResult(interp),
-      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
-    return TCL_ERROR;
-  }
-
-  if (! IbisObj.port_guid)
-  {
-    Tcl_SetStringObj(
-      Tcl_GetObjResult(interp),
-      " ibis was not yet initialized. please use ibis_set_port before.", -1);
-    return TCL_ERROR;
-  }
-
-  ibis_tcl_error = 0;
-      _result = (uint8_t *)_ib_ca_cong_setting_resv0_set(_arg0,_arg1);
-;
-  if (ibis_tcl_error) {
-	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
- 	 return TCL_ERROR;
-  }
-}    tcl_result = Tcl_GetObjResult(interp);
-{
-  char buff[20];
-  sprintf(buff, "%u", *_result);
-  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
-}
-    return TCL_OK;
-}
-#define _ib_ca_cong_setting_resv0_get(_swigobj) (&_swigobj->resv0)
-static int _wrap_ccCACongestionSetting_resv0_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
-
-    uint8_t * _result;
-    ccCACongestionSetting * _arg0;
-    Tcl_Obj * tcl_result;
-    char * rettype;
-
-    clientData = clientData; objv = objv;
-    tcl_result = Tcl_GetObjResult(interp);
-    if ((objc < 2) || (objc > 2)) {
-        Tcl_SetStringObj(tcl_result,"Wrong # args. ccCACongestionSetting_resv0_get { ccCACongestionSetting * } ",-1);
-        return TCL_ERROR;
-    }
-    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccCACongestionSetting_p"))) {
-        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccCACongestionSetting_resv0_get. Expected _ccCACongestionSetting_p, received ", -1);
-        Tcl_AppendToObj(tcl_result, rettype, -1);
-        return TCL_ERROR;
-    }
-{
-  /* we can check if IBIS was initialized here */
-  if (!IbisObj.initialized)
-  {
-    Tcl_SetStringObj(
-      Tcl_GetObjResult(interp),
-      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
-    return TCL_ERROR;
-  }
-
-  if (! IbisObj.port_guid)
-  {
-    Tcl_SetStringObj(
-      Tcl_GetObjResult(interp),
-      " ibis was not yet initialized. please use ibis_set_port before.", -1);
-    return TCL_ERROR;
-  }
-
-  ibis_tcl_error = 0;
-      _result = (uint8_t *)_ib_ca_cong_setting_resv0_get(_arg0);
-;
-  if (ibis_tcl_error) {
-	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
- 	 return TCL_ERROR;
-  }
-}    tcl_result = Tcl_GetObjResult(interp);
-{
-  char buff[20];
-  sprintf(buff, "%u", *_result);
+  sprintf(buff, "%u", cl_hton16(*_result));
   Tcl_SetStringObj(tcl_result,buff,strlen(buff));
 }
     return TCL_OK;
@@ -71055,6 +70485,14 @@ static int _wrap_ccCACongestionSetting_entry_list_set(ClientData clientData, Tcl
 	{
 		printf("Error: wrong format for CA Congestion Setting: %s\n",
 			Tcl_GetStringFromObj(objv[2],NULL));
+		return TCL_ERROR;
+	}
+
+	/* CA Congestion Setting Entry List should have up to 16 entries */
+	if (countSubLists > 16)
+	{
+		printf("Error: CA Congestion Setting Entry List should have up to %d entries (provided %d)\n",
+			16, countSubLists);
 		return TCL_ERROR;
 	}
 
@@ -71474,8 +70912,6 @@ static int TclccCACongestionSettingMethodCmd(ClientData clientData, Tcl_Interp *
         _str = Tcl_GetStringFromObj(objv[i],&length);
                         if (strcmp(_str,"-port_control") == 0) {
                     cmd = _wrap_ccCACongestionSetting_port_control_set;
-                }  else if (strcmp(_str,"-resv0") == 0) {
-                    cmd = _wrap_ccCACongestionSetting_resv0_set;
                 }  else if (strcmp(_str,"-control_map") == 0) {
                     cmd = _wrap_ccCACongestionSetting_control_map_set;
                 }  else if (strcmp(_str,"-entry_list") == 0) {
@@ -71489,13 +70925,13 @@ static int TclccCACongestionSettingMethodCmd(ClientData clientData, Tcl_Interp *
             if (rcode == TCL_ERROR) return rcode;
             cmd = 0;
           } else {
-            Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be { -port_control -resv0 -control_map -entry_list  }",-1);
+            Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be { -port_control -control_map -entry_list  }",-1);
             return TCL_ERROR;
           }
         i+=2;
       }
       if ((i < objc) || (i == 2)) {
-        Tcl_SetStringObj(tcl_result,"{ -port_control -resv0 -control_map -entry_list  }",-1);
+        Tcl_SetStringObj(tcl_result,"{ -port_control -control_map -entry_list  }",-1);
         return TCL_ERROR;
       }
       return TCL_OK;
@@ -71505,8 +70941,6 @@ static int TclccCACongestionSettingMethodCmd(ClientData clientData, Tcl_Interp *
         if (0) {}
                         if (strcmp(_str,"-port_control") == 0) {
                     cmd = _wrap_ccCACongestionSetting_port_control_get;
-                }  else if (strcmp(_str,"-resv0") == 0) {
-                    cmd = _wrap_ccCACongestionSetting_resv0_get;
                 }  else if (strcmp(_str,"-control_map") == 0) {
                     cmd = _wrap_ccCACongestionSetting_control_map_get;
                 }  else if (strcmp(_str,"-entry_list") == 0) {
@@ -71523,11 +70957,11 @@ static int TclccCACongestionSettingMethodCmd(ClientData clientData, Tcl_Interp *
           objv[2] = oldarg;
           return rcode;
         } else {
-          Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this -port_control -resv0 -control_map -entry_list  }",-1);
+          Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this -port_control -control_map -entry_list  }",-1);
           return TCL_ERROR;
         }
       } else {
-        Tcl_SetStringObj(tcl_result,"{ -this -port_control -resv0 -control_map -entry_list  }", -1);
+        Tcl_SetStringObj(tcl_result,"{ -this -port_control -control_map -entry_list  }", -1);
         return TCL_ERROR;
       }
     } else if ((c == 'd') && (strncmp(_str,"dump",length) == 0) && (length >= 2)) {
@@ -71541,13 +70975,6 @@ static int TclccCACongestionSettingMethodCmd(ClientData clientData, Tcl_Interp *
         rcode = (*cmd)(clientData,interp,objc,&objv[1]);
         objv[2] = oldarg;
         Tcl_AppendStringsToObj(pDumpObj, "-port_control ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
-        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
-        cmd = _wrap_ccCACongestionSetting_resv0_get;
-        oldarg = objv[2];
-        objv[2] = obj;
-        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
-        objv[2] = oldarg;
-        Tcl_AppendStringsToObj(pDumpObj, "-resv0 ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
         Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
         cmd = _wrap_ccCACongestionSetting_control_map_get;
         oldarg = objv[2];
@@ -72213,6 +71640,14 @@ static int _wrap_ccTable_entry_list_set(ClientData clientData, Tcl_Interp *inter
 	{
 		printf("Error: wrong format for CC Table: %s\n",
 			Tcl_GetStringFromObj(objv[2],NULL));
+		return TCL_ERROR;
+	}
+
+	/* Congestion Control Table Entry List should have up to 64 entries */
+	if (countSubLists > 64)
+	{
+		printf("Error: Congestion Control Table Entry List should have up to %d entries (provided %d)\n",
+			64, countSubLists);
 		return TCL_ERROR;
 	}
 
@@ -75276,8 +74711,6 @@ SWIGEXPORT(int,Ibis_Init)(Tcl_Interp *interp) {
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccCongestionKeyInfo_cc_key_get", _wrap_ccCongestionKeyInfo_cc_key_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccCongestionKeyInfo_protect_bit_set", _wrap_ccCongestionKeyInfo_protect_bit_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccCongestionKeyInfo_protect_bit_get", _wrap_ccCongestionKeyInfo_protect_bit_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
-	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccCongestionKeyInfo_resv_set", _wrap_ccCongestionKeyInfo_resv_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
-	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccCongestionKeyInfo_resv_get", _wrap_ccCongestionKeyInfo_resv_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccCongestionKeyInfo_lease_period_set", _wrap_ccCongestionKeyInfo_lease_period_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccCongestionKeyInfo_lease_period_get", _wrap_ccCongestionKeyInfo_lease_period_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccCongestionKeyInfo_violations_set", _wrap_ccCongestionKeyInfo_violations_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
@@ -75289,17 +74722,13 @@ SWIGEXPORT(int,Ibis_Init)(Tcl_Interp *interp) {
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ib_cong_log_event_sw_t_slid_get", _wrap_ib_cong_log_event_sw_t_slid_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ib_cong_log_event_sw_t_dlid_set", _wrap_ib_cong_log_event_sw_t_dlid_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ib_cong_log_event_sw_t_dlid_get", _wrap_ib_cong_log_event_sw_t_dlid_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
-	 Tcl_CreateObjCommand(interp, SWIG_prefix "ib_cong_log_event_sw_t_resv0_sl_set", _wrap_ib_cong_log_event_sw_t_resv0_sl_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
-	 Tcl_CreateObjCommand(interp, SWIG_prefix "ib_cong_log_event_sw_t_resv0_sl_get", _wrap_ib_cong_log_event_sw_t_resv0_sl_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
-	 Tcl_CreateObjCommand(interp, SWIG_prefix "ib_cong_log_event_sw_t_resv1_set", _wrap_ib_cong_log_event_sw_t_resv1_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
-	 Tcl_CreateObjCommand(interp, SWIG_prefix "ib_cong_log_event_sw_t_resv1_get", _wrap_ib_cong_log_event_sw_t_resv1_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
-	 Tcl_CreateObjCommand(interp, SWIG_prefix "ib_cong_log_event_sw_t_resv2_set", _wrap_ib_cong_log_event_sw_t_resv2_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
-	 Tcl_CreateObjCommand(interp, SWIG_prefix "ib_cong_log_event_sw_t_resv2_get", _wrap_ib_cong_log_event_sw_t_resv2_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ib_cong_log_event_sw_t_sl_set", _wrap_ib_cong_log_event_sw_t_sl_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ib_cong_log_event_sw_t_sl_get", _wrap_ib_cong_log_event_sw_t_sl_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ib_cong_log_event_sw_t_time_stamp_set", _wrap_ib_cong_log_event_sw_t_time_stamp_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ib_cong_log_event_sw_t_time_stamp_get", _wrap_ib_cong_log_event_sw_t_time_stamp_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp,SWIG_prefix "ib_cong_log_event_sw_t",Tclib_cong_log_event_sw_tCmd, (ClientData) NULL, NULL);
-	 Tcl_CreateObjCommand(interp, SWIG_prefix "ib_cong_log_event_ca_t_resv0_local_qp_set", _wrap_ib_cong_log_event_ca_t_resv0_local_qp_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
-	 Tcl_CreateObjCommand(interp, SWIG_prefix "ib_cong_log_event_ca_t_resv0_local_qp_get", _wrap_ib_cong_log_event_ca_t_resv0_local_qp_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ib_cong_log_event_ca_t_local_qp_resv0_set", _wrap_ib_cong_log_event_ca_t_local_qp_resv0_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ib_cong_log_event_ca_t_local_qp_resv0_get", _wrap_ib_cong_log_event_ca_t_local_qp_resv0_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ib_cong_log_event_ca_t_remote_qp_sl_service_type_set", _wrap_ib_cong_log_event_ca_t_remote_qp_sl_service_type_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ib_cong_log_event_ca_t_remote_qp_sl_service_type_get", _wrap_ib_cong_log_event_ca_t_remote_qp_sl_service_type_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ib_cong_log_event_ca_t_remote_lid_set", _wrap_ib_cong_log_event_ca_t_remote_lid_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
@@ -75351,8 +74780,6 @@ SWIGEXPORT(int,Ibis_Init)(Tcl_Interp *interp) {
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccSWCongestionSetting_packet_size_get", _wrap_ccSWCongestionSetting_packet_size_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccSWCongestionSetting_cs_threshold_set", _wrap_ccSWCongestionSetting_cs_threshold_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccSWCongestionSetting_cs_threshold_get", _wrap_ccSWCongestionSetting_cs_threshold_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
-	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccSWCongestionSetting_resv0_set", _wrap_ccSWCongestionSetting_resv0_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
-	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccSWCongestionSetting_resv0_get", _wrap_ccSWCongestionSetting_resv0_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccSWCongestionSetting_cs_return_delay_set", _wrap_ccSWCongestionSetting_cs_return_delay_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccSWCongestionSetting_cs_return_delay_get", _wrap_ccSWCongestionSetting_cs_return_delay_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccSWCongestionSetting_marking_rate_set", _wrap_ccSWCongestionSetting_marking_rate_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
@@ -75387,8 +74814,6 @@ SWIGEXPORT(int,Ibis_Init)(Tcl_Interp *interp) {
 	 Tcl_CreateObjCommand(interp,SWIG_prefix "ib_ca_cong_entry_t",Tclib_ca_cong_entry_tCmd, (ClientData) NULL, NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccCACongestionSetting_port_control_set", _wrap_ccCACongestionSetting_port_control_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccCACongestionSetting_port_control_get", _wrap_ccCACongestionSetting_port_control_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
-	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccCACongestionSetting_resv0_set", _wrap_ccCACongestionSetting_resv0_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
-	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccCACongestionSetting_resv0_get", _wrap_ccCACongestionSetting_resv0_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccCACongestionSetting_control_map_set", _wrap_ccCACongestionSetting_control_map_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccCACongestionSetting_control_map_get", _wrap_ccCACongestionSetting_control_map_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccCACongestionSetting_entry_list_set", _wrap_ccCACongestionSetting_entry_list_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
