@@ -4998,7 +4998,7 @@ proc writePMFile {} {
     }
 
     foreach pair $PM_DUMP(list_dr_port) {
-	regexp {^([^:]+):([^:]+)$} $pair . dr pn
+	regexp {^([^:]*):([^:]+)$} $pair . dr pn
 	set name [DrPath2Name "$dr" -fullName -port $pn]
 	set tmpPmCounterList $PM_DUMP($pair,pmCounterList)
         set listOfPMValues $PM_DUMP($pair,pmCounterValue)
