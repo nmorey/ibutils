@@ -3502,7 +3502,7 @@ proc CheckIPoIB {} {
 	# go over all the members of the partition and see if they can join
 	# collecting their minimal rate
 	if {[catch {set pkeyMembers $G(data:PKeyNodePorts:$pkey)}]} {
-	    inform "-W-ibdiagnet.ipoib.noMemers"
+	    inform "-W-ibdiagnet:ipoib.noMemers"
 	    continue
 	}
 
@@ -3532,7 +3532,7 @@ proc CheckIPoIB {} {
 	}
 	if {$minGbps > $gGbps} {
 	    set minRate [GetGbpsRate $minGbps]
-	    inform "-W-ibdiagnet.ipoib.rateToLow" $minRate $gRate
+	    inform "-W-ibdiagnet:ipoib.rateToLow" $minRate $gRate
 	}
     }
 }
@@ -4891,9 +4891,11 @@ proc writeCSVLinksFile {} {
 
 proc writeCSVErrorsFile {} {
     global CSV_ERRORS G
-
+	
     if {![info exists G(argv:csv.dump)]} {
         return 0
+    } elseif {(![info exists CSV_ERRORS]) || ($CSV_ERRORS == "")} {
+	return 0
     }
 
     set FileID [InitializeOutputFile $G(var:tool.name).err_csv]

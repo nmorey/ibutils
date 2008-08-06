@@ -1143,8 +1143,7 @@ proc inform { msgCode args } {
 	}
 
 
-
-        "-E-ibis:ibis_init.failed" {
+    "-E-ibis:ibis_init.failed" {
 	    append msgText "IBIS: Error from ibis_init: \"$msgF(errMsg)\""
 	}
 	"-E-ibis:ibis_get_local_ports_info.failed" {
@@ -1170,7 +1169,6 @@ proc inform { msgCode args } {
 	"-V-ibis.ibis.log.file" {
 	    append msgText "IBIS: ibis log file: $msgF(value)"
 	}
-
 
 
 	"-E-loading:cannot.use.current.tcl.package" {
@@ -1325,10 +1323,10 @@ proc inform { msgCode args } {
 
 
 
-        "-E-outfile:not.valid" {
-            append msgText "Output file $msgF(file0) is illegal value for $G(var:tool.name).%n"
-        }
-        "-W-outfile:not.writable" {
+    "-E-outfile:not.valid" {
+        append msgText "Output file $msgF(file0) is illegal value for $G(var:tool.name).%n"
+    }
+    "-W-outfile:not.writable" {
 	    append msgText "Output file $msgF(file0) is write protected.%n"
 	    append msgText "Writing info into $msgF(file1)."
 	}
@@ -1731,9 +1729,9 @@ proc inform { msgCode args } {
 	}
 
 
-        "-E-ibdiagnet:SM.none" {
-            append msgText "Missing master SM in the discover fabric"
-	    set noExiting 1
+	"-E-ibdiagnet:SM.none" {
+		append msgText "Missing master SM in the discover fabric"
+		set noExiting 1
 	}
 	"-E-ibdiagnet:SM.multiple.master" {
             append msgText "Found more then one master SM in the discover fabric"
@@ -1943,7 +1941,7 @@ proc inform { msgCode args } {
 	    set name [lindex $args 0]
 	    append msgText "Illegal speed/width on port:$name"
 	}
-                "-I-ibdiagnet:ipoib.header" {
+        "-I-ibdiagnet:ipoib.header" {
 	    append msgText "IPoIB Subnets Check"
 	    set headerText "IPoIB Subnets Check"
 	}
@@ -2117,6 +2115,11 @@ proc inform { msgCode args } {
         "-E-argv.pkg.external.flag" {
 	    append msgText "Illegal argument: I${llegalValMsg}: $msgF(value)%n"
 	    append msgText "For legal value please contact package owner"
+	}
+	default {
+		set msgType "-E-"
+		set msgText "-E- Internal error: bad message code: $msgCode"
+	    set noExiting 1
 	}
     }
 
