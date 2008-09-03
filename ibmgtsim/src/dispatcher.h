@@ -53,6 +53,7 @@
 #include "simmsg.h"
 #include <map>
 #include <list>
+#include <pthread.h>
 
 class IBMSDispatcher {
 
