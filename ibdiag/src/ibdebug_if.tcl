@@ -2035,20 +2035,28 @@ proc inform { msgCode args } {
 	"-V-outfiles:.lst"   {
 	    PutsIn80Chars " "
 	    append msgText "Writing file $G(outfiles,.lst) "
-	    append msgText "(a listing of all the links in the fabric)"
+	    append msgText " (a listing of all the links in the fabric)"
 	}
 	"-V-outfiles:.fdbs"  {
 	    PutsIn80Chars " "
 	    append msgText "Writing file $G(outfiles,.fdbs)"
-	    append msgText "(a dump of the unicast forwarding tables of the fabric switches)"
+	    append msgText " (a dump of the unicast forwarding tables of the fabric switches)"
 	}
 	"-V-outfiles:.mcfdbs"   {
 	    PutsIn80Chars " "
 	    append msgText "Writing file $G(outfiles,.mcfdbs)"
-	    append msgText "(a dump of the multicast forwarding tables of the fabric switches)"
+	    append msgText " (a dump of the multicast forwarding tables of the fabric switches)"
 	}
-
-
+	"-V-outfiles:.db"   {
+	    PutsIn80Chars " "
+	    append msgText "Writing file $G(outfiles,.db)"
+	    append msgText " (a dump of the tool internal database)"
+	}
+	"-V-outfiles:.pkey"   {
+	    PutsIn80Chars " "
+	    append msgText "Writing file $G(outfiles,.pkey)"
+	    append msgText " (a dump of the partitions in the IB fabric and their members)"
+	}
 
 	"-I-ibping:results" {
 	    set pktFailures   $msgF(failures)
@@ -2491,7 +2499,7 @@ proc showHelpPage { args } {
       available information regarding its connectivity and devices.
       It then produces the following files in the output directory defined by the
       -o option (see below):
-            ibdiagnet.lst    - List of all the nodes, ports and links in the fabric
+            ibdiagnet.lst    - A list of all the nodes, ports and links in the fabric
             ibdiagnet.fdbs   - A dump of the unicast forwarding tables of the fabric
                                switches
             ibdiagnet.mcfdbs - A dump of the multicast forwarding tables of the fabric
@@ -2501,6 +2509,7 @@ proc showHelpPage { args } {
             ibdiagnet.sm     - A dump of all the SM (state and priority) in the fabric
             ibdiagnet.pm     - In case -pm option was provided, this file contain a dump
                                of all the nodes PM counters
+            ibdiagnet.pkey   - A list of the partitions in the IB fabric and their members
             ibdiagnet.db     - A dump of the internal subnet database. This file can be loaded
                                in later runs using the -load_db option
             In addition to generating the files above, the discovery phase also checks for
