@@ -1143,7 +1143,7 @@ proc inform { msgCode args } {
 	}
 
 
-    "-E-ibis:ibis_init.failed" {
+	"-E-ibis:ibis_init.failed" {
 	    append msgText "IBIS: Error from ibis_init: \"$msgF(errMsg)\""
 	}
 	"-E-ibis:ibis_get_local_ports_info.failed" {
@@ -1323,10 +1323,10 @@ proc inform { msgCode args } {
 
 
 
-    "-E-outfile:not.valid" {
-        append msgText "Output file $msgF(file0) is illegal value for $G(var:tool.name).%n"
-    }
-    "-W-outfile:not.writable" {
+	"-E-outfile:not.valid" {
+	    append msgText "Output file $msgF(file0) is illegal value for $G(var:tool.name).%n"
+	}
+	"-W-outfile:not.writable" {
 	    append msgText "Output file $msgF(file0) is write protected.%n"
 	    append msgText "Writing info into $msgF(file1)."
 	}
@@ -1730,8 +1730,8 @@ proc inform { msgCode args } {
 
 
 	"-E-ibdiagnet:SM.none" {
-		append msgText "Missing master SM in the discover fabric"
-		set noExiting 1
+	    append msgText "Missing master SM in the discover fabric"
+	    set noExiting 1
 	}
 	"-E-ibdiagnet:SM.multiple.master" {
             append msgText "Found more then one master SM in the discover fabric"
@@ -2125,8 +2125,8 @@ proc inform { msgCode args } {
 	    append msgText "For legal value please contact package owner"
 	}
 	default {
-		set msgType "-E-"
-		set msgText "-E- Internal error: bad message code: $msgCode"
+	    set msgType "-E-"
+	    set msgText "-E- Internal error: bad message code: $msgCode"
 	    set noExiting 1
 	}
     }
@@ -2248,10 +2248,9 @@ proc inform { msgCode args } {
         set err_type 1
         regsub -all {%n} $msgText " " msgBody
         regsub -all {,} $msgBody " " msgBody
-        for {set h 0} {$h < 3} {incr h} {
-            set msgBody [join $msgBody]
-        }
-        set msgBody [string range $msgBody 4 end]
+	regsub -all {\{} $msgBody " " msgBody
+        regsub -all {\}} $msgBody " " msgBody
+	set msgBody [string range $msgBody 4 end]
         if {[info exists NODE]} {
             for {set i 0} {$i < [llength [array names NODE *,PortGUID]]} {incr i} {
                 set portGuid $NODE($i,PortGUID)
