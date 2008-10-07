@@ -134,5 +134,9 @@ LinkCoverageAnalysis(IBFabric *p_fabric, list_pnode rootNodes);
 int
 FatTreeAnalysis(IBFabric *p_fabric);
 
+// Perform FatTree optimal permutation routing
+int
+FatTreeRouteByPermutation(IBFabric* p_fabric, char* srcs, char* dsts);
+
 #endif /* IBDM_SUBN_MGT_H */
 

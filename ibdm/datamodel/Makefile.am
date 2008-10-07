@@ -33,7 +33,7 @@
 #--
 
 # we would like to export these headers during install
-pkginclude_HEADERS = git_version.h Fabric.h \
+pkginclude_HEADERS = git_version.h Fabric.h RouteSys.h Bipartite.h \
 		 SubnMgt.h TraceRoute.h CredLoops.h Regexp.h \
 		 TopoMatch.h SysDef.h Congestion.h ibnl_parser.h ibdm.i
 
@@ -53,7 +53,7 @@ AM_YFLAGS = -d
 # libibdm - the TCL shared lib to be used as a package
 # ibdmsh - the TCL shell
 
-common_SOURCES = Fabric.cpp \
+common_SOURCES = Fabric.cpp RouteSys.cc Bipartite.cc \
 	SubnMgt.cpp TraceRoute.cpp CredLoops.cpp TopoMatch.cpp SysDef.cpp \
 	LinkCover.cpp Congestion.cpp ibnl_parser.cc ibnl_scanner.cc FatTree.cpp
 

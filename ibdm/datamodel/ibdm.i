@@ -1263,6 +1263,9 @@ int ibdmFatTreeRoute(IBFabric *p_fabric, list_pnode rootNodes);
 %name(ibdmFatTreeAnalysis) int FatTreeAnalysis(IBFabric *p_fabric);
 // Performs FatTree structural analysis
 
+%name(ibdmFatTreeRouteByPermutation) int FatTreeRouteByPermutation(IBFabric *p_fabric, char* srcs, char* dsts);
+// Performs optimal permutation routing in FatTree
+
 %name(ibdmVerifyCAtoCARoutes)
  int SubnMgtVerifyAllCaToCaRoutes(IBFabric *p_fabric);
 // Verify point to point connectivity
