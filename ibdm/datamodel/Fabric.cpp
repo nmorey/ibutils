@@ -454,6 +454,67 @@ IBNode::getLFTPortForLid (unsigned int lid) {
 }
 
 //////////////////////////////////////////////////////////////////////////////
+
+// Set the PSL Table:
+void
+IBNode::setPSLForLid (unsigned int lid, unsigned int maxLid, uint8_t sl) {
+  if (PSL.empty())
+  {
+    PSL.resize(maxLid + 1);
+    for(unsigned int i = 0; i<PSL.size(); i++)
+      PSL[i] = IB_SLT_UNASSIGNED;
+  }
+  PSL[lid] = sl;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
+// Get the PSL Table:
+uint8_t
+IBNode::getPSLForLid (unsigned int lid) {
+  if (PSL.empty())
+    return 0;
+
+ if (PSL.size() < lid+1)
+    return IB_SLT_UNASSIGNED;
+
+  return PSL[lid];
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
+// Set the SL2VL Table:
+void
+IBNode::setSLVL (unsigned int iport,unsigned int oport,uint8_t sl, uint8_t vl) {
+  // Create an empty table
+  if (SLVL.empty())
+  {
+    SLVL.resize(numPorts+1);
+    for (int i=0;i<SLVL.size();i++) {
+      SLVL[i].resize(numPorts+1);
+      for (int j=0;j<SLVL[i].size();j++) {
+	SLVL[i][j].resize(IB_NUM_SL);
+	for (int k=0;k<SLVL[i][j].size();k++)
+	  SLVL[i][j][k] = IB_SLT_UNASSIGNED;
+      }
+    }
+  }
+  SLVL[iport][oport][sl] = vl;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
+// Get the SLVL Table:
+uint8_t
+IBNode::getSLVL (unsigned int iport,unsigned int oport,uint8_t sl) {
+  // Identity mapping
+  if (SLVL.empty())
+    return sl;
+
+  return SLVL[iport][oport][sl];
+}
+
+//////////////////////////////////////////////////////////////////////////////
 // Set the Multicast FDB table
 void
 IBNode::setMFTPortForMLid(
@@ -2014,6 +2075,159 @@ IBFabric::parseFdbFile(string fn) {
    cout << "-I- Defined " << fdbLines << " fdb entries for:"
         << switches << " switches" << endl;
    f.close();
+   return anyErr;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
+// Parse PSL file and set the SLT tables accordingly
+int
+IBFabric::parsePSLFile(string fn) {
+   ifstream f(fn.c_str());
+   int maxLid = 0;
+
+   char sLine[1024];
+   // 0x0002c90000000099 154 0
+   // srcguid dlid sl
+   regExp slLine("0x([0-9a-z]+) ([0-9]+) ([0-9]+)");
+   rexMatch *p_rexRes;
+
+   if (f.fail())
+   {
+      cout << "-E- Fail to open file:" << fn.c_str() << endl;
+      return 1;
+   }
+
+   cout << "-I- Parsing SL file:" << fn.c_str() << endl;
+
+   int anyErr = 0;
+
+   // Find max HCA LID
+   while (f.good()) {
+      f.getline(sLine,1024);
+      p_rexRes = slLine.apply(sLine);
+      if (p_rexRes)
+      {
+	unsigned int lid = strtoull(p_rexRes->field(2).c_str(), NULL, 10);
+	maxLid = lid > maxLid ? lid:maxLid;
+      }
+      /*else
+      {
+	cout << "-E- Wrong file format:" << fn.c_str() << endl;
+	anyErr++;
+	}*/
+   }
+   f.close();
+
+   // Make second pass and build the tables
+   f.open(fn.c_str(),ifstream::in);
+   if (f.fail())
+   {
+      cout << "-E- Fail to open file:" << fn.c_str() << endl;
+      return 1;
+   }
+
+   while (f.good()) {
+      f.getline(sLine,1024);
+
+      p_rexRes = slLine.apply(sLine);
+      if (p_rexRes)
+      {
+	uint64_t guid = strtoull(p_rexRes->field(1).c_str(), NULL, 16);
+	unsigned int lid = strtoull(p_rexRes->field(2).c_str(), NULL, 10);
+	uint8_t sl = strtoull(p_rexRes->field(3).c_str(), NULL, 10);
+
+	IBNode* p_node = getNodeByGuid(guid);
+        if (!p_node)
+        {
+           cout << "-E- Fail to find node with guid:"
+                << guid << endl;
+           anyErr++;
+        }
+	else
+	{
+	  // Update number of used SLs
+	  numSLs = sl+1 > numSLs ? sl+1:numSLs;
+	  // Insert table entry
+	  p_node->setPSLForLid(lid,maxLid,sl);
+	}
+	delete p_rexRes;
+      }
+      /*else
+      {
+	cout << "-E- Wrong file format:" << fn.c_str() << endl;
+	anyErr++;
+	}*/
+   }
+   cout << "-I- Defined "<< (int)numSLs << " SLs in use" <<endl;
+   f.close();
+
+   return anyErr;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
+// Parse SLVL file and set the SL2VL tables accordingly
+int
+IBFabric::parseSLVLFile(string fn) {
+  numVLs = 1;
+  ifstream f(fn.c_str());
+
+  char sLine[1024];
+  // 0x0002c90000000201 5 1 0x01 0x23 0x45 0x67 0x89 0xab 0xcd 0xe7
+  // guid iport oport 0x(sl0)(sl1) 0x(sl2)(sl3)...
+  regExp slLine("0x([0-9a-z]+) ([0-9]+) ([0-9]+) 0x([0-9a-z])([0-9a-z]) 0x([0-9a-z])([0-9a-z]) 0x([0-9a-z])([0-9a-z]) 0x([0-9a-z])([0-9a-z]) 0x([0-9a-z])([0-9a-z]) 0x([0-9a-z])([0-9a-z]) 0x([0-9a-z])([0-9a-z]) 0x([0-9a-z])([0-9a-z])");
+  rexMatch *p_rexRes;
+
+  if (f.fail()) {
+    cout << "-E- Fail to open file:" << fn.c_str() << endl;
+    return 1;
+  }
+
+  cout << "-I- Parsing SLVL file:" << fn.c_str() << endl;
+
+  int anyErr = 0;
+
+   // Parse the file
+   while (f.good()) {
+      f.getline(sLine,1024);
+
+      p_rexRes = slLine.apply(sLine);
+      if (p_rexRes)
+      {
+	uint64_t guid = strtoull(p_rexRes->field(1).c_str(), NULL, 16);
+	unsigned int iport = strtoull(p_rexRes->field(2).c_str(), NULL, 10);
+	unsigned int  oport = strtoull(p_rexRes->field(3).c_str(), NULL, 10);
+
+	IBNode* p_node = getNodeByGuid(guid);
+        if (!p_node)
+        {
+           cout << "-E- Fail to find node with guid:"
+                << guid << endl;
+           anyErr++;
+        }
+	else
+	{
+	  for (int i=0;i<IB_NUM_SL;i++) {
+	    // Extract the VL value
+	    uint8_t vl = strtoull(p_rexRes->field(4+i).c_str(), NULL, 16);
+	    numVLs = numVLs > vl+1 ? numVLs : vl+1;
+	    // Set the table entry
+	    p_node->setSLVL(iport,oport,i,vl);
+	  }
+	}
+	delete p_rexRes;
+      }
+      /*else
+      {
+	cout << "-E- Wrong file format:" << fn.c_str() << endl;
+	anyErr++;
+	}*/
+   }
+   cout << "-I- Defined "<< (int)numVLs << " VLs in use" <<endl;
+
+   f.close();
+
    return anyErr;
 }
 

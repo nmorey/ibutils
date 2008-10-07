@@ -64,7 +64,10 @@
 
 #define IB_LID_UNASSIGNED 0
 #define IB_LFT_UNASSIGNED 255
+#define IB_SLT_UNASSIGNED 255
 #define IB_HOP_UNASSIGNED 255
+
+#define IB_NUM_SL 16
 
 #if __WORDSIZE == 64
 #define PRIx64 "lx"
@@ -91,15 +94,18 @@ typedef vector<vec_int > vec_vec_int;
 typedef vector<uint8_t > vec_byte;
 typedef vector<uint32_t > vec_word;
 typedef vector<vec_byte > vec_vec_byte;
+typedef vector<vec_vec_byte > vec3_byte;
 
 typedef vector<class IBPort * > vec_pport;
 typedef vector<class IBNode * > vec_pnode;
+typedef vector<class VChannel * > vec_pvch;
 typedef map< string, class IBSysPort *, strless > map_str_psysport;
 typedef map< string, class IBNode *, strless > map_str_pnode;
 typedef map< string, class IBSystem *, strless > map_str_psys;
 typedef map< uint64_t, class IBPort *, less<uint64_t> > map_guid_pport;
 typedef map< uint64_t, class IBNode *, less<uint64_t> > map_guid_pnode;
 typedef map< uint64_t, class IBSystem *, less<uint64_t> > map_guid_psys;
+typedef map< string, int, strless > map_str_int;
 typedef list<class IBNode * > list_pnode;
 typedef list<class IBSystem * > list_psystem;
 typedef list<int > list_int;
@@ -120,6 +126,9 @@ typedef set< uint16_t, less< uint16_t > > set_uint16;
 #define FABU_LOG_INFO 0x2
 #define FABU_LOG_VERBOSE 0x4
 #define IBNODE_UNASSIGNED_RANK 0xFF
+
+// DFS constants type
+typedef enum {Untouched,Open,Closed} dfs_t;
 
 //
 // GLOBALS
@@ -198,6 +207,48 @@ static inline string guid2str(uint64_t guid) {
 };
 
 //
+// Virtual Channel class
+// Used for credit loops verification
+//
+
+class VChannel {
+  vec_pvch depend;               // Vector of dependencies
+  dfs_t flag;                    // DFS state
+ public:
+  // Constructor
+  VChannel() {
+    flag = Untouched;
+  };
+  //Getters/Setters
+  inline void setDependSize(int numDepend) {
+    if (depend.size() != (unsigned)numDepend) {
+      depend.resize(numDepend);
+      for (int i=0;i<numDepend;i++) {
+	depend[i] = NULL;
+      }
+    }
+  };
+  inline int getDependSize() {
+    return depend.size();
+  };
+  inline dfs_t getFlag() {
+    return flag;
+  };
+
+  inline void setFlag(dfs_t f) {
+    flag = f;
+  };
+
+  inline void setDependency(int i,VChannel* p) {
+    depend[i]=p;
+  };
+
+  inline VChannel* getDependency(int i) {
+    return depend[i];
+  };
+};
+
+//
 // IB Port class.
 // This is not the "End Node" but the physical port of
 // a node.
@@ -208,8 +259,9 @@ class IBPort {
   class IBPort    * p_remotePort; // Port connected on the other side of link
   class IBSysPort * p_sysPort;    // The system port (if any) connected to
   class IBNode    * p_node;       // The node the port is part of.
-  int			      num;            // Physical ports are identified by number.
-  unsigned int	   base_lid;       // The base lid assigned to the port.
+  vec_pvch        channels;       // Virtual channels associated with the port
+  int		  num;            // Physical ports are identified by number.
+  unsigned int	  base_lid;       // The base lid assigned to the port.
   IBLinkWidth     width;          // The link width of the port
   IBLinkSpeed     speed;          // The link speed of the port
   unsigned int    counter1;       // a generic value to be used by various algorithms
@@ -250,8 +302,8 @@ typedef union _PrivateAppData {
 class IBNode {
   uint64_t guid;
  public:
-  string			   name;         // Name of the node (instance name of the chip)
-  IBNodeType 		type;      // Either a CA or SW
+  string	  name;      // Name of the node (instance name of the chip)
+  IBNodeType 	  type;      // Either a CA or SW
   uint32_t        devId;     // The device ID of the node
   uint32_t        revId;     // The device revision Id.
   uint32_t        vendId;    // The device Vendor ID.
@@ -260,10 +312,12 @@ class IBNode {
   class IBFabric *p_fabric;  // What fabric we belong to.
   unsigned int	   numPorts;  // Number of physical ports
   string          attributes;// Comma-sep string of arbitrary attributes k=v
-  vec_pport		   Ports;     // Vector of all the ports
-  vec_vec_byte		MinHopsTable; // Table describing minimal hop count through
+  vec_pport	  Ports;     // Vector of all the ports
+  vec_vec_byte	  MinHopsTable; // Table describing minimal hop count through
                                 // each port to each target lid
   vec_byte        LFT;       // The LFT of this node (for switches only)
+  vec_byte        PSL;       // PSL table (CAxCA->SL mapping) of this node (for CAs only)
+  vec3_byte       SLVL;      // SL2VL table of this node (for switches only)
   vec_word        MFT;       // The Multicast forwarding table
   PrivateAppData  appData1;  // Application Private Data #1
   PrivateAppData  appData2;  // Application Private Data #2
@@ -315,6 +369,18 @@ class IBNode {
 
   // Get the LFT for a given lid
   int getLFTPortForLid (unsigned int lid);
+
+  // Set the PSL table
+  void setPSLForLid (unsigned int lid, unsigned int maxLid, uint8_t sl);
+
+  // Add entry to SL2VL table
+  void setSLVL(unsigned int iport,unsigned int oport,uint8_t sl, uint8_t vl);
+
+  // Get the PSL table for a given lid
+  uint8_t getPSLForLid(unsigned int lid);
+
+  // Get the SL2VL table entry
+  uint8_t getSLVL(unsigned int iport, unsigned int oport, uint8_t sl);
 
   // Set the Multicast FDB table
   void setMFTPortForMLid(unsigned int lid, unsigned int portNum);
@@ -423,6 +489,8 @@ class IBFabric {
   unsigned int   lmc;          // LMC value used
   uint8_t        defAllPorts;  // If not zero all ports (unconn) are declared
   uint8_t        subnCANames;  // The Subnet.lst has host names for CA's
+  uint8_t        numSLs;       // Number of used SLs
+  uint8_t        numVLs;       // Number of used VLs
   set_uint16     mcGroups;     // A set of all active multicast groups
 
   // Constructor
@@ -430,6 +498,8 @@ class IBFabric {
     maxLid = 0;
     defAllPorts = 1;
     subnCANames = 1;
+    numSLs = 1;
+    numVLs = 1;
     lmc = 0;
     minLid = 0;
     PortByLid.push_back(NULL); // make sure we always have one for LID=0
@@ -493,6 +563,12 @@ class IBFabric {
   // Parse OpenSM FDB dump file
   int parseFdbFile(string fn);
 
+  // Parse PSL mapping
+  int parsePSLFile(string fn);
+
+  // Parse SLVL mapping
+  int parseSLVLFile(string fn);
+
   // Parse an OpenSM MCFDBs file and set the MFT table accordingly
   int parseMCFdbFile(string fn);
 
@@ -511,6 +587,22 @@ class IBFabric {
 	 if ( PortByLid.empty() || (PortByLid.size() < lid + 1))
 		return NULL;
 	 return (PortByLid[lid]);
+  };
+
+  inline void setNumSLs(uint8_t nSL) {
+    numSLs=nSL;
+  };
+
+  inline uint8_t getNumSLs() {
+    return numSLs;
+  };
+
+  inline void setNumVLs(uint8_t nVL) {
+    numVLs=nVL;
+  };
+
+  inline uint8_t getNumVLs() {
+    return numVLs;
   };
 
   // dump out the contents of the entire fabric

@@ -45,7 +45,7 @@ void
 show_usage() {
   cout << "Usage: there are two modes: Design/Verify" << endl;
   cout << "  Design: ibdmchk [-v][-h][-e][-u][-l <lmc>][-r <roots file>] -t <topology file> -n <SM Node> -p <SM Port>" << endl;
-  cout << "  Verify: ibdmchk [-v][-h][-l <lmc>][-r <roots file>] [-s <subnet file>] [-f <fdb file>] [-m <mcfdb file>]" << endl;
+  cout << "  Verify: ibdmchk [-v][-h][-l <lmc>][-r <roots file>] [-s <subnet file>] [-f <fdb file>] [-m <mcfdb file>] [-c <path-sl file>] [-d <sl2vl file>]\n\n" << endl;
 }
 
 void
@@ -72,7 +72,7 @@ show_help() {
     << "  -p|--port <SM Port> = the port number by which the SM nodes is attached to the fabric.\n"
     << "\n"
     << "  Options:\n"
-    << "  -v|--verbose = verbsoe mode\n"
+    << "  -v|--verbose = verbose mode\n"
     << "  -h|--help = provide this help message\n"
     << "  -l|--lmc <lmc> = LMC value > 0 means assigning 2^lmc lids to each port.\n"
     << "  -e|--enh = use enhanced routing algorithm when LMC > 0 and report the resulting paths\n"
@@ -82,11 +82,15 @@ show_help() {
     << "\n"
     << "  CLUSTER VERIFICATION:\n"
     << "  Usage:\n"
-    << "   ibdmchk [-v][-h][-r <roots file>] [-s <subnet file>] [-f <fdb file>] [-l <lmc>]\n\n"
+    << "   ibdmchk [-v][-h][-r <roots file>] [-s <subnet file>] [-f <fdb file>] [-m <mcfdb file>] [-l <lmc>] [-c <path-sl file>] [-d <sl2vl file>]\n\n"
     << "  Description:\n"
     << "   After the cluster is built and OpenSM is run (using flag -D 0x43) it reports the\n"
     << "   subnet and FDB tables into the files osm-subnet.lst, osm.fdbs and osm.fdbs in\n"
-	 << "   /var/log/ (or subnet.lst, osm.fdbs and osm.mcfdbs into /tmp in older versions).\n"
+    << "   /var/log/ (or subnet.lst, osm.fdbs and osm.mcfdbs into /tmp in older versions).\n"
+    << "   If more than one SL is known to be used additional file holding CAxCA->SL mapping \n"
+    << "   is generated (format: 0xsrc_guid dlid sl) . In this case the SL2VL mapping is \n"
+    << "   optionally supplied in an additional file (format: 0xsw_guid inport outport 0x(sl0)(sl1),\n"
+    << "   0x(sl2)(sl3),...). Without SL2VL mapping file an identity mapping is used.\n"
     << "   Based on these files the utility checks all CA to CA connectivity. Further analysis\n"
     << "   for credit deadlock potential is performed and reported. \n"
     << "   In case of an LMC > 0 it reports histograms for how many systems and nodes\n"
@@ -96,13 +100,15 @@ show_help() {
     << "  -l|--lmc <lmc> = The LMC value used while running OpenSM. Mandatory if not the default 0.\n"
     << "\n"
     << "  Options:\n"
-    << "  -v|--verbose = verbsoe mode\n"
+    << "  -v|--verbose = verbose mode\n"
     << "  -h|--help = provide this help message\n"
     << "  -s|--subnet <file> = OpenSM subnet.lst file (/var/log/osm-subnet.lst or /tmp/subnet.lst)\n"
     << "  -f|--fdb <file> = OpenSM dump of Ucast LFDB. Use -D 0x41 to generate it.\n"
     << "     (default is /var/log/osm.fdbs or /tmp/osm.fdbs).\n"
     << "  -m|--mcfdb <file> = OpenSM dump of Multicast LFDB. Use -D 0x41 to generate it.\n"
     << "     (default is /var/log/osm.mcfdbs or /tmp/osm.mcfdbs).\n"
+    << "  -c|--psl <file> = CAxCA->SL mapping. \n"
+    << "  -d|--slvl <file> = SL2VL mapping. \n"
     << "  -r|--roots <roots file> = a file holding all root nodes guids (one per line).\n"
     << "\n"
     << "Author: Eitan Zahavi, Mellanox Technologies LTD.\n"
@@ -189,6 +195,8 @@ int main (int argc, char **argv) {
   string mcFdbFile = string("");
   string TopoFile = string("");
   string SmNodeName = string("");
+  string PSLFile = string("");
+  string SLVLFile = string("");
   string RootsFileName = string("");
   int EnhancedRouting = 0;
   int lmc = 0;
@@ -197,11 +205,11 @@ int main (int argc, char **argv) {
   int AllPaths = 0;
 
   /*
-	* Parseing of Command Line
+	* Parsing of Command Line
 	*/
 
   char next_option;
-  const char * const short_option = "vhl:s:f:m:el:t:p:n:uar:";
+  const char * const short_option = "vhl:s:f:m:el:t:p:n:uar:c:d:";
   /*
 	 In the array below, the 2nd parameter specified the number
 	 of arguments as follows:
@@ -217,13 +225,15 @@ int main (int argc, char **argv) {
 		{	"subnet",	1,	NULL,	's'},
 		{	"fdb",	   1,	NULL,	'f'},
 		{	"mcfdb",	   1,	NULL,	'm'},
+		{       "psl",          1,      NULL,   'c'},
+		{       "slvl",         1,      NULL,   'd'},
 		{	"topology",	1,	NULL,	't'},
-      {  "node",     1, NULL, 'n'},
+		{  "node",     1, NULL, 'n'},
   		{	"port",	   1,	NULL,	'p'},
-      {  "enh",      0, NULL, 'e'},
-      {  "updn",     0, NULL, 'u'},
-      {  "roots",    1, NULL, 'r'},
-      {  "all",      0, NULL, 'a'},
+		{  "enh",      0, NULL, 'e'},
+		{  "updn",     0, NULL, 'u'},
+		{  "roots",    1, NULL, 'r'},
+		{  "all",      0, NULL, 'a'},
 		{	NULL,		0,	NULL,	 0 }	/* Required at the end of the array */
 	 };
 
@@ -273,6 +283,20 @@ int main (int argc, char **argv) {
 		*/
 		subnetFile = string(optarg);
 		break;
+
+	 case 'c':
+	        /*
+		  Specifies CAxCA->SL
+		*/
+	        PSLFile = string(optarg);
+	        break;
+
+	 case 'd':
+	        /*
+		  Specifies SL->VL
+		*/
+	        SLVLFile = string(optarg);
+	        break;
 
 	 case 't':
 		/*
@@ -342,6 +366,7 @@ int main (int argc, char **argv) {
     printf(" SM Node ........ %s\n", SmNodeName.c_str());
     printf(" SM Port ........ %u\n", SmPortNum);
     printf(" LMC ............ %u\n", lmc);
+
     if (EnhancedRouting && lmc > 0)
       printf(" Using Enhanced Routing\n");
     if (RootsFileName.size())
@@ -352,75 +377,74 @@ int main (int argc, char **argv) {
       exit(1);
     }
 
-	// get the SM Port
-	IBNode *p_smNode = fabric.getNode(SmNodeName);
-	if (! p_smNode ) {
-	  cout << "-E- Fail to find SM node:" << SmNodeName << endl;
+    // get the SM Port
+    IBNode *p_smNode = fabric.getNode(SmNodeName);
+    if (! p_smNode ) {
+      cout << "-E- Fail to find SM node:" << SmNodeName << endl;
+      exit(1);
+    }
+
+    IBPort *p_smPort = p_smNode->getPort(SmPortNum);
+    if (! p_smPort) {
+      cout <<  "-E- Fail to find SM Port: " << SmNodeName
+	   << "/" << SmPortNum << endl;
+      exit(1);
+    }
+
+    // assign lids
+    if (SubnMgtAssignLids(p_smPort,lmc)) {
+      cout << "-E- Fail to assign LIDs." << endl;
+      exit(1);
+    }
+
+    // we need to run min hop calculation anyway
+    if (SubnMgtCalcMinHopTables(&fabric)) {
+      cout << "-E- Fail to update Min Hops Tables." << endl;
+      exit(1);
+    }
+
+    if (UseUpDown) {
+      list <IBNode *> rootNodes;
+      if (RootsFileName.size()) {
+	rootNodes = ParseRootNodeNamesFile(&fabric, RootsFileName);
+      }
+      else {
+	rootNodes = SubnMgtFindRootNodesByMinHop(&fabric);
+      }
+
+      if (!rootNodes.empty()) {
+	cout << "-I- Recognized " << rootNodes.size() << " root nodes:" << endl;
+	for (list <IBNode *>::iterator nI = rootNodes.begin();
+	     nI != rootNodes.end(); nI++) {
+	  cout << " " << (*nI)->name << endl;
+	}
+	cout << "---------------------------------------------------------------------------\n" << endl;
+
+	map_pnode_int nodesRank;
+	SubnRankFabricNodesByRootNodes(&fabric, rootNodes, nodesRank);
+
+	if (SubnMgtCalcUpDnMinHopTbls(&fabric, nodesRank)) {
+	  cout << "-E- Fail to update Min Hops Tables." << endl;
 	  exit(1);
 	}
+      } else {
+	cout << "-E- Fail to recognize any root nodes. Up/Down is not active!" << endl;
+      }
+    }
 
-	IBPort *p_smPort = p_smNode->getPort(SmPortNum);
-	if (! p_smPort) {
-	  cout <<  "-E- Fail to find SM Port: " << SmNodeName
-			 << "/" << SmPortNum << endl;
-	  exit(1);
-	}
+    if (!EnhancedRouting) {
 
-	// assign lids
-	if (SubnMgtAssignLids(p_smPort,lmc)) {
-	  cout << "-E- Fail to assign LIDs." << endl;
-	  exit(1);
-	}
+      if (SubnMgtOsmRoute(&fabric)) {
+	cout << "-E- Fail to update LFT Tables." << endl;
+	exit(1);
+      }
+    } else {
+      if (SubnMgtOsmEnhancedRoute(&fabric)) {
+	cout << "-E- Fail to update LFT Tables." << endl;
+	exit(1);
+      }
+    }
 
-   // we need to run min hop calculation anyway
-   if (SubnMgtCalcMinHopTables(&fabric)) {
-     cout << "-E- Fail to update Min Hops Tables." << endl;
-     exit(1);
-   }
-
-   if (UseUpDown) {
-     list <IBNode *> rootNodes;
-     if (RootsFileName.size())
-     {
-       rootNodes = ParseRootNodeNamesFile(&fabric, RootsFileName);
-     }
-     else
-     {
-       rootNodes = SubnMgtFindRootNodesByMinHop(&fabric);
-     }
-
-     if (!rootNodes.empty()) {
-       cout << "-I- Recognized " << rootNodes.size() << " root nodes:" << endl;
-       for (list <IBNode *>::iterator nI = rootNodes.begin();
-            nI != rootNodes.end(); nI++) {
-         cout << " " << (*nI)->name << endl;
-       }
-       cout << "---------------------------------------------------------------------------\n" << endl;
-
-       map_pnode_int nodesRank;
-       SubnRankFabricNodesByRootNodes(&fabric, rootNodes, nodesRank);
-
-       if (SubnMgtCalcUpDnMinHopTbls(&fabric, nodesRank)) {
-         cout << "-E- Fail to update Min Hops Tables." << endl;
-         exit(1);
-       }
-     } else {
-       cout << "-E- Fail to recognize any root nodes. Up/Down is not active!" << endl;
-     }
-   }
-
-	if (!EnhancedRouting) {
-
-	  if (SubnMgtOsmRoute(&fabric)) {
-		 cout << "-E- Fail to update LFT Tables." << endl;
-		 exit(1);
-	  }
-	} else {
-	  if (SubnMgtOsmEnhancedRoute(&fabric)) {
-		 cout << "-E- Fail to update LFT Tables." << endl;
-		 exit(1);
-	  }
-	}
 
   } else {
 	  int anyMissingFile = 0;
@@ -463,6 +487,14 @@ int main (int argc, char **argv) {
     printf(" FDB File = %s\n", fdbFile.c_str());
     printf(" MCFDB File = %s\n", mcFdbFile.c_str());
     printf(" Subnet File = %s\n", subnetFile.c_str());
+    if (PSLFile.size() >0)
+      printf(" SL File = %s\n", PSLFile.c_str());
+    else
+      printf(" SL File = NONE, using single SL\n");
+    if (SLVLFile.size() >0)
+      printf(" SLVL File = %s\n", SLVLFile.c_str());
+    else
+      printf(" SLVL File = NONE, using identity mapping\n");
     printf(" LMC = %u\n", lmc);
     printf("-------------------------------------------------\n");
 
@@ -475,6 +507,18 @@ int main (int argc, char **argv) {
 
     if (fabric.parseFdbFile(fdbFile)) {
       cout << "-E- Fail to parse fdb file:" << fdbFile << endl;
+      exit(1);
+    }
+
+    if (PSLFile.size() && fabric.parsePSLFile(PSLFile)) {
+      cout << "-E- Fail to parse SL file:" << PSLFile << endl;
+      exit(1);
+    }
+
+    fabric.setNumVLs(fabric.getNumSLs());
+
+    if (SLVLFile.size() && fabric.parseSLVLFile(SLVLFile)) {
+      cout << "-E- Fail to parse SL file:" << SLVLFile << endl;
       exit(1);
     }
 
@@ -509,20 +553,20 @@ int main (int argc, char **argv) {
   int anyErr = 0;
 
   if (RootsFileName.size())
-  {
-    if (TopoFile.size())
     {
-      rootNodes = ParseRootNodeNamesFile(&fabric, RootsFileName);
+      if (TopoFile.size())
+	{
+	  rootNodes = ParseRootNodeNamesFile(&fabric, RootsFileName);
+	}
+      else
+	{
+	  rootNodes = ParseRootNodeGuidsFile(&fabric, RootsFileName);
+	}
     }
-    else
-    {
-      rootNodes = ParseRootNodeGuidsFile(&fabric, RootsFileName);
-    }
-  }
   else
-  {
-    rootNodes = SubnMgtFindRootNodesByMinHop(&fabric);
-  }
+    {
+      rootNodes = SubnMgtFindRootNodesByMinHop(&fabric); //(Causes segmentation fault with DOR)
+    }
 
   if (!rootNodes.empty()) {
     cout << "-I- Recognized " << rootNodes.size() << " root nodes:" << endl;
