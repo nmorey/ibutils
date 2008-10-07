@@ -47,6 +47,9 @@
 #ifndef SMA_H
 #define SMA_H
 
+#include <pthread.h>
+#include <vector>
+#include <unistd.h>
 #include <ibdm/Fabric.h>
 #include "simmsg.h"
 #include "server.h"
@@ -83,7 +86,57 @@ ibms_dump_mad( const ibms_mad_msg_t &madMsg, const uint8_t dir);
 *
 *********/
 
+// Returns 0 if entry should be removed and 1 otherwise
+typedef int (*cbFunc)(void*);
+
+typedef struct reg_
+{
+  cbFunc f;
+  void* data;
+} reg_t;
+
+class SMATimer
+{
+  // Mutex of the timer
+  pthread_mutex_t timerMutex;
+  // Timer thread function
+  static void* timerRun(void* p);
+  // Thread id
+  int tid;
+  // Thread
+  pthread_t th;
+  // Registered objects list
+  vector<reg_t> L;
+  // Sleep time
+  int time;
+
+ public:
+  SMATimer(int time);
+  void terminate();
+  // Timer registration function
+  void reg(reg_t r);
+  // Removes registered object identified by POINTER
+  void unreg(void* data);
+};
+
+#define T_FREQ 1
+
+typedef struct portTiming_
+{
+  ib_port_info_t* pInfo;
+  unsigned counter;
+  int timerOn;
+  pthread_mutex_t mut;
+} portTiming;
+
 class IBMSSma : IBMSMadProcessor {
+
+  // m_key callback function
+  static int cbMkey(void* data);
+  // M_key timer
+  static SMATimer mkeyTimer;
+
+  vector<portTiming> vPT;
 
   /* init functions of node structures */
   void initSwitchInfo();

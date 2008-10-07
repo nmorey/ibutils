@@ -45,6 +45,11 @@
  *
  *********/
 
+#include <iostream>
+#include <fstream>
+#include <stdlib.h>
+#include <string>
+
 #include "msgmgr.h"
 #include "simmsg.h"
 #include "sim.h"
@@ -87,6 +92,85 @@ ibms_dump_mad(
     MSGSND(warn1, cl_ntoh16(madMsg.header.attr_id));
     break;
   }
+}
+
+// CLASS SMATimer
+
+SMATimer::SMATimer(int t):time(t)
+{
+  pthread_mutex_init(&timerMutex, NULL);
+  tid = pthread_create(&th, NULL, SMATimer::timerRun, this);
+  if (tid) {
+    MSGREG(err0, 'E', "Couldn't create timer thread $ !", "processMad");
+    MSGSND(err0, tid);
+    }
+  MSGREG(inf1, 'V', "SMA timer on!", "processMad");
+  MSGSND(inf1);
+}
+
+void SMATimer::terminate()
+{
+  pthread_cancel(th);
+}
+
+void* SMATimer::timerRun(void* p)
+{
+  SMATimer* p_timer = (SMATimer*) p;
+  while(1) {
+    MSGREG(inf1, 'V', "Sleeping for $ secs !", "processMad");
+    MSGSND(inf1,p_timer->time);
+
+    sleep(p_timer->time);
+    pthread_mutex_lock(&p_timer->timerMutex);
+    unsigned i=0;
+    while (i<p_timer->L.size()) {
+      int res = p_timer->L[i].f(p_timer->L[i].data);
+      if (!res)
+	p_timer->L.erase(p_timer->L.begin()+i);
+      else
+	i++;
+    }
+    pthread_mutex_unlock(&p_timer->timerMutex);
+  }
+}
+
+void SMATimer::reg (reg_t r)
+{
+  pthread_mutex_lock(&timerMutex);
+  L.push_back(r);
+  pthread_mutex_unlock(&timerMutex);
+}
+
+void SMATimer::unreg (void* data)
+{
+  pthread_mutex_lock(&timerMutex);
+  for (unsigned i=0;i<L.size();i++)
+    if (L[i].data == data) {
+      L.erase(L.begin()+i);
+      return;
+    }
+  pthread_mutex_unlock(&timerMutex);
+}
+
+// CLASS IBMSSma
+
+SMATimer IBMSSma::mkeyTimer = SMATimer(T_FREQ);
+
+int IBMSSma::cbMkey(void* data)
+{
+  portTiming* pT = (portTiming*) data;
+  pthread_mutex_lock(&pT->mut);
+  pT->counter--;
+  if (pT->counter > 0) {
+    pthread_mutex_unlock(&pT->mut);
+    return 1;
+  }
+  // Need to zero m_key
+  pT->pInfo->m_key = 0;
+  pT->timerOn = 0;
+  pthread_mutex_unlock(&pT->mut);
+
+  return 0;
 }
 
 void IBMSSma::initSwitchInfo()
@@ -392,6 +476,14 @@ IBMSSma::IBMSSma(IBMSNode *pSNode, list_uint16 mgtClasses) :
   initPortInfo();
   //Init VL Arbitration ports vector size and table
   pSimNode->vlArbPortEntry.resize(pSimNode->nodeInfo.num_ports + 1);
+  //Init ports' timing vector
+  vPT.resize(pSimNode->nodeInfo.num_ports + 1);
+  for (unsigned i=0;i<vPT.size();i++)
+    if ((pSimNode->nodeInfo.node_type == IB_NODE_TYPE_SWITCH) || i!=0) {
+      vPT[i].pInfo = &(pSimNode->nodePortsInfo[i]);
+      pthread_mutex_init(&vPT[i].mut, NULL);
+      vPT[i].timerOn = 0;
+    }
   initVlArbitTable();
 
   initPKeyTables();
@@ -1482,6 +1574,7 @@ int IBMSSma::madValidation(ibms_mad_msg_t &madMsg)
 
 int IBMSSma::processMad(uint8_t inPort, ibms_mad_msg_t &madMsg)
 {
+
   MSG_ENTER_FUNC;
 
   ibms_mad_msg_t      respMadMsg;
@@ -1518,6 +1611,64 @@ int IBMSSma::processMad(uint8_t inPort, ibms_mad_msg_t &madMsg)
     ib_smp_t*   pReqSmp = (ib_smp_t*)(&madMsg.header);
     memcpy(pRespSmp, pReqSmp, sizeof(ib_smp_t));
   }
+
+  // perform m_key check
+  unsigned mPort = inPort;
+  if (pSimNode->nodeInfo.node_type == IB_NODE_TYPE_SWITCH)
+    mPort = 0;
+
+  ib_net64_t m_key1 = ((ib_smp_t*)(&madMsg.header))->m_key;
+
+  pthread_mutex_lock(&vPT[mPort].mut);
+  ib_net64_t m_key2 = vPT[mPort].pInfo->m_key;
+
+  MSGREG(inf21, 'I', "Mkeys current: $, received: $!", "processMad");
+  MSGSND(inf21, cl_ntoh64(m_key2), cl_ntoh64(m_key1));
+
+  if (m_key2 && (m_key1 != m_key2) && madMsg.header.method == IB_MAD_METHOD_SET) {
+    MSGREG(inf22, 'I', "Mkeys mismatch!", "processMad");
+    MSGSND(inf22);
+
+    // Timer already running
+    if (vPT[mPort].timerOn) {
+      MSGREG(inf2, 'I', "Timer already on, counter: $!", "processMad");
+      MSGSND(inf2,vPT[mPort].counter);
+
+      MSG_EXIT_FUNC;
+      pthread_mutex_unlock(&vPT[mPort].mut);
+      return 0;
+    }
+    // Start the timer
+    else {
+      vPT[mPort].counter = cl_ntoh16(vPT[mPort].pInfo->m_key_lease_period);
+      vPT[mPort].timerOn = 1;
+      reg_t tmp;
+      tmp.f = cbMkey;
+      tmp.data = &vPT[mPort];
+
+      MSGREG(inf2, 'I', "Starting timer with counter $!", "processMad");
+      MSGSND(inf2,vPT[mPort].counter);
+
+      pthread_mutex_unlock(&vPT[mPort].mut);
+      mkeyTimer.reg(tmp);
+
+
+      MSG_EXIT_FUNC;
+
+      return 0;
+    }
+  }
+
+  if ((m_key1 == m_key2) && (vPT[mPort].timerOn)) {
+    MSGREG(inf2, 'I', "Stopping timer!", "processMad");
+    MSGSND(inf2);
+
+    vPT[mPort].timerOn = 0;
+    pthread_mutex_unlock(&vPT[mPort].mut);
+    mkeyTimer.unreg(&vPT[mPort]);
+  }
+
+  pthread_mutex_unlock(&vPT[mPort].mut);
 
   switch (attributeId) {
   case IB_MAD_ATTR_NODE_DESC:
