@@ -157,7 +157,7 @@
 /* handle char arrays as members of a struct */
 %typemap (tcl8, memberin) char [ANY] {
   strncpy($target,$source,$dim0 - 1);
-  $target[$dim0] = '\0';
+  $target[$dim0 - 1] = '\0';
 }
 
 %typemap(tcl8,out) ib_gid_t* {

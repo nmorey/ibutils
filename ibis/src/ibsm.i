@@ -642,7 +642,7 @@ typedef struct _ibsm_vl_arb_table
 }
 %typemap(tcl8,memberin) ibsm_node_desc_str_t[IB_NODE_DESCRIPTION_SIZE] {
   strncpy((char *)$target,(char *)$source,IB_NODE_DESCRIPTION_SIZE - 1);
-  $target[IB_NODE_DESCRIPTION_SIZE] = '\0';
+  $target[IB_NODE_DESCRIPTION_SIZE - 1] = '\0';
 }
 
 %typemap(tcl8,out) ibsm_node_desc_str_t[ANY] {
