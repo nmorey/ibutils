@@ -152,7 +152,7 @@ static inline IBLinkWidth char2width( const char *w)
   return IB_UNKNOWN_LINK_WIDTH;
 };
 
-static inline char * width2char( const IBLinkWidth w)
+static inline const char * width2char( const IBLinkWidth w)
 {
   switch (w)
   {
@@ -170,7 +170,7 @@ typedef enum {IB_UNKNOWN_LINK_SPEED = 0,
               IB_LINK_SPEED_10  = 4,
 } IBLinkSpeed;
 
-static inline char * speed2char( const IBLinkSpeed s)
+static inline const char * speed2char( const IBLinkSpeed s)
 {
   switch (s)
   {
