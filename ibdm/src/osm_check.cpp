@@ -565,7 +565,7 @@ int main (int argc, char **argv) {
     }
   else
     {
-      rootNodes = SubnMgtFindRootNodesByMinHop(&fabric); //(Causes segmentation fault with DOR)
+      rootNodes = SubnMgtFindRootNodesByMinHop(&fabric);
     }
 
   if (!rootNodes.empty()) {
