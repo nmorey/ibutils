@@ -38,13 +38,13 @@ dnl validate the defined path
 if test -f $with_ibdm/include/ibdm/Fabric.h; then
    AC_MSG_NOTICE([IBDM was installed in $with_ibdm])
    ibdm_ref_is_used=0
-elif test -f $with_ibdm/datamodel/Fabric.h; then
+elif test -f $with_ibdm/ibdm/Fabric.h; then
    AC_MSG_NOTICE([IBDM building from sources: $with_ibdm])
    if test ! -d ../ibdm; then
      AC_MSG_ERROR([IBDM sources provided - but ibdm was not built in ../ibdm])
    fi
    dnl we actually want to create a link to the ibdm sources
-   ln -s $with_ibdm/datamodel src/ibdm
+   ln -s $with_ibdm/ibdm src/ibdm
    ibdm_ref_is_used=1
 else
    AC_MSG_ERROR([ IBDM Fabric.h not found under $with_ibdm/include/ibdm/])

@@ -35,7 +35,7 @@
 #AUTOMAKE_OPTIONS 	= gnits
 
 # note that order matters: make the lib first then use it
-SUBDIRS 		= replace datamodel src Clusters ibnl doc
+SUBDIRS 		= replace ibdm src Clusters ibnl doc
 
 # this will control the update of the files in order
 MAINTAINERCLEANFILES = Makefile.in aclocal.m4 configure config-h.in

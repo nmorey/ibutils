@@ -38,18 +38,18 @@
 
 # INCLUDES		= -I$(top_builddir) -I$(top_srcdir) $(TCL_CPPFLAGS)
 
-AM_CPPFLAGS = -I$(top_srcdir)/datamodel
+AM_CPPFLAGS = -I$(top_srcdir)/ibdm
 
 bin_PROGRAMS = ibdmchk ibdmtr ibtopodiff ibnlparse
-LDADD = -L../datamodel -libdmcom
+LDADD = -L../ibdm -libdmcom
 AM_LDFLAGS = -static
 
 # Why do we need to provide extra dep? the LDADD should have worked isnt it?
-# Deprecated : ibdmsim_DEPENDENCIES=../datamodel/libibdmcom.la
-ibdmtr_DEPENDENCIES=../datamodel/libibdmcom.la
-ibdmchk_DEPENDENCIES=../datamodel/libibdmcom.la
-ibtopodiff_DEPENDENCIES=../datamodel/libibdmcom.la
-ibnlparse_DEPENDENCIES=../datamodel/libibdmcom.la
+# Deprecated : ibdmsim_DEPENDENCIES=../ibdm/libibdmcom.la
+ibdmtr_DEPENDENCIES=../ibdm/libibdmcom.la
+ibdmchk_DEPENDENCIES=../ibdm/libibdmcom.la
+ibtopodiff_DEPENDENCIES=../ibdm/libibdmcom.la
+ibnlparse_DEPENDENCIES=../ibdm/libibdmcom.la
 
 # Deprecated : ibdmsim_SOURCES = fabric_sim.cpp
 ibdmtr_SOURCES = fabric_tr.cpp

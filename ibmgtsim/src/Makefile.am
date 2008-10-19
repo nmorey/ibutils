@@ -44,7 +44,7 @@ endif
 AM_CXXFLAGS = $(DBG) $(OSM_CFLAGS)
 
 if IBDM_REF_IS_USED
-INCLUDES		= -I$(with_ibdm)/datamodel $(TCL_CPPFLAGS)
+INCLUDES		= -I$(with_ibdm)/ibdm $(TCL_CPPFLAGS)
 else
 INCLUDES		= -I$(with_ibdm)/include $(TCL_CPPFLAGS)
 endif
@@ -55,9 +55,9 @@ bin_PROGRAMS = ibmssh ibmsquit #ibmgtsim test_msgmgr test_client test_server ibm
 if IBDM_REF_IS_USED
 # we assume we are building a parallel tree
 IBDM_PREFIX=$prefix
-IBDM_LIB=-L../../ibdm/datamodel -libdmcom
-IBDM_INC=-I$(srcdir)/../../ibdm/datamodel
-IBDM_IFC=$(srcdir)/../../ibdm/datamodel/ibdm.i
+IBDM_LIB=-L../../ibdm/ibdm -libdmcom
+IBDM_INC=-I$(srcdir)/../../ibdm
+IBDM_IFC=$(srcdir)/../../ibdm/ibdm/ibdm.i
 else
 IBDM_PREFIX=$(with_ibdm)
 IBDM_LIB=-L$(with_ibdm)/lib -libdmcom
