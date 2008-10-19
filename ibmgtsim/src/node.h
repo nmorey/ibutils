@@ -53,6 +53,7 @@
 #include <list>
 #include <map>
 #include <vector>
+#include <algorithm>
 #include <ibdm/Fabric.h>
 
 typedef std::list< class IBMSMadProcessor * > list_mad_processor;
