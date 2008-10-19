@@ -967,9 +967,9 @@
 
 %typemap(tcl8,out) ib_node_desc_t * {
   /* we must make sure we do not overflow the node desc length */
-  char buff[IB_NODE_DESCRIPTION_SIZE+1];
-  strncpy(buff,(char *)$source,IB_NODE_DESCRIPTION_SIZE);
-  buff[IB_NODE_DESCRIPTION_SIZE] = '\0';
+  char buff[IB_NODE_DESCRIPTION_SIZE];
+  strncpy(buff,(char *)$source,IB_NODE_DESCRIPTION_SIZE - 1);
+  buff[IB_NODE_DESCRIPTION_SIZE - 1] = '\0';
   Tcl_SetStringObj($target, buff, strlen(buff));
 }
 
