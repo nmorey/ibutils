@@ -613,12 +613,7 @@ static int  _wrap_const_FABU_LOG_ERROR = 0x1;
 static int  _wrap_const_FABU_LOG_INFO = 0x2;
 static int  _wrap_const_FABU_LOG_VERBOSE = 0x4;
 
-#define list_pnode_arg_name list_pnode
-
-#define unsigned_int_arg_name unsigned int
-
 #include "swig_alternate_mangling.cpp"
-extern char * ibdmSourceVersion;
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -1089,77 +1084,6 @@ int main(int argc, char **argv) {
 extern int main();
 #endif
 
-static int _wrap_ibdmUseInternalLog(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
-
-    int  _result;
-    Tcl_Obj * tcl_result;
-
-    clientData = clientData; objv = objv;
-    tcl_result = Tcl_GetObjResult(interp);
-    if ((objc < 1) || (objc > 1)) {
-        Tcl_SetStringObj(tcl_result,"Wrong # args. ibdmUseInternalLog ",-1);
-        return TCL_ERROR;
-    }
-{
-  ibdm_tcl_error = 0;
-      _result = (int )ibdmUseInternalLog();
-;
-  if (ibdm_tcl_error) {
-	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
-  }
-}    tcl_result = Tcl_GetObjResult(interp);
-    Tcl_SetIntObj(tcl_result,(long) _result);
-    return TCL_OK;
-}
-static int _wrap_ibdmUseCoutLog(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
-
-    int  _result;
-    Tcl_Obj * tcl_result;
-
-    clientData = clientData; objv = objv;
-    tcl_result = Tcl_GetObjResult(interp);
-    if ((objc < 1) || (objc > 1)) {
-        Tcl_SetStringObj(tcl_result,"Wrong # args. ibdmUseCoutLog ",-1);
-        return TCL_ERROR;
-    }
-{
-  ibdm_tcl_error = 0;
-      _result = (int )ibdmUseCoutLog();
-;
-  if (ibdm_tcl_error) {
-	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
-  }
-}    tcl_result = Tcl_GetObjResult(interp);
-    Tcl_SetIntObj(tcl_result,(long) _result);
-    return TCL_OK;
-}
-static int _wrap_ibdmGetAndClearInternalLog(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
-
-    char * _result;
-    Tcl_Obj * tcl_result;
-
-    clientData = clientData; objv = objv;
-    tcl_result = Tcl_GetObjResult(interp);
-    if ((objc < 1) || (objc > 1)) {
-        Tcl_SetStringObj(tcl_result,"Wrong # args. ibdmGetAndClearInternalLog ",-1);
-        return TCL_ERROR;
-    }
-{
-  ibdm_tcl_error = 0;
-      _result = (char *)ibdmGetAndClearInternalLog();
-;
-  if (ibdm_tcl_error) {
-	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
-  }
-}    tcl_result = Tcl_GetObjResult(interp);
-    Tcl_SetStringObj(tcl_result,_result,-1);
-delete [] _result;
-
-    return TCL_OK;
-}
 static int _wrap_new_IBFabric(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
 
     IBFabric * _result;
@@ -1841,7 +1765,7 @@ static int _wrap_ibdmFatTreeRoute(ClientData clientData, Tcl_Interp *interp, int
   char **sub_lists;
 #endif
   int num_sub_lists;
-  int idx;
+  unsigned int idx;
 
   /* we will use the TCL split list to split into elements */
   if (Tcl_SplitList(interp,
@@ -2572,7 +2496,7 @@ static int _wrap_ibdmRankFabricByRoots(ClientData clientData, Tcl_Interp *interp
   char **sub_lists;
 #endif
   int num_sub_lists;
-  int idx;
+  unsigned int idx;
 
   /* we will use the TCL split list to split into elements */
   if (Tcl_SplitList(interp,
@@ -2711,7 +2635,7 @@ static int _wrap_ibdmReportNonUpDownCa2CaPaths(ClientData clientData, Tcl_Interp
   char **sub_lists;
 #endif
   int num_sub_lists;
-  int idx;
+  unsigned int idx;
 
   /* we will use the TCL split list to split into elements */
   if (Tcl_SplitList(interp,
@@ -2943,7 +2867,7 @@ static int _wrap_ibdmCheckFabricMCGrpsForCreditLoopPotential(ClientData clientDa
   char **sub_lists;
 #endif
   int num_sub_lists;
-  int idx;
+  unsigned int idx;
 
   /* we will use the TCL split list to split into elements */
   if (Tcl_SplitList(interp,
@@ -3082,7 +3006,7 @@ static int _wrap_ibdmLinkCoverageAnalysis(ClientData clientData, Tcl_Interp *int
   char **sub_lists;
 #endif
   int num_sub_lists;
-  int idx;
+  unsigned int idx;
 
   /* we will use the TCL split list to split into elements */
   if (Tcl_SplitList(interp,
@@ -3337,12 +3261,12 @@ static int _wrap_ibdmTraceRouteByLFT(ClientData clientData, Tcl_Interp *interp, 
     IBFabric * _arg0;
     unsigned int  _arg1;
     unsigned int  _arg2;
-    unsigned_int_arg_name * _arg3;
-    list_pnode_arg_name * _arg4;
+    unsigned int * _arg3;
+    list_pnode * _arg4;
     Tcl_Obj * tcl_result;
     int tempint;
-    unsigned int  tmp;
-    list_pnode  tmp0;
+    char * rettype;
+    list_pnode  tmpNodeList;
 
     clientData = clientData; objv = objv;
     tcl_result = Tcl_GetObjResult(interp);
@@ -3423,11 +3347,54 @@ static int _wrap_ibdmTraceRouteByLFT(ClientData clientData, Tcl_Interp *interp, 
     _arg1 = (unsigned int ) tempint;
     if (Tcl_GetIntFromObj(interp,objv[3],&tempint) == TCL_ERROR) return TCL_ERROR;
     _arg2 = (unsigned int ) tempint;
+    if ((rettype = SWIG_GetPointerObj(interp,objv[4],(void **) &_arg3,"_unsigned_int_p"))) {
+        Tcl_SetStringObj(tcl_result, "Type error in argument 4 of ibdmTraceRouteByLFT. Expected _unsigned_int_p, received ", -1);
+        Tcl_AppendToObj(tcl_result, rettype, -1);
+        return TCL_ERROR;
+    }
 {
-	_arg3 = &tmp;
-}
-{
-	_arg4 = &tmp0;
+#if TCL_MINOR_VERSION > 3
+  const char **sub_lists;
+#else
+  char **sub_lists;
+#endif
+  int num_sub_lists;
+  unsigned int idx;
+
+  /* we will use the TCL split list to split into elements */
+  if (Tcl_SplitList(interp,
+                    Tcl_GetStringFromObj(objv[5],0),
+                    &num_sub_lists, &sub_lists) != TCL_OK) {
+    printf("-E- Bad formatted list :%s\n",
+           Tcl_GetStringFromObj(objv[5],0));
+    return TCL_ERROR;
+  }
+
+  for (idx = 0; (idx < num_sub_lists); idx++)
+  {
+    /* we need to double copy since TCL 8.4 requires split res to be const */
+    Tcl_Obj *p_tclObj;
+    void *ptr;
+    char buf[128];
+    strcpy(buf, sub_lists[idx]);
+
+    if (strncmp("node:", buf, 5)) {
+      printf("-E- Bad formatted node (%u) object:%s\n", idx, buf);
+      return TCL_ERROR;
+    }
+
+	 p_tclObj = Tcl_NewObj();
+    Tcl_SetStringObj(p_tclObj, buf, -1);
+    if (ibdmGetObjPtrByTclName(p_tclObj, &ptr) != TCL_OK) {
+      printf("-E- fail to find ibdm obj by id:%s", buf );
+      Tcl_DecrRefCount(p_tclObj);
+      return TCL_ERROR;
+    }
+    Tcl_DecrRefCount(p_tclObj);
+    tmpNodeList.push_back((IBNode *)ptr);
+  }
+
+  _arg4 = &tmpNodeList;
 }
 {
   ibdm_tcl_error = 0;
@@ -3439,30 +3406,6 @@ static int _wrap_ibdmTraceRouteByLFT(ClientData clientData, Tcl_Interp *interp, 
   }
 }    tcl_result = Tcl_GetObjResult(interp);
     Tcl_SetIntObj(tcl_result,(long) _result);
-{
-   char buf[16];
-	sprintf(buf, "%u", tmp);
-   Tcl_SetVar(interp, Tcl_GetString(objv[4]), buf, 0);
-}
-{
-  // build a TCL list out of the Objec ID's of the ibdm objects in it.
-  list_pnode::const_iterator I = _arg4->begin();
-  Tcl_Obj *p_tclObj;
-  Tcl_SetVar(interp, Tcl_GetString(objv[5]),"",0);
-  while (I != _arg4->end()) {
-	 p_tclObj = Tcl_NewObj();
-	 if (ibdmGetObjTclNameByPtr(p_tclObj, (*I), "IBNode *") != TCL_OK) {
-		printf("-E- Fail to map Node Object (a guid map element)\n");
-	 } else {
-		char buf[128];
-		sprintf(buf, "%s", Tcl_GetString(p_tclObj));
-		Tcl_SetVar(interp, Tcl_GetString(objv[5]), buf,
-					  TCL_LIST_ELEMENT|TCL_APPEND_VALUE);
-	 }
-	 Tcl_DecrRefCount(p_tclObj);
-	 I++;
-  }
-}
     return TCL_OK;
 }
 static int _wrap_ibdmMatchFabrics(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
@@ -17906,105 +17849,6 @@ static int _wrap_IBFabric_getPortByLid(ClientData clientData, Tcl_Interp *interp
 }
     return TCL_OK;
 }
-#define IBFabric_dumpTopology(_swigobj,_swigarg0,_swigarg1)  (_swigobj->dumpTopology(_swigarg0,_swigarg1))
-static int _wrap_IBFabric_dumpTopology(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
-
-    int  _result;
-    IBFabric * _arg0;
-    char * _arg1;
-    char * _arg2;
-    Tcl_Obj * tcl_result;
-    int templength;
-
-    clientData = clientData; objv = objv;
-    tcl_result = Tcl_GetObjResult(interp);
-    if ((objc < 4) || (objc > 4)) {
-        Tcl_SetStringObj(tcl_result,"Wrong # args. IBFabric_dumpTopology { IBFabric * } fileName ibnlDir ",-1);
-        return TCL_ERROR;
-    }
-{
-
-  void *ptr;
-  if (ibdmGetObjPtrByTclName(objv[1], &ptr) != TCL_OK) {
-	 char err[128];
-	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
-	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;
-  }
-
-  _arg0 = (IBFabric *)ptr;
-}
-{
-  /* the format is always: <type>:<idx>[:<name>] */
-
-  // get the type from the given source
-  char buf[128];
-  strcpy(buf, Tcl_GetStringFromObj(objv[1],0));
-  char *colonIdx = index(buf,':');
-  if (!colonIdx) {
-	 char err[128];
-	 sprintf(err, "-E- Bad formatted ibdm object:%s", buf);
-	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;
-  }
-  *colonIdx = '\0';
-
-  if (!strcmp("IBFabric ", "IBFabric ")) {
-	if (strcmp(buf, "fabric")) {
-	 char err[256];
-	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
-	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;
-	}
-  } else if (!strcmp("IBFabric ", "IBSystem ")) {
-	if (strcmp(buf, "system")) {
-	 char err[256];
-	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
-	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;
-	}
-  } else if (!strcmp("IBFabric ", "IBSysPort ")) {
-	if (strcmp(buf, "sysport")) {
-	 char err[256];
-	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
-	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;
-	}
-  } else if (!strcmp("IBFabric ", "IBNode ")) {
-	if (strcmp(buf, "node")) {
-	 char err[256];
-	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
-	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;
-	}
-  } else if (!strcmp("IBFabric ", "IBPort ")) {
-	if (strcmp(buf, "port")) {
-	 char err[256];
-	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
-	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;
-	}
-  } else {
-	 char err[256];
-	 sprintf(err, "-E- basetype 'IBFabric ' is unknown");
-	 Tcl_SetStringObj(tcl_result, err, strlen(err));
-	 return TCL_ERROR;
-  }
-}
-    if ((_arg1 = Tcl_GetStringFromObj(objv[2], &templength)) == NULL) return TCL_ERROR;
-    if ((_arg2 = Tcl_GetStringFromObj(objv[3], &templength)) == NULL) return TCL_ERROR;
-{
-  ibdm_tcl_error = 0;
-      _result = (int )IBFabric_dumpTopology(_arg0,_arg1,_arg2);
-;
-  if (ibdm_tcl_error) {
-	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
-  }
-}    tcl_result = Tcl_GetObjResult(interp);
-    Tcl_SetIntObj(tcl_result,(long) _result);
-    return TCL_OK;
-}
 /* methodcmd8.swg : Tcl8.x method invocation */
 
 static int TclIBFabricMethodCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST _objv[]) {
@@ -18019,7 +17863,7 @@ static int TclIBFabricMethodCmd(ClientData clientData, Tcl_Interp *interp, int o
   tcl_result = Tcl_GetObjResult(interp);
   objv = (Tcl_Obj **) _objv;
   if (objc < 2) {
-    Tcl_SetStringObj(tcl_result,"IBFabric methods : { dump cget configure makeNode getNode getNodesByType makeGenericSystem makeSystem getSystem getSystemByGuid getNodeByGuid getPortByGuid addCable parseCables parseTopology addLink parseSubnetLinks parseFdbFile parseMCFdbFile setLidPort getPortByLid dumpTopology  }",-1);
+    Tcl_SetStringObj(tcl_result,"IBFabric methods : { dump cget configure makeNode getNode getNodesByType makeGenericSystem makeSystem getSystem getSystemByGuid getNodeByGuid getPortByGuid addCable parseCables parseTopology addLink parseSubnetLinks parseFdbFile parseMCFdbFile setLidPort getPortByLid  }",-1);
     return TCL_ERROR;
   }
   obj = Tcl_NewObj();
@@ -18063,8 +17907,6 @@ static int TclIBFabricMethodCmd(ClientData clientData, Tcl_Interp *interp, int o
         cmd = _wrap_IBFabric_setLidPort;
     }    else if (strcmp(_str,"getPortByLid") == 0) {
         cmd = _wrap_IBFabric_getPortByLid;
-    }    else if (strcmp(_str,"dumpTopology") == 0) {
-        cmd = _wrap_IBFabric_dumpTopology;
     }
     else if ((c == 'c') && (strncmp(_str,"configure",length) == 0) && (length >= 2)) {
       int i = 2;
@@ -18214,7 +18056,7 @@ static int TclIBFabricMethodCmd(ClientData clientData, Tcl_Interp *interp, int o
       }
     }
   if (!cmd) {
-    Tcl_SetStringObj(tcl_result,"Invalid Method. Must be { dump cget configure makeNode getNode getNodesByType makeGenericSystem makeSystem getSystem getSystemByGuid getNodeByGuid getPortByGuid addCable parseCables parseTopology addLink parseSubnetLinks parseFdbFile parseMCFdbFile setLidPort getPortByLid dumpTopology }",-1);
+    Tcl_SetStringObj(tcl_result,"Invalid Method. Must be { dump cget configure makeNode getNode getNodesByType makeGenericSystem makeSystem getSystem getSystemByGuid getNodeByGuid getPortByGuid addCable parseCables parseTopology addLink parseSubnetLinks parseFdbFile parseMCFdbFile setLidPort getPortByLid }",-1);
     return TCL_ERROR;
   }
   oldarg = objv[1];
@@ -18855,7 +18697,7 @@ static int _wrap_ib_node_info_t_partition_cap_set(ClientData clientData, Tcl_Int
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -18931,7 +18773,7 @@ static int _wrap_ib_node_info_t_device_id_set(ClientData clientData, Tcl_Interp 
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -19451,7 +19293,7 @@ static int _wrap_ib_switch_info_t_lin_cap_set(ClientData clientData, Tcl_Interp 
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -19527,7 +19369,7 @@ static int _wrap_ib_switch_info_t_rand_cap_set(ClientData clientData, Tcl_Interp
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -19603,7 +19445,7 @@ static int _wrap_ib_switch_info_t_mcast_cap_set(ClientData clientData, Tcl_Inter
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -19679,7 +19521,7 @@ static int _wrap_ib_switch_info_t_lin_top_set(ClientData clientData, Tcl_Interp 
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -20059,7 +19901,7 @@ static int _wrap_ib_switch_info_t_lids_per_port_set(ClientData clientData, Tcl_I
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -20135,7 +19977,7 @@ static int _wrap_ib_switch_info_t_enforce_cap_set(ClientData clientData, Tcl_Int
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -20731,7 +20573,7 @@ static int _wrap_ib_port_info_t_base_lid_set(ClientData clientData, Tcl_Interp *
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -20807,7 +20649,7 @@ static int _wrap_ib_port_info_t_master_sm_base_lid_set(ClientData clientData, Tc
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -20959,7 +20801,7 @@ static int _wrap_ib_port_info_t_diag_code_set(ClientData clientData, Tcl_Interp 
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -21035,7 +20877,7 @@ static int _wrap_ib_port_info_t_m_key_lease_period_set(ClientData clientData, Tc
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -22327,7 +22169,7 @@ static int _wrap_ib_port_info_t_m_key_violations_set(ClientData clientData, Tcl_
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -22403,7 +22245,7 @@ static int _wrap_ib_port_info_t_p_key_violations_set(ClientData clientData, Tcl_
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -22479,7 +22321,7 @@ static int _wrap_ib_port_info_t_q_key_violations_set(ClientData clientData, Tcl_
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -23654,7 +23496,7 @@ static int _wrap_ib_lft_record_t_lid_set(ClientData clientData, Tcl_Interp *inte
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -23730,7 +23572,7 @@ static int _wrap_ib_lft_record_t_block_num_set(ClientData clientData, Tcl_Interp
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -24541,7 +24383,7 @@ static int _wrap_ib_pm_counters_t_counter_select_set(ClientData clientData, Tcl_
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -24617,7 +24459,7 @@ static int _wrap_ib_pm_counters_t_symbol_error_counter_set(ClientData clientData
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -24845,7 +24687,7 @@ static int _wrap_ib_pm_counters_t_port_rcv_errors_set(ClientData clientData, Tcl
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -24921,7 +24763,7 @@ static int _wrap_ib_pm_counters_t_port_rcv_remote_physical_errors_set(ClientData
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -24997,7 +24839,7 @@ static int _wrap_ib_pm_counters_t_port_rcv_switch_relay_errors_set(ClientData cl
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -25073,7 +24915,7 @@ static int _wrap_ib_pm_counters_t_port_xmit_discard_set(ClientData clientData, T
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -25453,7 +25295,7 @@ static int _wrap_ib_pm_counters_t_reserved3_set(ClientData clientData, Tcl_Inter
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -25529,7 +25371,7 @@ static int _wrap_ib_pm_counters_t_vl15_dropped_set(ClientData clientData, Tcl_In
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -29584,7 +29426,7 @@ static int _wrap_madMcMemberRec_mlid_set(ClientData clientData, Tcl_Interp *inte
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -29812,7 +29654,7 @@ static int _wrap_madMcMemberRec_pkey_set(ClientData clientData, Tcl_Interp *inte
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -31139,7 +30981,7 @@ static int _wrap_madPathRec_dlid_set(ClientData clientData, Tcl_Interp *interp, 
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -31215,7 +31057,7 @@ static int _wrap_madPathRec_slid_set(ClientData clientData, Tcl_Interp *interp, 
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -31519,7 +31361,7 @@ static int _wrap_madPathRec_pkey_set(ClientData clientData, Tcl_Interp *interp, 
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -31595,7 +31437,7 @@ static int _wrap_madPathRec_qos_class_sl_set(ClientData clientData, Tcl_Interp *
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -32765,7 +32607,7 @@ static int _wrap_madServiceRec_service_pkey_set(ClientData clientData, Tcl_Inter
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -32841,7 +32683,7 @@ static int _wrap_madServiceRec_resv_set(ClientData clientData, Tcl_Interp *inter
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -34486,7 +34328,7 @@ static int _wrap_madNotice128_prod_type_lsb_set(ClientData clientData, Tcl_Inter
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -34562,7 +34404,7 @@ static int _wrap_madNotice128_trap_num_set(ClientData clientData, Tcl_Interp *in
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -34638,7 +34480,7 @@ static int _wrap_madNotice128_issuer_lid_set(ClientData clientData, Tcl_Interp *
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -34714,7 +34556,7 @@ static int _wrap_madNotice128_toggle_count_set(ClientData clientData, Tcl_Interp
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -34790,7 +34632,7 @@ static int _wrap_madNotice128_sw_lid_set(ClientData clientData, Tcl_Interp *inte
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -35537,7 +35379,7 @@ static int _wrap_madNotice129_prod_type_lsb_set(ClientData clientData, Tcl_Inter
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -35613,7 +35455,7 @@ static int _wrap_madNotice129_trap_num_set(ClientData clientData, Tcl_Interp *in
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -35689,7 +35531,7 @@ static int _wrap_madNotice129_issuer_lid_set(ClientData clientData, Tcl_Interp *
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -35765,7 +35607,7 @@ static int _wrap_madNotice129_toggle_count_set(ClientData clientData, Tcl_Interp
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -35841,7 +35683,7 @@ static int _wrap_madNotice129_pad_set(ClientData clientData, Tcl_Interp *interp,
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -35917,7 +35759,7 @@ static int _wrap_madNotice129_lid_set(ClientData clientData, Tcl_Interp *interp,
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -36762,7 +36604,7 @@ static int _wrap_madNotice144_prod_type_lsb_set(ClientData clientData, Tcl_Inter
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -36838,7 +36680,7 @@ static int _wrap_madNotice144_trap_num_set(ClientData clientData, Tcl_Interp *in
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -36914,7 +36756,7 @@ static int _wrap_madNotice144_issuer_lid_set(ClientData clientData, Tcl_Interp *
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -36990,7 +36832,7 @@ static int _wrap_madNotice144_toggle_count_set(ClientData clientData, Tcl_Interp
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -37066,7 +36908,7 @@ static int _wrap_madNotice144_pad1_set(ClientData clientData, Tcl_Interp *interp
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -37142,7 +36984,7 @@ static int _wrap_madNotice144_lid_set(ClientData clientData, Tcl_Interp *interp,
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -37218,7 +37060,7 @@ static int _wrap_madNotice144_pad2_set(ClientData clientData, Tcl_Interp *interp
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -38023,7 +37865,7 @@ static int _wrap_madGenericInform_lid_range_begin_set(ClientData clientData, Tcl
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -38099,7 +37941,7 @@ static int _wrap_madGenericInform_lid_range_end_set(ClientData clientData, Tcl_I
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -38175,7 +38017,7 @@ static int _wrap_madGenericInform_reserved1_set(ClientData clientData, Tcl_Inter
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -38403,7 +38245,7 @@ static int _wrap_madGenericInform_trap_type_set(ClientData clientData, Tcl_Inter
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -38479,7 +38321,7 @@ static int _wrap_madGenericInform_trap_num_set(ClientData clientData, Tcl_Interp
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -38783,7 +38625,7 @@ static int _wrap_madGenericInform_node_type_lsb_set(ClientData clientData, Tcl_I
         return TCL_ERROR;
     }
 {
-  temp = cl_hton16(atoi(Tcl_GetStringFromObj(objv[2],NULL)));
+  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
   _arg1 = &temp;
 }
 {
@@ -39264,9 +39106,6 @@ SWIGEXPORT(int,Ibdm_Init)(Tcl_Interp *interp) {
 	 Tcl_LinkVar(interp, SWIG_prefix "FABU_LOG_INFO", (char *) &_wrap_const_FABU_LOG_INFO, TCL_LINK_INT | TCL_LINK_READ_ONLY);
 	 Tcl_LinkVar(interp, SWIG_prefix "FABU_LOG_VERBOSE", (char *) &_wrap_const_FABU_LOG_VERBOSE, TCL_LINK_INT | TCL_LINK_READ_ONLY);
 	 Tcl_LinkVar(interp, SWIG_prefix "FabricUtilsVerboseLevel", (char *) &FabricUtilsVerboseLevel, TCL_LINK_INT);
-	 Tcl_CreateObjCommand(interp, SWIG_prefix "ibdmUseInternalLog", _wrap_ibdmUseInternalLog, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
-	 Tcl_CreateObjCommand(interp, SWIG_prefix "ibdmUseCoutLog", _wrap_ibdmUseCoutLog, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
-	 Tcl_CreateObjCommand(interp, SWIG_prefix "ibdmGetAndClearInternalLog", _wrap_ibdmGetAndClearInternalLog, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "new_IBFabric", _wrap_new_IBFabric, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "delete_IBFabric", _wrap_delete_IBFabric, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ibdmAssignLids", _wrap_ibdmAssignLids, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
@@ -39297,7 +39136,6 @@ SWIGEXPORT(int,Ibdm_Init)(Tcl_Interp *interp) {
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ibdmCongTrace", _wrap_ibdmCongTrace, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ibdmCongReport", _wrap_ibdmCongReport, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ibdmCongDump", _wrap_ibdmCongDump, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
-	 Tcl_LinkVar(interp, SWIG_prefix "ibdmSourceVersion", (char *) &ibdmSourceVersion, TCL_LINK_STRING);
 
 
   /* mixing declarations .... */
@@ -39512,7 +39350,6 @@ SWIGEXPORT(int,Ibdm_Init)(Tcl_Interp *interp) {
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "IBFabric_parseMCFdbFile", _wrap_IBFabric_parseMCFdbFile, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "IBFabric_setLidPort", _wrap_IBFabric_setLidPort, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "IBFabric_getPortByLid", _wrap_IBFabric_getPortByLid, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
-	 Tcl_CreateObjCommand(interp, SWIG_prefix "IBFabric_dumpTopology", _wrap_IBFabric_dumpTopology, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp,SWIG_prefix "IBFabric",TclIBFabricCmd, (ClientData) NULL, NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ib_node_info_t_base_version_set", _wrap_ib_node_info_t_base_version_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ib_node_info_t_base_version_get", _wrap_ib_node_info_t_base_version_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
