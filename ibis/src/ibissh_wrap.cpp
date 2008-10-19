@@ -8186,9 +8186,9 @@ static int _wrap_sacNodeRec_node_desc_set(ClientData clientData, Tcl_Interp *int
 }    tcl_result = Tcl_GetObjResult(interp);
 {
   /* we must make sure we do not overflow the node desc length */
-  char buff[IB_NODE_DESCRIPTION_SIZE+1];
-  strncpy(buff,(char *)_result,IB_NODE_DESCRIPTION_SIZE);
-  buff[IB_NODE_DESCRIPTION_SIZE] = '\0';
+  char buff[IB_NODE_DESCRIPTION_SIZE];
+  strncpy(buff,(char *)_result,IB_NODE_DESCRIPTION_SIZE - 1);
+  buff[IB_NODE_DESCRIPTION_SIZE - 1] = '\0';
   Tcl_SetStringObj(tcl_result, buff, strlen(buff));
 }
     return TCL_OK;
@@ -8240,9 +8240,9 @@ static int _wrap_sacNodeRec_node_desc_get(ClientData clientData, Tcl_Interp *int
 }    tcl_result = Tcl_GetObjResult(interp);
 {
   /* we must make sure we do not overflow the node desc length */
-  char buff[IB_NODE_DESCRIPTION_SIZE+1];
-  strncpy(buff,(char *)_result,IB_NODE_DESCRIPTION_SIZE);
-  buff[IB_NODE_DESCRIPTION_SIZE] = '\0';
+  char buff[IB_NODE_DESCRIPTION_SIZE];
+  strncpy(buff,(char *)_result,IB_NODE_DESCRIPTION_SIZE - 1);
+  buff[IB_NODE_DESCRIPTION_SIZE - 1] = '\0';
   Tcl_SetStringObj(tcl_result, buff, strlen(buff));
 }
     return TCL_OK;
@@ -44946,7 +44946,7 @@ static int TclsmVlArbTableCmd(ClientData clientData, Tcl_Interp *interp, int obj
 static ibsm_node_desc_str_t * _ibsm_node_desc_description_set(smNodeDesc *obj, ibsm_node_desc_str_t val[IB_NODE_DESCRIPTION_SIZE]) {
 {
   strncpy((char *)obj->description,(char *)val,IB_NODE_DESCRIPTION_SIZE - 1);
-  obj->description[IB_NODE_DESCRIPTION_SIZE] = '\0';
+  obj->description[IB_NODE_DESCRIPTION_SIZE - 1] = '\0';
 }
     return (ibsm_node_desc_str_t *) val;
 }
@@ -45002,9 +45002,9 @@ static int _wrap_smNodeDesc_description_set(ClientData clientData, Tcl_Interp *i
 }    tcl_result = Tcl_GetObjResult(interp);
 {
   /* we must make sure we do not overflow the node desc length */
-  char buff[IB_NODE_DESCRIPTION_SIZE+1];
-  strncpy(buff,(char *)_result,IB_NODE_DESCRIPTION_SIZE);
-  buff[IB_NODE_DESCRIPTION_SIZE] = '\0';
+  char buff[IB_NODE_DESCRIPTION_SIZE];
+  strncpy(buff,(char *)_result,IB_NODE_DESCRIPTION_SIZE - 1);
+  buff[IB_NODE_DESCRIPTION_SIZE - 1] = '\0';
   Tcl_SetStringObj(tcl_result, buff, strlen(buff));
 }
     return TCL_OK;
@@ -45056,9 +45056,9 @@ static int _wrap_smNodeDesc_description_get(ClientData clientData, Tcl_Interp *i
 }    tcl_result = Tcl_GetObjResult(interp);
 {
   /* we must make sure we do not overflow the node desc length */
-  char buff[IB_NODE_DESCRIPTION_SIZE+1];
-  strncpy(buff,(char *)_result,IB_NODE_DESCRIPTION_SIZE);
-  buff[IB_NODE_DESCRIPTION_SIZE] = '\0';
+  char buff[IB_NODE_DESCRIPTION_SIZE];
+  strncpy(buff,(char *)_result,IB_NODE_DESCRIPTION_SIZE - 1);
+  buff[IB_NODE_DESCRIPTION_SIZE - 1] = '\0';
   Tcl_SetStringObj(tcl_result, buff, strlen(buff));
 }
     return TCL_OK;
@@ -72844,7 +72844,7 @@ static int _wrap_ibis_opt_t_log_flags_get(ClientData clientData, Tcl_Interp *int
 static char * _ibis_opt_log_file_set(ibis_opt_t *obj, char val[1024]) {
 {
   strncpy(obj->log_file,val,1024 - 1);
-  obj->log_file[1024] = '\0';
+  obj->log_file[1024 - 1] = '\0';
 }
     return (char *) val;
 }
