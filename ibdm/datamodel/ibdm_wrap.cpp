@@ -1513,6 +1513,104 @@ static int _wrap_ibdmFatTreeAnalysis(ClientData clientData, Tcl_Interp *interp, 
     Tcl_SetIntObj(tcl_result,(long) _result);
     return TCL_OK;
 }
+static int _wrap_ibdmFatTreeRouteByPermutation(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    int  _result;
+    IBFabric * _arg0;
+    char * _arg1;
+    char * _arg2;
+    Tcl_Obj * tcl_result;
+    int templength;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 4) || (objc > 4)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ibdmFatTreeRouteByPermutation p_fabric srcs dsts ",-1);
+        return TCL_ERROR;
+    }
+{
+
+  void *ptr;
+  if (ibdmGetObjPtrByTclName(objv[1], &ptr) != TCL_OK) {
+	 char err[128];
+	 sprintf(err, "-E- fail to find ibdm obj by id:%s",Tcl_GetString(objv[1]) );
+	 // Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;
+  }
+
+  _arg0 = (IBFabric *)ptr;
+}
+{
+  /* the format is always: <type>:<idx>[:<name>] */
+
+  // get the type from the given source
+  char buf[128];
+  strcpy(buf, Tcl_GetStringFromObj(objv[1],0));
+  char *colonIdx = index(buf,':');
+  if (!colonIdx) {
+	 char err[128];
+	 sprintf(err, "-E- Bad formatted ibdm object:%s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;
+  }
+  *colonIdx = '\0';
+
+  if (!strcmp("IBFabric ", "IBFabric ")) {
+	if (strcmp(buf, "fabric")) {
+	 char err[256];
+	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;
+	}
+  } else if (!strcmp("IBFabric ", "IBSystem ")) {
+	if (strcmp(buf, "system")) {
+	 char err[256];
+	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;
+	}
+  } else if (!strcmp("IBFabric ", "IBSysPort ")) {
+	if (strcmp(buf, "sysport")) {
+	 char err[256];
+	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;
+	}
+  } else if (!strcmp("IBFabric ", "IBNode ")) {
+	if (strcmp(buf, "node")) {
+	 char err[256];
+	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;
+	}
+  } else if (!strcmp("IBFabric ", "IBPort ")) {
+	if (strcmp(buf, "port")) {
+	 char err[256];
+	 sprintf(err, "-E- basetype is IBFabric  but received obj of type %s", buf);
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;
+	}
+  } else {
+	 char err[256];
+	 sprintf(err, "-E- basetype 'IBFabric ' is unknown");
+	 Tcl_SetStringObj(tcl_result, err, strlen(err));
+	 return TCL_ERROR;
+  }
+}
+    if ((_arg1 = Tcl_GetStringFromObj(objv[2], &templength)) == NULL) return TCL_ERROR;
+    if ((_arg2 = Tcl_GetStringFromObj(objv[3], &templength)) == NULL) return TCL_ERROR;
+{
+  ibdm_tcl_error = 0;
+      _result = (int )FatTreeRouteByPermutation(_arg0,_arg1,_arg2);
+;
+  if (ibdm_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
+ 	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+    Tcl_SetIntObj(tcl_result,(long) _result);
+    return TCL_OK;
+}
 static int _wrap_ibdmVerifyCAtoCARoutes(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
 
     int  _result;
@@ -17805,6 +17903,7 @@ SWIGEXPORT(int,Ibdm_Init)(Tcl_Interp *interp) {
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ibdmEnhancedRoute", _wrap_ibdmEnhancedRoute, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ibdmFatTreeRoute", _wrap_ibdmFatTreeRoute, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ibdmFatTreeAnalysis", _wrap_ibdmFatTreeAnalysis, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ibdmFatTreeRouteByPermutation", _wrap_ibdmFatTreeRouteByPermutation, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ibdmVerifyCAtoCARoutes", _wrap_ibdmVerifyCAtoCARoutes, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ibdmVerifyAllPaths", _wrap_ibdmVerifyAllPaths, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ibdmAnalyzeLoops", _wrap_ibdmAnalyzeLoops, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
