@@ -1790,6 +1790,7 @@ IBFabric::parseSubnetLine(char *line) {
 
    pch = strtok(NULL, " ");
    if (!pch || (strncmp(pch,"CA",2) && strncmp(pch,"SW",2))) return(2);
+   if (!strncmp(pch,"CA",2)) type1 = "CA"; else type1 = "SW";
 
    pch = strtok(NULL, " ");
    if (!pch || strncmp(pch,"Ports:",6)) return(3);
@@ -1826,7 +1827,7 @@ IBFabric::parseSubnetLine(char *line) {
 
    // on some installations the desc of the node holds the
    // name of the hosts:
-   if (subnCANames && (numPorts1 <= 2))
+   if (subnCANames && (type1 == "CA"))
    {
       // the first word in the description please.
       pch = strtok(NULL, " ");
@@ -1838,7 +1839,7 @@ IBFabric::parseSubnetLine(char *line) {
          hcaIdx1 = atoi(pch + strlen(pch) + 5);
       }
    }
-   // on some reare cases there is no space in desc:
+   // on some rare cases there is no space in desc:
    if (!strchr(pch,'}'))
    {
       pch = strtok(NULL, "}");
@@ -1862,6 +1863,7 @@ IBFabric::parseSubnetLine(char *line) {
    // second port
    pch = strtok(NULL, " ");
    if (!pch || (strncmp(pch,"CA",2) && strncmp(pch,"SW",2))) return(15);
+   if (!strncmp(pch,"CA",2)) type2 = "CA"; else type2 = "SW";
 
    pch = strtok(NULL, " ");
    if (!pch || strncmp(pch,"Ports:",6)) return(16);
@@ -1896,7 +1898,7 @@ IBFabric::parseSubnetLine(char *line) {
    if (!pch || strncmp(pch,"Rev:",4)) return(22);
    rev2 = strtol(pch+4, NULL, 16);
 
-   if (subnCANames && (numPorts2 <= 2))
+   if (subnCANames && (type2 == "CA"))
    {
       // the first word in the description please.
       pch = strtok(NULL, " ");
@@ -1907,7 +1909,7 @@ IBFabric::parseSubnetLine(char *line) {
          hcaIdx2 = atoi(pch + strlen(pch) + 5);
       }
    }
-   // on some reare cases there is no space in desc:
+   // on some rare cases there is no space in desc:
    if (!strchr(pch,'}'))
    {
       pch = strtok(NULL, "}");
@@ -1950,9 +1952,6 @@ IBFabric::parseSubnetLine(char *line) {
    {
       return(29);
    }
-
-   if (numPorts1 > 2) type1 = "SW"; else type1 = "CA";
-   if (numPorts2 > 2) type2 = "SW"; else type2 = "CA";
 
    if (addLink(type1, numPorts1, sysGuid1, nodeGuid1, portGuid1,
                vend1, devId1, rev1, desc1, hcaIdx1, lid1, portNum1,
