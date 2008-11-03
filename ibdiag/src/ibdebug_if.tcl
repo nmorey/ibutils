@@ -1075,9 +1075,9 @@ proc inform { msgCode args } {
 	    append msgText "Illegal argument: I${llegalValMsg}: $msgF(value)%n"
 	    if {[info exists msgF(duplicatePM)]} {
 		append msgText "PM: \"$msgF(duplicatePM)\" is specified twice.%n"
-		append msgText "(Legal value: one or more \"<PM counter>=<Thresh Limit>\")."
+		append msgText "(Legal value: one or more \"<PM counter>=<Thresh Limit>\" )."
 	    } else {
-		append msgText "(Legal value: one or more \"<PM counter>=<Thresh Limit>\").%n"
+		append msgText "(Legal value: one or more \"<PM counter>=<Thresh Limit>\" ).%n"
 		append msgText "Legal PM Counter names are: %n$pmCounterList."
 	    }
 	}
