@@ -32,7 +32,7 @@ proc SetInfoArgv {} {
 	-skip,name     "skip.checks"
 	-skip,desc     "Skip the executions of the given check. Applicable skip checks: dup_guids|zero_guids|pm|logical_state|part|ipoib|all"
 	-skip,param    "ibdiag check"
-	-skip,regexp   {^(dup_guids|zero_guids|pm|logical_state|part|ipoib|all)$}	
+	-skip,regexp   {^(dup_guids|zero_guids|pm|logical_state|part|ipoib|all)$}
 	-skip,error    "-E-argv:not.legal.skip"
 	-skip,default  "None"
 	-skip,arglen   "1.."
@@ -1075,9 +1075,9 @@ proc inform { msgCode args } {
 	    append msgText "Illegal argument: I${llegalValMsg}: $msgF(value)%n"
 	    if {[info exists msgF(duplicatePM)]} {
 		append msgText "PM: \"$msgF(duplicatePM)\" is specified twice.%n"
-		append msgText "(Legal value: one or more \"<PM counter>=<Trash Limit>\")."
+		append msgText "(Legal value: one or more \"<PM counter>=<Thresh Limit>\")."
 	    } else {
-		append msgText "(Legal value: one or more \"<PM counter>=<Trash Limit>\").%n"
+		append msgText "(Legal value: one or more \"<PM counter>=<Thresh Limit>\").%n"
 		append msgText "Legal PM Counter names are: %n$pmCounterList."
 	    }
 	}
@@ -1945,7 +1945,7 @@ proc inform { msgCode args } {
 	    append msgText "IPoIB Subnets Check"
 	    set headerText "IPoIB Subnets Check"
 	}
-        "-W-ibdiagnet.ipoib.noMemers" {
+        "-W-ibdiagnet:ipoib.noMemers" {
 	    append msgText "No members found for group"
 	}
 	"-W-ibdiagnet:ipoib.bad.pkey" {
@@ -2243,21 +2243,30 @@ proc inform { msgCode args } {
         }
         set portGuid ""
         set portNum ""
+        set nodeGuid ""
         set msgBody ""
         set exid ""
         set err_type 1
         regsub -all {%n} $msgText " " msgBody
         regsub -all {,} $msgBody " " msgBody
-	regsub -all {\{} $msgBody " " msgBody
-        regsub -all {\}} $msgBody " " msgBody
+        for {set h 0} {$h < 3} {incr h} {
+            set msgBody [join $msgBody]
+        }
 	set msgBody [string range $msgBody 4 end]
         if {[info exists NODE]} {
             for {set i 0} {$i < [llength [array names NODE *,PortGUID]]} {incr i} {
                 set portGuid $NODE($i,PortGUID)
+                set nodeGuid $G(data:NodeGuid.$portGuid)
+                if {$i % 2} {
                 set portNum $NODE($i,EntryPort)
+                } else {
+                    set portNum [lindex [split $PATH([expr $i + 1]) ,] end]
+                }
+                lappend CSV_ERRORS $CSV_scope,$nodeGuid,$portGuid,$portNum,$desc,$msgBody,$CSV_severity,$exid,$err_type
             }
+        } else {
+            lappend CSV_ERRORS $CSV_scope,$nodeGuid,$portGuid,$portNum,$desc,$msgBody,$CSV_severity,$exid,$err_type
         }
-        lappend CSV_ERRORS $CSV_scope,$portGuid,$portNum,$desc,$msgBody,$CSV_severity,$exid,$err_type
     }
 
     regsub -all {%n} "[join $msgText \n]" "\n" msgText

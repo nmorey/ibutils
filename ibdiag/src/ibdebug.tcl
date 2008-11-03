@@ -710,7 +710,9 @@ proc SetTopologyNSysName {} {
 	    return 0
 	} elseif {[info exists TOPO_SYS($name)]} {
 	    set nodesNames [lsort -dictionary [IBSystem_NodeByName_get $TOPO_SYS($name)]]
-	    set G(argv:sys.name) [lindex [lindex $nodesNames [expr $G(argv:dev.idx) -1]] 0]
+	    # HACK: Always exit from the first interface on the local machine.
+	    # Will not work for more than 1 HCA
+            set G(argv:sys.name) [lindex [lindex $nodesNames 0] 0]
 	    if { !$bool_sysNameSet } {
 		inform "-W-localPort:node.intelligently.guessed"
 	    }
@@ -1849,6 +1851,11 @@ proc SetNeighbor {_directPath _nodeGuid _entryPort} {
 }
 ##############################
 
+##############################
+#  SYNOPSIS  Bool_SameDevice
+#  FUNCTION
+#  INPUTS
+#  OUTPUT
 proc Bool_SameDevice {_dr1 _dr2} {
     global G
     if {![info exists G(data:rev.dr.path.$_dr2)]} {
@@ -4751,7 +4758,13 @@ proc lstInfo { type DirectPath port } {
 		}
 		lappend Info "${parameter}${sep}${value}"
 	    }
-	    "NodeDesc"  { lappend Info "\{$value\}" }
+	    "NodeDesc"  {
+                if {$G(bool:topology.matched)} {
+		    lappend Info "\{[DrPath2Name $DirectPath -port $port]\}"
+                } else {
+		    lappend Info "\{$value\}"
+                }
+	    }
 	    "DevID"  { lappend Info "${parameter}${sep}${value}0000" }
 	    "VenID"  { lappend Info "${parameter}${sep}00${value}" }
 	    default  { lappend Info "${parameter}${sep}${value}" }
@@ -4891,15 +4904,13 @@ proc writeCSVLinksFile {} {
 
 proc writeCSVErrorsFile {} {
     global CSV_ERRORS G
-	
-    if {![info exists G(argv:csv.dump)]} {
+
+    if {(![info exists G(argv:csv.dump)]) || ![info exists CSV_ERRORS]} {
         return 0
-    } elseif {(![info exists CSV_ERRORS]) || ($CSV_ERRORS == "")} {
-	return 0
     }
 
     set FileID [InitializeOutputFile $G(var:tool.name).err_csv]
-    set header_line "Scope PortGUID PortNumber EventName Summary Severity exid type"
+    set header_line "Scope NodeGUID PortGUID PortNumber EventName Summary Severity exid type"
     puts $FileID [join $header_line ,]
 
     foreach line $CSV_ERRORS {

@@ -95,6 +95,10 @@ writeCSVLinksFile
 
 ### match topology (if topology was given)
 set G(bool:topology.matched) [expr ([MatchTopology $G(outfiles,.lst)] == 0)]
+if {$G(bool:topology.matched)} {
+    file delete $G(outfiles,.lst)
+    writeLstFile
+}
 writeCSVInventoryFile
 
 DumpBadLidsGuids
