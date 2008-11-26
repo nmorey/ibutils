@@ -521,7 +521,7 @@ IBNode::setMFTPortForMLid(
    unsigned int lid,
    unsigned int portNum)
 {
-   if ((portNum > numPorts) || (portNum >= 32))
+   if ((portNum > numPorts) || (portNum >= 64))
    {
       cout << "-E- setMFTPortForMLid : Given port:" << portNum
            << " is too high!" << endl;
@@ -547,7 +547,7 @@ IBNode::setMFTPortForMLid(
          MFT[i]=0;
    }
 
-   MFT[idx] |= (1 << portNum);
+   MFT[idx] |= (((uint64_t)1) << portNum);
 
    // we track all Groups:
    p_fabric->mcGroups.insert(lid);
@@ -573,10 +573,9 @@ IBNode::getMFTPortsForMLid(
    if (MFT.size() <= idx)
       return res;
 
-
-   int mftVal = MFT[idx];
+   uint64_t mftVal = MFT[idx];
    for(unsigned int pn = 0; pn <= numPorts; pn++)
-      if (mftVal & (1 << pn)) res.push_back(pn);
+      if (mftVal & (((uint64_t)1) << pn)) res.push_back(pn);
 
    return res;
 }

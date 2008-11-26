@@ -92,7 +92,7 @@ struct strless : public binary_function <string, string, bool> {
 typedef vector<int > vec_int;
 typedef vector<vec_int > vec_vec_int;
 typedef vector<uint8_t > vec_byte;
-typedef vector<uint32_t > vec_word;
+typedef vector<uint64_t > vec_uint64;
 typedef vector<vec_byte > vec_vec_byte;
 typedef vector<vec_vec_byte > vec3_byte;
 
@@ -318,7 +318,7 @@ class IBNode {
   vec_byte        LFT;       // The LFT of this node (for switches only)
   vec_byte        PSL;       // PSL table (CAxCA->SL mapping) of this node (for CAs only)
   vec3_byte       SLVL;      // SL2VL table of this node (for switches only)
-  vec_word        MFT;       // The Multicast forwarding table
+  vec_uint64      MFT;       // The Multicast forwarding table
   PrivateAppData  appData1;  // Application Private Data #1
   PrivateAppData  appData2;  // Application Private Data #2
 
