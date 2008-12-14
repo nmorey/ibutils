@@ -889,7 +889,15 @@ proc SmMadGetByDr { mad cget args } {
 	    break;
 	}
     }
+
     inform "-V-mad:received" -status $status -attempts $retry
+
+    ### HACK: fix cases where the NodeDesc has an internal newline
+    if { $mad == "NodeDesc" } {
+	 set desc [string map {"\n" ""} [smNodeDescMad cget -description]]
+	 smNodeDescMad configure -description $desc
+    }
+
     ### SmMadGetByDr - Handle the results
     if { $G(bool:bad.links.detected) && ( $status != 0 ) } {
 	set res [DetectBadLinks $status "$cgetCmd" $mad $args]
@@ -938,6 +946,13 @@ proc SmMadGetByLid { mad cget args } {
 	if { [set status [eval $getCmd]] == 0 } { incr retry ; break; }
     }
     inform "-V-mad:received" -status $status -attempts $retry
+
+    ### HACK: fix cases where the NodeDesc has an internal newline
+    if { $mad == "NodeDesc" } {
+	 set desc [string map {"\n" ""} [smNodeDescMad cget -description]]
+	 smNodeDescMad configure -description $desc
+    }
+
     ### Handle the results
     if { $status != 0 } {
 	return -code 1 -errorcode $status
