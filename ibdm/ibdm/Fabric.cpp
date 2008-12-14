@@ -916,8 +916,17 @@ IBSystem::removeBoard (string boardName) {
 
 //////////////////////////////////////////////////////////////////////////////
 
-// Write out teh system IBNL into the given directory
+// Write out the system IBNL into the given directory
 // and return the new system type
+//
+// We are facing here a "heuristic" approach for how one knows
+// the number of system ports - since some may be added later.
+// 
+// In the case of a single device system we can and should expose
+// all device ports - simply as P<pn>.
+//
+// In the case of a combined system we can not tell. Adding new connections
+// will require regenerating the IBNL (which is by SysGuid anyway)
 int
 IBSystem::dumpIBNL(char *ibnlDir, string &sysType) {
    char sysTypeStr[256];
@@ -950,7 +959,8 @@ IBSystem::dumpIBNL(char *ibnlDir, string &sysType) {
    for (map_str_pnode::iterator nI = NodeByName.begin();
         nI != NodeByName.end(); nI++) {
       IBNode *p_node = (*nI).second;
-		string nameWithoutSysName = p_node->name.substr(name.length()+1, p_node->name.length() - name.length() - 1);
+		string nameWithoutSysName = 
+		  p_node->name.substr(name.length()+1, p_node->name.length() - name.length() - 1);
       if (p_node->type == IB_SW_NODE)
       {
          ibnl << "\nNODE SW " << p_node->numPorts << " "
@@ -965,7 +975,14 @@ IBSystem::dumpIBNL(char *ibnlDir, string &sysType) {
       for (unsigned int pn = 1; pn <= p_node->numPorts; pn++) {
          IBPort *p_port = p_node->getPort(pn);
 
-         if (! p_port) continue;
+			if (NodeByName.size() == 1) {
+			  // invent a port ...
+			  char buf[128];
+			  sprintf(buf,"%s/P%u", nameWithoutSysName.c_str(), pn);
+			  ibnl << "   " << pn << " -> " << buf << endl;
+			} else {
+			  if (! p_port) continue;
+			}
 
          if (p_port->p_sysPort)
          {
