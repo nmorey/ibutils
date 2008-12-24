@@ -40,8 +40,6 @@ ibdiag:   This package provides 3 tools which provide the user interface
 2. New Features
 ===============================================================================
 
-The following new checks were added to the tools:
-
 
 * Mellanox InfiniScaleIV support:
   - Support switches with port count > 32
