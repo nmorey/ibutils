@@ -1444,14 +1444,16 @@ proc DiscoverFabric { _pathLimit {startIndex 0}} {
 
             # Check again that the local port is not down / ignore all other
 	    # down ports
-	    if {[catch {set tmp_log [GetParamValue LOG $DirectPath -port $port]}]} {
+	    if {[catch {set tmp_log [GetParamValue LOG $DirectPath -port $port]; 
+                        set ezNType  [GetParamValue Type $DirectPath -port $port]}]} {
 		set bool_badPathFound 1
 		set endLoop 1
 		break;
 	    }
+
 	    switch -- $tmp_log {
 		"DWN" {
-		    if { $index_dr == 1 } {
+		    if { ($index_dr == 1) && ($ezNType != "SW") } {
 			inform "-E-localPort:local.port.down" -port $port
 		    }
 		    continue;
@@ -2160,8 +2162,13 @@ proc PMCounterQuery {} {
 	}
     } else {
 	set G(data:list.links.not.active.logical.state) ""
-    }
-    foreach directPath [lrange $G(data:list.direct.path) 0 end] {
+	}
+	foreach directPath [lrange $G(data:list.direct.path) 0 end] {
+		if {![llength $directPath]} {
+	        # When running from a switch - may get 0 length direct routes
+			# HACK: Skip these paths - do not query SMA port on switch 
+			continue
+		}
 	# start from the second path in $G(data:list.direct.path), because the first is ""
 	# Ignore those links which has state INIT
 	set bool_drPathIsInit 0
