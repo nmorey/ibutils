@@ -5037,16 +5037,17 @@ proc writePMFile {} {
         puts $FileID_0 [string repeat "-" 80]
 
 	if {!$header} {
-	    puts $FileID_1 PortGUID,PortNumber,[join $tmpPmCounterList ,]
+	    puts $FileID_1 NodeGUID,PortGUID,PortNumber,[join $tmpPmCounterList ,]
   	    incr header
 	}
 	set portGuid $G(data:guid.by.dr.path.$dr)
+	set nodeGuid $G(data:NodeGuid.$portGuid)
 
-        set tmp_csv_line $portGuid,$pn
+        set tmp_csv_line $nodeGuid,$portGuid,$pn
 	foreach pmCounter $tmpPmCounterList {
             set pmCounterValue "0x[format %lx [GetWordAfterFlag $listOfPMValues $pmCounter]]"
             puts $FileID_0 "$pmCounter = $pmCounterValue"
-	    append tmp_csv_line ",$pmCounterValue"
+	    append tmp_csv_line ",[expr $pmCounterValue]"
 	}
 
         if {[info exists G(argv:csv.dump)]} {
