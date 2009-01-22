@@ -71488,116 +71488,6 @@ static int _wrap_ccTable_ccti_limit_get(ClientData clientData, Tcl_Interp *inter
 }
     return TCL_OK;
 }
-#define _ib_cc_tbl_resv_set(_swigobj,_swigval) (_swigobj->resv = *(_swigval),_swigval)
-static int _wrap_ccTable_resv_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
-
-    ib_net16_t * _result;
-    ccTable * _arg0;
-    ib_net16_t * _arg1;
-    Tcl_Obj * tcl_result;
-    char * rettype;
-    ib_net16_t  temp;
-
-    clientData = clientData; objv = objv;
-    tcl_result = Tcl_GetObjResult(interp);
-    if ((objc < 3) || (objc > 3)) {
-        Tcl_SetStringObj(tcl_result,"Wrong # args. ccTable_resv_set { ccTable * } { ib_net16_t * } ",-1);
-        return TCL_ERROR;
-    }
-    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccTable_p"))) {
-        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccTable_resv_set. Expected _ccTable_p, received ", -1);
-        Tcl_AppendToObj(tcl_result, rettype, -1);
-        return TCL_ERROR;
-    }
-{
-  temp = cl_hton16(strtoul(Tcl_GetStringFromObj(objv[2],NULL), NULL, 0));
-  _arg1 = &temp;
-}
-{
-  /* we can check if IBIS was initialized here */
-  if (!IbisObj.initialized)
-  {
-    Tcl_SetStringObj(
-      Tcl_GetObjResult(interp),
-      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
-    return TCL_ERROR;
-  }
-
-  if (! IbisObj.port_guid)
-  {
-    Tcl_SetStringObj(
-      Tcl_GetObjResult(interp),
-      " ibis was not yet initialized. please use ibis_set_port before.", -1);
-    return TCL_ERROR;
-  }
-
-  ibis_tcl_error = 0;
-      _result = (ib_net16_t *)_ib_cc_tbl_resv_set(_arg0,_arg1);
-;
-  if (ibis_tcl_error) {
-	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
- 	 return TCL_ERROR;
-  }
-}    tcl_result = Tcl_GetObjResult(interp);
-{
-  char buff[20];
-  sprintf(buff, "%u", cl_hton16(*_result));
-  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
-}
-    return TCL_OK;
-}
-#define _ib_cc_tbl_resv_get(_swigobj) (&_swigobj->resv)
-static int _wrap_ccTable_resv_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
-
-    ib_net16_t * _result;
-    ccTable * _arg0;
-    Tcl_Obj * tcl_result;
-    char * rettype;
-
-    clientData = clientData; objv = objv;
-    tcl_result = Tcl_GetObjResult(interp);
-    if ((objc < 2) || (objc > 2)) {
-        Tcl_SetStringObj(tcl_result,"Wrong # args. ccTable_resv_get { ccTable * } ",-1);
-        return TCL_ERROR;
-    }
-    if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccTable_p"))) {
-        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccTable_resv_get. Expected _ccTable_p, received ", -1);
-        Tcl_AppendToObj(tcl_result, rettype, -1);
-        return TCL_ERROR;
-    }
-{
-  /* we can check if IBIS was initialized here */
-  if (!IbisObj.initialized)
-  {
-    Tcl_SetStringObj(
-      Tcl_GetObjResult(interp),
-      "ibis was not yet initialized. please use ibis_init and then ibis_set_port before.", -1);
-    return TCL_ERROR;
-  }
-
-  if (! IbisObj.port_guid)
-  {
-    Tcl_SetStringObj(
-      Tcl_GetObjResult(interp),
-      " ibis was not yet initialized. please use ibis_set_port before.", -1);
-    return TCL_ERROR;
-  }
-
-  ibis_tcl_error = 0;
-      _result = (ib_net16_t *)_ib_cc_tbl_resv_get(_arg0);
-;
-  if (ibis_tcl_error) {
-	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
- 	 return TCL_ERROR;
-  }
-}    tcl_result = Tcl_GetObjResult(interp);
-{
-  char buff[20];
-  sprintf(buff, "%u", cl_hton16(*_result));
-  Tcl_SetStringObj(tcl_result,buff,strlen(buff));
-}
-    return TCL_OK;
-}
 static ib_cc_tbl_entry_t * _ib_cc_tbl_entry_list_set(ccTable *obj, ib_cc_tbl_entry_t val[64]) {
 {
 	int i;
@@ -72043,8 +71933,6 @@ static int TclccTableMethodCmd(ClientData clientData, Tcl_Interp *interp, int ob
         _str = Tcl_GetStringFromObj(objv[i],&length);
                         if (strcmp(_str,"-ccti_limit") == 0) {
                     cmd = _wrap_ccTable_ccti_limit_set;
-                }  else if (strcmp(_str,"-resv") == 0) {
-                    cmd = _wrap_ccTable_resv_set;
                 }  else if (strcmp(_str,"-entry_list") == 0) {
                     cmd = _wrap_ccTable_entry_list_set;
                 }
@@ -72056,13 +71944,13 @@ static int TclccTableMethodCmd(ClientData clientData, Tcl_Interp *interp, int ob
             if (rcode == TCL_ERROR) return rcode;
             cmd = 0;
           } else {
-            Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be { -ccti_limit -resv -entry_list  }",-1);
+            Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be { -ccti_limit -entry_list  }",-1);
             return TCL_ERROR;
           }
         i+=2;
       }
       if ((i < objc) || (i == 2)) {
-        Tcl_SetStringObj(tcl_result,"{ -ccti_limit -resv -entry_list  }",-1);
+        Tcl_SetStringObj(tcl_result,"{ -ccti_limit -entry_list  }",-1);
         return TCL_ERROR;
       }
       return TCL_OK;
@@ -72072,8 +71960,6 @@ static int TclccTableMethodCmd(ClientData clientData, Tcl_Interp *interp, int ob
         if (0) {}
                         if (strcmp(_str,"-ccti_limit") == 0) {
                     cmd = _wrap_ccTable_ccti_limit_get;
-                }  else if (strcmp(_str,"-resv") == 0) {
-                    cmd = _wrap_ccTable_resv_get;
                 }  else if (strcmp(_str,"-entry_list") == 0) {
                     cmd = _wrap_ccTable_entry_list_get;
                 }
@@ -72088,11 +71974,11 @@ static int TclccTableMethodCmd(ClientData clientData, Tcl_Interp *interp, int ob
           objv[2] = oldarg;
           return rcode;
         } else {
-          Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this -ccti_limit -resv -entry_list  }",-1);
+          Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this -ccti_limit -entry_list  }",-1);
           return TCL_ERROR;
         }
       } else {
-        Tcl_SetStringObj(tcl_result,"{ -this -ccti_limit -resv -entry_list  }", -1);
+        Tcl_SetStringObj(tcl_result,"{ -this -ccti_limit -entry_list  }", -1);
         return TCL_ERROR;
       }
     } else if ((c == 'd') && (strncmp(_str,"dump",length) == 0) && (length >= 2)) {
@@ -72106,13 +71992,6 @@ static int TclccTableMethodCmd(ClientData clientData, Tcl_Interp *interp, int ob
         rcode = (*cmd)(clientData,interp,objc,&objv[1]);
         objv[2] = oldarg;
         Tcl_AppendStringsToObj(pDumpObj, "-ccti_limit ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
-        Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
-        cmd = _wrap_ccTable_resv_get;
-        oldarg = objv[2];
-        objv[2] = obj;
-        rcode = (*cmd)(clientData,interp,objc,&objv[1]);
-        objv[2] = oldarg;
-        Tcl_AppendStringsToObj(pDumpObj, "-resv ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
         Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
         cmd = _wrap_ccTable_entry_list_get;
         oldarg = objv[2];
@@ -74826,8 +74705,6 @@ SWIGEXPORT(int,Ibis_Init)(Tcl_Interp *interp) {
 	 Tcl_CreateObjCommand(interp,SWIG_prefix "ib_cc_tbl_entry_t",Tclib_cc_tbl_entry_tCmd, (ClientData) NULL, NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccTable_ccti_limit_set", _wrap_ccTable_ccti_limit_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccTable_ccti_limit_get", _wrap_ccTable_ccti_limit_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
-	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccTable_resv_set", _wrap_ccTable_resv_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
-	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccTable_resv_get", _wrap_ccTable_resv_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccTable_entry_list_set", _wrap_ccTable_entry_list_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccTable_entry_list_get", _wrap_ccTable_entry_list_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccTable_getByLid", _wrap_ccTable_getByLid, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);

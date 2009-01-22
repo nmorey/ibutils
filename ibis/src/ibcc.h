@@ -990,7 +990,6 @@ typedef struct _ib_cc_tbl_entry {
 #include <complib/cl_packon.h>
 typedef struct _ib_cc_tbl {
 	ib_net16_t ccti_limit;
-	ib_net16_t resv;
 	ib_cc_tbl_entry_t entry_list[64];
 } PACK_SUFFIX ib_cc_tbl_t;
 #include <complib/cl_packoff.h>
