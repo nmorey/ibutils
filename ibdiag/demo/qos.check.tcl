@@ -4,39 +4,39 @@ proc setupOpensmOptionsFile {simDir} {
 	# by default we set all switches to have
 	# VL = SL % 8
 	# VLArb High = VLArb Low = 0.1,1.1,2.1,3.1,4.1,5.1,6.1,7.1
-	set f [open $simDir/opensm.opts w]
+	set f [open $simDir/opensm.conf w]
 	puts $f {
 
 # Disable QoS setup
 no_qos FALSE
 
 # QoS default options
-qos_max_vls    8
-qos_high_limit 3
-qos_vlarb_high 0:1,1:1,2:1,3:1,4:1,5:1,6:1,7:1
-qos_vlarb_low  0:1,1:1,2:1,3:1,4:1,5:1,6:1,7:1
-qos_sl2vl      0,1,2,3,4,5,6,7,0,1,2,3,4,5,6,7
+#qos_max_vls    8
+#qos_high_limit 3
+#qos_vlarb_high 0:1,1:1,2:1,3:1,4:1,5:1,6:1,7:1
+#qos_vlarb_low  0:1,1:1,2:1,3:1,4:1,5:1,6:1,7:1
+#qos_sl2vl      0,1,2,3,4,5,6,7,0,1,2,3,4,5,6,7
 
 # QoS CA options
 qos_ca_max_vls    8
 qos_ca_high_limit 4
 qos_ca_vlarb_high 0:1,1:1,2:1,3:1,4:1,5:1,6:1,7:1
-qos_ca_vlarb_low 	0:1,1:1,2:1,3:1,4:1,5:1,6:1,7:1
-qos_ca_sl2vl 		0,1,2,3,4,5,6,7,0,1,2,3,4,5,6,7
+qos_ca_vlarb_low  0:1,1:1,2:1,3:1,4:1,5:1,6:1,7:1
+qos_ca_sl2vl      0,1,2,3,4,5,6,7,0,1,2,3,4,5,6,7
 
 # QoS Switch Port 0 options
 qos_sw0_max_vls    8
 qos_sw0_high_limit 5
 qos_sw0_vlarb_high 0:1,1:1,2:1,3:1,4:1,5:1,6:1,7:1
 qos_sw0_vlarb_low  0:1,1:1,2:1,3:1,4:1,5:1,6:1,7:1
-qos_sw0_sl2vl 		 0,1,2,3,4,5,6,7,0,1,2,3,4,5,6,7
+qos_sw0_sl2vl      0,1,2,3,4,5,6,7,0,1,2,3,4,5,6,7
 
 # QoS Switch external ports options
 qos_swe_max_vls     8
 qos_swe_high_limit  6
 qos_swe_vlarb_high  0:1,1:1,2:1,3:1,4:1,5:1,6:1,7:1
 qos_swe_vlarb_low   0:1,1:1,2:1,3:1,4:1,5:1,6:1,7:1
-qos_swe_sl2vl 		  0,1,2,3,4,5,6,7,0,1,2,3,4,5,6,7
+qos_swe_sl2vl       0,1,2,3,4,5,6,7,0,1,2,3,4,5,6,7
 
 	}
 	close $f
@@ -65,7 +65,7 @@ proc runner {simDir osmPath osmPortGuid} {
 	puts "---------------------------------------------------------------------"
 	puts " Starting the SM\n"
    set valgrind "/usr/bin/valgrind --tool=memcheck"
-   set osmCmd "$osmPath -D 0x43 -d2 -t 4000 -f $osmLog -g $osmPortGuid"
+   set osmCmd "$osmPath -F $simDir/opensm.conf -Q -D 0x43 -d2 -t 4000 -f $osmLog -g $osmPortGuid"
    puts "-I- Starting: $osmCmd"
    set osmPid [eval "exec $osmCmd > $osmStdOutLog &"]
 

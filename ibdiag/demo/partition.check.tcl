@@ -135,39 +135,45 @@ proc checker {simDir osmPath osmPortGuid} {
       return 1
    }
 
-	# make sure /proc is updated ...
-	puts $simCtrlSock "updateProcFSForNode \$fabric $simDir H-1/U1 H-1/U1 1"
-   set res [gets $simCtrlSock]
-   puts "SIM: Updated H-1 proc file:$res"
+# make sure /proc is updated ...
+   puts $simCtrlSock "updateProcFSForNode \$fabric $simDir H-1/U1 H-1/U1 1"
+	   set res [gets $simCtrlSock]
+	   puts "SIM: Updated H-1 proc file:$res"
 
-	puts "---------------------------------------------------------------------"
-	puts " OpemSM brought up the network"
-	puts $simCtrlSock "dumpPKeyTables \$fabric"
-	puts "SIM:[gets $simCtrlSock]"
-	puts "---------------------------------------------------------------------"
-	puts " Listing of 3 Nodes of each group:"
-	getFirstHostOfEachGroup
-	puts "---------------------------------------------------------------------"
-	puts " Drop some pkeys from switch ports"
-	foreach g {1 2 3} {
+	   puts "---------------------------------------------------------------------"
+	   puts " OpemSM brought up the network"
+	   puts $simCtrlSock "dumpPKeyTables \$fabric"
+	   puts "SIM:[gets $simCtrlSock]"
+	   puts "---------------------------------------------------------------------"
+	   puts " Listing of 3 Nodes of each group:"
+	   getFirstHostOfEachGroup
+	   puts "---------------------------------------------------------------------"
+	   puts " Drop some pkeys from switch ports"
+	   foreach g {1 2 3} {
 		set hostNode "[lindex $GROUP_HOSTS($g) 2]/U1"
 		puts $simCtrlSock "removeGroupPKeyAccrosForHcaPort \$fabric $hostNode 1 $g"
 		set res [gets $simCtrlSock]
 		if {[regexp {^ERR} $res]} {
 			puts "$res"
-			return 1
+				return 1
 		}
 		puts "$res"
 	}
 	puts "---------------------------------------------------------------------"
-	puts " SUBNET READY FOR DIAGNOSTICS"
-	puts " press ^C when done"
-	puts " "
-	puts "cd $simDir"
-	puts "setenv IBMGTSIM_DIR  $simDir"
-	puts "setenv OSM_CACHE_DIR $simDir"
-	puts "setenv OSM_TMP_DIR   $simDir"
-	puts " press Enter when done"
-	gets stdin
-   return 0
+		puts " SUBNET READY FOR DIAGNOSTICS"
+		puts " press ^C when done"
+		puts " "
+		puts "cd $simDir"
+		puts "setenv IBMGTSIM_DIR  $simDir"
+		puts "setenv OSM_CACHE_DIR $simDir"
+		puts "setenv OSM_TMP_DIR   $simDir"
+		puts "---------------------------------------------------------------------"
+		puts ""
+		puts "1) try: ibdiagnet -o $simDir -t  network.topo"
+		puts "2) try: ibdiagpath -t network.topo -n H-9,H-1"
+		puts " press Enter when done"
+
+		puts " press Enter when done"
+		gets stdin
+		return 0
 }

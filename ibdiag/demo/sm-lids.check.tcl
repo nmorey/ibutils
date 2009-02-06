@@ -48,6 +48,8 @@ proc checker {simDir osmPath osmPortGuid} {
 	puts " OpemSM brought up the network"
 	puts " Randomizing some LIDs ... "
 
+global osmPid
+exec kill $osmPid
 	# randomize lid errors:
 	puts $simCtrlSock "setLidAssignmentErrors \$fabric $lmc"
 	puts "SIM: [gets $simCtrlSock]"
