@@ -137,7 +137,7 @@ if test "x$libcheck" = "xtrue"; then
       elif test -L $with_osm_libs/libopensm.so; then
          OSM_VENDOR=openib
          osm_vendor_sel="-DOSM_VENDOR_INTF_OPENIB "
-         OSM_LDFLAGS="$OSM_LDFLAGS -lopensm -losmvendor -losmcomp -libumad -libcommon"
+         OSM_LDFLAGS="$OSM_LDFLAGS -lopensm -losmvendor -losmcomp -libumad"
       else
          AC_MSG_ERROR([OSM: Fail to recognize vendor type])
       fi
