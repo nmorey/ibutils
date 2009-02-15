@@ -166,11 +166,12 @@ if test "x$libcheck" = "xtrue"; then
 
 
    dnl validate the defined path - so the build id header is there
-   AC_CHECK_FILE($osm_include_dir/opensm/osm_build_id.h,,
-      AC_MSG_ERROR([OSM: could not find $with_osm/include/opensm/osm_build_id.h]))
+   AC_CHECK_FILE($osm_include_dir/opensm/osm_config.h,,
+      AC_MSG_ERROR([OSM: could not find $with_osm/include/opensm/osm_config.h]))
 
    dnl now figure out somehow if the build was for debug or not
-   if test `grep debug $osm_include_dir/opensm/osm_build_id.h | wc -l` = 1; then
+   grep '#define OSM_DEBUG 1' $osm_include_dir/opensm/osm_config.h > /dev/null
+   if test $? -eq 0 ; then
       dnl why did they need so many ???
       osm_debug_flags='-DDEBUG -D_DEBUG -D_DEBUG_ -DDBG'
       AC_MSG_NOTICE(OSM: compiled in DEBUG mode)
