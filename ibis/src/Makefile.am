@@ -54,9 +54,10 @@ AM_CXXFLAGS = $(TCL_CPPFLAGS) $(OSM_CFLAGS) $(DBG) -fno-strict-aliasing -fPIC  -
 LIB_VER_TRIPLET="1:0:0"
 LIB_FILE_TRIPLET=1.0.0
 
-lib_LTLIBRARIES = libibiscom.la libibis.la
+lib_LTLIBRARIES = libibis.la
+noinst_LIBRARIES = libibiscom.a
 
-libibiscom_la_SOURCES = ibbbm.c ibcr.c	ibis.c ibis_gsi_mad_ctrl.c \
+libibiscom_a_SOURCES = ibbbm.c ibcr.c	ibis.c ibis_gsi_mad_ctrl.c \
 	ibpm.c ibsac.c ibsm.c ibvs.c ibcc.c
 
 # client library to be used by IBIS TCL package:
@@ -70,11 +71,9 @@ bin_PROGRAMS = ibis
 
 # this is used for the libraries link
 LDADD = $(OSM_LDFLAGS)
-# AM_LDFLAGS = -static
 
 ibis_SOURCES = ibissh_wrap.cpp
 
-ibis_LDFLAGS = -static
 # note the order of the libraries does matter as we static link
 ibis_LDADD = -libiscom $(OSM_LDFLAGS) $(TCL_LIBS)
 
