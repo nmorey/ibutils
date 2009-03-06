@@ -381,8 +381,8 @@ ibisp_is_debug(void)
 	 ibis_t *p_ibis = &IbisObj;
 	 uint32_t i;
 	 ib_api_status_t status;
-	 uint32_t num_ports = GUID_ARRAY_SIZE;
-	 ib_port_attr_t attr_array[GUID_ARRAY_SIZE];
+	 uint32_t num_ports = MAX_LOCAL_IBPORTS;
+	 ib_port_attr_t attr_array[MAX_LOCAL_IBPORTS];
 	 static char res[128];
 	 Tcl_Obj *p_obj;
 
@@ -402,6 +402,11 @@ ibisp_is_debug(void)
         return TCL_ERROR;
     }
 
+    for (i = 0; i < num_ports; i++)
+    {
+      attr_array[i].num_pkeys = 0;
+      attr_array[i].p_pkey_table = NULL;
+    }
 	 /*
 		Call the transport layer for a list of local port
 		GUID values.

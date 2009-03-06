@@ -196,11 +196,16 @@ ibis_get_ports_status(
 {
   uint32_t i;
   ib_api_status_t status;
-  ib_port_attr_t attr_array[GUID_ARRAY_SIZE];
+  ib_port_attr_t attr_array[MAX_LOCAL_IBPORTS];
 
   OSM_LOG_ENTER(&(IbisObj.log));
 
-  *num_ports = GUID_ARRAY_SIZE;
+  for (i = 0; i < MAX_LOCAL_IBPORTS; i++)
+  {
+    attr_array[i].num_pkeys = 0;
+    attr_array[i].p_pkey_table = NULL;
+  }
+  *num_ports = MAX_LOCAL_IBPORTS;
   status = osm_vendor_get_all_port_attr(
     IbisObj.p_vendor,
     attr_array,
