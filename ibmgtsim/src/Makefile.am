@@ -56,7 +56,7 @@ if IBDM_REF_IS_USED
 # we assume we are building a parallel tree
 IBDM_PREFIX=$prefix
 IBDM_LIB=-L../../ibdm/ibdm -libdmcom
-IBDM_INC=-I$(srcdir)/../../ibdm
+IBDM_INC=-I$(srcdir)/../../ibdm/ibdm
 IBDM_IFC=$(srcdir)/../../ibdm/ibdm/ibdm.i
 else
 IBDM_PREFIX=$(with_ibdm)
