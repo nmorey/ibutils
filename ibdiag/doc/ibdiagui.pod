@@ -4,7 +4,7 @@ B<ibdiagui - IB Diagnostic GUI>
 
 =head1 SYNOPSYS
 
-ibdiagui [-c <count>] [-v] [-r] [-o <out-dir>]
+ibdiagui [-c <count>] [-v] [-r] [-u] [-o <out-dir>]
      [-t <topo-file>] [-s <sys-name>] [-i <dev-index>] [-p <port-num>]
      [-pm] [-pc] [-P <PM counter>=<Trash Limit>]
      [-lw <1x|4x|12x>] [-ls <2.5|5|10>]

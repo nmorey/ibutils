@@ -163,6 +163,10 @@ proc SetInfoArgv {} {
 	-t,param "topo-file"
 	-t,desc  "Specifies the topology file name"
 
+	-u,name  "updown"
+	-u,desc  "Indicates that UpDown credit loop checking should be done against automaticly determined roots"
+	-u,arglen   0
+
 	-v,name  "verbose"
 	-v,desc  "Instructs the tool to run in verbose mode"
 	-v,arglen   0
@@ -322,8 +326,8 @@ proc SetToolsFlags {} {
     array set TOOLS_FLAGS {
 	ibping     "(n|l|d) . c w v o     . t s i p "
 	ibdiagpath "(n|l|d) . c   v o smp . t s i p    . pm pc P . lw ls sl ."
-	ibdiagui   "          c   v r o   . t s i p    . pm pc P . lw ls ."
-	ibdiagnet  "          c   v r o   . t s i p wt . pm pc P . lw ls    . skip load_db csv"
+	ibdiagui   "          c   v r u o   . t s i p    . pm pc P . lw ls ."
+	ibdiagnet  "          c   v r u o   . t s i p wt . pm pc P . lw ls    . skip load_db csv"
 	ibcfg    "(n|l|d) (c|q)       . t s i p o"
 	ibmad    "(m) (a) (n|l|d)     . t s i p o ; (q) a"
 	ibsac    "(m) (a) k           . t s i p o ; (q) a"
@@ -2535,7 +2539,7 @@ proc showHelpPage { args } {
             Hop-count information:
             maximal hop-count, an example path, and a hop-count histogram
             All CA-to-CA paths traced
-            Credit loop report
+            Credit loop report (based on UpDown if -u option is provided)
             mgid-mlid-HCAs matching table
             Note: In case the IB fabric includes only one CA, then CA-to-CA paths are not
             reported.

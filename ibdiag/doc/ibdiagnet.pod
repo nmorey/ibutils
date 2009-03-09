@@ -4,7 +4,7 @@ B<ibdiagnet - IB diagnostic net>
 
 =head1 SYNOPSYS
 
-ibdiagnet [-c <count>] [-v] [-r] [-o <out-dir>]
+ibdiagnet [-c <count>] [-v] [-r] [-u] [-o <out-dir>]
   [-t <topo-file>] [-s <sys-name>] [-i <dev-index>] [-p <port-num>] [-wt]
   [-pm] [-pc] [-P <<PM>=<Value>>]
   [-lw <1x|4x|12x>] [-ls <2.5|5|10>]
@@ -132,6 +132,15 @@ Enable verbose mode
 
 =item
 Provides a report of the fabric qualities
+
+=back
+
+=item B<-u>              :
+
+=over
+
+=item
+Credit loop check based on UpDown rules
 
 =back
 

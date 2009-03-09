@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004 Mellanox Technologies LTD. All rights reserved.
+ * Copyright (c) 2004-2009 Mellanox Technologies LTD. All rights reserved.
  *
  * This software is available to you under a choice of one of two
  * licenses.  You may choose to be licensed under the terms of the GNU
@@ -78,6 +78,7 @@ show_help() {
     << "  -e|--enh = use enhanced routing algorithm when LMC > 0 and report the resulting paths\n"
     << "       correlation (using same system/node) histogram\n"
     << "  -u|--updn = use up/down routing algorithm instead of OpenSM min-hop.\n"
+	 << "       Also selects Up/Down credit loop check algorithm.\n"
     << "  -r|--roots <roots file> = a file with all the roots node names (one on each line).\n"
     << "\n"
     << "  CLUSTER VERIFICATION:\n"
@@ -110,6 +111,7 @@ show_help() {
     << "  -c|--psl <file> = CAxCA->SL mapping. \n"
     << "  -d|--slvl <file> = SL2VL mapping. \n"
     << "  -r|--roots <roots file> = a file holding all root nodes guids (one per line).\n"
+    << "  -u|--updn = selects Up/Down credit loop check algorithm rather than the generic one.\n"
     << "\n"
     << "Author: Eitan Zahavi, Mellanox Technologies LTD.\n"
     << endl;
@@ -406,42 +408,42 @@ int main (int argc, char **argv) {
     if (UseUpDown) {
       list <IBNode *> rootNodes;
       if (RootsFileName.size()) {
-	rootNodes = ParseRootNodeNamesFile(&fabric, RootsFileName);
+        rootNodes = ParseRootNodeNamesFile(&fabric, RootsFileName);
       }
       else {
-	rootNodes = SubnMgtFindRootNodesByMinHop(&fabric);
+        rootNodes = SubnMgtFindRootNodesByMinHop(&fabric);
       }
 
       if (!rootNodes.empty()) {
-	cout << "-I- Recognized " << rootNodes.size() << " root nodes:" << endl;
-	for (list <IBNode *>::iterator nI = rootNodes.begin();
-	     nI != rootNodes.end(); nI++) {
-	  cout << " " << (*nI)->name << endl;
-	}
-	cout << "---------------------------------------------------------------------------\n" << endl;
+        cout << "-I- Recognized " << rootNodes.size() << " root nodes:" << endl;
+        for (list <IBNode *>::iterator nI = rootNodes.begin();
+             nI != rootNodes.end(); nI++) {
+          cout << " " << (*nI)->name << endl;
+        }
+        cout << "---------------------------------------------------------------------------\n" << endl;
 
-	map_pnode_int nodesRank;
-	SubnRankFabricNodesByRootNodes(&fabric, rootNodes, nodesRank);
+        map_pnode_int nodesRank;
+        SubnRankFabricNodesByRootNodes(&fabric, rootNodes, nodesRank);
 
-	if (SubnMgtCalcUpDnMinHopTbls(&fabric, nodesRank)) {
-	  cout << "-E- Fail to update Min Hops Tables." << endl;
-	  exit(1);
-	}
+        if (SubnMgtCalcUpDnMinHopTbls(&fabric, nodesRank)) {
+          cout << "-E- Fail to update Min Hops Tables." << endl;
+          exit(1);
+        }
       } else {
-	cout << "-E- Fail to recognize any root nodes. Up/Down is not active!" << endl;
+        cout << "-E- Fail to recognize any root nodes. Up/Down is not active!" << endl;
       }
     }
 
     if (!EnhancedRouting) {
 
       if (SubnMgtOsmRoute(&fabric)) {
-	cout << "-E- Fail to update LFT Tables." << endl;
-	exit(1);
+        cout << "-E- Fail to update LFT Tables." << endl;
+        exit(1);
       }
     } else {
       if (SubnMgtOsmEnhancedRoute(&fabric)) {
-	cout << "-E- Fail to update LFT Tables." << endl;
-	exit(1);
+        cout << "-E- Fail to update LFT Tables." << endl;
+        exit(1);
       }
     }
 
@@ -551,22 +553,17 @@ int main (int argc, char **argv) {
 
   list <IBNode *> rootNodes;
   int anyErr = 0;
-
-  if (RootsFileName.size())
-    {
-      if (TopoFile.size())
-	{
-	  rootNodes = ParseRootNodeNamesFile(&fabric, RootsFileName);
-	}
-      else
-	{
-	  rootNodes = ParseRootNodeGuidsFile(&fabric, RootsFileName);
-	}
-    }
-  else
-    {
-      rootNodes = SubnMgtFindRootNodesByMinHop(&fabric);
-    }
+  if (UseUpDown) {
+	 if (RootsFileName.size()) {
+		if (TopoFile.size()) {
+		  rootNodes = ParseRootNodeNamesFile(&fabric, RootsFileName);
+		} else {
+		  rootNodes = ParseRootNodeGuidsFile(&fabric, RootsFileName);
+		}
+	 } else {
+		rootNodes = SubnMgtFindRootNodesByMinHop(&fabric);
+	 }
+  }
 
   if (!rootNodes.empty()) {
     cout << "-I- Recognized " << rootNodes.size() << " root nodes:" << endl;

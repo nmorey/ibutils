@@ -4391,10 +4391,13 @@ proc DumpFabQualities {} {
     inform "-I-ibdiagnet:check.credit.loops.header"
 
     # report credit loops
-    ibdmCalcMinHopTables $fabric
-    set roots [ibdmFindRootNodesByMinHop $fabric]
-    # just flush out any logs
-    set report [ibdmGetAndClearInternalLog]
+    set roots ""
+    if { [info exists G(argv:updown)] } {
+	ibdmCalcMinHopTables $fabric
+	set roots [ibdmFindRootNodesByMinHop $fabric]
+	# just flush out any logs
+	set report [ibdmGetAndClearInternalLog]
+    }
     if {[llength $roots]} {
 	inform "-I-reporting:found.roots" $roots
 	ibdmReportNonUpDownCa2CaPaths $fabric $roots

@@ -15,7 +15,7 @@ ibdmchk [-v][-h][-u][-a <roots file>] -t <topology file> -n <SM Node>
 VERIFICATION:
 
 ibdmchk [-v][-h][-r <roots file>] [-s <subnet file>] [-f <fdb file>]
-  [-l <lmc>]
+  [-l <lmc>][-u]
 
 =head1 DESIGN MODE DESCRIPTION
 
@@ -55,7 +55,7 @@ Use enhanced routing algorithm when LMC > 0 and report the resulting paths corre
 
 =item -u|--updn
 
-Use up/down routing algorithm instead of OpenSM min-hop.
+Use up/down routing algorithm instead of OpenSM min-hop. Also use Up/Down based credit loop check.
 
 =item -r|--roots <roots file>
 A file with all the roots node names (one on each line).
@@ -97,6 +97,10 @@ OpenSM dump of Multicast LFDB. Use -D 0x41 to generate it (default is /var/log/o
 =item -r|--roots <roots file>
 
 A file holding all root nodes guids (one per line).
+
+=item -u|--updn
+
+Use Up/Down based credit loop check algorithm instead of the generic one.
 
 =head1 AUTHOR
 
