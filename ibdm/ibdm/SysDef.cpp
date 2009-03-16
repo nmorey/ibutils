@@ -453,8 +453,6 @@ list< string > getDirIbnlFiles(string dir) {
     }
     closedir(dp);
   }
-  else
-    cout << "-E- Fail to scan for IBNL files in directory:" << dir << endl;
 
   return res;
 }
