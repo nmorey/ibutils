@@ -3155,7 +3155,7 @@ typedef struct {
         return TCL_ERROR;
     }
 
-    for (i = 0; i < MAX_LOCAL_IBPORTS; i++)
+    for (i = 0; i < num_ports; i++)
     {
       attr_array[i].num_pkeys = 0;
       attr_array[i].p_pkey_table = NULL;
