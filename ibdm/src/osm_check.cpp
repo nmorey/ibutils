@@ -108,8 +108,8 @@ show_help() {
     << "     (default is /var/log/osm.fdbs or /tmp/osm.fdbs).\n"
     << "  -m|--mcfdb <file> = OpenSM dump of Multicast LFDB. Use -D 0x41 to generate it.\n"
     << "     (default is /var/log/osm.mcfdbs or /tmp/osm.mcfdbs).\n"
-    << "  -c|--psl <file> = CAxCA->SL mapping. \n"
-    << "  -d|--slvl <file> = SL2VL mapping. \n"
+    << "  -c|--psl <file> = CAxCA->SL mapping. Each line holds: srcguid dlid sl \n"
+    << "  -d|--slvl <file> = SL2VL mapping. Each line holds: swguid iport oport 0x(sl0)(sl1) 0x(sl2)(sl3)...\n"
     << "  -r|--roots <roots file> = a file holding all root nodes guids (one per line).\n"
     << "  -u|--updn = selects Up/Down credit loop check algorithm rather than the generic one.\n"
     << "\n"
@@ -227,8 +227,8 @@ int main (int argc, char **argv) {
 		{	"subnet",	1,	NULL,	's'},
 		{	"fdb",	   1,	NULL,	'f'},
 		{	"mcfdb",	   1,	NULL,	'm'},
-		{       "psl",          1,      NULL,   'c'},
-		{       "slvl",         1,      NULL,   'd'},
+		{  "psl",      1, NULL, 'c'},
+		{  "slvl",     1, NULL, 'd'},
 		{	"topology",	1,	NULL,	't'},
 		{  "node",     1, NULL, 'n'},
   		{	"port",	   1,	NULL,	'p'},

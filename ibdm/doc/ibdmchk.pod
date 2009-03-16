@@ -15,7 +15,7 @@ ibdmchk [-v][-h][-u][-a <roots file>] -t <topology file> -n <SM Node>
 VERIFICATION:
 
 ibdmchk [-v][-h][-r <roots file>] [-s <subnet file>] [-f <fdb file>]
-  [-l <lmc>][-u]
+  [-l <lmc>][-u][-c <path sl file>] [-d <sl2vl tables file>]
 
 =head1 DESIGN MODE DESCRIPTION
 
@@ -93,6 +93,18 @@ OpenSM dump of Ucast LFDB. Use -D 0x41 to generate it (default is /var/log/osm.f
 =item -m|--mcfdb <file>
 
 OpenSM dump of Multicast LFDB. Use -D 0x41 to generate it (default is /var/log/osm.mcfdbs or /tmp/osm.mcfdbs).
+
+=item -c|--psl <file>
+
+Source Guid to DLID -> Path SL mapping.
+Each line holds: src_node_guid dlid sl.
+Used by the credit loop check to accuartly model SL/VL based routing.
+
+=item -d|--slvl <file>
+
+SL2VL mapping of all switces.
+Each line holds: swguid iport oport 0x(sl0)(sl1) 0x(sl2)(sl3)...
+Used by the credit loop check to accuartly model SL/VL based routing.
 
 =item -r|--roots <roots file>
 

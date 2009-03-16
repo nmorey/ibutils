@@ -1187,6 +1187,12 @@ class IBFabric {
   int parseMCFdbFile(string fn);
   // Parse an OpenSM MCFDBs file and set the MFT table accordingly
 
+  int parsePSLFile(string fn);
+  // Parse Path to SL mapping file
+
+  int parseSLVLFile(string fn);
+  // Parse SLVL tables file
+
   inline void setLidPort (unsigned int lid, IBPort *p_port);
   // set a lid port
 
