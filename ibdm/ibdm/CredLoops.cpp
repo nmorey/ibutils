@@ -310,7 +310,7 @@ int
 CrdLoopAnalyze(IBFabric *p_fabric) {
   int res=0;
 
-  cout << "-I- Analyzing Fabric for Credit Loops "<<(int)p_fabric->getNumSLs()<<" SLs, "<<(int)p_fabric->getNumVLs()<< " VLs used...";
+  cout << "-I- Analyzing Fabric for Credit Loops "<<(int)p_fabric->getNumSLs()<<" SLs, "<<(int)p_fabric->getNumVLs()<< " VLs used..." << endl;
   // Init data structures
   if (CrdLoopPrepare(p_fabric)) {
     cout << "-E- Fail to prepare data structures." << endl;
@@ -324,9 +324,9 @@ CrdLoopAnalyze(IBFabric *p_fabric) {
   // Find the loops if exist
   res = CrdLoopFindLoops(p_fabric);
   if (!res)
-    cout << " no credit loops found" << endl;
+    cout << "-I- No credit loops found" << endl;
   else
-    cout << endl << "-E- credit loops in routing"<<endl;
+    cout << "-E- credit loops in routing"<<endl;
 
   // cleanup:
   CrdLoopCleanup(p_fabric);
