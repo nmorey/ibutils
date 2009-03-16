@@ -59,6 +59,8 @@ noinst_LIBRARIES = libibiscom.a
 
 libibiscom_a_SOURCES = ibbbm.c ibcr.c	ibis.c ibis_gsi_mad_ctrl.c \
 	ibpm.c ibsac.c ibsm.c ibvs.c ibcc.c
+# Below op causes renaming of the obj files - used when same source creates 2 targets (TODO: is this duplication needed ?)
+libibiscom_a_CFLAGS = $(AM_CFLAGS)	
 
 # client library to be used by IBIS TCL package:
 libibis_la_SOURCES = ibis_wrap.c ibbbm.c ibcr.c	ibis.c ibis_gsi_mad_ctrl.c \
@@ -75,7 +77,7 @@ LDADD = $(OSM_LDFLAGS)
 ibis_SOURCES = ibissh_wrap.cpp
 
 # note the order of the libraries does matter as we static link
-ibis_LDADD = -libiscom $(OSM_LDFLAGS) $(TCL_LIBS)
+ibis_LDADD = -L. -libiscom $(OSM_LDFLAGS) $(TCL_LIBS)
 
 
 # SWIG FILES:
