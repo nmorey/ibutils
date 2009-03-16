@@ -442,6 +442,18 @@ Parse OpenSM FDB dump file and fill in the switches LFT tables
 
 Parse an OpenSM MCFDBs file and set the MFT table accordingly
 
+=item [ Member : returns int  ] parsePSLFile fn
+
+Parse Path to SL mapping file. Each line with:
+src_node_guid DLID SL
+
+Used by credit loop check
+
+=item [ Member : returns int  ] parseSLVLFile fn
+
+Parse SLVL tables file. Each line holds:
+sw_node_guid in_port out_port 0x(sl0)(sl1) 0x(sl2)(sl3)...
+
 =item [ Member : returns void  ] setLidPort lid p_port
 
 Set a lid port

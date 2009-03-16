@@ -129,7 +129,7 @@
 .\" ========================================================================
 .\"
 .IX Title "IBDMSH 1"
-.TH IBDMSH 1 "2008-06-16" "IBDM 1.0" "IB DATA MODEL PACKAGE"
+.TH IBDMSH 1 "2009-03-16" "IBDM 1.0" "IB DATA MODEL PACKAGE"
 .SH "NAME"
 \&\fBibdmsh\fR IB DATA MODEL \- Extentended TCL shell
 .SH "DESCRIPTION"
@@ -563,6 +563,18 @@ Parse OpenSM \s-1FDB\s0 dump file and fill in the switches \s-1LFT\s0 tables
 .IP "[ Member : returns int  ] parseMCFdbFile fn"
 .IX Item "[ Member : returns int  ] parseMCFdbFile fn"
 Parse an OpenSM MCFDBs file and set the \s-1MFT\s0 table accordingly
+.RE
+.IP "[ Member : returns int  ] parsePSLFile fn"
+.IX Item "[ Member : returns int  ] parsePSLFile fn"
+Parse Path to \s-1SL\s0 mapping file. Each line with:
+src_node_guid \s-1DLID\s0 \s-1SL\s0
+.PP
+Used by credit loop check
+.RE
+.IP "[ Member : returns int  ] parseSLVLFile fn"
+.IX Item "[ Member : returns int  ] parseSLVLFile fn"
+Parse \s-1SLVL\s0 tables file. Each line holds:
+sw_node_guid in_port out_port 0x(sl0)(sl1) 0x(sl2)(sl3)...
 .RE
 .IP "[ Member : returns void  ] setLidPort lid p_port"
 .IX Item "[ Member : returns void  ] setLidPort lid p_port"
