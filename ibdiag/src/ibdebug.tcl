@@ -135,7 +135,7 @@ proc InitializeIBDIAG {} {
 
     ### InitializeIBDIAG - Configuration of constants
     ## Configuration of constants - Step1.0: Config lists of vars
-    set G(var:list.files.extention) "lst fdbs mcfdbs log neighbor masks sm pm mcgs pkey db pm_csv links_csv inv_csv err_csv"
+    set G(var:list.files.extention) "lst fdbs mcfdbs log neighbor masks sm pm mcgs pkey db pm_csv links_csv inv_csv err_csv psl slvl"
     set G(var:list.pm.counter)      "symbol_error_counter link_error_recovery_counter\
       link_down_counter port_rcv_errors port_xmit_discard vl15_dropped\
       port_rcv_constraint_errors local_link_integrity_errors\
@@ -3864,6 +3864,142 @@ proc CheckPathQoS {paths} {
 ######################################################################
 
 ######################################################################
+### Obtain QoS and SL related data for enhanced CreditLoop Check
+######################################################################
+
+# write down psl file
+# format is: srcnodeguid dlid sl
+proc GetAllLidToLidDefaultSLs {} {
+   global G Neighbor
+   global IB_PR_COMPMASK_SGID IB_PR_COMPMASK_DLID
+
+   set mask [format 0x%x [expr $IB_PR_COMPMASK_SGID | $IB_PR_COMPMASK_DLID]]
+
+   # first we build a list of all addressible ports
+   # we track the PortGuid, Base LID and LMC
+   # we store END_PORT{$portGuid} [list $lid $lmc]
+   # LID and LMC are a PortInfo attribute
+
+   # we have DB of PortGuid via NodeGuid and PortNum...
+   foreach nodeGuidPortNum [array names G data:PortGuid.*:*] {
+	regexp {PortGuid.([^:]+):([^:]+)} $nodeGuidPortNum d1 nodeGuid portNum
+	set portGuid $G($nodeGuidPortNum)
+
+	# for switches we only care about port 0
+	set nodeInfo $G(data:NodeInfo.$nodeGuid)
+	set nodeType [GetWordAfterFlag $nodeInfo -node_type]
+	if {$nodeType == 2} {
+	   if {[info exists END_PORT($portGuid)]} {
+		continue
+	   }
+	   # obtain the info by performing the queries
+	   set drPath $G(data:dr.path.to.guid.$portGuid)
+	   if {[catch {set portInfo [SmMadGetByDr PortInfo dump "$drPath" 0]}]} {
+		inform "-E-ibdiagnet:pathsl.FailPortInfo" $drPath
+		continue
+	   }
+	} else {
+	   set portInfo $G(data:PortInfo.$nodeGuid:$portNum)
+	}
+
+	# get the base lid and LMC from the PortInfo
+	set base_lid [GetWordAfterFlag $portInfo -base_lid]
+	if {$base_lid == 0} {
+	   puts "EZ: $portGuid base lid is zero $portInfo"
+	   continue
+	}
+	set mkey_lmc [GetWordAfterFlag $portInfo -mkey_lmc]
+	set lmc [expr $mkey_lmc & 0x7]
+	set numLids [expr 1 << $lmc]
+	set END_PORT($portGuid) [list $nodeGuid $base_lid $numLids]
+   }
+
+   set numPathRec [expr [array size END_PORT]*[array size END_PORT]]
+   inform "-I-ibdiagnet:pathsl.num.paths" $numPathRec
+   set FileID [InitializeOutputFile $G(var:tool.name).psl]
+
+   # we can query all paths
+   foreach srcGuid [array names END_PORT] {
+	set nodeGuid [lindex $END_PORT($srcGuid) 0]
+	foreach dstGuid [array names END_PORT] {
+	   foreach {dummy base_lid numLids} $END_PORT($dstGuid) {break}
+	   for {set i 0} {$i < $numLids} {incr i} {
+		set dlid [expr $base_lid + $i]
+		sacPathQuery configure -dlid $dlid
+		sacPathQuery configure -sgid "0xfe80000000000000:$srcGuid"
+		set paths [sacPathQuery getTable $mask]
+		if {[llength $paths] < 1} {
+		   inform "-E-ibdiagnet:pathsl.no.path" $portGuid $dlid
+		} else {
+		   set class_sl [sacPathRec_qos_class_sl_get [lindex $paths 0]]
+		   set sl [expr 0xf & $class_sl]
+		   puts $FileID "$nodeGuid $dlid $sl"
+		   foreach path $paths {
+			sacPathRec_delete $path
+		   }
+		}
+	   }
+	}
+   }
+   close $FileID
+}
+
+# Dump all SL2VL tables into a file
+proc GetAllSL2VLTables {} {
+   global G
+
+   set totAtts 0
+   # find node info of all switches
+   # we have DB of PortGuid via NodeGuid and PortNum...
+   foreach nodeGuidPortNum [array names G data:PortGuid.*:*] {
+	regexp {PortGuid.([^:]+):([^:]+)} $nodeGuidPortNum d1 nodeGuid portNum
+	set portGuid $G($nodeGuidPortNum)
+
+	set nodeInfo $G(data:NodeInfo.$nodeGuid)
+	set nodeType [GetWordAfterFlag $nodeInfo -node_type]
+	set numPorts [GetWordAfterFlag $nodeInfo -num_ports]
+	if {$nodeType == 2} {
+	   set SW_PORTS($portGuid) [list $nodeGuid $numPorts]
+	   incr totAtts [expr ($numPorts + 1) * ($numPorts + 1)]
+	}
+   }
+
+   inform "-I-ibdiagnet:sl2vl.num.switches.atts" [array size SW_PORTS] $totAtts
+   set FileID [InitializeOutputFile $G(var:tool.name).slvl]
+
+   # query SL2VL from all while dumping to a file
+   foreach portGuid [array names SW_PORTS] {
+	foreach {nodeGuid numPorts} $SW_PORTS($portGuid) {break}
+	set drPath $G(data:dr.path.to.guid.$portGuid)
+	for {set inPort 0} {$inPort <= $numPorts} {incr inPort} {
+	   for {set outPort 0} {$outPort <= $numPorts} {incr outPort} {
+		if {[catch {
+		   set tbl [SmMadGetByDr SlVlTable dump "$drPath" $inPort $outPort]}]} {
+		   inform "-E-ibdiagnet:sl2vl.FailSlVl" $drPath $inPort $outPort
+		   continue
+		}
+		puts $FileID "$nodeGuid $inPort $outPort $tbl"
+	   }
+	}
+   }
+   close $FileID
+}
+
+# a function for SL based routing dump
+proc DumpSlVlAndPathSLFiles {} {
+   global G
+   if {![info exists G(argv:vl.based.routing)]} {
+	return 1
+   }
+   inform "-I-ibdiagnet:pathsl.header"
+   GetAllSL2VLTables
+   GetAllLidToLidDefaultSLs
+   return 0
+}
+
+######################################################################
+
+######################################################################
 ### If a topology file is given
 ######################################################################
 
@@ -4402,6 +4538,10 @@ proc DumpFabQualities {} {
 	inform "-I-reporting:found.roots" $roots
 	ibdmReportNonUpDownCa2CaPaths $fabric $roots
     } else {
+	if {[info exists G(argv:vl.based.routing)]} {
+	   IBFabric_parseSLVLFile $fabric $G(outfiles,.slvl)
+	   IBFabric_parsePSLFile  $fabric $G(outfiles,.psl)
+	}
 	ibdmAnalyzeLoops $fabric
     }
     set report [ibdmGetAndClearInternalLog]

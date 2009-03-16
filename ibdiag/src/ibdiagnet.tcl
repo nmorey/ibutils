@@ -126,6 +126,9 @@ writeTopologyFileAndIBNLs
 ### run packages provided procs
 catch {RunPkgProcs} e
 
+### Dump VL based routing info
+DumpSlVlAndPathSLFiles
+
 ### report fabric qualities
 if {[catch {DumpFabQualities} e]} { puts "\n\nERROR $errorInfo $e" ; exit 1}
 

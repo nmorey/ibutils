@@ -19,11 +19,11 @@
 proc SetInfoArgv {} {
     global InfoArgv G
     array set InfoArgv {
-        -csv,name     "csv.dump"
-        -csv,desc     "Create an additional, csv based, reports"
-        -csv,arglen   "0"
+	 -csv,name     "csv.dump"
+	 -csv,desc     "Create an additional, csv based, reports"
+	 -csv,arglen   "0"
 
-        -load_db,name     "ibdiag.db"
+	 -load_db,name     "ibdiag.db"
 	-load_db,desc     "Load subnet data from the given .db file. Skip subnet discovery stage"
 	-load_db,param    "db_file"
 	-load_db,arglen   "1"
@@ -48,6 +48,10 @@ proc SetInfoArgv {} {
 	-sl,regexp  "integer.nonneg.==1"
 	-sl,error   "-E-argv:not.pos.integer"
 	-sl,maxvalue "15"
+
+	-vlr,name    "vl.based.routing"
+	-vlr,desc    "Extract and use VL based routing information: generate psl and slvl files and use them for credit loop checks"
+	-vlr,arglen 0
 
 	-P,name     "query.performance.monitors"
 	-P,desc     "If any of the provided pm is greater then its provided value, print it to screen"
@@ -327,7 +331,7 @@ proc SetToolsFlags {} {
 	ibping     "(n|l|d) . c w v o     . t s i p "
 	ibdiagpath "(n|l|d) . c   v o smp . t s i p    . pm pc P . lw ls sl ."
 	ibdiagui   "          c   v r u o   . t s i p    . pm pc P . lw ls ."
-	ibdiagnet  "          c   v r u o   . t s i p wt . pm pc P . lw ls    . skip load_db csv"
+	ibdiagnet  "          c   v r u o   . t s i p wt . pm pc P . lw ls    . skip load_db csv vlr"
 	ibcfg    "(n|l|d) (c|q)       . t s i p o"
 	ibmad    "(m) (a) (n|l|d)     . t s i p o ; (q) a"
 	ibsac    "(m) (a) k           . t s i p o ; (q) a"
@@ -636,7 +640,7 @@ proc ParseArgv {} {
 
     ## Command line check - Test5.0: log file
     if {[catch {set G(logFileID) [open $G(outfiles,.log) w]} errMsg]} {
-	inform "-E-loading:cannot.open.file" $G(outfiles,.log) -fn $G(outfiles,.log) -errMsg $errMsg
+	 inform "-E-loading:cannot.open.file" $G(outfiles,.log) -fn $G(outfiles,.log) -errMsg $errMsg
     }
 
     ## Command line check - Test6.0: If topology is not given and -s/-n  flags are specified
@@ -1324,9 +1328,6 @@ proc inform { msgCode args } {
 	"-I-localPort:using.dev.index" {
 	    append msgText "Using device $msgF(device) as the local device."
 	}
-
-
-
 	"-E-outfile:not.valid" {
 	    append msgText "Output file $msgF(file0) is illegal value for $G(var:tool.name).%n"
 	}
@@ -1458,19 +1459,38 @@ proc inform { msgCode args } {
                 # <- this means don't print the "-I-" prefix
 	    }
 	}
-        "-I-topology:matching.header" {
-            append msgText "Topology matching results"
-            set headerText "Topology Matching Check"
-        }
+	 "-I-topology:matching.header" {
+	    append msgText "Topology matching results"
+	    set headerText "Topology Matching Check"
+	 }
 
-        "-I-topology:matching.perfect" {
+	 "-I-topology:matching.perfect" {
 	    append msgText "The topology defined in $G(argv:topo.file) "
 	    append msgText "perfectly matches the discovered fabric."
-	}
-
-
-
-
+	 }
+	 "-I-ibdiagnet:pathsl.header" {
+	    append msgText "SL Based Routing"
+	    set headerText "Extracting SL Based Routing Info"
+	 }
+	 "-I-ibdiagnet:pathsl.num.paths" {
+	    append msgText "Query [lindex $args 0] Path Records for all end ports to end port pairs ..."
+	 }
+	 "-E-ibdiagnet:pathsl.no.path" {
+	    set portGuid [lindex $args 0]
+	    set dlid [lindex $args 1]
+	    append msgText "Failed to get path from Port:$portGuid to DLID:$dlid"
+	 }
+	 "-E-ibdiagnet:pathsl.FailPortInfo" {
+	    append msgText "Failed to get PortInfo for path:$args"
+	 }
+	 "-I-ibdiagnet:sl2vl.num.switches.atts" {
+	    foreach {nSW nTbl} $args {break}
+	    append msgText "Query $nTbl SlVl Tables on $nSW switches ..."
+	 }
+	 "-E-ibdiagnet:sl2vl.FailSlVl" {
+	    foreach {drPath inPort outPort} $args {break}
+	    append msgText "Failed to get SL to VL Table from path:$drPathj in port:$inPort out port:$outPort"
+	 }
         "-E-ibdiagpath:direct.route.deadend" {
 	    ### TODO: check the phrasing ...
 	    append msgText "Illegal direct route was issued.%n"
@@ -2061,6 +2081,11 @@ proc inform { msgCode args } {
 	    append msgText "Writing file $G(outfiles,.pkey)"
 	    append msgText " (a dump of the partitions in the IB fabric and their members)"
 	}
+	"-V-outfiles:.psl"   {
+	    PutsIn80Chars " "
+	    append msgText "Writing file $G(outfiles,.psl)"
+	    append msgText " (a dump of the SL for each srcguid dlid pair)"
+	}
 
 	"-I-ibping:results" {
 	    set pktFailures   $msgF(failures)
@@ -2252,11 +2277,12 @@ proc inform { msgCode args } {
         set exid ""
         set err_type 1
         regsub -all {%n} $msgText " " msgBody
-        regsub -all {,} $msgBody " " msgBody
+	  regsub -all {,} $msgBody " " msgBody
+	  regsub -all {\"} $msgBody " " msgBody
         for {set h 0} {$h < 3} {incr h} {
             set msgBody [join $msgBody]
         }
-	set msgBody [string range $msgBody 4 end]
+	  set msgBody [string range $msgBody 4 end]
         if {[info exists NODE]} {
             for {set i 0} {$i < [llength [array names NODE *,PortGUID]]} {incr i} {
                 set portGuid $NODE($i,PortGUID)

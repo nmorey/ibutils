@@ -4,7 +4,7 @@ B<ibdiagnet - IB diagnostic net>
 
 =head1 SYNOPSYS
 
-ibdiagnet [-c <count>] [-v] [-r] [-u] [-o <out-dir>]
+ibdiagnet [-c <count>] [-v] [-r] [-vlr] [-u] [-o <out-dir>]
   [-t <topo-file>] [-s <sys-name>] [-i <dev-index>] [-p <port-num>] [-wt]
   [-pm] [-pc] [-P <<PM>=<Value>>]
   [-lw <1x|4x|12x>] [-ls <2.5|5|10>]
@@ -54,6 +54,16 @@ A dump of the the existing partitions and their member host ports
 =item F<ibdiagnet.mcg> -
 
 A dump of the multicast groups, their properties and member host ports
+
+=item F<ibdiagnet.psl> -
+
+A dump of the path record SL of each possible source node guid and DLID pairs.
+Created only if -vlr option is provided
+
+=item F<ibdiagnet.slvl> -
+
+A dump of the SL2VL Tables from all the switches.
+Created only if -vlr option is provided
 
 =item F<ibdiagnet.db> -
 
@@ -262,6 +272,18 @@ A directory named ibdiag_ibnl is also created by this option, and holds the IBNL
 Load subnet data from the given .db file, and skip subnet discovery stage.
 Note: Some of the checks require actual subnet discovery, and therefore would not run when load_db is specified. These checks are
 : Duplicated/zero guids, link state, SMs status.
+
+=back
+
+=item B<-vlr> :
+
+=over
+
+=item
+VL based Routing - provide this option to create the paths SL file (psl), SL2VL file (slvl)
+and use them in credit loops check (if -r option is provided).
+
+NOTE: Since number of paths is N^2 extracting the PSL file may take some time.
 
 =back
 
