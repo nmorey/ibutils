@@ -129,7 +129,7 @@
 .\" ========================================================================
 .\"
 .IX Title "IBDMCHK 1"
-.TH IBDMCHK 1 "2008-06-16" "IBDM 1.0" "IB DATA MODEL PACKAGE"
+.TH IBDMCHK 1 "2009-03-16" "IBDM 1.0" "IB DATA MODEL PACKAGE"
 .SH "NAME"
 \&\fBIBDM \- Network Checker and Attributes Analyzer\fR
 .SH "SYNOPSYS"
@@ -144,7 +144,7 @@ ibdmchk [\-v][\-h][\-u][\-a <roots file>] \-t <topology file> \-n <\s-1SM\s0 Nod
 \&\s-1VERIFICATION:\s0
 .PP
 ibdmchk [\-v][\-h][\-r <roots file>] [\-s <subnet file>] [\-f <fdb file>]
-  [\-l <lmc>]
+  [\-l <lmc>][\-u]
 .SH "DESIGN MODE DESCRIPTION"
 .IX Header "DESIGN MODE DESCRIPTION"
 The Design mode is intended to be used before the cluster is built. It provides basic checks of the specified network as described by a topology file. After simulating the \s-1SM\s0 \s-1LID\s0 assignment and routing algorithms it provides reports of the (H)CA to (H)CA paths depth histogram and credit deadlock potential in the resulting routing scheme.
@@ -183,7 +183,7 @@ Use enhanced routing algorithm when \s-1LMC\s0 > 0 and report the resulting path
 .RE
 .IP "\-u|\-\-updn"
 .IX Item "-u|--updn"
-Use up/down routing algorithm instead of OpenSM min\-hop.
+Use up/down routing algorithm instead of OpenSM min\-hop. Also use Up/Down based credit loop check.
 .RE
 .IP "\-r|\-\-roots <roots file> A file with all the roots node names (one on each line)."
 .IX Item "-r|--roots <roots file> A file with all the roots node names (one on each line)."
@@ -224,6 +224,10 @@ OpenSM dump of Multicast \s-1LFDB\s0. Use \-D 0x41 to generate it (default is /v
 .IP "\-r|\-\-roots <roots file>"
 .IX Item "-r|--roots <roots file>"
 A file holding all root nodes guids (one per line).
+.RE
+.IP "\-u|\-\-updn"
+.IX Item "-u|--updn"
+Use Up/Down based credit loop check algorithm instead of the generic one.
 .SH "AUTHOR"
 .IX Header "AUTHOR"
 Eitan Zahavi, Mellanox Technologies \s-1LTD\s0, eitan@mellanox.co.il
