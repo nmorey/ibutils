@@ -1890,6 +1890,36 @@ static int _wrap_ibdmAnalyzeLoops(ClientData clientData, Tcl_Interp *interp, int
     Tcl_SetIntObj(tcl_result,(long) _result);
     return TCL_OK;
 }
+static int _wrap_ibdmSetCreditLoopAnalysisMode(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+
+    int  _result;
+    int  _arg0;
+    int  _arg1;
+    Tcl_Obj * tcl_result;
+    int tempint;
+
+    clientData = clientData; objv = objv;
+    tcl_result = Tcl_GetObjResult(interp);
+    if ((objc < 3) || (objc > 3)) {
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ibdmSetCreditLoopAnalysisMode include_switch_to_switch_paths include_multicast ",-1);
+        return TCL_ERROR;
+    }
+    if (Tcl_GetIntFromObj(interp,objv[1],&tempint) == TCL_ERROR) return TCL_ERROR;
+    _arg0 = (int ) tempint;
+    if (Tcl_GetIntFromObj(interp,objv[2],&tempint) == TCL_ERROR) return TCL_ERROR;
+    _arg1 = (int ) tempint;
+{
+  ibdm_tcl_error = 0;
+      _result = (int )CredLoopMode(_arg0,_arg1);
+;
+  if (ibdm_tcl_error) {
+	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
+	 return TCL_ERROR;
+  }
+}    tcl_result = Tcl_GetObjResult(interp);
+    Tcl_SetIntObj(tcl_result,(long) _result);
+    return TCL_OK;
+}
 static int _wrap_ibdmFindSymmetricalTreeRoots(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
 
     list_pnode * _result;
@@ -18113,6 +18143,7 @@ SWIGEXPORT(int,Ibdm_Init)(Tcl_Interp *interp) {
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ibdmVerifyCAtoCARoutes", _wrap_ibdmVerifyCAtoCARoutes, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ibdmVerifyAllPaths", _wrap_ibdmVerifyAllPaths, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ibdmAnalyzeLoops", _wrap_ibdmAnalyzeLoops, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ibdmSetCreditLoopAnalysisMode", _wrap_ibdmSetCreditLoopAnalysisMode, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ibdmFindSymmetricalTreeRoots", _wrap_ibdmFindSymmetricalTreeRoots, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ibdmFindRootNodesByMinHop", _wrap_ibdmFindRootNodesByMinHop, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ibdmRankFabricByRoots", _wrap_ibdmRankFabricByRoots, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);

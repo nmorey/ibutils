@@ -129,7 +129,7 @@
 .\" ========================================================================
 .\"
 .IX Title "IBDMCHK 1"
-.TH IBDMCHK 1 "2009-03-16" "IBDM 1.0" "IB DATA MODEL PACKAGE"
+.TH IBDMCHK 1 "2009-03-17" "IBDM 1.0" "IB DATA MODEL PACKAGE"
 .SH "NAME"
 \&\fBIBDM \- Network Checker and Attributes Analyzer\fR
 .SH "SYNOPSYS"
@@ -138,13 +138,14 @@ ibdmchk has two operation modes: design and verification.
 .PP
 \&\s-1DESIGN:\s0
 .PP
-ibdmchk [\-v][\-h][\-u][\-a <roots file>] \-t <topology file> \-n <\s-1SM\s0 Node>
+ibdmchk [\-v][\-h][\-u][\-r <roots file>] \-t <topology file> \-n <\s-1SM\s0 Node>
   \-p <\s-1SM\s0 Port> [\-e] [\-l <lmc>]
 .PP
 \&\s-1VERIFICATION:\s0
 .PP
 ibdmchk [\-v][\-h][\-r <roots file>] [\-s <subnet file>] [\-f <fdb file>]
-  [\-l <lmc>][\-u][\-c <path sl file>] [\-d <sl2vl tables file>]
+  [\-m <mcfdbs file> [\-l <lmc>] [\-u] [\-M] [\-a]
+  [\-c <path sl file>] [\-d <sl2vl tables file>]
 .SH "DESIGN MODE DESCRIPTION"
 .IX Header "DESIGN MODE DESCRIPTION"
 The Design mode is intended to be used before the cluster is built. It provides basic checks of the specified network as described by a topology file. After simulating the \s-1SM\s0 \s-1LID\s0 assignment and routing algorithms it provides reports of the (H)CA to (H)CA paths depth histogram and credit deadlock potential in the resulting routing scheme.
@@ -181,15 +182,11 @@ Provides this help message
 .IX Item "-e|--enh"
 Use enhanced routing algorithm when \s-1LMC\s0 > 0 and report the resulting paths correlation (using same system/node) histogram
 .RE
-.IP "\-u|\-\-updn"
-.IX Item "-u|--updn"
-Use up/down routing algorithm instead of OpenSM min\-hop. Also use Up/Down based credit loop check.
-.RE
 .IP "\-r|\-\-roots <roots file> A file with all the roots node names (one on each line)."
 .IX Item "-r|--roots <roots file> A file with all the roots node names (one on each line)."
 .SH "VERIFICATION MODE DESCRIPTION"
 .IX Header "VERIFICATION MODE DESCRIPTION"
-After the cluster is built and OpenSM is run (using flag \-D 0x43) it reports the subnet and \s-1FDB\s0 tables into the files osm\-subnet.lst, osm.fdbs and osm.fdbs in /var/log/ (or subnet.lst, osm.fdbs and osm.mcfdbs into /tmp in older OpenSM versions).
+After the cluster is built and OpenSM is run (using flag \-D 0x43) it reports the subnet and \s-1FDB\s0 tables into the files osm\-subnet.lst, osm.fdbs and osm.fdbs in /var/log/ (or subnet.lst, osm.fdbs and osm.mcfdbs into /tmp in older OpenSM versions). ibdiagnet is also producing the same files in its outoput directroy.
 Based on these files the utility checks all \s-1CA\s0 to \s-1CA\s0 connectivity. Further analysis for credit deadlock potential is performed and reported.
 In case of an \s-1LMC\s0 > 0 it reports histograms for how many systems and nodes are common between the different paths for the same port pairs.
 .SH "ARGUMENTS"
@@ -240,6 +237,15 @@ A file holding all root nodes guids (one per line).
 .IP "\-u|\-\-updn"
 .IX Item "-u|--updn"
 Use Up/Down based credit loop check algorithm instead of the generic one.
+.RE
+.IP "\-M|\-\-MFT"
+.IX Item "-M|--MFT"
+Include multicast routing in credit loops analysis.
+.RE
+.IP "\-a|\-\-all"
+.IX Item "-a|--all"
+Verify not only CA-CA paths but also \s-1SW\-SW\s0, CA-SW and \s-1SW\-CA\s0.
+Both check for \s-1FDB\s0 path connectivity and also for credit loops.
 .SH "AUTHOR"
 .IX Header "AUTHOR"
 Eitan Zahavi, Mellanox Technologies \s-1LTD\s0, eitan@mellanox.co.il

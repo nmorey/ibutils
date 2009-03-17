@@ -46,6 +46,22 @@
  *
  */
 
+using namespace std;
+
+//////////////////////////////////////////////////////////////////////////////
+// We keep global flags to control how the check is being done:
+
+// If non zero will consider all switch to switch paths too
+static int CrdLoopIncludeUcastSwitchPaths = 0;
+
+// If non zero consider multicast paths too
+static int CrdLoopIncludeMcastPaths = 0;
+
+// Map each MLID to a list of SL's that may be used for this MGRP traffic
+// If no entry is set then we will assume all traffic on SL=0
+#define map_mlid_sl_list  map<int, list< int >, less<int> >
+static map_mlid_sl_list mlidSLs;
+
 //////////////////////////////////////////////////////////////////////////////
 
 // Apply DFS on a dependency graph
@@ -170,7 +186,7 @@ int CrdLoopMarkRouteByLFT (
       return 1;
     }
 
-      // get the next port on the other side
+	 // get the next port on the other side
     p_portNext = p_node->getPort(outPortNum);
 
     if (! (p_portNext &&
@@ -201,7 +217,7 @@ int CrdLoopMarkRouteByLFT (
 // Go over all CA to CA paths and connect dependant vchannel by an edge
 
 int
-CrdLoopConnectDepend(IBFabric* p_fabric)
+CrdLoopConnectUcastDepend(IBFabric* p_fabric)
 {
   unsigned int lidStep = 1 << p_fabric->lmc;
   int anyError = 0;
@@ -211,7 +227,9 @@ CrdLoopConnectDepend(IBFabric* p_fabric)
   for ( i = p_fabric->minLid; i <= p_fabric->maxLid; i += lidStep) {
 	 IBPort *p_srcPort = p_fabric->PortByLid[i];
 
-	 if (!p_srcPort || (p_srcPort->p_node->type == IB_SW_NODE)) continue;
+	 if (!p_srcPort) continue;
+	 if (!CrdLoopIncludeUcastSwitchPaths &&
+		  (p_srcPort->p_node->type == IB_SW_NODE)) continue;
 
 	 unsigned int sLid = p_srcPort->base_lid;
 
@@ -224,7 +242,9 @@ CrdLoopConnectDepend(IBFabric* p_fabric)
 
 		if (! p_dstPort) continue;
 
-		if (p_dstPort->p_node->type == IB_SW_NODE) continue;
+		if (!CrdLoopIncludeUcastSwitchPaths &&
+			 (p_dstPort->p_node->type == IB_SW_NODE)) continue;
+
 		unsigned int dLid = p_dstPort->base_lid;
 		// go over all LMC combinations:
 		for (unsigned int l1 = 0; l1 < lidStep; l1++) {
@@ -243,11 +263,149 @@ CrdLoopConnectDepend(IBFabric* p_fabric)
   } // all sources
 
   if (anyError) {
-	 cout << "-E- Fail to traverse:" << anyError << " CA to CA paths" << endl;
+	 cout << "-E- Fail to traverse:"
+			<< anyError << " CA to CA paths" << endl;
 	 return 1;
   }
 
   return 0;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+// Go over all Multicast Groups on all switches and add the dependecies
+// they create to the dependency graph
+// Return number of errors it found
+int
+CrdLoopConnectMcastDepend(IBFabric* p_fabric)
+{
+  // We support providing an SL list to each MLID by provining a special file
+  // HACK: we can ignore connectivity check of the MCG and treat every switch
+  // separately. The connectivity analysis can be run independently if loops
+  // found.
+
+  // HACK: the algorithm assumes constant SL2VL which is not port dependant!
+  //       otherwise it should have been propagating traffic from each CA and SW on
+  //       the MGRP such that the out VL of the previous port is known...
+  //
+  // Algorithm:
+  // Foreach switch
+  //   Create empty port-to-port P2P(sl,in,out) mask matrix for each SL
+  //   Foreach MLID
+  //     Foreach SL of MLID
+  //        Copy the MFT(MLID) port mask to the matrix
+  //   Foreach SL
+  //      Lookup VL by SL - this is where the hack comes in handy
+  //      Foreach in-port
+  //         Foreach out-port
+  //            Create the dependency edge (port-driving-in-port, VL, out-port, VL)
+
+  int nErrs = 0;
+  int addedEdges = 0;
+
+  // foreach Switch
+  for (map_str_pnode::const_iterator nI = p_fabric->NodeByName.begin();
+		 nI != p_fabric->NodeByName.end(); nI++) {
+	 IBNode *p_node = (*nI).second;
+
+	 // we only do MFT on switches
+	 if (p_node->type != IB_SW_NODE) continue;
+
+	 // allocate the array of dependencies:
+	 uint8_t sl_in_out_dep[16][p_node->numPorts+1][p_node->numPorts+1];
+	 memset(sl_in_out_dep, 0, sizeof(uint8_t)*16*(p_node->numPorts+1)*(p_node->numPorts+1));
+
+	 // foreach MLID
+	 for (unsigned int i = 0; i < p_node->MFT.size(); i++) {
+		list<int> sls;
+
+		// lookup SL's
+		map_mlid_sl_list::const_iterator mlidI = mlidSLs.find(i+0xc000);
+		if (mlidI != mlidSLs.end()) {
+		  sls = (*mlidI).second;
+		} else {
+		  sls.push_back(0);
+		}
+
+		// now go over each SL at a time
+		for (list<int>::const_iterator lI = sls.begin();
+			  lI != sls.end();
+			  lI++) {
+		  int sl = (*lI);
+		  // check all ports of the MFT
+		  uint64_t port_mask = p_node->MFT[i];
+		  for (unsigned int inPortNum = 1; inPortNum <= p_node->numPorts; inPortNum++) {
+			 // we only care about port that are part of the MCG
+			 if ((((uint64_t)1) << inPortNum) & port_mask) {
+				for (unsigned int outPortNum = 1; outPortNum <= p_node->numPorts; outPortNum++) {
+				  if ((((uint64_t)1) << outPortNum) & port_mask) {
+					 if (inPortNum != outPortNum) {
+						sl_in_out_dep[sl][inPortNum][outPortNum] = 1;
+					 }
+				  }
+				}
+			 }
+		  }
+		}
+	 }
+
+	 // now convert the dependency matrix into channel graph edges:
+	 // Foreach SL
+	 for (unsigned int sl = 0; sl < 16; sl++) {
+		for (unsigned int inPortNum = 1; inPortNum <= p_node->numPorts; inPortNum++) {
+		  for (unsigned int outPortNum = 1; outPortNum <= p_node->numPorts; outPortNum++) {
+
+			 if (sl_in_out_dep[sl][inPortNum][outPortNum] != 1) continue;
+
+			 // Lookup VL by SL
+			 int vl = p_node->getSLVL(inPortNum,outPortNum,sl);
+
+			 // Create the dependency edge (port-driving-in-port, VL, out-port, VL)
+			 IBPort *p_outPort = p_node->getPort(outPortNum);
+			 if (! p_outPort) {
+				cout << "-E- Switch:" << p_node->name << " port:" << outPortNum
+					  << " is included in some MFT but is not connnected" << endl;
+				nErrs++;
+				continue;
+			 }
+			 IBPort *p_inPort = p_node->getPort(inPortNum);
+			 if (! p_inPort) {
+				cout << "-E- Switch:" << p_node->name << " port:" << inPortNum
+					  << " is included in some MFT but is not connnected" << endl;
+				nErrs++;
+				continue;
+			 }
+			 IBPort *p_drvPort = p_inPort->p_remotePort;
+			 if (! p_drvPort) {
+				cout << "-E- Switch:" << p_node->name << " port:" << inPortNum
+					  << " is included in some MFT but has no remote port." << endl;
+				nErrs++;
+				continue;
+			 }
+
+			 if (p_drvPort->p_node->type != IB_SW_NODE) continue;
+
+			 // Init vchannel's number of possible dependencies
+			 p_drvPort->channels[vl]->setDependSize((p_node->numPorts+1)*p_fabric->getNumVLs());
+
+			 // HACK: we assume the same VL was used entering to this node
+			 p_drvPort->channels[vl]->setDependency(outPortNum*p_fabric->getNumVLs()+vl,
+																 p_outPort->channels[vl]);
+			 addedEdges++;
+		  }
+		}
+	 }
+  }
+
+  // Ref from LFT code:
+  // outPortNum is the FBD port
+  // get the next port on the other side
+  // p_portNext = p_node->getPort(outPortNum);
+  // Now add an edge
+  // p_port->channels[VL]->setDependency(outPortNum*p_fabric->getNumVLs()+nextVL,
+  //                 p_portNext->channels[nextVL]);
+  cout << "-I- MFT added " << addedEdges << " edges to links dependency graph" << endl;
+  return(nErrs);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -273,7 +431,7 @@ CrdLoopPrepare(IBFabric *p_fabric) {
       // Init virtual channel array
       p_Port->channels.resize(nL);
       for (int j=0;j<nL;j++)
-	p_Port->channels[j] = new VChannel;
+		  p_Port->channels[j] = new VChannel;
     }
   }
   return 0;
@@ -310,21 +468,32 @@ int
 CrdLoopAnalyze(IBFabric *p_fabric) {
   int res=0;
 
-  cout << "-I- Analyzing Fabric for Credit Loops "<<(int)p_fabric->getNumSLs()<<" SLs, "<<(int)p_fabric->getNumVLs()<< " VLs used..." << endl;
+  cout << "-I- Analyzing Fabric for Credit Loops "
+		 << (int)p_fabric->getNumSLs() <<" SLs, "
+		 << (int)p_fabric->getNumVLs() << " VLs used." << endl;
+
   // Init data structures
   if (CrdLoopPrepare(p_fabric)) {
     cout << "-E- Fail to prepare data structures." << endl;
     return(1);
   }
-  // Create the dependencies
-  if (CrdLoopConnectDepend(p_fabric)) {
+  // Create the dependencies for unicast traffic
+  if (CrdLoopConnectUcastDepend(p_fabric)) {
     cout << "-E- Fail to build dependency graphs." << endl;
     return(1);
   }
+  // Do multicast if require
+  if (CrdLoopIncludeMcastPaths) {
+	 if ( CrdLoopConnectMcastDepend(p_fabric) ) {
+		cout << "-E- Fail to build multicast dependency graphs." << endl;
+		return(1);
+	 }
+  }
+
   // Find the loops if exist
   res = CrdLoopFindLoops(p_fabric);
   if (!res)
-    cout << "-I- No credit loops found" << endl;
+    cout << "-I- no credit loops found" << endl;
   else
     cout << "-E- credit loops in routing"<<endl;
 
@@ -334,5 +503,12 @@ CrdLoopAnalyze(IBFabric *p_fabric) {
   return res;
 }
 
+//////////////////////////////////////////////////////////////////////////////
+int
+CredLoopMode(int include_switch_to_switch_paths, int include_multicast) {
+  CrdLoopIncludeUcastSwitchPaths = include_switch_to_switch_paths;
+  CrdLoopIncludeMcastPaths = include_multicast;
+  return 0;
+}
 
 

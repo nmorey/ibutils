@@ -1284,6 +1284,10 @@ int ibdmFatTreeRoute(IBFabric *p_fabric, list_pnode rootNodes);
  int CrdLoopAnalyze(IBFabric *p_fabric);
 // Analyze the Fabric for Credit Loops
 
+%name(ibdmSetCreditLoopAnalysisMode)
+int CredLoopMode(int include_switch_to_switch_paths, int include_multicast);
+// Set the analysis mode of ibdmAnalyzeLoops
+
 %name(ibdmFindSymmetricalTreeRoots)
 list_pnode SubnMgtFindTreeRootNodes(IBFabric *p_fabric);
 // Analyze the fabric to find its root nodes assuming it is

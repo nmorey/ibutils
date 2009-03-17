@@ -8,14 +8,15 @@ ibdmchk has two operation modes: design and verification.
 
 DESIGN:
 
-ibdmchk [-v][-h][-u][-a <roots file>] -t <topology file> -n <SM Node>
+ibdmchk [-v][-h][-u][-r <roots file>] -t <topology file> -n <SM Node>
   -p <SM Port> [-e] [-l <lmc>]
 
 
 VERIFICATION:
 
 ibdmchk [-v][-h][-r <roots file>] [-s <subnet file>] [-f <fdb file>]
-  [-l <lmc>][-u][-c <path sl file>] [-d <sl2vl tables file>]
+  [-m <mcfdbs file> [-l <lmc>] [-u] [-M] [-a]
+  [-c <path sl file>] [-d <sl2vl tables file>]
 
 =head1 DESIGN MODE DESCRIPTION
 
@@ -53,16 +54,12 @@ LMC value > 0 means assigning 2^lmc lids to each port.
 
 Use enhanced routing algorithm when LMC > 0 and report the resulting paths correlation (using same system/node) histogram
 
-=item -u|--updn
-
-Use up/down routing algorithm instead of OpenSM min-hop. Also use Up/Down based credit loop check.
-
 =item -r|--roots <roots file>
 A file with all the roots node names (one on each line).
 
 =head1 VERIFICATION MODE DESCRIPTION
 
-After the cluster is built and OpenSM is run (using flag -D 0x43) it reports the subnet and FDB tables into the files osm-subnet.lst, osm.fdbs and osm.fdbs in /var/log/ (or subnet.lst, osm.fdbs and osm.mcfdbs into /tmp in older OpenSM versions).
+After the cluster is built and OpenSM is run (using flag -D 0x43) it reports the subnet and FDB tables into the files osm-subnet.lst, osm.fdbs and osm.fdbs in /var/log/ (or subnet.lst, osm.fdbs and osm.mcfdbs into /tmp in older OpenSM versions). ibdiagnet is also producing the same files in its outoput directroy.
 Based on these files the utility checks all CA to CA connectivity. Further analysis for credit deadlock potential is performed and reported.
 In case of an LMC > 0 it reports histograms for how many systems and nodes are common between the different paths for the same port pairs.
 
@@ -113,6 +110,15 @@ A file holding all root nodes guids (one per line).
 =item -u|--updn
 
 Use Up/Down based credit loop check algorithm instead of the generic one.
+
+=item -M|--MFT
+
+Include multicast routing in credit loops analysis.
+
+=item -a|--all
+
+Verify not only CA-CA paths but also SW-SW, CA-SW and SW-CA.
+Both check for FDB path connectivity and also for credit loops.
 
 =head1 AUTHOR
 

@@ -38,5 +38,7 @@
 // Analyze the fabric for credit loops.
 int
 CrdLoopAnalyze(IBFabric *p_fabric);
+int
+CredLoopMode(int include_switch_to_switch_paths, int include_multicast);
 
 #endif /* IBDM_CREDLOOPS_H */

@@ -45,7 +45,7 @@ void
 show_usage() {
   cout << "Usage: there are two modes: Design/Verify" << endl;
   cout << "  Design: ibdmchk [-v][-h][-e][-u][-l <lmc>][-r <roots file>] -t <topology file> -n <SM Node> -p <SM Port>" << endl;
-  cout << "  Verify: ibdmchk [-v][-h][-l <lmc>][-r <roots file>] [-s <subnet file>] [-f <fdb file>] [-m <mcfdb file>] [-c <path-sl file>] [-d <sl2vl file>]\n\n" << endl;
+  cout << "  Verify: ibdmchk [-v][-h][-a][-l <lmc>][-r <roots file>] [-s <subnet file>] [-f <fdb file>] [-m <mcfdb file>] [-c <path-sl file>] [-d <sl2vl file>]\n\n" << endl;
 }
 
 void
@@ -59,7 +59,7 @@ show_help() {
     << "\n"
     << "  CLUSTER DESIGN:\n"
     << "  Usage:\n"
-    << "   ibdmchk [-v][-h][-u][-a <roots file>] -t <topology file> -n <SM Node> -p <SM Port> [-e] [-l <lmc>]\n\n"
+    << "   ibdmchk [-v][-h][-u][-r <roots file>] -t <topology file> -n <SM Node> -p <SM Port> [-e] [-l <lmc>]\n\n"
     << "  Description:\n"
     << "   The Design mode is intended to be used before the cluster is built. It provides \n"
     << "   basic checks of the specified network as described by a topology file.\n"
@@ -83,7 +83,7 @@ show_help() {
     << "\n"
     << "  CLUSTER VERIFICATION:\n"
     << "  Usage:\n"
-    << "   ibdmchk [-v][-h][-r <roots file>] [-s <subnet file>] [-f <fdb file>] [-m <mcfdb file>] [-l <lmc>] [-c <path-sl file>] [-d <sl2vl file>]\n\n"
+    << "   ibdmchk [-v][-h][-r <roots file>] [-s <subnet file>] [-f <fdb file>] [-m <mcfdb file>] [-M] [-a] [-l <lmc>] [-c <path-sl file>] [-d <sl2vl file>]\n\n"
     << "  Description:\n"
     << "   After the cluster is built and OpenSM is run (using flag -D 0x43) it reports the\n"
     << "   subnet and FDB tables into the files osm-subnet.lst, osm.fdbs and osm.fdbs in\n"
@@ -112,6 +112,8 @@ show_help() {
     << "  -d|--slvl <file> = SL2VL mapping. Each line holds: swguid iport oport 0x(sl0)(sl1) 0x(sl2)(sl3)...\n"
     << "  -r|--roots <roots file> = a file holding all root nodes guids (one per line).\n"
     << "  -u|--updn = selects Up/Down credit loop check algorithm rather than the generic one.\n"
+    << "  -M|--MFT = include multicast routing in credit loops analysis.\n"
+    << "  -a|--all = verify all paths: not only CA-CA but also SW-CA and SW-SW\n"
     << "\n"
     << "Author: Eitan Zahavi, Mellanox Technologies LTD.\n"
     << endl;
@@ -205,10 +207,12 @@ int main (int argc, char **argv) {
   int SmPortNum  = -1;
   int UseUpDown = 0;
   int AllPaths = 0;
+  int CheckMFTCredLoops = 0;
+  int CheckSWUnicastPathsCredLoops = 0;
 
   /*
-	* Parsing of Command Line
-	*/
+   * Parsing of Command Line
+   */
 
   char next_option;
   const char * const short_option = "vhl:s:f:m:el:t:p:n:uar:c:d:";
@@ -236,7 +240,8 @@ int main (int argc, char **argv) {
 		{  "updn",     0, NULL, 'u'},
 		{  "roots",    1, NULL, 'r'},
 		{  "all",      0, NULL, 'a'},
-		{	NULL,		0,	NULL,	 0 }	/* Required at the end of the array */
+		{  "MFT",      0, NULL, 'M'},
+		{  NULL,       0,	NULL,	 0 }	/* Required at the end of the array */
 	 };
 
   printf("-------------------------------------------------\n");
@@ -344,9 +349,16 @@ int main (int argc, char **argv) {
 
 	 case 'a':
 		/*
-		  Use Up Down Routing
+		  Verify ALL paths
 		*/
 		AllPaths = 1;
+		CheckSWUnicastPathsCredLoops = 1;
+		break;
+	 case 'M':
+		/*
+		  Include MFT in credit loops check
+		*/
+		CheckMFTCredLoops = 1;
 		break;
 
 	 case -1:
@@ -596,7 +608,8 @@ int main (int argc, char **argv) {
     LinkCoverageAnalysis(&fabric, rootNodes);
 
   } else {
-    cout << "-I- Fail to recognize any root nodes. Using full credit loop check." << endl;
+    cout << "-I- Using full credit loop check." << endl;
+    CredLoopMode(CheckSWUnicastPathsCredLoops, CheckMFTCredLoops);
     anyErr |= CrdLoopAnalyze(&fabric);
   }
 
