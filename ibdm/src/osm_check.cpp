@@ -45,7 +45,7 @@ void
 show_usage() {
   cout << "Usage: there are two modes: Design/Verify" << endl;
   cout << "  Design: ibdmchk [-v][-h][-e][-u][-l <lmc>][-r <roots file>] -t <topology file> -n <SM Node> -p <SM Port>" << endl;
-  cout << "  Verify: ibdmchk [-v][-h][-a][-l <lmc>][-r <roots file>] [-s <subnet file>] [-f <fdb file>] [-m <mcfdb file>] [-c <path-sl file>] [-d <sl2vl file>]\n\n" << endl;
+  cout << "  Verify: ibdmchk [-v][-h][-a][-l <lmc>][-r <roots file>] [-s <subnet file>] [-f <fdb file>] [-m <mcfdb file>] [-c <path-sl file>] [-d <sl2vl file>][-M]\n\n" << endl;
 }
 
 void
@@ -215,7 +215,7 @@ int main (int argc, char **argv) {
    */
 
   char next_option;
-  const char * const short_option = "vhl:s:f:m:el:t:p:n:uar:c:d:";
+  const char * const short_option = "vhl:s:f:m:el:t:p:n:uar:c:d:M";
   /*
 	 In the array below, the 2nd parameter specified the number
 	 of arguments as follows:
@@ -225,17 +225,17 @@ int main (int argc, char **argv) {
   */
   const option long_option[] =
 	 {
-		{	"verbose",	1,	NULL,	'v'},
-		{	"help",		1,	NULL,	'h'},
-		{	"lmc",		1,	NULL,	'l'},
-		{	"subnet",	1,	NULL,	's'},
-		{	"fdb",	   1,	NULL,	'f'},
-		{	"mcfdb",	   1,	NULL,	'm'},
+		{  "verbose",  1,   NULL,   'v'},
+		{  "help",     1,   NULL,   'h'},
+		{  "lmc",      1,   NULL,   'l'},
+		{  "subnet",   1,   NULL,   's'},
+		{  "fdb",      1,   NULL,   'f'},
+		{  "mcfdb",    1,   NULL,   'm'},
 		{  "psl",      1, NULL, 'c'},
 		{  "slvl",     1, NULL, 'd'},
-		{	"topology",	1,	NULL,	't'},
+		{  "topology", 1, NULL, 't'},
 		{  "node",     1, NULL, 'n'},
-  		{	"port",	   1,	NULL,	'p'},
+		{  "port",     1, NULL, 'p'},
 		{  "enh",      0, NULL, 'e'},
 		{  "updn",     0, NULL, 'u'},
 		{  "roots",    1, NULL, 'r'},
