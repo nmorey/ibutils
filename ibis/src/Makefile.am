@@ -91,7 +91,7 @@ SWIG_IFC_FILES= $(srcdir)/ibbbm.i \
 	$(srcdir)/ibvs.i \
 	$(srcdir)/ibcc.i
 
-libibiscom.a: $(srcdir)/git_version.h
+$(srcdir)/ibis.c: $(srcdir)/git_version.h
 
 # track latest GIT version for this tree:
 GIT=$(shell which git)
