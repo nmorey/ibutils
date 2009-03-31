@@ -359,7 +359,7 @@
   $function;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }
 
