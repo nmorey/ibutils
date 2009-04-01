@@ -242,6 +242,11 @@ IBNode::IBNode(string n,
    attributes = string("");
    appData1.ptr = NULL;
    appData2.ptr = NULL;
+
+   devId = 0;
+   revId = 0;
+   vendId = 0;
+
    for (unsigned int i = 0; i < numPorts; i++)
       Ports.push_back((IBPort *)NULL);
 
@@ -921,7 +926,7 @@ IBSystem::removeBoard (string boardName) {
 //
 // We are facing here a "heuristic" approach for how one knows
 // the number of system ports - since some may be added later.
-// 
+//
 // In the case of a single device system we can and should expose
 // all device ports - simply as P<pn>.
 //
@@ -959,7 +964,7 @@ IBSystem::dumpIBNL(char *ibnlDir, string &sysType) {
    for (map_str_pnode::iterator nI = NodeByName.begin();
         nI != NodeByName.end(); nI++) {
       IBNode *p_node = (*nI).second;
-		string nameWithoutSysName = 
+		string nameWithoutSysName =
 		  p_node->name.substr(name.length()+1, p_node->name.length() - name.length() - 1);
       if (p_node->type == IB_SW_NODE)
       {
