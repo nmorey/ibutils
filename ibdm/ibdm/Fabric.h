@@ -322,7 +322,7 @@ class IBNode {
   PrivateAppData  appData1;  // Application Private Data #1
   PrivateAppData  appData2;  // Application Private Data #2
 
-  // Constractor
+  // Constructor
   IBNode(string n, class IBFabric *p_fab, class IBSystem *p_sys,
          IBNodeType t, int np);
 
