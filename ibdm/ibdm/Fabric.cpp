@@ -2028,9 +2028,9 @@ IBFabric::parseFdbFile(string fn) {
    ifstream f(fn.c_str());
    int switches = 0, fdbLines=0;
    char sLine[1024];
-   // osm_ucast_mgr_dump_ucast_routes: Switch 0x2c90000213700
+   // dump_ucast_routes: Switch 0x2c90000213700
    // 0x0001 : 006  : 01   : yes
-   regExp switchLine("osm_ucast_mgr_dump_ucast_routes: Switch 0x([0-9a-z]+)");
+   regExp switchLine("dump_ucast_routes: Switch 0x([0-9a-z]+)");
    regExp lidLine("0x([0-9a-zA-Z]+) : ([0-9]+)");
    rexMatch *p_rexRes;
 

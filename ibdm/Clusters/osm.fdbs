@@ -1,4 +1,4 @@
-osm_ucast_mgr_dump_ucast_routes: Switch 0x0002c90109fb0000
+dump_ucast_routes: Switch 0x0002c90109fb0000
 LID    : Port : Hops : Optimal
 0x0001 : 005  : 05   : yes
 0x0002 : 000  : 00   : yes
@@ -66,7 +66,7 @@ LID    : Port : Hops : Optimal
 0x0040 : 007  : 03   : yes
 0x0041 : 007  : 02   : yes
 
-osm_ucast_mgr_dump_ucast_routes: Switch 0x0002c90109fb3200
+dump_ucast_routes: Switch 0x0002c90109fb3200
 LID    : Port : Hops : Optimal
 0x0001 : 005  : 04   : yes
 0x0002 : 005  : 03   : yes
@@ -134,7 +134,7 @@ LID    : Port : Hops : Optimal
 0x0040 : 002  : 02   : yes
 0x0041 : 002  : 03   : yes
 
-osm_ucast_mgr_dump_ucast_routes: Switch 0x0002c90109fcb600
+dump_ucast_routes: Switch 0x0002c90109fcb600
 LID    : Port : Hops : Optimal
 0x0001 : 003  : 03   : yes
 0x0002 : 005  : 02   : yes
@@ -202,7 +202,7 @@ LID    : Port : Hops : Optimal
 0x0040 : 008  : 01   : yes
 0x0041 : 002  : 02   : yes
 
-osm_ucast_mgr_dump_ucast_routes: Switch 0x0000000000000001
+dump_ucast_routes: Switch 0x0000000000000001
 LID    : Port : Hops : Optimal
 0x0001 : 023  : 06   : yes
 0x0002 : 023  : 05   : yes
@@ -270,7 +270,7 @@ LID    : Port : Hops : Optimal
 0x0040 : 023  : 04   : yes
 0x0041 : 023  : 03   : yes
 
-osm_ucast_mgr_dump_ucast_routes: Switch 0x0002c90109fb0008
+dump_ucast_routes: Switch 0x0002c90109fb0008
 LID    : Port : Hops : Optimal
 0x0001 : 005  : 05   : yes
 0x0002 : 005  : 02   : yes
@@ -338,7 +338,7 @@ LID    : Port : Hops : Optimal
 0x0040 : 007  : 03   : yes
 0x0041 : 007  : 02   : yes
 
-osm_ucast_mgr_dump_ucast_routes: Switch 0x0002c90109fb3208
+dump_ucast_routes: Switch 0x0002c90109fb3208
 LID    : Port : Hops : Optimal
 0x0001 : 005  : 04   : yes
 0x0002 : 005  : 03   : yes
@@ -406,7 +406,7 @@ LID    : Port : Hops : Optimal
 0x0040 : 002  : 02   : yes
 0x0041 : 002  : 03   : yes
 
-osm_ucast_mgr_dump_ucast_routes: Switch 0x0002c90109fb0010
+dump_ucast_routes: Switch 0x0002c90109fb0010
 LID    : Port : Hops : Optimal
 0x0001 : 005  : 05   : yes
 0x0002 : 005  : 02   : yes
@@ -474,7 +474,7 @@ LID    : Port : Hops : Optimal
 0x0040 : 007  : 03   : yes
 0x0041 : 007  : 02   : yes
 
-osm_ucast_mgr_dump_ucast_routes: Switch 0x0002c90109fb3210
+dump_ucast_routes: Switch 0x0002c90109fb3210
 LID    : Port : Hops : Optimal
 0x0001 : 005  : 04   : yes
 0x0002 : 005  : 03   : yes
@@ -542,7 +542,7 @@ LID    : Port : Hops : Optimal
 0x0040 : 002  : 02   : yes
 0x0041 : 002  : 03   : yes
 
-osm_ucast_mgr_dump_ucast_routes: Switch 0x0002c90109fcb510
+dump_ucast_routes: Switch 0x0002c90109fcb510
 LID    : Port : Hops : Optimal
 0x0001 : 005  : 03   : yes
 0x0002 : 006  : 02   : yes
@@ -610,7 +610,7 @@ LID    : Port : Hops : Optimal
 0x0040 : 001  : 03   : yes
 0x0041 : 001  : 04   : yes
 
-osm_ucast_mgr_dump_ucast_routes: Switch 0x0002c90109fafc10
+dump_ucast_routes: Switch 0x0002c90109fafc10
 LID    : Port : Hops : Optimal
 0x0001 : 005  : 05   : yes
 0x0002 : 005  : 04   : yes
@@ -678,7 +678,7 @@ LID    : Port : Hops : Optimal
 0x0040 : 008  : 03   : yes
 0x0041 : 008  : 02   : yes
 
-osm_ucast_mgr_dump_ucast_routes: Switch 0x0002c90109fb0018
+dump_ucast_routes: Switch 0x0002c90109fb0018
 LID    : Port : Hops : Optimal
 0x0001 : 005  : 04   : yes
 0x0002 : 004  : 01   : yes
@@ -746,7 +746,7 @@ LID    : Port : Hops : Optimal
 0x0040 : 002  : 04   : yes
 0x0041 : 002  : 03   : yes
 
-osm_ucast_mgr_dump_ucast_routes: Switch 0x0002c90109fcb518
+dump_ucast_routes: Switch 0x0002c90109fcb518
 LID    : Port : Hops : Optimal
 0x0001 : 005  : 03   : yes
 0x0002 : 006  : 02   : yes
@@ -814,7 +814,7 @@ LID    : Port : Hops : Optimal
 0x0040 : 001  : 03   : yes
 0x0041 : 001  : 04   : yes
 
-osm_ucast_mgr_dump_ucast_routes: Switch 0x0002c90109fafc18
+dump_ucast_routes: Switch 0x0002c90109fafc18
 LID    : Port : Hops : Optimal
 0x0001 : 005  : 05   : yes
 0x0002 : 005  : 04   : yes
@@ -882,7 +882,7 @@ LID    : Port : Hops : Optimal
 0x0040 : 008  : 03   : yes
 0x0041 : 008  : 02   : yes
 
-osm_ucast_mgr_dump_ucast_routes: Switch 0x0002c90109fb0020
+dump_ucast_routes: Switch 0x0002c90109fb0020
 LID    : Port : Hops : Optimal
 0x0001 : 005  : 04   : yes
 0x0002 : 004  : 01   : yes
@@ -950,7 +950,7 @@ LID    : Port : Hops : Optimal
 0x0040 : 002  : 04   : yes
 0x0041 : 002  : 03   : yes
 
-osm_ucast_mgr_dump_ucast_routes: Switch 0x0002c90109fcb520
+dump_ucast_routes: Switch 0x0002c90109fcb520
 LID    : Port : Hops : Optimal
 0x0001 : 005  : 03   : yes
 0x0002 : 006  : 02   : yes
@@ -1018,7 +1018,7 @@ LID    : Port : Hops : Optimal
 0x0040 : 001  : 03   : yes
 0x0041 : 001  : 04   : yes
 
-osm_ucast_mgr_dump_ucast_routes: Switch 0x0002c90109fafc20
+dump_ucast_routes: Switch 0x0002c90109fafc20
 LID    : Port : Hops : Optimal
 0x0001 : 005  : 05   : yes
 0x0002 : 005  : 04   : yes
@@ -1086,7 +1086,7 @@ LID    : Port : Hops : Optimal
 0x0040 : 008  : 03   : yes
 0x0041 : 008  : 02   : yes
 
-osm_ucast_mgr_dump_ucast_routes: Switch 0x0002c90109fb0028
+dump_ucast_routes: Switch 0x0002c90109fb0028
 LID    : Port : Hops : Optimal
 0x0001 : 005  : 04   : yes
 0x0002 : 004  : 01   : yes
@@ -1154,7 +1154,7 @@ LID    : Port : Hops : Optimal
 0x0040 : 005  : 02   : yes
 0x0041 : 006  : 01   : yes
 
-osm_ucast_mgr_dump_ucast_routes: Switch 0x0002c90109fafc28
+dump_ucast_routes: Switch 0x0002c90109fafc28
 LID    : Port : Hops : Optimal
 0x0001 : 005  : 04   : yes
 0x0002 : 005  : 03   : yes
@@ -1222,7 +1222,7 @@ LID    : Port : Hops : Optimal
 0x0040 : 002  : 04   : yes
 0x0041 : 002  : 03   : yes
 
-osm_ucast_mgr_dump_ucast_routes: Switch 0x0002c90109fb0030
+dump_ucast_routes: Switch 0x0002c90109fb0030
 LID    : Port : Hops : Optimal
 0x0001 : 005  : 04   : yes
 0x0002 : 004  : 01   : yes
@@ -1290,7 +1290,7 @@ LID    : Port : Hops : Optimal
 0x0040 : 002  : 04   : yes
 0x0041 : 002  : 03   : yes
 
-osm_ucast_mgr_dump_ucast_routes: Switch 0x0002c90109fcc230
+dump_ucast_routes: Switch 0x0002c90109fcc230
 LID    : Port : Hops : Optimal
 0x0001 : 004  : 03   : yes
 0x0002 : 007  : 02   : yes
@@ -1358,7 +1358,7 @@ LID    : Port : Hops : Optimal
 0x0040 : 002  : 03   : yes
 0x0041 : 001  : 04   : yes
 
-osm_ucast_mgr_dump_ucast_routes: Switch 0x0002c90109fafc30
+dump_ucast_routes: Switch 0x0002c90109fafc30
 LID    : Port : Hops : Optimal
 0x0001 : 005  : 04   : yes
 0x0002 : 005  : 03   : yes
@@ -1426,7 +1426,7 @@ LID    : Port : Hops : Optimal
 0x0040 : 002  : 04   : yes
 0x0041 : 002  : 03   : yes
 
-osm_ucast_mgr_dump_ucast_routes: Switch 0x0002c90109fcc238
+dump_ucast_routes: Switch 0x0002c90109fcc238
 LID    : Port : Hops : Optimal
 0x0001 : 004  : 03   : yes
 0x0002 : 007  : 02   : yes
@@ -1494,7 +1494,7 @@ LID    : Port : Hops : Optimal
 0x0040 : 002  : 03   : yes
 0x0041 : 001  : 04   : yes
 
-osm_ucast_mgr_dump_ucast_routes: Switch 0x0002c90109fafc38
+dump_ucast_routes: Switch 0x0002c90109fafc38
 LID    : Port : Hops : Optimal
 0x0001 : 005  : 04   : yes
 0x0002 : 005  : 03   : yes
@@ -1562,7 +1562,7 @@ LID    : Port : Hops : Optimal
 0x0040 : 002  : 04   : yes
 0x0041 : 002  : 03   : yes
 
-osm_ucast_mgr_dump_ucast_routes: Switch 0x0002c90109fcc240
+dump_ucast_routes: Switch 0x0002c90109fcc240
 LID    : Port : Hops : Optimal
 0x0001 : 004  : 03   : yes
 0x0002 : 007  : 02   : yes
@@ -1630,7 +1630,7 @@ LID    : Port : Hops : Optimal
 0x0040 : 002  : 03   : yes
 0x0041 : 001  : 04   : yes
 
-osm_ucast_mgr_dump_ucast_routes: Switch 0x0002c90109fcc540
+dump_ucast_routes: Switch 0x0002c90109fcc540
 LID    : Port : Hops : Optimal
 0x0001 : 006  : 03   : yes
 0x0002 : 001  : 02   : yes
@@ -1698,7 +1698,7 @@ LID    : Port : Hops : Optimal
 0x0040 : 007  : 03   : yes
 0x0041 : 001  : 04   : yes
 
-osm_ucast_mgr_dump_ucast_routes: Switch 0x0002c90109faf040
+dump_ucast_routes: Switch 0x0002c90109faf040
 LID    : Port : Hops : Optimal
 0x0001 : 005  : 05   : yes
 0x0002 : 005  : 04   : yes
@@ -1766,7 +1766,7 @@ LID    : Port : Hops : Optimal
 0x0040 : 006  : 03   : yes
 0x0041 : 006  : 02   : yes
 
-osm_ucast_mgr_dump_ucast_routes: Switch 0x0002c90109fafc40
+dump_ucast_routes: Switch 0x0002c90109fafc40
 LID    : Port : Hops : Optimal
 0x0001 : 005  : 04   : yes
 0x0002 : 005  : 03   : yes
@@ -1834,7 +1834,7 @@ LID    : Port : Hops : Optimal
 0x0040 : 005  : 02   : yes
 0x0041 : 006  : 01   : yes
 
-osm_ucast_mgr_dump_ucast_routes: Switch 0x0002c90109fcc548
+dump_ucast_routes: Switch 0x0002c90109fcc548
 LID    : Port : Hops : Optimal
 0x0001 : 006  : 03   : yes
 0x0002 : 001  : 02   : yes
@@ -1902,7 +1902,7 @@ LID    : Port : Hops : Optimal
 0x0040 : 007  : 03   : yes
 0x0041 : 001  : 04   : yes
 
-osm_ucast_mgr_dump_ucast_routes: Switch 0x0002c90109faf048
+dump_ucast_routes: Switch 0x0002c90109faf048
 LID    : Port : Hops : Optimal
 0x0001 : 005  : 05   : yes
 0x0002 : 005  : 04   : yes
@@ -1970,7 +1970,7 @@ LID    : Port : Hops : Optimal
 0x0040 : 006  : 03   : yes
 0x0041 : 006  : 02   : yes
 
-osm_ucast_mgr_dump_ucast_routes: Switch 0x0002c90109fcc550
+dump_ucast_routes: Switch 0x0002c90109fcc550
 LID    : Port : Hops : Optimal
 0x0001 : 006  : 03   : yes
 0x0002 : 001  : 02   : yes
@@ -2038,7 +2038,7 @@ LID    : Port : Hops : Optimal
 0x0040 : 007  : 03   : yes
 0x0041 : 001  : 04   : yes
 
-osm_ucast_mgr_dump_ucast_routes: Switch 0x0002c90109faf050
+dump_ucast_routes: Switch 0x0002c90109faf050
 LID    : Port : Hops : Optimal
 0x0001 : 005  : 05   : yes
 0x0002 : 005  : 04   : yes
@@ -2106,7 +2106,7 @@ LID    : Port : Hops : Optimal
 0x0040 : 006  : 03   : yes
 0x0041 : 006  : 02   : yes
 
-osm_ucast_mgr_dump_ucast_routes: Switch 0x0002c90109faf058
+dump_ucast_routes: Switch 0x0002c90109faf058
 LID    : Port : Hops : Optimal
 0x0001 : 005  : 04   : yes
 0x0002 : 005  : 03   : yes
@@ -2174,7 +2174,7 @@ LID    : Port : Hops : Optimal
 0x0040 : 002  : 04   : yes
 0x0041 : 002  : 03   : yes
 
-osm_ucast_mgr_dump_ucast_routes: Switch 0x0002c90109fb1960
+dump_ucast_routes: Switch 0x0002c90109fb1960
 LID    : Port : Hops : Optimal
 0x0001 : 005  : 05   : yes
 0x0002 : 005  : 04   : yes
@@ -2242,7 +2242,7 @@ LID    : Port : Hops : Optimal
 0x0040 : 005  : 03   : yes
 0x0041 : 005  : 02   : yes
 
-osm_ucast_mgr_dump_ucast_routes: Switch 0x0002c90109faf060
+dump_ucast_routes: Switch 0x0002c90109faf060
 LID    : Port : Hops : Optimal
 0x0001 : 005  : 04   : yes
 0x0002 : 005  : 03   : yes
@@ -2310,7 +2310,7 @@ LID    : Port : Hops : Optimal
 0x0040 : 005  : 02   : yes
 0x0041 : 006  : 01   : yes
 
-osm_ucast_mgr_dump_ucast_routes: Switch 0x0002c90109fb1968
+dump_ucast_routes: Switch 0x0002c90109fb1968
 LID    : Port : Hops : Optimal
 0x0001 : 005  : 05   : yes
 0x0002 : 005  : 04   : yes
@@ -2378,7 +2378,7 @@ LID    : Port : Hops : Optimal
 0x0040 : 005  : 03   : yes
 0x0041 : 005  : 02   : yes
 
-osm_ucast_mgr_dump_ucast_routes: Switch 0x0002c90109faf068
+dump_ucast_routes: Switch 0x0002c90109faf068
 LID    : Port : Hops : Optimal
 0x0001 : 005  : 04   : yes
 0x0002 : 005  : 03   : yes
@@ -2446,7 +2446,7 @@ LID    : Port : Hops : Optimal
 0x0040 : 002  : 04   : yes
 0x0041 : 002  : 03   : yes
 
-osm_ucast_mgr_dump_ucast_routes: Switch 0x0002c90109fb1970
+dump_ucast_routes: Switch 0x0002c90109fb1970
 LID    : Port : Hops : Optimal
 0x0001 : 005  : 05   : yes
 0x0002 : 005  : 04   : yes
@@ -2514,7 +2514,7 @@ LID    : Port : Hops : Optimal
 0x0040 : 005  : 03   : yes
 0x0041 : 005  : 02   : yes
 
-osm_ucast_mgr_dump_ucast_routes: Switch 0x0002c90109faf070
+dump_ucast_routes: Switch 0x0002c90109faf070
 LID    : Port : Hops : Optimal
 0x0001 : 005  : 04   : yes
 0x0002 : 005  : 03   : yes
@@ -2582,7 +2582,7 @@ LID    : Port : Hops : Optimal
 0x0040 : 002  : 04   : yes
 0x0041 : 002  : 03   : yes
 
-osm_ucast_mgr_dump_ucast_routes: Switch 0x0002c90109faf270
+dump_ucast_routes: Switch 0x0002c90109faf270
 LID    : Port : Hops : Optimal
 0x0001 : 005  : 03   : yes
 0x0002 : 005  : 04   : yes
@@ -2650,7 +2650,7 @@ LID    : Port : Hops : Optimal
 0x0040 : 008  : 03   : yes
 0x0041 : 008  : 02   : yes
 
-osm_ucast_mgr_dump_ucast_routes: Switch 0x0002c90109fb1978
+dump_ucast_routes: Switch 0x0002c90109fb1978
 LID    : Port : Hops : Optimal
 0x0001 : 005  : 04   : yes
 0x0002 : 005  : 03   : yes
@@ -2718,7 +2718,7 @@ LID    : Port : Hops : Optimal
 0x0040 : 007  : 02   : yes
 0x0041 : 006  : 01   : yes
 
-osm_ucast_mgr_dump_ucast_routes: Switch 0x0002c90109faf278
+dump_ucast_routes: Switch 0x0002c90109faf278
 LID    : Port : Hops : Optimal
 0x0001 : 001  : 01   : yes
 0x0002 : 005  : 04   : yes
@@ -2786,7 +2786,7 @@ LID    : Port : Hops : Optimal
 0x0040 : 008  : 03   : yes
 0x0041 : 008  : 02   : yes
 
-osm_ucast_mgr_dump_ucast_routes: Switch 0x0002c90109fb1980
+dump_ucast_routes: Switch 0x0002c90109fb1980
 LID    : Port : Hops : Optimal
 0x0001 : 005  : 04   : yes
 0x0002 : 005  : 03   : yes
@@ -2854,7 +2854,7 @@ LID    : Port : Hops : Optimal
 0x0040 : 003  : 04   : yes
 0x0041 : 003  : 03   : yes
 
-osm_ucast_mgr_dump_ucast_routes: Switch 0x0002c90109faf280
+dump_ucast_routes: Switch 0x0002c90109faf280
 LID    : Port : Hops : Optimal
 0x0001 : 005  : 03   : yes
 0x0002 : 005  : 04   : yes
@@ -2922,7 +2922,7 @@ LID    : Port : Hops : Optimal
 0x0040 : 008  : 03   : yes
 0x0041 : 008  : 02   : yes
 
-osm_ucast_mgr_dump_ucast_routes: Switch 0x0002c90109faf580
+dump_ucast_routes: Switch 0x0002c90109faf580
 LID    : Port : Hops : Optimal
 0x0001 : 005  : 05   : yes
 0x0002 : 005  : 04   : yes
@@ -2990,7 +2990,7 @@ LID    : Port : Hops : Optimal
 0x0040 : 008  : 03   : yes
 0x0041 : 008  : 02   : yes
 
-osm_ucast_mgr_dump_ucast_routes: Switch 0x0002c90109fb1988
+dump_ucast_routes: Switch 0x0002c90109fb1988
 LID    : Port : Hops : Optimal
 0x0001 : 005  : 04   : yes
 0x0002 : 005  : 03   : yes
@@ -3058,7 +3058,7 @@ LID    : Port : Hops : Optimal
 0x0040 : 003  : 04   : yes
 0x0041 : 003  : 03   : yes
 
-osm_ucast_mgr_dump_ucast_routes: Switch 0x0002c90109faf288
+dump_ucast_routes: Switch 0x0002c90109faf288
 LID    : Port : Hops : Optimal
 0x0001 : 003  : 02   : yes
 0x0002 : 005  : 03   : yes
@@ -3126,7 +3126,7 @@ LID    : Port : Hops : Optimal
 0x0040 : 002  : 04   : yes
 0x0041 : 002  : 03   : yes
 
-osm_ucast_mgr_dump_ucast_routes: Switch 0x0002c90109faf588
+dump_ucast_routes: Switch 0x0002c90109faf588
 LID    : Port : Hops : Optimal
 0x0001 : 005  : 05   : yes
 0x0002 : 005  : 04   : yes
@@ -3194,7 +3194,7 @@ LID    : Port : Hops : Optimal
 0x0040 : 008  : 03   : yes
 0x0041 : 008  : 02   : yes
 
-osm_ucast_mgr_dump_ucast_routes: Switch 0x0002c90109fb1990
+dump_ucast_routes: Switch 0x0002c90109fb1990
 LID    : Port : Hops : Optimal
 0x0001 : 005  : 04   : yes
 0x0002 : 005  : 03   : yes
@@ -3262,7 +3262,7 @@ LID    : Port : Hops : Optimal
 0x0040 : 003  : 04   : yes
 0x0041 : 003  : 03   : yes
 
-osm_ucast_mgr_dump_ucast_routes: Switch 0x0002c90109faf290
+dump_ucast_routes: Switch 0x0002c90109faf290
 LID    : Port : Hops : Optimal
 0x0001 : 003  : 02   : yes
 0x0002 : 005  : 03   : yes
@@ -3330,7 +3330,7 @@ LID    : Port : Hops : Optimal
 0x0040 : 002  : 04   : yes
 0x0041 : 002  : 03   : yes
 
-osm_ucast_mgr_dump_ucast_routes: Switch 0x0002c90109faf590
+dump_ucast_routes: Switch 0x0002c90109faf590
 LID    : Port : Hops : Optimal
 0x0001 : 005  : 05   : yes
 0x0002 : 005  : 04   : yes
@@ -3398,7 +3398,7 @@ LID    : Port : Hops : Optimal
 0x0040 : 008  : 03   : yes
 0x0041 : 008  : 02   : yes
 
-osm_ucast_mgr_dump_ucast_routes: Switch 0x0002c90109faf298
+dump_ucast_routes: Switch 0x0002c90109faf298
 LID    : Port : Hops : Optimal
 0x0001 : 003  : 02   : yes
 0x0002 : 005  : 03   : yes
@@ -3466,7 +3466,7 @@ LID    : Port : Hops : Optimal
 0x0040 : 002  : 04   : yes
 0x0041 : 002  : 03   : yes
 
-osm_ucast_mgr_dump_ucast_routes: Switch 0x0002c90109faf598
+dump_ucast_routes: Switch 0x0002c90109faf598
 LID    : Port : Hops : Optimal
 0x0001 : 005  : 04   : yes
 0x0002 : 005  : 03   : yes
@@ -3534,7 +3534,7 @@ LID    : Port : Hops : Optimal
 0x0040 : 002  : 04   : yes
 0x0041 : 002  : 03   : yes
 
-osm_ucast_mgr_dump_ucast_routes: Switch 0x0002c90109faf2a0
+dump_ucast_routes: Switch 0x0002c90109faf2a0
 LID    : Port : Hops : Optimal
 0x0001 : 003  : 02   : yes
 0x0002 : 005  : 03   : yes
@@ -3602,7 +3602,7 @@ LID    : Port : Hops : Optimal
 0x0040 : 007  : 02   : yes
 0x0041 : 006  : 01   : yes
 
-osm_ucast_mgr_dump_ucast_routes: Switch 0x0002c90109faf5a0
+dump_ucast_routes: Switch 0x0002c90109faf5a0
 LID    : Port : Hops : Optimal
 0x0001 : 005  : 04   : yes
 0x0002 : 005  : 03   : yes
@@ -3670,7 +3670,7 @@ LID    : Port : Hops : Optimal
 0x0040 : 002  : 04   : yes
 0x0041 : 002  : 03   : yes
 
-osm_ucast_mgr_dump_ucast_routes: Switch 0x0002c90109faf5a8
+dump_ucast_routes: Switch 0x0002c90109faf5a8
 LID    : Port : Hops : Optimal
 0x0001 : 005  : 04   : yes
 0x0002 : 005  : 03   : yes
@@ -3738,7 +3738,7 @@ LID    : Port : Hops : Optimal
 0x0040 : 002  : 04   : yes
 0x0041 : 002  : 03   : yes
 
-osm_ucast_mgr_dump_ucast_routes: Switch 0x0002c90109faf5b0
+dump_ucast_routes: Switch 0x0002c90109faf5b0
 LID    : Port : Hops : Optimal
 0x0001 : 005  : 04   : yes
 0x0002 : 005  : 03   : yes
@@ -3806,7 +3806,7 @@ LID    : Port : Hops : Optimal
 0x0040 : 007  : 02   : yes
 0x0041 : 006  : 01   : yes
 
-osm_ucast_mgr_dump_ucast_routes: Switch 0x0002c90109fb31e0
+dump_ucast_routes: Switch 0x0002c90109fb31e0
 LID    : Port : Hops : Optimal
 0x0001 : 005  : 05   : yes
 0x0002 : 005  : 04   : yes
@@ -3874,7 +3874,7 @@ LID    : Port : Hops : Optimal
 0x0040 : 005  : 01   : yes
 0x0041 : 005  : 02   : yes
 
-osm_ucast_mgr_dump_ucast_routes: Switch 0x0002c90109fb31e8
+dump_ucast_routes: Switch 0x0002c90109fb31e8
 LID    : Port : Hops : Optimal
 0x0001 : 005  : 05   : yes
 0x0002 : 005  : 04   : yes
@@ -3942,7 +3942,7 @@ LID    : Port : Hops : Optimal
 0x0040 : 005  : 01   : yes
 0x0041 : 005  : 02   : yes
 
-osm_ucast_mgr_dump_ucast_routes: Switch 0x0002c90109fb31f0
+dump_ucast_routes: Switch 0x0002c90109fb31f0
 LID    : Port : Hops : Optimal
 0x0001 : 005  : 05   : yes
 0x0002 : 005  : 04   : yes
@@ -4010,7 +4010,7 @@ LID    : Port : Hops : Optimal
 0x0040 : 005  : 01   : yes
 0x0041 : 005  : 02   : yes
 
-osm_ucast_mgr_dump_ucast_routes: Switch 0x0002c90109fcb5f0
+dump_ucast_routes: Switch 0x0002c90109fcb5f0
 LID    : Port : Hops : Optimal
 0x0001 : 003  : 03   : yes
 0x0002 : 005  : 02   : yes
@@ -4078,7 +4078,7 @@ LID    : Port : Hops : Optimal
 0x0040 : 008  : 01   : yes
 0x0041 : 002  : 02   : yes
 
-osm_ucast_mgr_dump_ucast_routes: Switch 0x0002c90109fb31f8
+dump_ucast_routes: Switch 0x0002c90109fb31f8
 LID    : Port : Hops : Optimal
 0x0001 : 005  : 04   : yes
 0x0002 : 005  : 03   : yes
@@ -4146,7 +4146,7 @@ LID    : Port : Hops : Optimal
 0x0040 : 000  : 00   : yes
 0x0041 : 006  : 01   : yes
 
-osm_ucast_mgr_dump_ucast_routes: Switch 0x0002c90109fcb5f8
+dump_ucast_routes: Switch 0x0002c90109fcb5f8
 LID    : Port : Hops : Optimal
 0x0001 : 003  : 03   : yes
 0x0002 : 005  : 02   : yes
