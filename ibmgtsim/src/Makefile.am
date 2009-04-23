@@ -95,7 +95,7 @@ GIT=$(shell which git)
 
 $(srcdir)/git_version.h:  @MAINTAINER_MODE_TRUE@ FORCE
 	if test x$(GIT) != x ; then \
-	   gitver=`cd $(srcdir) ; git-log | head -1 | cut -f2 -d\  `; \
+	   gitver=`cd $(srcdir) ; git rev-parse --verify HEAD`; \
 	   changes=`cd $(srcdir) ; git diff . | grep ^diff | wc -l`; \
 	else \
 	   gitver=undefined; changes=0; \
