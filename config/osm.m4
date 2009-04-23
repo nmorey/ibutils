@@ -103,8 +103,8 @@ if test "x$libcheck" = "xtrue"; then
       else
          osm_lib_dir=lib
       fi
+      with_osm_libs=$with_osm/$osm_lib_dir
    fi
-   with_osm_libs=$with_osm/$osm_lib_dir
 
    dnl check what build we have gen1 or gen2
    if test -d $with_osm/include/infiniband; then
