@@ -45,7 +45,33 @@
  * fabric
  *
  */
-
+//////////////////////////////////////////////////////////////////////////////
+//
+// |------|  p1=p_port            |------| p2=p_portNext
+// |      |                       |      |
+// |    p1|>--------------------->|    p2|----------------
+// |      |  \   channels         |      |   \   channels
+// |------|   \--|=====|          |------|    \--|=====|
+//               | VL0 |-|      next chan        | VL0 |
+//               |-----| |     |========|        |-----|
+//               | VL1 |  \    | P0-VL0 |   ---->| VL1 |
+//               |-----|   \   |--------|  /     |-----|
+//               | ... |    \->| P0-VL1 |-/      | ... |
+//               |=====|  sl2vl|--------|        |=====|
+//                             | P0-... |
+//                             |========|
+//                             | P1-VL0 |
+//                             |--------|
+//                             | P1-VL1 |
+//                             |--------|
+//                             | P1-... |
+//                             |========|
+//                             | ...... |
+//                             |========|
+//                             | Pn-VL0 |
+//                             |========|
+//
+//////////////////////////////////////////////////////////////////////////////
 using namespace std;
 
 //////////////////////////////////////////////////////////////////////////////
@@ -72,6 +98,8 @@ int CrdLoopDFS(VChannel* ch) {
     return 0;
   // Credit loop
   if (ch->getFlag() == Open) {
+    cerr << "Found credit loop on: " << ch->pPort->getName()
+         << " VL: " << ch->vl << endl;
     return 1;
   }
   // Mark as open
@@ -80,8 +108,11 @@ int CrdLoopDFS(VChannel* ch) {
   for (int i=0; i<ch->getDependSize();i++) {
     VChannel* next = ch->getDependency(i);
     if (next) {
-      if (CrdLoopDFS(next))
-	return 1;
+      if (CrdLoopDFS(next)) {
+        cerr << "  - BT credit loop through: " << ch->pPort->getName()
+             << " VL: " << ch->vl << endl;
+        return 1;
+      }
     }
   }
   // Mark as closed
@@ -142,6 +173,18 @@ int CrdLoopMarkRouteByLFT (
 	 return(1);
   }
 
+  // If started on a switch, need to use the correct output
+  // port, not the first one found by getPortByLid
+  if (p_port->p_node->type == IB_SW_NODE) {
+    int outPortNum = p_port->p_node->getLFTPortForLid(dLid);
+    if (outPortNum == IB_LFT_UNASSIGNED) {
+      cout << "-E- Unassigned LFT for lid:" << dLid
+           << " Dead end at:" << p_port->p_node->name << endl;
+      return 1;
+    }
+    p_port = p_port->p_node->getPort(outPortNum);
+  }
+  
   // Retrieve the relevant SL
   uint8_t SL, VL;
   SL = VL = p_port->p_node->getPSLForLid(dLid);
@@ -196,7 +239,8 @@ int CrdLoopMarkRouteByLFT (
       return 1;
     }
     // Now add an edge
-    p_port->channels[VL]->setDependency(outPortNum*p_fabric->getNumVLs()+nextVL,p_portNext->channels[nextVL]);
+    p_port->channels[VL]->setDependency(
+	outPortNum*p_fabric->getNumVLs()+nextVL,p_portNext->channels[nextVL]);
     // Advance
     p_port = p_portNext;
     VL = nextVL;
@@ -431,7 +475,7 @@ CrdLoopPrepare(IBFabric *p_fabric) {
       // Init virtual channel array
       p_Port->channels.resize(nL);
       for (int j=0;j<nL;j++)
-		  p_Port->channels[j] = new VChannel;
+		  p_Port->channels[j] = new VChannel(p_Port, j);
     }
   }
   return 0;

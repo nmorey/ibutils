@@ -215,9 +215,13 @@ class VChannel {
   vec_pvch depend;               // Vector of dependencies
   dfs_t flag;                    // DFS state
  public:
+  IBPort * pPort;
+  int vl;
   // Constructor
-  VChannel() {
+  VChannel(IBPort * p, int v) {
     flag = Untouched;
+    pPort = p;
+    vl = v;
   };
   //Getters/Setters
   inline void setDependSize(int numDepend) {
