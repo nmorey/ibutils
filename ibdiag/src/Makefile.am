@@ -42,7 +42,7 @@ GIT=$(shell which git)
 
 git_version.tcl : @MAINTAINER_MODE_TRUE@ FORCE
 	if test x$(GIT) != x ; then \
-	   gitver=`cd $(srcdir) ; rev-parse --verify HEAD`; \
+	   gitver=`cd $(srcdir) ; git rev-parse --verify HEAD`; \
 	   changes=`cd $(srcdir) ; git diff . | grep ^diff | wc -l`; \
 	else \
 	   gitver=undefined; changes=0; \
