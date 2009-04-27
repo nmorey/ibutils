@@ -64,18 +64,21 @@ FORCE:
 ibdiagnet: ibdiagnet.in
 	sed -e 's=%ibdiag_libdir%='$(DESTDIR)$(libdir)'=' \
 	    -e 's=%with_ibdm_lib%='$(with_ibdm_lib)'=' \
+	    -e 's=%with_ibis_bindir%='$(DESTDIR)$(bindir)'=' \
 	    -e 's=%with_ibis%='$(with_ibis)'=' $(srcdir)/ibdiagnet.in > ibdiagnet
 
 ibdiagpath: ibdiagpath.in
 	sed -e 's=%ibdiag_libdir%='$(DESTDIR)$(libdir)'=' \
-       -e 's=%with_ibdm_lib%='$(with_ibdm_lib)'=' \
-       -e 's=%with_ibis%='$(with_ibis)'=' $(srcdir)/ibdiagpath.in > ibdiagpath
+	    -e 's=%with_ibdm_lib%='$(with_ibdm_lib)'=' \
+	    -e 's=%with_ibis_bindir%='$(DESTDIR)$(bindir)'=' \
+	    -e 's=%with_ibis%='$(with_ibis)'=' $(srcdir)/ibdiagpath.in > ibdiagpath
 
 ibdiagui: ibdiagui.in
 	sed -e 's=%ibdiag_libdir%='$(DESTDIR)$(libdir)'=' \
 	    -e 's=%with_ibdm_lib%='$(with_ibdm_lib)'=' \
 	    -e 's=%with_tk_lib%='$(with_tk_lib)'=' \
 	    -e 's=%with_graphviz_lib%='$(with_graphviz_lib)'=' \
+	    -e 's=%with_ibis_bindir%='$(DESTDIR)$(bindir)'=' \
 	    -e 's=%with_ibis%='$(with_ibis)'=' $(srcdir)/ibdiagui.in > ibdiagui
 
 clean:
