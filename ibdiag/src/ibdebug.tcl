@@ -377,8 +377,6 @@ proc SetPortNDevice {_ibisInfo} {
     set count_device 1
     set ibisInfo $_ibisInfo
     set toolName $G(var:tool.name)
-    set bool_oldIBIS 0
-    set bool_oldOSM 0
 
     ## Pre Settings - Step1.1: Set vars by G(argv:*)
     set bool_smp $G(argv:symmetric.multi.processing)
@@ -391,32 +389,6 @@ proc SetPortNDevice {_ibisInfo} {
 	set argv_devIdx $G(argv:dev.idx)
     }
 
-
-    ### SetPortNDevice - IBIS and OSM
-    ## IBIS and OSM - Step1.0: Determine version of osm and ibis
-    if {[llength [lindex $ibisInfo 0]] < 4} {
-	set bool_oldIBIS 1
-	inform "-W-loading:old.ibis.version"
-    } else {
-	foreach ibisEntry $ibisInfo {
-	    scan $ibisEntry {%s %s %s %s} portGuid portLid portState portNum
-	    if {($portNum != 1) && ($portNum != 2)} {
-		set bool_oldOSM 1
-		break;
-	    }
-	}
-    }
-
-    ## IBIS and OSM - Step1.1: Handle old osm version: ignore PN entries in ibisInfo
-    if {$bool_oldOSM} {
-	inform "-W-loading:old.osm.version"
-	set tmp_ibisInfo ""
-	foreach ibisEntry $ibisInfo {
-	    lappend tmp_ibisInfo [lrange $ibisEntry 0 2]
-	}
-	set ibisInfo $tmp_ibisInfo
-    }
-
     ## IBIS and OSM - Step1.2: Handle Gen2 (or higher): ignore the default port
     if {[llength $ibisInfo] > 1} {
 	if {[lsearch -start 1 $ibisInfo [lindex $ibisInfo 0]]!= -1} {
@@ -425,17 +397,7 @@ proc SetPortNDevice {_ibisInfo} {
     }
 
 
-    ### SetPortNDevice - Set PORT_HCA according to $ibisInfo
-    ## Set PORT_HCA - Case1.0: Old ibis/osm => assume only one HCA present on the local host
-    if {$bool_oldOSM || $bool_oldIBIS } {
-	for {set portNumIndx 0} {$portNumIndx < [llength $ibisInfo]} {incr portNumIndx} {
-	    set listEntry [lindex $ibisInfo $portNumIndx]
-	    scan $listEntry {%s %s %s} portGuid portLid portState
-	    set PORT_HCA($count_device.[expr 1 + $portNumIndx]:portGuid)  $portGuid
-	    set PORT_HCA($count_device.[expr 1 + $portNumIndx]:portLid)   $portLid
-	    set PORT_HCA($count_device.[expr 1 + $portNumIndx]:portState) $portState
-	}
-    } else {
+	### SetPortNDevice - Set PORT_HCA according to $ibisInfo
 	set prev_portNum 0
 	for {set portNumIndx 0} {$portNumIndx < [llength $ibisInfo]} {incr portNumIndx} {
 	    set listEntry [lindex $ibisInfo $portNumIndx]
@@ -448,7 +410,6 @@ proc SetPortNDevice {_ibisInfo} {
 	    set PORT_HCA($count_device.$portNum:portLid)   $portLid
 	    set PORT_HCA($count_device.$portNum:portState) $portState
 	}
-    }
 
 
     ### SetPortNDevice - Port and Dev set according to specified/unspecified device index and port number
