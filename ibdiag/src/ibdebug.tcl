@@ -1405,7 +1405,7 @@ proc DiscoverFabric { _pathLimit {startIndex 0}} {
 
             # Check again that the local port is not down / ignore all other
 	    # down ports
-	    if {[catch {set tmp_log [GetParamValue LOG $DirectPath -port $port]; 
+	    if {[catch {set tmp_log [GetParamValue LOG $DirectPath -port $port];
                         set ezNType  [GetParamValue Type $DirectPath -port $port]}]} {
 		set bool_badPathFound 1
 		set endLoop 1
@@ -2127,7 +2127,7 @@ proc PMCounterQuery {} {
 	foreach directPath [lrange $G(data:list.direct.path) 0 end] {
 		if {![llength $directPath]} {
 	        # When running from a switch - may get 0 length direct routes
-			# HACK: Skip these paths - do not query SMA port on switch 
+			# HACK: Skip these paths - do not query SMA port on switch
 			continue
 		}
 	# start from the second path in $G(data:list.direct.path), because the first is ""

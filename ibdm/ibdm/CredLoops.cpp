@@ -184,7 +184,7 @@ int CrdLoopMarkRouteByLFT (
     }
     p_port = p_port->p_node->getPort(outPortNum);
   }
-  
+
   // Retrieve the relevant SL
   uint8_t SL, VL;
   SL = VL = p_port->p_node->getPSLForLid(dLid);
