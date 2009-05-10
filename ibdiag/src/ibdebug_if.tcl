@@ -2086,6 +2086,11 @@ proc inform { msgCode args } {
 	    append msgText "Writing file $G(outfiles,.psl)"
 	    append msgText " (a dump of the SL for each srcguid dlid pair)"
 	}
+	"-V-outfiles:.sm"   {
+	    PutsIn80Chars " "
+	    append msgText "Writing file $G(outfiles,.sm)"
+	    append msgText " (a dump of SMs in the fabric)"
+	}
 
 	"-I-ibping:results" {
 	    set pktFailures   $msgF(failures)
