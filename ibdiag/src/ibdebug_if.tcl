@@ -2091,6 +2091,11 @@ proc inform { msgCode args } {
 	    append msgText "Writing file $G(outfiles,.sm)"
 	    append msgText " (a dump of SMs in the fabric)"
 	}
+	"-V-outfiles:.mcgs"   {
+	    PutsIn80Chars " "
+	    append msgText "Writing file $G(outfiles,.mcgs)"
+	    append msgText " (a dump of the Multicast groups in the fabric)"
+	}
 
 	"-I-ibping:results" {
 	    set pktFailures   $msgF(failures)
