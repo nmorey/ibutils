@@ -790,9 +790,9 @@ typedef struct _ib_sw_cong_setting {
 	ib_net32_t control_map;
 	uint8_array_t victim_mask[32];
 	uint8_array_t credit_mask[32];
-	uint8_t threshold;
+	uint8_t threshold_resv;
 	uint8_t packet_size;
-	ib_net16_t cs_threshold;
+	ib_net16_t cs_threshold_resv;
 	ib_net16_t cs_return_delay;
 	ib_net16_t marking_rate;
 } ccSWCongestionSetting;
