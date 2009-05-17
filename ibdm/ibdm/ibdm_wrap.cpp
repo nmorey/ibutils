@@ -636,7 +636,7 @@ static int _wrap_ibdmUseInternalLog(ClientData clientData, Tcl_Interp *interp, i
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
     Tcl_SetIntObj(tcl_result,(long) _result);
@@ -659,7 +659,7 @@ static int _wrap_ibdmUseCoutLog(ClientData clientData, Tcl_Interp *interp, int o
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
     Tcl_SetIntObj(tcl_result,(long) _result);
@@ -682,7 +682,7 @@ static int _wrap_ibdmGetAndClearInternalLog(ClientData clientData, Tcl_Interp *i
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
     Tcl_SetStringObj(tcl_result,_result,-1);
@@ -707,7 +707,7 @@ static int _wrap_new_IBFabric(ClientData clientData, Tcl_Interp *interp, int obj
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
@@ -802,7 +802,7 @@ static int _wrap_delete_IBFabric(ClientData clientData, Tcl_Interp *interp, int 
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
     return TCL_OK;
@@ -900,7 +900,7 @@ static int _wrap_ibdmAssignLids(ClientData clientData, Tcl_Interp *interp, int o
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
     Tcl_SetIntObj(tcl_result,(long) _result);
@@ -993,7 +993,7 @@ static int _wrap_ibdmCalcMinHopTables(ClientData clientData, Tcl_Interp *interp,
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
     Tcl_SetIntObj(tcl_result,(long) _result);
@@ -1089,7 +1089,7 @@ static int _wrap_ibdmCalcUpDnMinHopTbls(ClientData clientData, Tcl_Interp *inter
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
     Tcl_SetIntObj(tcl_result,(long) _result);
@@ -1182,7 +1182,7 @@ static int _wrap_ibdmOsmRoute(ClientData clientData, Tcl_Interp *interp, int obj
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
     Tcl_SetIntObj(tcl_result,(long) _result);
@@ -1275,7 +1275,7 @@ static int _wrap_ibdmEnhancedRoute(ClientData clientData, Tcl_Interp *interp, in
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
     Tcl_SetIntObj(tcl_result,(long) _result);
@@ -1414,7 +1414,7 @@ static int _wrap_ibdmFatTreeRoute(ClientData clientData, Tcl_Interp *interp, int
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
     Tcl_SetIntObj(tcl_result,(long) _result);
@@ -1507,7 +1507,7 @@ static int _wrap_ibdmFatTreeAnalysis(ClientData clientData, Tcl_Interp *interp, 
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
     Tcl_SetIntObj(tcl_result,(long) _result);
@@ -1605,7 +1605,7 @@ static int _wrap_ibdmFatTreeRouteByPermutation(ClientData clientData, Tcl_Interp
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
     Tcl_SetIntObj(tcl_result,(long) _result);
@@ -1698,7 +1698,7 @@ static int _wrap_ibdmVerifyCAtoCARoutes(ClientData clientData, Tcl_Interp *inter
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
     Tcl_SetIntObj(tcl_result,(long) _result);
@@ -1791,7 +1791,7 @@ static int _wrap_ibdmVerifyAllPaths(ClientData clientData, Tcl_Interp *interp, i
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
     Tcl_SetIntObj(tcl_result,(long) _result);
@@ -1884,7 +1884,7 @@ static int _wrap_ibdmAnalyzeLoops(ClientData clientData, Tcl_Interp *interp, int
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
     Tcl_SetIntObj(tcl_result,(long) _result);
@@ -2007,7 +2007,7 @@ static int _wrap_ibdmFindSymmetricalTreeRoots(ClientData clientData, Tcl_Interp 
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
@@ -2117,7 +2117,7 @@ static int _wrap_ibdmFindRootNodesByMinHop(ClientData clientData, Tcl_Interp *in
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
@@ -2273,7 +2273,7 @@ static int _wrap_ibdmRankFabricByRoots(ClientData clientData, Tcl_Interp *interp
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
     Tcl_SetIntObj(tcl_result,(long) _result);
@@ -2412,7 +2412,7 @@ static int _wrap_ibdmReportNonUpDownCa2CaPaths(ClientData clientData, Tcl_Interp
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
     Tcl_SetIntObj(tcl_result,(long) _result);
@@ -2505,7 +2505,7 @@ static int _wrap_ibdmCheckMulticastGroups(ClientData clientData, Tcl_Interp *int
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
     Tcl_SetIntObj(tcl_result,(long) _result);
@@ -2644,7 +2644,7 @@ static int _wrap_ibdmCheckFabricMCGrpsForCreditLoopPotential(ClientData clientDa
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
     Tcl_SetIntObj(tcl_result,(long) _result);
@@ -2783,7 +2783,7 @@ static int _wrap_ibdmLinkCoverageAnalysis(ClientData clientData, Tcl_Interp *int
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
     Tcl_SetIntObj(tcl_result,(long) _result);
@@ -2883,7 +2883,7 @@ static int _wrap_ibdmTraceDRPathRoute(ClientData clientData, Tcl_Interp *interp,
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
     Tcl_SetIntObj(tcl_result,(long) _result);
@@ -2983,7 +2983,7 @@ static int _wrap_ibdmTraceRouteByMinHops(ClientData clientData, Tcl_Interp *inte
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
     Tcl_SetIntObj(tcl_result,(long) _result);
@@ -3093,7 +3093,7 @@ static int _wrap_ibdmTraceRouteByLFT(ClientData clientData, Tcl_Interp *interp, 
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
     Tcl_SetIntObj(tcl_result,(long) _result);
@@ -3298,7 +3298,7 @@ static int _wrap_ibdmMatchFabrics(ClientData clientData, Tcl_Interp *interp, int
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
     Tcl_SetIntObj(tcl_result,(long) _result);
@@ -3539,7 +3539,7 @@ static int _wrap_ibdmBuildMergedFabric(ClientData clientData, Tcl_Interp *interp
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
     Tcl_SetIntObj(tcl_result,(long) _result);
@@ -3632,7 +3632,7 @@ static int _wrap_ibdmCongInit(ClientData clientData, Tcl_Interp *interp, int obj
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
     Tcl_SetIntObj(tcl_result,(long) _result);
@@ -3725,7 +3725,7 @@ static int _wrap_ibdmCongCleanup(ClientData clientData, Tcl_Interp *interp, int 
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
     Tcl_SetIntObj(tcl_result,(long) _result);
@@ -3818,7 +3818,7 @@ static int _wrap_ibdmCongClear(ClientData clientData, Tcl_Interp *interp, int ob
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
     Tcl_SetIntObj(tcl_result,(long) _result);
@@ -3923,7 +3923,7 @@ static int _wrap_ibdmCongTrace(ClientData clientData, Tcl_Interp *interp, int ob
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
     Tcl_SetIntObj(tcl_result,(long) _result);
@@ -4021,7 +4021,7 @@ static int _wrap_ibdmCongReport(ClientData clientData, Tcl_Interp *interp, int o
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
     Tcl_SetIntObj(tcl_result,(long) _result);
@@ -4123,7 +4123,7 @@ static int _wrap_ibdmCongDump(ClientData clientData, Tcl_Interp *interp, int obj
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
     Tcl_SetIntObj(tcl_result,(long) _result);
@@ -4291,7 +4291,7 @@ static int _wrap_IBPort_p_remotePort_set(ClientData clientData, Tcl_Interp *inte
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
@@ -4388,7 +4388,7 @@ static int _wrap_IBPort_p_remotePort_get(ClientData clientData, Tcl_Interp *inte
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
@@ -4555,7 +4555,7 @@ static int _wrap_IBPort_p_sysPort_set(ClientData clientData, Tcl_Interp *interp,
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
@@ -4652,7 +4652,7 @@ static int _wrap_IBPort_p_sysPort_get(ClientData clientData, Tcl_Interp *interp,
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
@@ -4819,7 +4819,7 @@ static int _wrap_IBPort_p_node_set(ClientData clientData, Tcl_Interp *interp, in
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
@@ -4916,7 +4916,7 @@ static int _wrap_IBPort_p_node_get(ClientData clientData, Tcl_Interp *interp, in
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
@@ -5017,7 +5017,7 @@ static int _wrap_IBPort_num_set(ClientData clientData, Tcl_Interp *interp, int o
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
     Tcl_SetIntObj(tcl_result,(long) _result);
@@ -5111,7 +5111,7 @@ static int _wrap_IBPort_num_get(ClientData clientData, Tcl_Interp *interp, int o
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
     Tcl_SetIntObj(tcl_result,(long) _result);
@@ -5209,7 +5209,7 @@ static int _wrap_IBPort_base_lid_set(ClientData clientData, Tcl_Interp *interp, 
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
     Tcl_SetIntObj(tcl_result,(long) _result);
@@ -5303,7 +5303,7 @@ static int _wrap_IBPort_base_lid_get(ClientData clientData, Tcl_Interp *interp, 
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
     Tcl_SetIntObj(tcl_result,(long) _result);
@@ -5403,7 +5403,7 @@ static int _wrap_IBPort_width_set(ClientData clientData, Tcl_Interp *interp, int
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
@@ -5499,7 +5499,7 @@ static int _wrap_IBPort_width_get(ClientData clientData, Tcl_Interp *interp, int
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
@@ -5601,7 +5601,7 @@ static int _wrap_IBPort_speed_set(ClientData clientData, Tcl_Interp *interp, int
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
@@ -5697,7 +5697,7 @@ static int _wrap_IBPort_speed_get(ClientData clientData, Tcl_Interp *interp, int
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
@@ -5797,7 +5797,7 @@ static int _wrap_IBPort_counter1_set(ClientData clientData, Tcl_Interp *interp, 
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
     Tcl_SetIntObj(tcl_result,(long) _result);
@@ -5891,7 +5891,7 @@ static int _wrap_IBPort_counter1_get(ClientData clientData, Tcl_Interp *interp, 
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
     Tcl_SetIntObj(tcl_result,(long) _result);
@@ -5989,7 +5989,7 @@ static int _wrap_new_IBPort(ClientData clientData, Tcl_Interp *interp, int objc,
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
@@ -6086,7 +6086,7 @@ static int _wrap_IBPort_guid_get(ClientData clientData, Tcl_Interp *interp, int 
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
@@ -6191,7 +6191,7 @@ static int _wrap_IBPort_guid_set(ClientData clientData, Tcl_Interp *interp, int 
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
     return TCL_OK;
@@ -6284,7 +6284,7 @@ static int _wrap_IBPort_getName(ClientData clientData, Tcl_Interp *interp, int o
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
@@ -6468,7 +6468,7 @@ static int _wrap_IBPort_connect(ClientData clientData, Tcl_Interp *interp, int o
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
     return TCL_OK;
@@ -6561,7 +6561,7 @@ static int _wrap_IBPort_disconnect(ClientData clientData, Tcl_Interp *interp, in
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
     Tcl_SetIntObj(tcl_result,(long) _result);
@@ -6931,7 +6931,7 @@ static int _wrap_IBNode_name_set(ClientData clientData, Tcl_Interp *interp, int 
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
@@ -7029,7 +7029,7 @@ static int _wrap_IBNode_name_get(ClientData clientData, Tcl_Interp *interp, int 
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
@@ -7131,7 +7131,7 @@ static int _wrap_IBNode_type_set(ClientData clientData, Tcl_Interp *interp, int 
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
     Tcl_SetIntObj(tcl_result,(long) _result);
@@ -7225,7 +7225,7 @@ static int _wrap_IBNode_type_get(ClientData clientData, Tcl_Interp *interp, int 
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
     Tcl_SetIntObj(tcl_result,(long) _result);
@@ -7325,7 +7325,7 @@ static int _wrap_IBNode_devId_set(ClientData clientData, Tcl_Interp *interp, int
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
@@ -7423,7 +7423,7 @@ static int _wrap_IBNode_devId_get(ClientData clientData, Tcl_Interp *interp, int
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
@@ -7527,7 +7527,7 @@ static int _wrap_IBNode_revId_set(ClientData clientData, Tcl_Interp *interp, int
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
@@ -7625,7 +7625,7 @@ static int _wrap_IBNode_revId_get(ClientData clientData, Tcl_Interp *interp, int
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
@@ -7729,7 +7729,7 @@ static int _wrap_IBNode_vendId_set(ClientData clientData, Tcl_Interp *interp, in
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
@@ -7827,7 +7827,7 @@ static int _wrap_IBNode_vendId_get(ClientData clientData, Tcl_Interp *interp, in
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
@@ -7932,7 +7932,7 @@ static int _wrap_IBNode_attributes_set(ClientData clientData, Tcl_Interp *interp
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
@@ -8030,7 +8030,7 @@ static int _wrap_IBNode_attributes_get(ClientData clientData, Tcl_Interp *interp
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
@@ -8134,7 +8134,7 @@ static int _wrap_IBNode_rank_set(ClientData clientData, Tcl_Interp *interp, int 
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
@@ -8232,7 +8232,7 @@ static int _wrap_IBNode_rank_get(ClientData clientData, Tcl_Interp *interp, int 
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
@@ -8330,7 +8330,7 @@ static int _wrap_IBNode_p_system_get(ClientData clientData, Tcl_Interp *interp, 
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
@@ -8427,7 +8427,7 @@ static int _wrap_IBNode_p_fabric_get(ClientData clientData, Tcl_Interp *interp, 
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
@@ -8524,7 +8524,7 @@ static int _wrap_IBNode_numPorts_get(ClientData clientData, Tcl_Interp *interp, 
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
     Tcl_SetIntObj(tcl_result,(long) _result);
@@ -8618,7 +8618,7 @@ static int _wrap_IBNode_Ports_get(ClientData clientData, Tcl_Interp *interp, int
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
@@ -8728,7 +8728,7 @@ static int _wrap_IBNode_MinHopsTable_get(ClientData clientData, Tcl_Interp *inte
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
@@ -8832,7 +8832,7 @@ static int _wrap_IBNode_LFT_get(ClientData clientData, Tcl_Interp *interp, int o
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
@@ -8932,7 +8932,7 @@ static int _wrap_IBNode_guid_get(ClientData clientData, Tcl_Interp *interp, int 
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
@@ -9037,7 +9037,7 @@ static int _wrap_IBNode_guid_set(ClientData clientData, Tcl_Interp *interp, int 
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
     return TCL_OK;
@@ -9214,7 +9214,7 @@ static int _wrap_new_IBNode(ClientData clientData, Tcl_Interp *interp, int objc,
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
@@ -9310,7 +9310,7 @@ static int _wrap_delete_IBNode(ClientData clientData, Tcl_Interp *interp, int ob
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
     return TCL_OK;
@@ -9407,7 +9407,7 @@ static int _wrap_IBNode_makePort(ClientData clientData, Tcl_Interp *interp, int 
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
@@ -9508,7 +9508,7 @@ static int _wrap_IBNode_getPort(ClientData clientData, Tcl_Interp *interp, int o
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
@@ -9681,7 +9681,7 @@ static int _wrap_IBNode_setHops(ClientData clientData, Tcl_Interp *interp, int o
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
     return TCL_OK;
@@ -9848,7 +9848,7 @@ static int _wrap_IBNode_getHops(ClientData clientData, Tcl_Interp *interp, int o
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
     Tcl_SetIntObj(tcl_result,(long) _result);
@@ -9946,7 +9946,7 @@ static int _wrap_IBNode_getFirstMinHopPort(ClientData clientData, Tcl_Interp *in
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
@@ -10049,7 +10049,7 @@ static int _wrap_IBNode_setLFTPortForLid(ClientData clientData, Tcl_Interp *inte
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
     return TCL_OK;
@@ -10146,7 +10146,7 @@ static int _wrap_IBNode_getLFTPortForLid(ClientData clientData, Tcl_Interp *inte
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
     Tcl_SetIntObj(tcl_result,(long) _result);
@@ -10239,7 +10239,7 @@ static int _wrap_IBNode_repHopTable(ClientData clientData, Tcl_Interp *interp, i
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
     return TCL_OK;
@@ -10667,7 +10667,7 @@ static int _wrap_IBSysPort_name_set(ClientData clientData, Tcl_Interp *interp, i
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
@@ -10765,7 +10765,7 @@ static int _wrap_IBSysPort_name_get(ClientData clientData, Tcl_Interp *interp, i
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
@@ -10933,7 +10933,7 @@ static int _wrap_IBSysPort_p_remoteSysPort_set(ClientData clientData, Tcl_Interp
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
@@ -11030,7 +11030,7 @@ static int _wrap_IBSysPort_p_remoteSysPort_get(ClientData clientData, Tcl_Interp
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
@@ -11197,7 +11197,7 @@ static int _wrap_IBSysPort_p_system_set(ClientData clientData, Tcl_Interp *inter
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
@@ -11294,7 +11294,7 @@ static int _wrap_IBSysPort_p_system_get(ClientData clientData, Tcl_Interp *inter
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
@@ -11461,7 +11461,7 @@ static int _wrap_IBSysPort_p_nodePort_set(ClientData clientData, Tcl_Interp *int
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
@@ -11558,7 +11558,7 @@ static int _wrap_IBSysPort_p_nodePort_get(ClientData clientData, Tcl_Interp *int
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
@@ -11662,7 +11662,7 @@ static int _wrap_new_IBSysPort(ClientData clientData, Tcl_Interp *interp, int ob
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
@@ -11758,7 +11758,7 @@ static int _wrap_delete_IBSysPort(ClientData clientData, Tcl_Interp *interp, int
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
     return TCL_OK;
@@ -11936,7 +11936,7 @@ static int _wrap_IBSysPort_connect(ClientData clientData, Tcl_Interp *interp, in
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
     return TCL_OK;
@@ -12029,7 +12029,7 @@ static int _wrap_IBSysPort_disconnect(ClientData clientData, Tcl_Interp *interp,
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
     Tcl_SetIntObj(tcl_result,(long) _result);
@@ -12355,7 +12355,7 @@ static int _wrap_IBSystem_name_set(ClientData clientData, Tcl_Interp *interp, in
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
@@ -12453,7 +12453,7 @@ static int _wrap_IBSystem_name_get(ClientData clientData, Tcl_Interp *interp, in
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
@@ -12558,7 +12558,7 @@ static int _wrap_IBSystem_type_set(ClientData clientData, Tcl_Interp *interp, in
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
@@ -12656,7 +12656,7 @@ static int _wrap_IBSystem_type_get(ClientData clientData, Tcl_Interp *interp, in
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
@@ -12824,7 +12824,7 @@ static int _wrap_IBSystem_p_fabric_set(ClientData clientData, Tcl_Interp *interp
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
@@ -12921,7 +12921,7 @@ static int _wrap_IBSystem_p_fabric_get(ClientData clientData, Tcl_Interp *interp
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
@@ -13018,7 +13018,7 @@ static int _wrap_IBSystem_NodeByName_get(ClientData clientData, Tcl_Interp *inte
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
@@ -13129,7 +13129,7 @@ static int _wrap_IBSystem_PortByName_get(ClientData clientData, Tcl_Interp *inte
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
@@ -13254,7 +13254,7 @@ static int _wrap_new_IBSystem(ClientData clientData, Tcl_Interp *interp, int obj
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
@@ -13350,7 +13350,7 @@ static int _wrap_delete_IBSystem(ClientData clientData, Tcl_Interp *interp, int 
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
     return TCL_OK;
@@ -13443,7 +13443,7 @@ static int _wrap_IBSystem_guid_get(ClientData clientData, Tcl_Interp *interp, in
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
@@ -13548,7 +13548,7 @@ static int _wrap_IBSystem_guid_set(ClientData clientData, Tcl_Interp *interp, in
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
     return TCL_OK;
@@ -13648,7 +13648,7 @@ static int _wrap_IBSystem_makeSysPort(ClientData clientData, Tcl_Interp *interp,
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
@@ -13752,7 +13752,7 @@ static int _wrap_IBSystem_getSysPortNodePortByName(ClientData clientData, Tcl_In
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
@@ -13856,7 +13856,7 @@ static int _wrap_IBSystem_getSysPort(ClientData clientData, Tcl_Interp *interp, 
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
@@ -14191,7 +14191,7 @@ static int _wrap_IBFabric_NodeByName_get(ClientData clientData, Tcl_Interp *inte
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
@@ -14302,7 +14302,7 @@ static int _wrap_IBFabric_SystemByName_get(ClientData clientData, Tcl_Interp *in
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
@@ -14413,7 +14413,7 @@ static int _wrap_IBFabric_PortByLid_get(ClientData clientData, Tcl_Interp *inter
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
@@ -14523,7 +14523,7 @@ static int _wrap_IBFabric_NodeByGuid_get(ClientData clientData, Tcl_Interp *inte
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
@@ -14635,7 +14635,7 @@ static int _wrap_IBFabric_SystemByGuid_get(ClientData clientData, Tcl_Interp *in
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
@@ -14747,7 +14747,7 @@ static int _wrap_IBFabric_PortByGuid_get(ClientData clientData, Tcl_Interp *inte
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
@@ -14863,7 +14863,7 @@ static int _wrap_IBFabric_minLid_set(ClientData clientData, Tcl_Interp *interp, 
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
     Tcl_SetIntObj(tcl_result,(long) _result);
@@ -14957,7 +14957,7 @@ static int _wrap_IBFabric_minLid_get(ClientData clientData, Tcl_Interp *interp, 
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
     Tcl_SetIntObj(tcl_result,(long) _result);
@@ -15055,7 +15055,7 @@ static int _wrap_IBFabric_maxLid_set(ClientData clientData, Tcl_Interp *interp, 
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
     Tcl_SetIntObj(tcl_result,(long) _result);
@@ -15149,7 +15149,7 @@ static int _wrap_IBFabric_maxLid_get(ClientData clientData, Tcl_Interp *interp, 
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
     Tcl_SetIntObj(tcl_result,(long) _result);
@@ -15247,7 +15247,7 @@ static int _wrap_IBFabric_lmc_set(ClientData clientData, Tcl_Interp *interp, int
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
     Tcl_SetIntObj(tcl_result,(long) _result);
@@ -15341,7 +15341,7 @@ static int _wrap_IBFabric_lmc_get(ClientData clientData, Tcl_Interp *interp, int
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
     Tcl_SetIntObj(tcl_result,(long) _result);
@@ -15519,7 +15519,7 @@ static int _wrap_IBFabric_makeNode(ClientData clientData, Tcl_Interp *interp, in
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
@@ -15623,7 +15623,7 @@ static int _wrap_IBFabric_getNode(ClientData clientData, Tcl_Interp *interp, int
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
@@ -15724,7 +15724,7 @@ static int _wrap_IBFabric_getNodesByType(ClientData clientData, Tcl_Interp *inte
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
@@ -15842,7 +15842,7 @@ static int _wrap_IBFabric_makeGenericSystem(ClientData clientData, Tcl_Interp *i
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
@@ -15953,7 +15953,7 @@ static int _wrap_IBFabric_makeSystem(ClientData clientData, Tcl_Interp *interp, 
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
@@ -16057,7 +16057,7 @@ static int _wrap_IBFabric_getSystem(ClientData clientData, Tcl_Interp *interp, i
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
@@ -16160,7 +16160,7 @@ static int _wrap_IBFabric_getSystemByGuid(ClientData clientData, Tcl_Interp *int
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
@@ -16263,7 +16263,7 @@ static int _wrap_IBFabric_getNodeByGuid(ClientData clientData, Tcl_Interp *inter
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
@@ -16366,7 +16366,7 @@ static int _wrap_IBFabric_getPortByGuid(ClientData clientData, Tcl_Interp *inter
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
@@ -16520,7 +16520,7 @@ static int _wrap_IBFabric_addCable(ClientData clientData, Tcl_Interp *interp, in
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
     return TCL_OK;
@@ -16620,7 +16620,7 @@ static int _wrap_IBFabric_parseCables(ClientData clientData, Tcl_Interp *interp,
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
     Tcl_SetIntObj(tcl_result,(long) _result);
@@ -16721,7 +16721,7 @@ static int _wrap_IBFabric_parseTopology(ClientData clientData, Tcl_Interp *inter
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
     Tcl_SetIntObj(tcl_result,(long) _result);
@@ -16938,7 +16938,7 @@ static int _wrap_IBFabric_addLink(ClientData clientData, Tcl_Interp *interp, int
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
     Tcl_SetIntObj(tcl_result,(long) _result);
@@ -17039,7 +17039,7 @@ static int _wrap_IBFabric_parseSubnetLinks(ClientData clientData, Tcl_Interp *in
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
     Tcl_SetIntObj(tcl_result,(long) _result);
@@ -17140,7 +17140,7 @@ static int _wrap_IBFabric_parseFdbFile(ClientData clientData, Tcl_Interp *interp
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
     Tcl_SetIntObj(tcl_result,(long) _result);
@@ -17241,7 +17241,7 @@ static int _wrap_IBFabric_parseMCFdbFile(ClientData clientData, Tcl_Interp *inte
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
     Tcl_SetIntObj(tcl_result,(long) _result);
@@ -17610,7 +17610,7 @@ static int _wrap_IBFabric_setLidPort(ClientData clientData, Tcl_Interp *interp, 
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
     return TCL_OK;
@@ -17707,7 +17707,7 @@ static int _wrap_IBFabric_getPortByLid(ClientData clientData, Tcl_Interp *interp
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
 {
@@ -17809,7 +17809,7 @@ static int _wrap_IBFabric_dumpTopology(ClientData clientData, Tcl_Interp *interp
 ;
   if (ibdm_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibdm_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }    tcl_result = Tcl_GetObjResult(interp);
     Tcl_SetIntObj(tcl_result,(long) _result);
