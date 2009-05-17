@@ -67226,8 +67226,8 @@ static int _wrap_ccSWCongestionSetting_credit_mask_get(ClientData clientData, Tc
 }
     return TCL_OK;
 }
-#define _ib_sw_cong_setting_threshold_set(_swigobj,_swigval) (_swigobj->threshold = *(_swigval),_swigval)
-static int _wrap_ccSWCongestionSetting_threshold_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+#define _ib_sw_cong_setting_threshold_resv_set(_swigobj,_swigval) (_swigobj->threshold_resv = *(_swigval),_swigval)
+static int _wrap_ccSWCongestionSetting_threshold_resv_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
 
     uint8_t * _result;
     ccSWCongestionSetting * _arg0;
@@ -67239,11 +67239,11 @@ static int _wrap_ccSWCongestionSetting_threshold_set(ClientData clientData, Tcl_
     clientData = clientData; objv = objv;
     tcl_result = Tcl_GetObjResult(interp);
     if ((objc < 3) || (objc > 3)) {
-        Tcl_SetStringObj(tcl_result,"Wrong # args. ccSWCongestionSetting_threshold_set { ccSWCongestionSetting * } { uint8_t * } ",-1);
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccSWCongestionSetting_threshold_resv_set { ccSWCongestionSetting * } { uint8_t * } ",-1);
         return TCL_ERROR;
     }
     if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccSWCongestionSetting_p"))) {
-        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccSWCongestionSetting_threshold_set. Expected _ccSWCongestionSetting_p, received ", -1);
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccSWCongestionSetting_threshold_resv_set. Expected _ccSWCongestionSetting_p, received ", -1);
         Tcl_AppendToObj(tcl_result, rettype, -1);
         return TCL_ERROR;
     }
@@ -67270,7 +67270,7 @@ static int _wrap_ccSWCongestionSetting_threshold_set(ClientData clientData, Tcl_
   }
 
   ibis_tcl_error = 0;
-      _result = (uint8_t *)_ib_sw_cong_setting_threshold_set(_arg0,_arg1);
+      _result = (uint8_t *)_ib_sw_cong_setting_threshold_resv_set(_arg0,_arg1);
 ;
   if (ibis_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
@@ -67284,8 +67284,8 @@ static int _wrap_ccSWCongestionSetting_threshold_set(ClientData clientData, Tcl_
 }
     return TCL_OK;
 }
-#define _ib_sw_cong_setting_threshold_get(_swigobj) (&_swigobj->threshold)
-static int _wrap_ccSWCongestionSetting_threshold_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+#define _ib_sw_cong_setting_threshold_resv_get(_swigobj) (&_swigobj->threshold_resv)
+static int _wrap_ccSWCongestionSetting_threshold_resv_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
 
     uint8_t * _result;
     ccSWCongestionSetting * _arg0;
@@ -67295,11 +67295,11 @@ static int _wrap_ccSWCongestionSetting_threshold_get(ClientData clientData, Tcl_
     clientData = clientData; objv = objv;
     tcl_result = Tcl_GetObjResult(interp);
     if ((objc < 2) || (objc > 2)) {
-        Tcl_SetStringObj(tcl_result,"Wrong # args. ccSWCongestionSetting_threshold_get { ccSWCongestionSetting * } ",-1);
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccSWCongestionSetting_threshold_resv_get { ccSWCongestionSetting * } ",-1);
         return TCL_ERROR;
     }
     if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccSWCongestionSetting_p"))) {
-        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccSWCongestionSetting_threshold_get. Expected _ccSWCongestionSetting_p, received ", -1);
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccSWCongestionSetting_threshold_resv_get. Expected _ccSWCongestionSetting_p, received ", -1);
         Tcl_AppendToObj(tcl_result, rettype, -1);
         return TCL_ERROR;
     }
@@ -67322,7 +67322,7 @@ static int _wrap_ccSWCongestionSetting_threshold_get(ClientData clientData, Tcl_
   }
 
   ibis_tcl_error = 0;
-      _result = (uint8_t *)_ib_sw_cong_setting_threshold_get(_arg0);
+      _result = (uint8_t *)_ib_sw_cong_setting_threshold_resv_get(_arg0);
 ;
   if (ibis_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
@@ -67446,8 +67446,8 @@ static int _wrap_ccSWCongestionSetting_packet_size_get(ClientData clientData, Tc
 }
     return TCL_OK;
 }
-#define _ib_sw_cong_setting_cs_threshold_set(_swigobj,_swigval) (_swigobj->cs_threshold = *(_swigval),_swigval)
-static int _wrap_ccSWCongestionSetting_cs_threshold_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+#define _ib_sw_cong_setting_cs_threshold_resv_set(_swigobj,_swigval) (_swigobj->cs_threshold_resv = *(_swigval),_swigval)
+static int _wrap_ccSWCongestionSetting_cs_threshold_resv_set(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
 
     ib_net16_t * _result;
     ccSWCongestionSetting * _arg0;
@@ -67459,11 +67459,11 @@ static int _wrap_ccSWCongestionSetting_cs_threshold_set(ClientData clientData, T
     clientData = clientData; objv = objv;
     tcl_result = Tcl_GetObjResult(interp);
     if ((objc < 3) || (objc > 3)) {
-        Tcl_SetStringObj(tcl_result,"Wrong # args. ccSWCongestionSetting_cs_threshold_set { ccSWCongestionSetting * } { ib_net16_t * } ",-1);
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccSWCongestionSetting_cs_threshold_resv_set { ccSWCongestionSetting * } { ib_net16_t * } ",-1);
         return TCL_ERROR;
     }
     if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccSWCongestionSetting_p"))) {
-        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccSWCongestionSetting_cs_threshold_set. Expected _ccSWCongestionSetting_p, received ", -1);
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccSWCongestionSetting_cs_threshold_resv_set. Expected _ccSWCongestionSetting_p, received ", -1);
         Tcl_AppendToObj(tcl_result, rettype, -1);
         return TCL_ERROR;
     }
@@ -67490,7 +67490,7 @@ static int _wrap_ccSWCongestionSetting_cs_threshold_set(ClientData clientData, T
   }
 
   ibis_tcl_error = 0;
-      _result = (ib_net16_t *)_ib_sw_cong_setting_cs_threshold_set(_arg0,_arg1);
+      _result = (ib_net16_t *)_ib_sw_cong_setting_cs_threshold_resv_set(_arg0,_arg1);
 ;
   if (ibis_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
@@ -67504,8 +67504,8 @@ static int _wrap_ccSWCongestionSetting_cs_threshold_set(ClientData clientData, T
 }
     return TCL_OK;
 }
-#define _ib_sw_cong_setting_cs_threshold_get(_swigobj) (&_swigobj->cs_threshold)
-static int _wrap_ccSWCongestionSetting_cs_threshold_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+#define _ib_sw_cong_setting_cs_threshold_resv_get(_swigobj) (&_swigobj->cs_threshold_resv)
+static int _wrap_ccSWCongestionSetting_cs_threshold_resv_get(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
 
     ib_net16_t * _result;
     ccSWCongestionSetting * _arg0;
@@ -67515,11 +67515,11 @@ static int _wrap_ccSWCongestionSetting_cs_threshold_get(ClientData clientData, T
     clientData = clientData; objv = objv;
     tcl_result = Tcl_GetObjResult(interp);
     if ((objc < 2) || (objc > 2)) {
-        Tcl_SetStringObj(tcl_result,"Wrong # args. ccSWCongestionSetting_cs_threshold_get { ccSWCongestionSetting * } ",-1);
+        Tcl_SetStringObj(tcl_result,"Wrong # args. ccSWCongestionSetting_cs_threshold_resv_get { ccSWCongestionSetting * } ",-1);
         return TCL_ERROR;
     }
     if ((rettype = SWIG_GetPointerObj(interp,objv[1],(void **) &_arg0,"_ccSWCongestionSetting_p"))) {
-        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccSWCongestionSetting_cs_threshold_get. Expected _ccSWCongestionSetting_p, received ", -1);
+        Tcl_SetStringObj(tcl_result, "Type error in argument 1 of ccSWCongestionSetting_cs_threshold_resv_get. Expected _ccSWCongestionSetting_p, received ", -1);
         Tcl_AppendToObj(tcl_result, rettype, -1);
         return TCL_ERROR;
     }
@@ -67542,7 +67542,7 @@ static int _wrap_ccSWCongestionSetting_cs_threshold_get(ClientData clientData, T
   }
 
   ibis_tcl_error = 0;
-      _result = (ib_net16_t *)_ib_sw_cong_setting_cs_threshold_get(_arg0);
+      _result = (ib_net16_t *)_ib_sw_cong_setting_cs_threshold_resv_get(_arg0);
 ;
   if (ibis_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
@@ -67946,12 +67946,12 @@ static int TclccSWCongestionSettingMethodCmd(ClientData clientData, Tcl_Interp *
                     cmd = _wrap_ccSWCongestionSetting_victim_mask_set;
                 }  else if (strcmp(_str,"-credit_mask") == 0) {
                     cmd = _wrap_ccSWCongestionSetting_credit_mask_set;
-                }  else if (strcmp(_str,"-threshold") == 0) {
-                    cmd = _wrap_ccSWCongestionSetting_threshold_set;
+                }  else if (strcmp(_str,"-threshold_resv") == 0) {
+                    cmd = _wrap_ccSWCongestionSetting_threshold_resv_set;
                 }  else if (strcmp(_str,"-packet_size") == 0) {
                     cmd = _wrap_ccSWCongestionSetting_packet_size_set;
-                }  else if (strcmp(_str,"-cs_threshold") == 0) {
-                    cmd = _wrap_ccSWCongestionSetting_cs_threshold_set;
+                }  else if (strcmp(_str,"-cs_threshold_resv") == 0) {
+                    cmd = _wrap_ccSWCongestionSetting_cs_threshold_resv_set;
                 }  else if (strcmp(_str,"-cs_return_delay") == 0) {
                     cmd = _wrap_ccSWCongestionSetting_cs_return_delay_set;
                 }  else if (strcmp(_str,"-marking_rate") == 0) {
@@ -67965,13 +67965,13 @@ static int TclccSWCongestionSettingMethodCmd(ClientData clientData, Tcl_Interp *
             if (rcode == TCL_ERROR) return rcode;
             cmd = 0;
           } else {
-            Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be { -control_map -victim_mask -credit_mask -threshold -packet_size -cs_threshold -cs_return_delay -marking_rate  }",-1);
+            Tcl_SetStringObj(tcl_result,"Invalid configure option. Must be { -control_map -victim_mask -credit_mask -threshold_resv -packet_size -cs_threshold_resv -cs_return_delay -marking_rate  }",-1);
             return TCL_ERROR;
           }
         i+=2;
       }
       if ((i < objc) || (i == 2)) {
-        Tcl_SetStringObj(tcl_result,"{ -control_map -victim_mask -credit_mask -threshold -packet_size -cs_threshold -cs_return_delay -marking_rate  }",-1);
+        Tcl_SetStringObj(tcl_result,"{ -control_map -victim_mask -credit_mask -threshold_resv -packet_size -cs_threshold_resv -cs_return_delay -marking_rate  }",-1);
         return TCL_ERROR;
       }
       return TCL_OK;
@@ -67985,12 +67985,12 @@ static int TclccSWCongestionSettingMethodCmd(ClientData clientData, Tcl_Interp *
                     cmd = _wrap_ccSWCongestionSetting_victim_mask_get;
                 }  else if (strcmp(_str,"-credit_mask") == 0) {
                     cmd = _wrap_ccSWCongestionSetting_credit_mask_get;
-                }  else if (strcmp(_str,"-threshold") == 0) {
-                    cmd = _wrap_ccSWCongestionSetting_threshold_get;
+                }  else if (strcmp(_str,"-threshold_resv") == 0) {
+                    cmd = _wrap_ccSWCongestionSetting_threshold_resv_get;
                 }  else if (strcmp(_str,"-packet_size") == 0) {
                     cmd = _wrap_ccSWCongestionSetting_packet_size_get;
-                }  else if (strcmp(_str,"-cs_threshold") == 0) {
-                    cmd = _wrap_ccSWCongestionSetting_cs_threshold_get;
+                }  else if (strcmp(_str,"-cs_threshold_resv") == 0) {
+                    cmd = _wrap_ccSWCongestionSetting_cs_threshold_resv_get;
                 }  else if (strcmp(_str,"-cs_return_delay") == 0) {
                     cmd = _wrap_ccSWCongestionSetting_cs_return_delay_get;
                 }  else if (strcmp(_str,"-marking_rate") == 0) {
@@ -68007,11 +68007,11 @@ static int TclccSWCongestionSettingMethodCmd(ClientData clientData, Tcl_Interp *
           objv[2] = oldarg;
           return rcode;
         } else {
-          Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this -control_map -victim_mask -credit_mask -threshold -packet_size -cs_threshold -cs_return_delay -marking_rate  }",-1);
+          Tcl_SetStringObj(tcl_result,"Invalid cget option. Must be { -this -control_map -victim_mask -credit_mask -threshold_resv -packet_size -cs_threshold_resv -cs_return_delay -marking_rate  }",-1);
           return TCL_ERROR;
         }
       } else {
-        Tcl_SetStringObj(tcl_result,"{ -this -control_map -victim_mask -credit_mask -threshold -packet_size -cs_threshold -cs_return_delay -marking_rate  }", -1);
+        Tcl_SetStringObj(tcl_result,"{ -this -control_map -victim_mask -credit_mask -threshold_resv -packet_size -cs_threshold_resv -cs_return_delay -marking_rate  }", -1);
         return TCL_ERROR;
       }
     } else if ((c == 'd') && (strncmp(_str,"dump",length) == 0) && (length >= 2)) {
@@ -68040,12 +68040,12 @@ static int TclccSWCongestionSettingMethodCmd(ClientData clientData, Tcl_Interp *
         objv[2] = oldarg;
         Tcl_AppendStringsToObj(pDumpObj, "-credit_mask ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
         Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
-        cmd = _wrap_ccSWCongestionSetting_threshold_get;
+        cmd = _wrap_ccSWCongestionSetting_threshold_resv_get;
         oldarg = objv[2];
         objv[2] = obj;
         rcode = (*cmd)(clientData,interp,objc,&objv[1]);
         objv[2] = oldarg;
-        Tcl_AppendStringsToObj(pDumpObj, "-threshold ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_AppendStringsToObj(pDumpObj, "-threshold_resv ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
         Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
         cmd = _wrap_ccSWCongestionSetting_packet_size_get;
         oldarg = objv[2];
@@ -68054,12 +68054,12 @@ static int TclccSWCongestionSettingMethodCmd(ClientData clientData, Tcl_Interp *
         objv[2] = oldarg;
         Tcl_AppendStringsToObj(pDumpObj, "-packet_size ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
         Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
-        cmd = _wrap_ccSWCongestionSetting_cs_threshold_get;
+        cmd = _wrap_ccSWCongestionSetting_cs_threshold_resv_get;
         oldarg = objv[2];
         objv[2] = obj;
         rcode = (*cmd)(clientData,interp,objc,&objv[1]);
         objv[2] = oldarg;
-        Tcl_AppendStringsToObj(pDumpObj, "-cs_threshold ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
+        Tcl_AppendStringsToObj(pDumpObj, "-cs_threshold_resv ", Tcl_GetStringFromObj(tcl_result, NULL), " ", NULL);
         Tcl_SetStringObj(tcl_result, Tcl_GetStringFromObj(pDumpObj, NULL), -1);
         cmd = _wrap_ccSWCongestionSetting_cs_return_delay_get;
         oldarg = objv[2];
@@ -74658,12 +74658,12 @@ SWIGEXPORT(int,Ibis_Init)(Tcl_Interp *interp) {
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccSWCongestionSetting_victim_mask_get", _wrap_ccSWCongestionSetting_victim_mask_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccSWCongestionSetting_credit_mask_set", _wrap_ccSWCongestionSetting_credit_mask_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccSWCongestionSetting_credit_mask_get", _wrap_ccSWCongestionSetting_credit_mask_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
-	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccSWCongestionSetting_threshold_set", _wrap_ccSWCongestionSetting_threshold_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
-	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccSWCongestionSetting_threshold_get", _wrap_ccSWCongestionSetting_threshold_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccSWCongestionSetting_threshold_resv_set", _wrap_ccSWCongestionSetting_threshold_resv_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccSWCongestionSetting_threshold_resv_get", _wrap_ccSWCongestionSetting_threshold_resv_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccSWCongestionSetting_packet_size_set", _wrap_ccSWCongestionSetting_packet_size_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccSWCongestionSetting_packet_size_get", _wrap_ccSWCongestionSetting_packet_size_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
-	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccSWCongestionSetting_cs_threshold_set", _wrap_ccSWCongestionSetting_cs_threshold_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
-	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccSWCongestionSetting_cs_threshold_get", _wrap_ccSWCongestionSetting_cs_threshold_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccSWCongestionSetting_cs_threshold_resv_set", _wrap_ccSWCongestionSetting_cs_threshold_resv_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
+	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccSWCongestionSetting_cs_threshold_resv_get", _wrap_ccSWCongestionSetting_cs_threshold_resv_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccSWCongestionSetting_cs_return_delay_set", _wrap_ccSWCongestionSetting_cs_return_delay_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccSWCongestionSetting_cs_return_delay_get", _wrap_ccSWCongestionSetting_cs_return_delay_get, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 	 Tcl_CreateObjCommand(interp, SWIG_prefix "ccSWCongestionSetting_marking_rate_set", _wrap_ccSWCongestionSetting_marking_rate_set, (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);

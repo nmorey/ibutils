@@ -3370,12 +3370,7 @@ Padding - ignored on read
 
 <P><TT><B>-protect_bit
 </B></TT>
-<BLOCKQUOTE><PRE>[ Member data: returns uint8_t * ]
-</PRE></BLOCKQUOTE>
-
-<P><TT><B>-resv
-</B></TT>
-<BLOCKQUOTE><PRE>[ Member data: returns uint8_t * ]
+<BLOCKQUOTE><PRE>[ Member data: returns ib_net16_t * ]
 </PRE></BLOCKQUOTE>
 
 <P><TT><B>-lease_period
@@ -3410,19 +3405,9 @@ Padding - ignored on read
 <BLOCKQUOTE><PRE>[ Member data: returns ib_net16_t * ]
 </PRE></BLOCKQUOTE>
 
-<P><TT><B>-resv0_sl
+<P><TT><B>-sl
 </B></TT>
-<BLOCKQUOTE><PRE>[ Member data: returns uint8_t * ]
-</PRE></BLOCKQUOTE>
-
-<P><TT><B>-resv1
-</B></TT>
-<BLOCKQUOTE><PRE>[ Member data: returns uint8_t * ]
-</PRE></BLOCKQUOTE>
-
-<P><TT><B>-resv2
-</B></TT>
-<BLOCKQUOTE><PRE>[ Member data: returns ib_net16_t * ]
+<BLOCKQUOTE><PRE>[ Member data: returns ib_net32_t * ]
 </PRE></BLOCKQUOTE>
 
 <P><TT><B>-time_stamp
@@ -3434,7 +3419,7 @@ Padding - ignored on read
 <H3>10.6. class ib_cong_log_event_ca_t</H3></A>
 <PRE>[ created from struct ib_cong_log_event_ca_t ]
 </PRE>
-<P><TT><B>-resv0_local_qp
+<P><TT><B>-local_qp_resv0
 </B></TT>
 <BLOCKQUOTE><PRE>[ Member data: returns ib_net32_t * ]
 </PRE></BLOCKQUOTE>
@@ -3559,7 +3544,7 @@ Padding - ignored on read
 <BLOCKQUOTE><PRE>[ Member data: returns uint8_array_t * ]
 </PRE></BLOCKQUOTE>
 
-<P><TT><B>-threshold
+<P><TT><B>-threshold_resv
 </B></TT>
 <BLOCKQUOTE><PRE>[ Member data: returns uint8_t * ]
 </PRE></BLOCKQUOTE>
@@ -3569,14 +3554,9 @@ Padding - ignored on read
 <BLOCKQUOTE><PRE>[ Member data: returns uint8_t * ]
 </PRE></BLOCKQUOTE>
 
-<P><TT><B>-cs_threshold
+<P><TT><B>-cs_threshold_resv
 </B></TT>
-<BLOCKQUOTE><PRE>[ Member data: returns uint8_t * ]
-</PRE></BLOCKQUOTE>
-
-<P><TT><B>-resv0
-</B></TT>
-<BLOCKQUOTE><PRE>[ Member data: returns uint8_t * ]
+<BLOCKQUOTE><PRE>[ Member data: returns ib_net16_t * ]
 </PRE></BLOCKQUOTE>
 
 <P><TT><B>-cs_return_delay
@@ -3673,12 +3653,7 @@ Padding - ignored on read
 </PRE>
 <P><TT><B>-port_control
 </B></TT>
-<BLOCKQUOTE><PRE>[ Member data: returns uint8_t * ]
-</PRE></BLOCKQUOTE>
-
-<P><TT><B>-resv0
-</B></TT>
-<BLOCKQUOTE><PRE>[ Member data: returns uint8_t * ]
+<BLOCKQUOTE><PRE>[ Member data: returns ib_net16_t * ]
 </PRE></BLOCKQUOTE>
 
 <P><TT><B>-control_map
@@ -3713,11 +3688,6 @@ Padding - ignored on read
 <PRE>[ created from struct ccTable ]
 </PRE>
 <P><TT><B>-ccti_limit
-</B></TT>
-<BLOCKQUOTE><PRE>[ Member data: returns ib_net16_t * ]
-</PRE></BLOCKQUOTE>
-
-<P><TT><B>-resv
 </B></TT>
 <BLOCKQUOTE><PRE>[ Member data: returns ib_net16_t * ]
 </PRE></BLOCKQUOTE>
