@@ -296,6 +296,41 @@ __ibcc_prep_cc_mad(
 	OSM_LOG_EXIT(&(IbisObj.log));
 }  /* __ibcc_prep_cc_mad() */
 
+static void
+__ibcc_dump_raw_mad(
+        ib_cc_mad_t * p_cc_mad)
+{
+      int mad_size = (int)sizeof(ib_cc_mad_t);
+      uint8_t * p_raw_mad = (uint8_t*)p_cc_mad;
+      int i;
+      int last_data_idx; // last non-zero byte of the MAD
+
+      for (i = (mad_size-1); i > 0; i -= 1)
+              if (p_raw_mad[i] != 0)
+                      break;
+      last_data_idx = i;
+
+      for (i = 0; i < mad_size; i += 4) {
+              if (i == 0)
+                      printf("  Header |---------------------------|\n");
+              else if (i == 24)
+                      printf("  V key  |---------------------------|\n");
+              else if (i == 32)
+                      printf("  RESV0  |---------------------------|\n");
+              else if (i == 64)
+                      printf("  Data   |---------------------------|\n");
+              else if (i == 192)
+                      printf("  RESV1  |---------------------------|\n");
+
+              if (i <= last_data_idx)
+                      printf("          [%03d..%03d]   %02x  %02x  %02x  %02x\n",
+                             i+3,i,
+                             //p_raw_mad[i+3], p_raw_mad[i+2], p_raw_mad[i+1], p_raw_mad[i+0]);
+							 p_raw_mad[i+0], p_raw_mad[i+1], p_raw_mad[i+2], p_raw_mad[i+3]);
+      }
+      printf("     end |---------------------------|\n");
+}
+
 /**********************************************************************
  **********************************************************************/
 
@@ -315,6 +350,7 @@ ibcc_send_mad_by_lid (
 	osm_madw_t      *p_madw;
 	ib_cc_mad_t      response_mad;
 	ib_api_status_t  status;
+	int debug_mode = 0;
 
 	OSM_LOG_ENTER(&(IbisObj.log));
 
@@ -337,6 +373,12 @@ ibcc_send_mad_by_lid (
 			   cc_mgt_data,
 			   cc_mgt_data_size,
 			   &p_madw);
+	if (debug_mode == 1)
+	{
+		/* print mad */
+		printf("\n\n>>> Sending MAD:\n\n" );
+		__ibcc_dump_raw_mad((ib_cc_mad_t *)(p_madw->p_mad));
+	}
 
 	/* send and wait */
 	status = ibis_gsi_send_sync_mad_batch(
@@ -351,6 +393,12 @@ ibcc_send_mad_by_lid (
 		status = IB_TIMEOUT;
 
 	if (status == IB_SUCCESS) {
+		if (debug_mode == 1)
+		{
+			/* print mad */
+			printf("\n\nResponse MAD:\n\n" );
+			__ibcc_dump_raw_mad((ib_cc_mad_t *)&response_mad);
+		}
 
 		if (cc_log_data)
 			memcpy(cc_log_data,
