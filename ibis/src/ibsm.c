@@ -218,6 +218,80 @@ ibsm_bind(
   return( status );
 }
 
+static void
+__ibsm_dump_raw_mad_by_lid(
+        ib_smp_t * p_sm_mad)
+{
+      int mad_size = (int)sizeof(ib_smp_t);
+      uint8_t * p_raw_mad = (uint8_t*)p_sm_mad;
+      int i;
+      int last_data_idx; // last non-zero byte of the MAD
+
+      for (i = (mad_size-1); i > 0; i -= 1)
+              if (p_raw_mad[i] != 0)
+                      break;
+      last_data_idx = i;
+
+      for (i = 0; i < mad_size; i += 4) {
+              if (i == 0)
+                      printf("  Header |---------------------------|\n");
+              else if (i == 24)
+                      printf("  M key  |---------------------------|\n");
+              else if (i == 32)
+                      printf("  RESV0  |---------------------------|\n");
+              else if (i == 64)
+                      printf("  Data   |---------------------------|\n");
+              else if (i == 128)
+                      printf("  RESV1  |---------------------------|\n");
+
+              if (i <= last_data_idx)
+                      printf("          [%03d..%03d]   %02x  %02x  %02x  %02x\n",
+                             i+3,i,
+                             //p_raw_mad[i+3], p_raw_mad[i+2], p_raw_mad[i+1], p_raw_mad[i+0]);
+                             p_raw_mad[i+0], p_raw_mad[i+1], p_raw_mad[i+2], p_raw_mad[i+3]);
+      }
+      printf("  END    |---------------------------|\n");
+}
+
+static void
+__ibsm_dump_raw_mad_by_dr(
+        ib_smp_t * p_sm_mad)
+{
+      int mad_size = (int)sizeof(ib_smp_t);
+      uint8_t * p_raw_mad = (uint8_t*)p_sm_mad;
+      int i;
+      int last_data_idx; // last non-zero byte of the MAD
+
+      for (i = (mad_size-1); i > 0; i -= 1)
+              if (p_raw_mad[i] != 0)
+                      break;
+      last_data_idx = i;
+
+      for (i = 0; i < mad_size; i += 4) {
+              if (i == 0)
+                      printf("  Header    |---------------------------|\n");
+              else if (i == 24)
+                      printf("  M key     |---------------------------|\n");
+              else if (i == 32)
+                      printf("  Dr        |---------------------------|\n");
+              else if (i == 36)
+                      printf("  Rsrv.     |---------------------------|\n");
+              else if (i == 64)
+                      printf("  Data      |---------------------------|\n");
+              else if (i == 128)
+                      printf("  In. Path  |---------------------------|\n");
+              else if (i == 192)
+                      printf("  Re. Path  |---------------------------|\n");
+
+              if (i <= last_data_idx)
+                      printf("             [%03d..%03d]   %02x  %02x  %02x  %02x\n",
+                             i+3,i,
+                             //p_raw_mad[i+3], p_raw_mad[i+2], p_raw_mad[i+1], p_raw_mad[i+0]);
+                             p_raw_mad[i+0], p_raw_mad[i+1], p_raw_mad[i+2], p_raw_mad[i+3]);
+      }
+      printf("  END       |---------------------------|\n");
+}
+
 
 /**********************************************************************
  *   ibsm_send_mad_by_lid(p_ibsm, p_data, data_size, lid, attr, mod, meth)
@@ -237,6 +311,7 @@ ibsm_send_mad_by_lid (
   osm_madw_t           *p_madw;
   ib_smp_t              response_mad = {0};
   ib_api_status_t       status;
+  int debug_mode = 0;
 
   OSM_LOG_ENTER(&(IbisObj.log));
 
@@ -266,6 +341,12 @@ ibsm_send_mad_by_lid (
   /* copy over the user attribute data */
   memcpy(&((ib_smp_t*)p_madw->p_mad)->data, p_data, data_size);
 
+  if (debug_mode == 1)
+  {
+      /* print mad */
+      printf("\n\n>>> Sending MAD:\n\n" );
+      __ibsm_dump_raw_mad_by_lid((ib_smp_t *)(p_madw->p_mad));
+  }
   /* send and wait */
   status = ibis_gsi_send_sync_mad_batch(
     &(IbisObj.mad_ctrl),
@@ -280,6 +361,12 @@ ibsm_send_mad_by_lid (
 
   if (status == IB_SUCCESS)
   {
+       if (debug_mode == 1)
+       {
+           /* print mad */
+           printf("\n\n>>> Response MAD:\n\n" );
+           __ibsm_dump_raw_mad_by_lid((ib_smp_t *)&response_mad);
+       }
     memcpy(p_data, &response_mad.data, data_size);
 
     if (cl_ntoh16(response_mad.status) & 0x7fff)
@@ -311,6 +398,7 @@ ibsm_send_mad_by_dr(
   ib_smp_t              response_mad = {0};
   ib_smp_t             *p_smp;
   ib_api_status_t       status;
+  int debug_mode = 0;
 
   OSM_LOG_ENTER(&(IbisObj.log));
 
@@ -347,6 +435,12 @@ ibsm_send_mad_by_dr(
   /* verbose ... */
   osm_dump_dr_smp(&(IbisObj.log), p_smp, OSM_LOG_FRAMES);
 
+  if (debug_mode == 1)
+  {
+      /* print mad */
+      printf("\n\n>>> Sending MAD:\n\n" );
+      __ibsm_dump_raw_mad_by_dr((ib_smp_t *)(p_madw->p_mad));
+  }
   /* send and wait */
   status = ibis_gsi_send_sync_mad_batch(
     &(IbisObj.mad_ctrl),
@@ -361,6 +455,12 @@ ibsm_send_mad_by_dr(
 
   if (status == IB_SUCCESS)
   {
+       if (debug_mode == 1)
+       {
+           /* print mad */
+           printf("\n\n>>> Response MAD:\n\n" );
+           __ibsm_dump_raw_mad_by_dr((ib_smp_t *)&response_mad);
+       }
     memcpy(p_data, &response_mad.data, data_size);
 
     if (cl_ntoh16(response_mad.status) & 0x7fff)
