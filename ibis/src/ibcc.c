@@ -284,7 +284,7 @@ __ibcc_prep_cc_mad(
 			memcpy(((ib_cc_mad_t *)p_madw->p_mad)->log_data,
 			       cc_log_data, cc_log_data_size);
 		}
-	
+
 		if (cc_mgt_data_size > 0) {
 			CL_ASSERT(cc_mgt_data_size <= IB_CC_MGT_DATA_SIZE);
 			CL_ASSERT(cc_mgt_data);
