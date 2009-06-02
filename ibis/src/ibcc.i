@@ -1453,6 +1453,7 @@ typedef struct _ibcc_tbl_entry {
 
 typedef struct _ib_cc_tbl {
 	ib_net16_t ccti_limit;
+	ib_net16_t resv;
 	ib_cc_tbl_entry_t entry_list[64];
 } ccTable;
 
