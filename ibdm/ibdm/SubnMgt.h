@@ -138,5 +138,9 @@ FatTreeAnalysis(IBFabric *p_fabric);
 int
 FatTreeRouteByPermutation(IBFabric* p_fabric, char* srcs, char* dsts);
 
+// Report all CA 2 CA Paths through a port
+int
+SubnReportCA2CAPathsThroughSWPort(IBPort *p_port);
+
 #endif /* IBDM_SUBN_MGT_H */
 

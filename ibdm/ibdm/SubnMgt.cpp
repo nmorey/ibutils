@@ -2725,4 +2725,154 @@ SubnMgtFatTreeRoute(IBFabric *p_fabric) {
    return(0);
 }
 
+// Recursivly DFS backwards through all switch ports
+// (except for the port to the lids) and fill in HCAS reached
+static int
+dfsBackToCAByLftToDLIDs (IBNode *node,
+				 list<unsigned int> &dstLids,
+				 unsigned int dstPortNum,
+				 set<IBNode *> &visitedNodes,
+				 map<IBPort *, list<unsigned int> > &HCAPortsLids)
+{
+  if (FabricUtilsVerboseLevel & FABU_LOG_VERBOSE) {
+    cout << "-V- Visiting " << node->name << " searching for lids:";
+    for (list<unsigned int>::const_iterator lI = dstLids.begin();
+	   lI != dstLids.end(); lI++) cout << *lI << ",";
+    cout << endl;
+  }
 
+  if (node->type != IB_SW_NODE) {
+    IBPort* port = node->getPort(dstPortNum);
+    HCAPortsLids[port] = dstLids;
+    return(0);
+  }
+
+  // first check which dst lid is still valid
+  list<unsigned int> subDstLids;
+  for (list<unsigned int>::const_iterator lI = dstLids.begin();
+	 lI != dstLids.end(); lI++) {
+    unsigned int lid = *lI;
+    if ((lid < node->LFT.size()) && (node->LFT[lid] == dstPortNum)) {
+	subDstLids.push_front(lid);
+    }
+  }
+
+  // no paths to the dlids through the port
+  if (subDstLids.size() == 0) {
+    if (FabricUtilsVerboseLevel & FABU_LOG_VERBOSE)
+	cout << "-V- Dead end" << endl;
+    return(0);
+  }
+
+  // mark the node visited now
+  visitedNodes.insert(node);
+
+  // DFS through the other ports
+  for (unsigned int pn = 1; pn <= node->numPorts; pn++) {
+    if (pn != dstPortNum) {
+	IBPort *port = node->getPort(pn);
+	if (!port || ! port->p_remotePort) continue;
+	// set remPort [IBPort_p_remotePort_get $port]
+	// if {$remPort == ""} {continue}
+	IBNode *p_remNode = port->p_remotePort->p_node;
+	if (visitedNodes.find(p_remNode) == visitedNodes.end()) {
+	  unsigned int remPortNum = port->p_remotePort->num;
+	  dfsBackToCAByLftToDLIDs(p_remNode, subDstLids, remPortNum,
+					  visitedNodes, HCAPortsLids);
+	}
+    }
+  }
+  return(0);
+}
+
+// return 1 if LID is reachable by LFT from given port
+static int
+isThereLFTPathToLID(IBPort *p_port, unsigned int lid)
+{
+  if (p_port->base_lid == lid)
+    return(1);
+
+  set<IBNode *> visitedNodes;
+  visitedNodes.insert(p_port->p_node);
+  while (p_port) {
+
+    // get remote port
+    IBPort *p_remPort = p_port->p_remotePort;
+    if (!p_remPort)
+	return(0);
+
+    if (p_remPort->base_lid == lid)
+	return(1);
+
+    // if we already visited we are in a loop
+    if (visitedNodes.find(p_remPort->p_node) != visitedNodes.end())
+	return(0);
+
+    visitedNodes.insert(p_remPort->p_node);
+
+    // if it is a switch
+    if (p_remPort->p_node->type == IB_SW_NODE) {
+	unsigned int pn = p_remPort->p_node->getLFTPortForLid(lid);
+	p_port = p_remPort->p_node->getPort(pn);
+    } else {
+	p_port = NULL;
+    }
+  }
+
+  return(0);
+}
+
+// Obtain all the CA to CA port pairs going through the
+// given port
+int
+SubnReportCA2CAPathsThroughSWPort(IBPort *p_port)
+{
+  // if not a switch port error
+  if (p_port->p_node->type != IB_SW_NODE) {
+    cout << "-E- Provided port:" << p_port->getName()
+	   << " is not a switch port" << endl;
+    return(1);
+  }
+
+  IBNode *node = p_port->p_node;
+
+  // obtain the DLIDs on the given switch port
+  list<unsigned int> lidsThroughPort;
+  for (unsigned int i = 0; i < node->LFT.size(); i++) {
+    if (node->LFT[i] == p_port->num)
+	// TODO: validate there is really a path to that node
+	if (isThereLFTPathToLID(p_port, i))
+	  lidsThroughPort.push_front(i);
+	else
+	  if (FabricUtilsVerboseLevel & FABU_LOG_VERBOSE)
+	    cout << "-V- LID:" << i
+		   << " pointed by LFT but is not reachable from:"
+		   << p_port->getName() << endl;
+  }
+
+  if (lidsThroughPort.size() == 0) {
+    cout << "-W- No paths through port:" << p_port->getName() << endl;
+    return(1);
+  }
+
+  set<IBNode *> visitedNodes;
+  map<IBPort *, list<unsigned int> > HCAPortsLids;
+
+  dfsBackToCAByLftToDLIDs(node, lidsThroughPort, p_port->num,
+				  visitedNodes, HCAPortsLids);
+  IBFabric *fabric = node->p_fabric;
+  if (HCAPortsLids.size()) {
+    map<IBPort *, list<unsigned int> >::const_iterator pI;
+    for (pI = HCAPortsLids.begin(); pI != HCAPortsLids.end(); pI++) {
+	IBPort *port = (*pI).first;
+	list<unsigned int>::const_iterator lI;
+	cout << "From:" << port->getName() << " SLID:" << port->base_lid << endl;
+	for (lI = (*pI).second.begin(); lI != (*pI).second.end(); lI++) {
+	  IBPort *dPort = fabric->getPortByLid(*lI);
+	  cout << "   To:" << dPort->getName() << " DLID:" << dPort->base_lid
+		 << endl;
+	}
+    }
+  }
+  return(0);
+}
