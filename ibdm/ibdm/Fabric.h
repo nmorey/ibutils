@@ -392,6 +392,8 @@ class IBNode {
   // Get the list of ports for the givan MLID from the MFT
   list_int getMFTPortsForMLid(unsigned int lid);
 
+  int getFirstPortLid();
+
 }; // Class IBNode
 
 //
@@ -614,6 +616,12 @@ class IBFabric {
 
   // write out a topology file
   int dumpTopology(char *fileName, char *ibnlDir);
+
+  // Write out the name to guid and LID map
+  int dumpNameMap(char *fileName);
+
+  // Parse name map file and set GUIDs of the nodes by their name
+  int setNodeGuidsByNameMapFile(char *fileName);
 
  private:
   int parseSubnetLine(char *line);
