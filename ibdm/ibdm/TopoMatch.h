@@ -52,3 +52,8 @@ TopoMergeDiscAndSpecFabrics(
   IBFabric  *p_dFabric,
   IBFabric  *p_mFabric);
 
+int
+TopoMatchFabricsFromEdge(
+  IBFabric *p_sFabric,      // The specification fabric
+  IBFabric *p_dFabric,      // The discovered fabric
+  char **messages);

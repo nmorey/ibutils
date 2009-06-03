@@ -36,7 +36,7 @@
 
 Topology Matching
 
-The file holds a set of utilities to providea "topology matchine"
+The file holds a set of utilities to providea "topology matching"
 functionality: comparing two fabrics based on some entry point.
 
 The comparison is of a "discovered" fabric to a "spec" fabric:
@@ -1451,7 +1451,7 @@ TopoCopyLinkToMergedFabric(
 
 // Build a merged fabric from a matched discovered and spec fabrics:
 // * Every node from the discovered fabric must appear
-// * We sued matched nodes adn system names.
+// * We use matched nodes and system names.
 int
 TopoMergeDiscAndSpecFabrics(
   IBFabric  *p_sFabric,
@@ -1489,7 +1489,674 @@ TopoMergeDiscAndSpecFabrics(
   return 0;
 }
 
+//----------------------------------------------------------------------
+// Another approach for matching fabric starting on the edges and
+// moving into the fabric. Using NAMES to match.
+
+int isGUIDBasedName(IBNode *p_node) {
+  string g = guid2str(p_node->guid_get());
+  string n = p_node->name;
+  const char *gs = g.c_str()+2;
+  const char *ns = n.c_str()+1;
+  // cout << "G:" << gs << endl << " N:" << ns << endl;
+  return (!strncmp(gs,ns,6));
+}
+
+// Scan through all CA nodes and try to match them by the name
+// return the list of matches found an error for those extra or missing
+int
+TopoMatchCAsByName(IBFabric *p_sFabric, IBFabric *p_dFabric,
+			 list<IBNode*> &matchingDiscHosts, stringstream &s)
+{
+  int anyMiss = 0;
+  int numMatchedCANodes = 0;
+  s << "-I- Matching all hosts by name ..." << endl;
+  // we go through entire discovered fabric trying to find match by name
+  for (map_str_pnode::iterator nI = p_dFabric->NodeByName.begin();
+	 nI != p_dFabric->NodeByName.end();
+	 nI++) {
+    IBNode *p_node1 = (*nI).second;
+    if (p_node1->type != IB_CA_NODE) continue;
+
+    // so we try to find a node by the same name on the spec fabric.
+    map_str_pnode::iterator snI = p_sFabric->NodeByName.find((*nI).first);
+
+    // no match
+    if (snI == p_sFabric->NodeByName.end()) {
+	if (isGUIDBasedName(p_node1))
+	  s << "-W- Discovered Host CA with GUID:"
+	    << guid2str(p_node1->guid_get())
+	    << " have no valid IB node name (NodeDesc) and can not be checked."
+	    << endl;
+	else {
+	  s << "-E- Discovered Host CA " << p_node1->name
+	    << " does not appear in the topology file." << endl;
+	  anyMiss++;
+	}
+    } else {
+      IBNode *p_node2 = (*snI).second;
+      // make sure they are not previously match somehome
+      if (p_node1->appData1.ptr || p_node2->appData1.ptr) continue;
+	TopoMarkNodeAsMatchAlgoVisited(p_node1);
+	TopoMarkMatcedNodes(p_node1, p_node2, numMatchedCANodes);
+	matchingDiscHosts.push_back(p_node1);
+    }
+  }
+
+  // now try the spec topology and report missing hosts
+  for (map_str_pnode::iterator nI = p_sFabric->NodeByName.begin();
+	 nI != p_sFabric->NodeByName.end(); nI++) {
+    IBNode *p_node1 = (*nI).second;
+    if (p_node1->type != IB_CA_NODE) continue;
+
+    if (!p_node1->appData1.ptr) {
+	s << "-E- Missing Topology Host CA " << p_node1->name
+	  << " does not appear in the discovered topology." << endl;
+	anyMiss++;
+    }
+  }
+  if (anyMiss)
+    s << "-E- Total " << anyMiss << " hosts did not match by name" << endl;
+  s << "-I- Matched " << numMatchedCANodes << " hosts by name" << endl;
+  return(anyMiss);
+}
+
+// Given the set of discovered host nodes check to which switches
+// they should have connect and check the grouping matches
+// return the number of miss matching groups found and the list
+// of matching switches
+int
+AnalyzeMatchingCAGroups(IBFabric *p_sFabric, IBFabric *p_dFabric,
+				list<IBNode*> &matchingDiscHosts,
+				list<IBNode*> &matchingDiscLeafSw, stringstream &s)
+{
+
+  s << "-I- Analyzing host groups connected to same leaf switches ..." << endl;
+  int numMatchedLeafSw = 0;
+  int anyMiss = 0;
+  // check all ouput ports of the given set of host nodes
+  // build the set of spec switces they should have connected too
+  set<IBNode*> specLeafSw;
+  for (list<IBNode*>::const_iterator lI = matchingDiscHosts.begin();
+	 lI != matchingDiscHosts.end(); lI++) {
+    IBNode *p_dNode = *lI;
+    IBNode *p_sNode = (IBNode *)p_dNode->appData1.ptr;
+    for (unsigned int pn = 1; pn <= p_dNode->numPorts; pn++) {
+	// we do not care for non discoeverd ports
+	IBPort *p_dPort = p_dNode->getPort(pn);
+	if (!p_dPort) continue;
+	// we do not care if they are not in the spec
+	IBPort *p_sPort = p_sNode->getPort(pn);
+	if (!p_sPort) continue;
+
+	if (!p_sPort->p_remotePort) continue;
+	if (p_sPort->p_remotePort->p_node->type != IB_SW_NODE) continue;
+
+	specLeafSw.insert(p_sPort->p_remotePort->p_node);
+    }
+  }
+
+  // for each of the spec switches
+  for (set<IBNode*>::const_iterator sI = specLeafSw.begin();
+	 sI != specLeafSw.end(); sI++) {
+    IBNode *p_sNode = (*sI);
+
+    // we need to track disc switches off hosts on this switch
+    map< IBNode*, list< IBNode *>, less< IBNode*> > discLeafSw;
+
+    // will finaly hold the matching swith
+    IBNode *p_dNode;
+
+    // for each host on the switch
+    for (unsigned int pn = 1; pn <= p_sNode->numPorts; pn++) {
+	// collect the switch the discovered host connects to
+
+	IBPort *p_sPort = p_sNode->getPort(pn);
+	if (!p_sPort) continue;
+	if (!p_sPort->p_remotePort) continue;
+	if (p_sPort->p_remotePort->p_node->type != IB_CA_NODE) continue;
+
+	// we are about the remote node only if is a matched host
+	if (!p_sPort->p_remotePort->p_node->appData1.ptr) continue;
+
+	IBNode *p_dCANode =
+	  (IBNode *)p_sPort->p_remotePort->p_node->appData1.ptr;
+	IBPort *p_dCAPort = p_dCANode->getPort(p_sPort->p_remotePort->num);
+	if (!p_dCAPort || !p_dCAPort->p_remotePort) continue;
+	p_dNode = p_dCAPort->p_remotePort->p_node;
+	discLeafSw[p_dNode].push_back(p_dCANode);
+    }
+
+    // eventually if there is only one discovered switch
+    if (discLeafSw.size() == 1) {
+	// match was found
+
+	if (isGUIDBasedName(p_dNode)) {
+	  // catch the case where the switch is "named" with different name
+	  // s << "-I- All " << discLeafSw[p_dNode].size()
+	  //  << " hosts on switch:" << p_sNode->name
+	  //  << " are connected to switch:" << p_dNode->name << endl;
+	  TopoMarkNodeAsMatchAlgoVisited(p_dNode);
+	  TopoMarkMatcedNodes(p_dNode, p_sNode, numMatchedLeafSw);
+	  matchingDiscLeafSw.push_back(p_dNode);
+	} else {
+	  if (p_dNode->name != p_sNode->name) {
+	    s << "-E- All " << discLeafSw[p_dNode].size()
+		<< " hosts on switch:" << p_sNode->name
+		<< " are connected to switch:" << p_dNode->name
+		<< endl;
+	    anyMiss++;
+	  } else {
+	    TopoMarkNodeAsMatchAlgoVisited(p_dNode);
+	    TopoMarkMatcedNodes(p_dNode, p_sNode, numMatchedLeafSw);
+	    matchingDiscLeafSw.push_back(p_dNode);
+	  }
+	}
+    } else {
+	anyMiss++;
+	// else report which host connects to which switch
+	s << "-E- Hosts that should connect to switch:" << p_sNode->name
+	  << " are connecting to multiple switches: " << endl;
+	map< IBNode*, list< IBNode *>, less< IBNode*> >::iterator mI;
+	for (mI = discLeafSw.begin(); mI != discLeafSw.end(); mI++) {
+	  s << "    to:" << (*mI).first->name << " hosts:";
+	  for (list< IBNode *>::iterator lI = (*mI).second.begin();
+		 lI != (*mI).second.end(); lI++) {
+	    s << (*lI)->name << ",";
+	  }
+	  s << endl;
+	}
+    }
+  }
+
+  if (anyMiss) {
+    s << "-E- Total of " << anyMiss
+	<< " leaf switches could not be matched." << endl <<"    since they are connected to hosts that should connect to different leaf switches." << endl;
+  }
+
+  s << "-I- Matched " << matchingDiscLeafSw.size()
+    << " leaf switches - connecting to matched hosts" << endl;
+
+  return(anyMiss);
+}
+
+// Validate all matching host ports are connected to correct switch port
+int CheckMatchingCAPortsToMatchingSwPortNums(
+    IBFabric *p_sFabric, IBFabric *p_dFabric,
+    list<IBNode*> &matchingDiscHosts,
+    stringstream &s)
+{
+  // go over all matching hosts ports
+  // if the host remote port connect to matching switch
+  // validate the port numbers match
+  int anyMiss = 0;
+  int numMatchPorts = 0;
+  // check all output ports of the given set of host nodes
+  for (list<IBNode*>::const_iterator lI = matchingDiscHosts.begin();
+	 lI != matchingDiscHosts.end(); lI++) {
+    IBNode *p_dNode = *lI;
+    IBNode *p_sNode = (IBNode *)p_dNode->appData1.ptr;
+    for (unsigned int pn = 1; pn <= p_dNode->numPorts; pn++) {
+
+	IBPort *p_sPort = p_sNode->getPort(pn);
+	if (!p_sPort || !p_sPort->p_remotePort) continue;
+	IBNode *p_sRemNode = p_sPort->p_remotePort->p_node;
+
+	IBPort *p_dPort = p_dNode->getPort(pn);
+	if (!p_dPort || !p_dPort->p_remotePort) {
+	  s << "-E- Host " << p_sNode->name << " port " << p_sPort->getName()
+	    << " should connect to switch port: "
+	    << p_sPort->p_remotePort->getName()
+	    << " but is disconnected" << endl;
+	  anyMiss++;
+	  continue;
+	}
+	IBNode *p_dRemNode = p_dPort->p_remotePort->p_node;
 
 
+	if ((IBNode*)p_sRemNode->appData1.ptr != p_dRemNode) continue;
 
+	// now we know they both point to same switch - check the port
+	// connection and properties
+	if (p_sPort->p_remotePort->num != p_dPort->p_remotePort->num) {
+	  s << "-E- Host " << p_sNode->name << " port " << p_sPort->getName()
+	    << " connects to switch port: " << p_dPort->p_remotePort->getName()
+	    << " and not according to topology: "
+	    << p_sPort->p_remotePort->getName() << endl;
+	  anyMiss++;
+	} else {
+	  numMatchPorts++;
+	}
+      if (p_sPort->width != p_dPort->width) {
+        s << "-W- Wrong link width on:" << p_sPort->getName()
+	    << ". Expected:" << width2char(p_sPort->width)
+	    << " got:" << width2char(p_dPort->width) << endl;
+      }
+      if (p_sPort->speed != p_dPort->speed) {
+        s << "-W- Wrong link speed on:" << p_sPort->getName()
+	    << ". Expected:" << speed2char(p_sPort->speed)
+	    << " got:" << speed2char(p_dPort->speed) << endl;
+      }
+    }
+  }
+  if (anyMiss) {
+    s << "-E- Total of " << anyMiss
+	<< " CA ports did not match connected switch port" << endl;
+  }
+  s << "-I- Total of " << numMatchPorts
+    << " CA ports match connected switch port" << endl;
 
+  return(anyMiss);
+}
+
+// Start for the current set of matched switches
+// try all ports and look for remote side switches
+// if remote ports match collect all the switches reached
+// now go over all reached switches and validate back all connections
+// to matched switches - report missmatches or report the new set
+// return the number of new matches found
+int
+TopoMatchSwitches(IBFabric *p_sFabric,
+			IBFabric *p_dFabric,
+			list<IBNode*> &oldMatchingSws,
+			list<IBNode*> &newMatchingSws,
+			stringstream &s)
+{
+
+  s << "-I- Matching nodes connected to previously matched nodes ..." << endl;
+
+  int anyMiss = 0;
+  int numMatchedSws = 0;
+  //  map<IBNode*, IBNode*, less<IBNode*> > mapSpecToPropose;
+  list< IBNode* > specSW;
+
+  // Collect all next step candidates:
+  // - connected to this step sw and
+  // - the remote port num match
+  // - not previously matched
+  for (list<IBNode*>::const_iterator lI = oldMatchingSws.begin();
+	 lI != oldMatchingSws.end(); lI++) {
+    IBNode *p_dNode = *lI;
+    IBNode *p_sNode = (IBNode *)p_dNode->appData1.ptr;
+    for (unsigned int pn = 1; pn <= p_dNode->numPorts; pn++) {
+	// we do not care for non discoeverd ports
+	IBPort *p_dPort = p_dNode->getPort(pn);
+	if (!p_dPort) continue;
+	// we do not care if they are not in the spec
+	IBPort *p_sPort = p_sNode->getPort(pn);
+	if (!p_sPort) continue;
+
+	if (!p_sPort->p_remotePort || !p_dPort->p_remotePort) continue;
+	if (p_sPort->p_remotePort->p_node->type != IB_SW_NODE) continue;
+	if (p_dPort->p_remotePort->p_node->type != IB_SW_NODE) continue;
+	// but the remote switch must not be a matched one!
+	if (p_sPort->p_remotePort->p_node->appData1.ptr) continue;
+	if (p_dPort->p_remotePort->p_node->appData1.ptr) continue;
+
+	// we only consider perfect matches
+	if (p_sPort->p_remotePort->num != p_dPort->p_remotePort->num)
+	  continue;
+
+	specSW.push_back(p_sPort->p_remotePort->p_node);
+    }
+  }
+
+  // we need to track potential matchings over all this step sw
+#define map_pnode_set_pnode  map< IBNode*, set< IBNode *, less<IBNode *> >, less< IBNode*> >
+  map_pnode_set_pnode candidDiscSw;
+  map_pnode_set_pnode candidSpecSw;
+#define set_pair_pnode_pn set< pair< IBNode *, unsigned int>, less< pair< IBNode *, unsigned int> > >
+#define map_pnode_list_pair_pnode_pn map< IBNode*, set_pair_pnode_pn , less< IBNode*> >
+  map_pnode_list_pair_pnode_pn connectToSwitch;
+
+  // To be declared as matching we check all previously matched
+  // remote side spec switches have their disc switches pointing
+  // to same un-matched switch
+  for (list<IBNode*>::iterator sI = specSW.begin();
+	 sI != specSW.end(); sI++) {
+    IBNode *p_sCandidSw = (*sI);
+
+    // for each port on the proposed switch
+    for (unsigned int pn = 1; pn <= p_sCandidSw->numPorts; pn++) {
+	// collect the remote switches the discovered host connects to
+
+	// we only care about ports that connect to previously
+	// matching switches
+	IBPort *p_sPort = p_sCandidSw->getPort(pn);
+	if (!p_sPort || !p_sPort->p_remotePort) continue;
+	if (p_sPort->p_remotePort->p_node->type != IB_SW_NODE) continue;
+	if (!p_sPort->p_remotePort->p_node->appData1.ptr) continue;
+
+	// track the spec connections
+	pair< IBNode*, unsigned int> tmp(p_sPort->p_remotePort->p_node,
+						   p_sPort->p_remotePort->num);
+	connectToSwitch[p_sCandidSw].insert(tmp);
+
+	// now we can obtain the matching discovered switch
+	IBNode *p_dRemNode =
+	  (IBNode *)p_sPort->p_remotePort->p_node->appData1.ptr;
+	if (!p_dRemNode->appData1.ptr) {
+	  cout << "BUG  No pointer back?" << endl;
+	  exit(1);
+	}
+	// to get the discovered candidate we need the port to be connected
+	IBPort *p_dRemPort = p_dRemNode->getPort(p_sPort->p_remotePort->num);
+	if (!p_dRemPort || !p_dRemPort->p_remotePort) continue;
+
+	// must match the spec pin num we started with
+	if (p_dRemPort->p_remotePort->num != pn) continue;
+
+	IBNode *p_dCandidSw = p_dRemPort->p_remotePort->p_node;
+	if (p_dCandidSw->type != IB_SW_NODE) continue;
+	// can not be previously matched
+	if (p_dCandidSw->appData1.ptr) continue;
+
+	pair< IBNode*, unsigned int> tmp2(p_dRemNode,
+						    p_sPort->p_remotePort->num);
+	connectToSwitch[p_dCandidSw].insert(tmp2);
+
+	// collect all candidate discoeverd switches for the spec switch
+	candidDiscSw[p_sCandidSw].insert(p_dCandidSw);
+	candidSpecSw[p_dCandidSw].insert(p_sCandidSw);
+    }
+  }
+
+  // now after checking all switches we can use the candidate mapps:
+  // go over all disc candidates for each of the spec switches
+  map_pnode_set_pnode::iterator smI;
+  for (smI = candidDiscSw.begin(); smI != candidDiscSw.end(); smI++) {
+    IBNode *p_sNode = (*smI).first;
+
+    // if we only had one matching discovered switch
+    if ((*smI).second.size() == 1) {
+	IBNode *p_dNode = (*(*smI).second.begin());
+	// we still can have two spec switches pointing to it
+	if (candidSpecSw[p_dNode].size() == 1) {
+	  // we got a 1 to 1 match
+	  //s << "-I- Matching switch:" << p_sNode->name
+	  //  << " to discovered switch:" << p_dNode->name << endl;
+	  TopoMarkNodeAsMatchAlgoVisited(p_dNode);
+	  TopoMarkMatcedNodes(p_dNode, p_sNode, numMatchedSws);
+	  newMatchingSws.push_back(p_dNode);
+	} else {
+	  s << "-E- " << candidSpecSw[p_dNode].size()
+	    << " different topology switches mixed with discovered switch:"
+	    << p_dNode->name << endl;
+	  anyMiss++;
+	}
+    } else {
+	s << "-E- There are:" << candidDiscSw[p_sNode].size()
+	  << " candidate discovered switches to match switch:"
+	  << p_sNode->name << " which should be connected to: "<< endl;
+	set_pair_pnode_pn::iterator lI;
+	for (lI = connectToSwitch[p_sNode].begin();
+	     lI != connectToSwitch[p_sNode].end();
+	     lI++) {
+	  IBPort *p_sPort = (*lI).first->getPort((*lI).second);
+	  if (!p_sPort || !p_sPort->p_remotePort) continue;
+	  s << "       " << (*lI).first->name << "/P" << (*lI).second
+	    << " connects to port:" << p_sPort->p_remotePort->getName()
+	    << " which is device port:" << p_sPort->p_remotePort->num << endl;
+	}
+	s << "   The possible candidates are:" << endl;
+	set< IBNode*, less<IBNode*> >::iterator sI;
+	for (sI = candidDiscSw[p_sNode].begin();
+	     sI != candidDiscSw[p_sNode].end(); sI++) {
+	  IBNode *p_dNode = (*sI);
+	  s << "     Switch " << p_dNode->name << " connected to:" << endl;
+	  for (lI = connectToSwitch[p_dNode].begin();
+		 lI != connectToSwitch[p_dNode].end();
+		 lI++) {
+	    // this is the discovered switch connected to the candidate
+	    IBNode *p_dRemSwitch = (*lI).first;
+	    IBPort *p_dRemPort = p_dRemSwitch->getPort((*lI).second);
+	    if (!p_dRemPort || !p_dRemPort->p_remotePort) continue;
+
+	    // this is the matching node of the switch connected to the
+	    // candidate
+	    IBNode *p_mNode = (IBNode*)(p_dRemSwitch->appData1.ptr);
+	    if (!p_mNode) {
+		// its a bug since we must have matched those already
+		cout << "BUG : must have matched already" << endl;
+		exit(1);
+	    }
+
+	    // to be relevant it must be connected to our spec switch
+	    // through the same port num
+
+	    // we must match port number of the remote node with the
+	    // expected port num from the spec node
+	    IBPort *p_sRemPort = p_sNode->getPort(p_dRemPort->p_remotePort->num);
+	    if (p_mNode != p_sRemPort->p_remotePort->p_node) continue;
+	    if ((*lI).second != p_sRemPort->p_remotePort->num) continue;
+	    s << "       " << p_mNode->name << "/P" << (*lI).second
+		<< " connects to port:" << p_dRemPort->p_remotePort->getName() << endl;
+	  }
+	}
+	anyMiss++;
+    }
+  }
+  if (numMatchedSws) {
+    s << "-I- Successfuly matched " << numMatchedSws
+	<< " more switches" << endl;
+  }
+  return(numMatchedSws);
+}
+
+// go over entire fabric from edges and in and report
+// each missmatch - do not propogate inwards through missmatches
+int BfsFromEdgReportingMatcStatus(IBFabric *p_sFabric, IBFabric *p_dFabric,
+					    stringstream &s)
+{
+  // go over all matching nodes
+  // if the remote port connect to matching node
+  // validate the port numbers match
+  stringstream missMsg;
+  stringstream extrMsg;
+  stringstream warnMsg;
+  stringstream badMsg;
+  int numMiss = 0;
+  int numExtr = 0;
+  int numWarn = 0;
+  int numBad  = 0;
+  int numMatchPorts = 0;
+  // check all output ports of the given set of host nodes
+  for (map_str_pnode::iterator nI = p_dFabric-> NodeByName.begin();
+	 nI != p_dFabric-> NodeByName.end(); nI++) {
+    IBNode *p_dNode = (*nI).second;
+    if (!p_dNode->appData1.ptr) continue;
+    IBNode *p_sNode = (IBNode *)p_dNode->appData1.ptr;
+
+    // go over all ports
+    for (unsigned int pn = 1; pn <= p_dNode->numPorts; pn++) {
+
+	IBPort *p_sPort = p_sNode->getPort(pn);
+	IBPort *p_dPort = p_dNode->getPort(pn);
+
+	bool sConnected = (p_sPort && p_sPort->p_remotePort);
+	bool dConnected = (p_dPort && p_dPort->p_remotePort);
+
+	if (!sConnected && !dConnected) {
+	  continue;
+	} else if (sConnected && !dConnected) {
+	  // avoid double rep
+	  if (p_sPort < p_sPort->p_remotePort) {
+	    missMsg << "-E- Missing cable between " << p_sPort->getName()
+			<< " and " << p_sPort->p_remotePort->getName() << endl;
+	    numMiss++;
+	  }
+	} else if (!sConnected && dConnected) {
+	  if (p_dPort < p_dPort->p_remotePort) {
+	    // we want to use as much "match" info in the report:
+	    IBNode *p_repNode = p_dPort->p_remotePort->p_node;
+	    IBPort *p_repPort = p_dPort->p_remotePort;
+	    if (p_repNode->appData1.ptr) {
+		p_repNode =
+		  (IBNode*)p_dPort->p_remotePort->p_node->appData1.ptr;
+		p_repPort = p_repNode->getPort(p_dPort->p_remotePort->num);
+	    }
+	    if (p_repPort) {
+		extrMsg << "-W- Extra cable between " << p_sNode->name << "/P"
+			  << p_dPort->num << " and " << p_repPort->getName() << endl;
+	    } else if (p_repNode) {
+		extrMsg << "-W- Extra cable between " << p_sNode->name << "/P"
+			  << p_dPort->num << " and " << p_repNode->name
+			  << "/P" << p_dPort->p_remotePort->num << endl;
+	    }
+	    numExtr++;
+	  }
+	} else {
+	  // both ports exist - check they match
+	  IBNode *p_sRemNode = p_sPort->p_remotePort->p_node;
+	  IBNode *p_dRemNode = p_dPort->p_remotePort->p_node;
+
+	  // may be connected to non matched nodes
+	  if (!p_dRemNode->appData1.ptr || !p_sRemNode->appData1.ptr)
+	    continue;
+
+	  IBNode *p_sActRemNode = (IBNode *)p_dRemNode->appData1.ptr;
+	  IBPort *p_sActRemPort =
+	    p_sActRemNode->getPort(p_dPort->p_remotePort->num);
+	  // so they must be same nodes...
+	  if (p_sActRemNode != p_sRemNode) {
+	    badMsg << "-E- Missmatch: port:" << p_sPort->getName()
+		     << " should be connected to:"
+		     <<  p_sPort->p_remotePort->getName()
+		     << " but connects to:" << p_sActRemPort->getName() << endl;
+	    numBad++;
+	    continue;
+	  }
+
+	  // now we know they both point to same switch - check the port
+	  // connection and properties
+	  if (p_sPort->p_remotePort->num != p_dPort->p_remotePort->num) {
+	    badMsg << "-E- Missmatch: port " << p_sPort->getName()
+		     << " should be connected to:"
+		     <<  p_sPort->p_remotePort->getName()
+		     << " but connects to port: "
+		     << p_sActRemPort->getName() << endl;
+	    numBad++;
+	  } else {
+	    numMatchPorts++;
+	  }
+	  if (p_sPort->width != p_dPort->width) {
+	    warnMsg << "-W- Wrong link width on:" << p_sPort->getName()
+			<< ". Expected:" << width2char(p_sPort->width)
+			<< " got:" << width2char(p_dPort->width) << endl;
+	    numWarn++;
+	  }
+	  if (p_sPort->speed != p_dPort->speed) {
+	    warnMsg << "-W- Wrong link speed on:" << p_sPort->getName()
+			<< ". Expected:" << speed2char(p_sPort->speed)
+			<< " got:" << speed2char(p_dPort->speed) << endl;
+	    numWarn++;
+	  }
+	} // match both spec and disc
+    } // all ports
+  }
+
+  if (numMiss) {
+    s << "-------------------------------------------------------------------"
+	<< endl;
+    s << "-E- Total of " << numMiss
+	<< " missing nodes that should have been connected to matched nodes:"
+	<< endl << missMsg.str();
+  }
+  if (numExtr) {
+    s << "-------------------------------------------------------------------"
+	<< endl;
+    s << "-E- Total of " << numExtr
+	<< " extra nodes that are connected to matched nodes:"
+	<< endl << extrMsg.str();
+  }
+  if (numBad) {
+    s << "-------------------------------------------------------------------"
+	<< endl;
+    s << "-E- Total of " << numBad
+	<< " connections from matched nodes to the wrong nodes:"
+	<< endl << badMsg.str();
+  }
+  if (numWarn) {
+    s << "-------------------------------------------------------------------"
+	<< endl;
+    s << "-W- Total of " << numBad
+	<< " connections differ in speed or width:"
+	<< endl << warnMsg.str();
+  }
+
+  s << "-------------------------------------------------------------------"
+    << endl;
+  s << "-I- Total of " << numMatchPorts
+    << " ports match the provided topology" << endl;
+
+  return(numBad+numMiss+numExtr);
+}
+
+// Return 0 if fabrics match 1 otherwise.
+// The detailed compare messages are returned in messages
+int
+TopoMatchFabricsFromEdge(
+  IBFabric *p_sFabric,      // The specification fabric
+  IBFabric *p_dFabric,      // The discovered fabric
+  char **messages)
+{
+  stringstream diag, tmpDiag;
+  int status = 0;
+
+  // Cleanup the flags we use for tracking matching and progress
+  TopoCleanUpBeforeMerge(p_sFabric, p_dFabric);
+
+  diag << "-----------------------------------------------------------------"
+	 << endl;
+  // We start by working the hosts
+  list<IBNode*> matchingDiscHosts;
+  int nCAMiss =
+    TopoMatchCAsByName(p_sFabric, p_dFabric, matchingDiscHosts, diag);
+  diag << "-----------------------------------------------------------------"
+	 << endl;
+  // Now classify the match by name hosts to groups
+  list<IBNode*> matchingDiscLeafSw;
+  int numLeafSwMiss =
+    AnalyzeMatchingCAGroups(p_sFabric, p_dFabric, matchingDiscHosts,
+				    matchingDiscLeafSw, diag);
+
+  diag << "-----------------------------------------------------------------"
+	 << endl;
+
+//   int numUnmatchCaPorts =
+//     CheckMatchingCAPortsToMatchingSwPortNums(p_sFabric,
+// 							   p_dFabric, matchingDiscHosts,
+// 							   diag);
+
+//   diag << "-----------------------------------------------------------------"
+// 	 << endl;
+
+  list<IBNode*> oldMatchingSws = matchingDiscLeafSw;
+  list<IBNode*> newMatchingSws;
+  // now iterate untill no more new matches
+  while (TopoMatchSwitches(p_sFabric, p_dFabric,
+				   oldMatchingSws, newMatchingSws, diag)) {
+    oldMatchingSws = newMatchingSws;
+    newMatchingSws.clear();
+    diag << "-----------------------------------------------------------------"
+	   << endl;
+  }
+
+  // produce final matching info report
+  status = BfsFromEdgReportingMatcStatus(p_sFabric, p_dFabric, diag);
+  diag << "-----------------------------------------------------------------"
+	 << endl;
+
+ Exit:
+
+  string msg(diag.str());
+  int msgLen = strlen(msg.c_str());
+  if (msgLen) {
+    *messages = (char *)malloc(msgLen + 1);
+    strncpy(*messages, msg.c_str(), msgLen);
+    (*messages)[msgLen] = '\0';
+  } else {
+    *messages = NULL;
+  }
+  return(status);
+}
