@@ -37,6 +37,7 @@
 # MAINTAINERCLEANFILES	= Makefile.in common.h stamp-common
 
 # INCLUDES		= -I$(top_builddir) -I$(top_srcdir) $(TCL_CPPFLAGS)
+pkginclude_HEADERS = ibsysapi.h
 
 AM_CPPFLAGS = -I$(top_srcdir)/ibdm
 
@@ -56,6 +57,11 @@ ibdmtr_SOURCES = fabric_tr.cpp
 ibdmchk_SOURCES = osm_check.cpp
 ibtopodiff_SOURCES = test_topo_match.cpp
 ibnlparse_SOURCES = test_ibnl_parser.cpp
+
+lib_LTLIBRARIES = libibsysapi.la
+libibsysapi_la_SOURCES = ibsysapi.cpp
+libibsysapi_la_LDFLAGS = -version-info 1:0:0
+libibsysapi_la_LIBADD = -libdmcom
 
 #regexp_test_SOURCES = regexp_test.cpp
 
