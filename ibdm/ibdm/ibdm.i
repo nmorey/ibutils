@@ -1201,6 +1201,13 @@ class IBFabric {
 
   int dumpTopology(char *fileName, char *ibnlDir);
   // write out a topology file and IBNLs into given directory
+
+  int dumpNameMap(char *fileName);
+  // write out node names map file (guid, lid and name for each node)
+
+  int setNodeGuidsByNameMapFile(char *fileName);
+  // parse a name to guid and LID map file and update node GUIDs
+
 };
 
 /* we use our own version of the constructor */
@@ -1306,6 +1313,10 @@ int ibdmReportNonUpDownCa2CaPaths(IBFabric *p_fabric, list_pnode rootNodes);
 // the up/down rules. Report any crossing of the path. Use the given list fo nodes
 // as roots of the tree.
 
+%name(ibdmReportCA2CAPathsThroughSWPort)
+int SubnReportCA2CAPathsThroughSWPort(IBPort *p_port);
+// Report all CA 2 CA Paths giong through the given port
+
 %name(ibdmCheckMulticastGroups)
 int SubnMgtCheckFabricMCGrps(IBFabric *p_fabric);
 // Check all multicast groups :
@@ -1402,6 +1413,15 @@ TopoMergeDiscAndSpecFabrics(
   IBFabric  *p_merged_fabric);    // Output merged fabric (allocated internaly)
 // Build a merged fabric from a matched discovered and spec fabrics.
 // NOTE: you have to run ibdmMatchFabrics before calling this routine.
+
+%name(ibdmMatchFabricsFromEdge)
+int
+TopoMatchFabricsFromEdge(
+  IBFabric *p_sFabric,            // The specification fabric
+  IBFabric *p_dFabric,            // The discovered fabric
+  char **p_report_str             // Diagnostic output.
+  );
+// Match the fabrics going from the hosts inwards. Report mismatches.
 
 %subsection "Congestion Analysis Utilities",before,pre
 
