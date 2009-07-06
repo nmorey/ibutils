@@ -1212,7 +1212,7 @@ SubnMgtVerifyAllCaToCaRoutes(IBFabric *p_fabric) {
    cout << "Number of actual paths going through each switch out port considering" << endl;
    cout << "all the CA to CA paths. Ports driving CAs are ignored (as they must" << endl;
    cout << "have = Nca - 1). If the fabric is routed correctly the histogram" << endl;
-   cout << "should be nerrow for all ports on same level of the tree." << endl;
+   cout << "should be narrow for all ports on same level of the tree." << endl;
    cout << "A detailed report is provided in /tmp/ibdmchk.sw_out_port_num_paths.\n" << endl;
    cout << "NUM-PATHS NUM-SWITCH-PORTS" << endl;
    for (int b = 0; b <= maxLinkSubscriptions; b++)
@@ -1247,7 +1247,7 @@ SubnMgtVerifyAllCaToCaRoutes(IBFabric *p_fabric) {
    cout << "Number of actual Destination LIDs going through each switch out port considering" << endl;
    cout << "all the CA to CA paths. Ports driving CAs are ignored (as they must" << endl;
    cout << "have = Nca - 1). If the fabric is routed correctly the histogram" << endl;
-   cout << "should be nerrow for all ports on same level of the tree." << endl;
+   cout << "should be narrow for all ports on same level of the tree." << endl;
    cout << "A detailed report is provided in /tmp/ibdmchk.sw_out_port_num_dlids.\n" << endl;
    cout << "NUM-DLIDS NUM-SWITCH-PORTS" << endl;
    for (int b = 0; b <= maxDlidPerOutPort; b++)
