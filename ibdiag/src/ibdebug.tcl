@@ -5257,6 +5257,7 @@ proc writeFdbsFile { args } {
 			   [SmMadGetByDr LftBlock dump "$DirectPath" $I] }] {
 		set FDBs [concat $FDBs [Bar "0xff " 64]]
 	    } else {
+		set NewFDBs [RemoveElementFromList $NewFDBs "-lft"]
 		set FDBs [concat $FDBs $NewFDBs]
 	    }
 	}
