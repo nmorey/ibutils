@@ -214,7 +214,7 @@ int main (int argc, char **argv) {
    * Parsing of Command Line
    */
 
-  char next_option;
+  int next_option;
   const char * const short_option = "vhl:s:f:m:el:t:p:n:uar:c:d:M";
   /*
 	 In the array below, the 2nd parameter specified the number

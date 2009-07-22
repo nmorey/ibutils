@@ -91,7 +91,7 @@ int main (int argc, char **argv) {
   char   *p_drPathStr  = NULL;
   int SmPortNum  = -1;
 
-  char next_option;
+  int next_option;
   const char * const short_option = "vheal:c:t:s:p:d:";
   /*
     In the array below, the 2nd parameter specified the number

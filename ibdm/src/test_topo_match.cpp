@@ -103,7 +103,7 @@ int main (int argc, char **argv) {
   int runEdgeMode = 0;
   char *p_diagnostics;
   int noMatch = 0;
-  char next_option;
+  int next_option;
   const char * const short_option = "vhs:p:g:d:t:e";
   /*
 	 In the array below, the 2nd parameter specified the number

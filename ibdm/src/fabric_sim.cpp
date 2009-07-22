@@ -87,7 +87,7 @@ int main (int argc, char **argv) {
   int SmPortNum  = -1;
   int lmc = 0;
 
-  char next_option;
+  int next_option;
   const char * const short_option = "vheal:c:t:s:p:";
   /*
 	 In the array below, the 2nd parameter specified the number
