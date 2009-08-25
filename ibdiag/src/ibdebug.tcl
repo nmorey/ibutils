@@ -3048,7 +3048,7 @@ proc GetPortPkeys {drPath portNum numPKeys} {
 	    continue
 	}
 	foreach pkey $pkeyTable {
-	    if {[regexp {^0x[0-9a-fA-F]$} $pkey]} {
+	    if {[regexp {^0x[0-9a-fA-F]+$} $pkey]} {
 		lappend pkeys $pkey
 	    }
 	}
