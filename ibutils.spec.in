@@ -130,6 +130,7 @@ rm -rf $RPM_BUILD_DIR/%{name}-%{version}
 %{_prefix}/bin/IBMgtSim
 %{_libdir}/libibmscli.so*
 %{_libdir}/libibmscli.a
+%{_libdir}/libibsysapi.so*
 %{_libdir}/libibsysapi.a
 %{_prefix}/include/ibmgtsim
 %{_prefix}/share/ibmgtsim
