@@ -55,7 +55,7 @@ bin_PROGRAMS = ibmssh ibmsquit #ibmgtsim test_msgmgr test_client test_server ibm
 if IBDM_REF_IS_USED
 # we assume we are building a parallel tree
 IBDM_PREFIX=$prefix
-IBDM_LIB=-L../../ibdm/ibdm -libdmcom
+IBDM_LIB=-L../../ibdm/ibdm -libdmcom -L../../ibdm/replace -lreplace
 IBDM_INC=-I$(srcdir)/../../ibdm/ibdm
 IBDM_IFC=$(srcdir)/../../ibdm/ibdm/ibdm.i
 else
@@ -82,6 +82,8 @@ ibmssh_LDFLAGS = -static -Wl,-rpath -Wl,$(TCL_PREFIX)/lib \
 	-Wl,-rpath -Wl,$(IBDM_PREFIX)/lib
 
 ibmssh_LDADD = -libmscli $(IBDM_LIB) $(TCL_LIBS) -lpthread
+
+ibmssh_DEPENDENCIES = libibmscli.la
 
 # SWIG FILES:
 SWIG_IFC_FILES= $(srcdir)/sim.i $(srcdir)/ib_types.i $(IBDM_IFC) \

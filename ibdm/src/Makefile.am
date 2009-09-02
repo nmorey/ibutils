@@ -42,7 +42,7 @@ pkginclude_HEADERS = ibsysapi.h
 AM_CPPFLAGS = -I$(top_srcdir)/ibdm
 
 bin_PROGRAMS = ibdmchk ibdmtr ibtopodiff ibnlparse
-LDADD = -L../ibdm -libdmcom
+LDADD = -L../ibdm -libdmcom -L../replace -lreplace
 AM_LDFLAGS = -static
 
 # Why do we need to provide extra dep? the LDADD should have worked isnt it?
@@ -61,7 +61,7 @@ ibnlparse_SOURCES = test_ibnl_parser.cpp
 lib_LTLIBRARIES = libibsysapi.la
 libibsysapi_la_SOURCES = ibsysapi.cpp
 libibsysapi_la_LDFLAGS = -version-info 1:0:0
-libibsysapi_la_LIBADD = -L../ibdm -libdmcom
+libibsysapi_la_LIBADD = -L../ibdm -libdmcom -L../replace -lreplace
 
 #regexp_test_SOURCES = regexp_test.cpp
 
