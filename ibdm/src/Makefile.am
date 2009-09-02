@@ -43,7 +43,6 @@ AM_CPPFLAGS = -I$(top_srcdir)/ibdm
 
 bin_PROGRAMS = ibdmchk ibdmtr ibtopodiff ibnlparse
 LDADD = -L../ibdm -libdmcom -L../replace -lreplace
-AM_LDFLAGS = -static
 
 # Why do we need to provide extra dep? the LDADD should have worked isnt it?
 # Deprecated : ibdmsim_DEPENDENCIES=../ibdm/libibdmcom.la
