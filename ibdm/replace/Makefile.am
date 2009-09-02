@@ -5,3 +5,4 @@ INCLUDES                =  -I$(top_builddir) -I$(top_srcdir)
 noinst_LIBRARIES        = libreplace.a
 libreplace_a_SOURCES       =
 libreplace_a_LIBADD        = @LIBOBJS@
+AM_CFLAGS	= -fPIC
