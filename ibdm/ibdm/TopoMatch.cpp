@@ -676,7 +676,7 @@ TopoReportMismatchedNode(
   IBSystem *p_system = p_node->p_system;
 
   // we always mark the board of the node by examining all but the "UXXX"
-  char *p_lastSlash = rindex(p_node->name.c_str(), '/');
+  const char *p_lastSlash = rindex(p_node->name.c_str(), '/');
   char nodeBoardName[512];
   int  boardNameLength;
   if (!p_lastSlash) {

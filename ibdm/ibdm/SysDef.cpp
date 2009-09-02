@@ -79,7 +79,7 @@ IBSystemsCollection::makeSysNodes(
 
       // the device number should be embedded in the master name of
       // the node: MT23108 ...
-      char *p_digit;
+      const char *p_digit;
       if ((p_digit = strpbrk(p_inst->master.c_str(), "0123456789")) != NULL)
         sscanf(p_digit,"%u", &p_node->devId);
 
