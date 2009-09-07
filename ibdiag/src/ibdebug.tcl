@@ -40,6 +40,7 @@
 # RereadLongPaths
 # PMCounterQuery
 # RunPkgProcs
+# GeneralInfoQuery
 
 ##### UP TO HERE
 
@@ -135,14 +136,14 @@ proc InitializeIBDIAG {} {
 
     ### InitializeIBDIAG - Configuration of constants
     ## Configuration of constants - Step1.0: Config lists of vars
-    set G(var:list.files.extention) "lst fdbs mcfdbs log neighbor masks sm pm mcgs pkey db pm_csv links_csv inv_csv err_csv psl slvl"
+    set G(var:list.files.extention) "lst fdbs mcfdbs log neighbor masks sm pm mcgs pkey db dev_info_csv pm_csv links_csv inv_csv err_csv psl slvl"
     set G(var:list.pm.counter)      "symbol_error_counter link_error_recovery_counter\
       link_down_counter port_rcv_errors port_xmit_discard vl15_dropped\
       port_rcv_constraint_errors local_link_integrity_errors\
       port_xmit_constraint_errors excesive_buffer_errors port_xmit_data\
 	  port_rcv_data port_xmit_pkts port_rcv_pkts port_rcv_remote_physical_errors\
 	  port_rcv_switch_relay_errors all"
-    set G(var:list.skip.steps) "dup_guids zero_guids pm logical_state load_ibdm ipoib part all"
+    set G(var:list.skip.steps) "dup_guids zero_guids dev_info pm logical_state load_ibdm ipoib part all"
 
     ## Configuration of constants - Step2.0: Config badpath vars
     set G(var:badpath.maxnErrors)    3
@@ -920,6 +921,46 @@ proc SmMadGetByLid { mad cget args } {
     } else {
 	return [eval $cgetCmd]
     }
+}
+##############################
+
+##############################
+#  SYNOPSIS     GetGeneralInfoList Lid
+#  FUNCTION
+#  returns the info of general info request : vsGetGeneralInfo lid
+#  INPUTS
+#  $Lid - the lid for the info request
+#  OUTPUT
+#  the relevant general info for the $lid
+#  DATAMODEL
+#  the procedure uses $G(argv:failed.retry) - for stopping failed retries
+proc GetGeneralInfoList { _lid } {
+	global G
+	set list_general_info -1
+
+	regexp {^(.*)$} $_lid . lid
+	if { $lid == 0 } {
+		return
+	}
+
+	## General Info list get - Step1.0: Set command
+	set cmd [concat "vsGetGeneralInfo $lid"]
+
+	## General Info list get - Step2.0: Send the general info request
+	inform "-V-mad:sent" -command $cmd
+	for { set retry 0 } { $retry < $G(argv:failed.retry) } { incr retry } {
+		if { [regexp "ERROR" [set list_general_info [join [eval $cmd]]]] == 0 } {
+			break;
+		}
+	}
+	inform "-V-mad:received" -attempts $retry
+
+	## General Info list get - Step3.0: Handling the results
+	if {[regexp "ERROR" list_general_info]} {
+		return -code 1 -errorcode 1 -errorinfo "$list_general_info"
+	} else {
+		return $list_general_info
+	}
 }
 ##############################
 
@@ -2096,6 +2137,112 @@ proc RereadLongPaths {} {
     return 0
 }
 ##############################
+
+
+##############################
+#  SYNOPSIS     GeneralInfoQuery
+#  FUNCTION Query all known nodes, then Send $G(argv:count) MADs that don't wait for replies
+#  and then read general info list for nodes that supports it
+proc GeneralInfoQuery {} {
+	global G GENERAL_INFO
+
+	inform "-I-ibdiagnet:general.info.report.header"
+
+	if {[CheckSkipStatus dev_info]} {
+		inform "-I-reporting:skip.set.no.report"
+		return 1
+	}
+
+	# Inform that the local link is in init state
+	if {[info exists G(data:list.links.not.active.logical.state)]} {
+		if {[llength [lindex $G(data:list.links.not.active.logical.state) 0]] == 1} {
+			inform "-W-ibdiagnet:local.link.in.init.state"
+			return 2
+		}
+	} else {
+		set G(data:list.links.not.active.logical.state) ""
+	}
+
+	foreach directPath [lrange $G(data:list.direct.path) 0 end] {
+		if {![llength $directPath]} {
+			# When running from a switch - may get 0 length direct routes
+			# HACK: Skip these paths - do not query SMA port on switch
+			continue
+		}
+
+		# start from the second path in $G(data:list.direct.path), because the first is ""
+		# Ignore those links which has state INIT
+		set bool_drPathIsInit 0
+		if {[PathIsBad $directPath] > 1} { continue; }
+		for {set i 0} {$i < [llength $directPath]} {incr i} {
+			if {[lsearch $G(data:list.links.not.active.logical.state) [lrange $directPath 0 $i]] != -1} {
+				set bool_drPathIsInit 1
+				break;
+			}
+		}
+		if {$bool_drPathIsInit} {continue;}
+
+		if {[info exists tmp_lid]} {
+			unset tmp_lid
+		}
+
+
+		if {[catch {set tmp_node_guid [GetParamValue NodeGUID $directPath]}]} {
+			inform "-E-ibdiagpath:generalInfoGet.db.error" [concat [concat {NodeGUID}] $directPath]
+		}
+
+		if {![catch {set tmp_ven_id [GetParamValue VenID $directPath]}]} {
+			if {$tmp_ven_id != "0x0002c9"} {		#not mellanox
+				continue
+			}
+		} else {
+			inform "-E-ibdiagpath:generalInfoGet.db.error" [concat [concat {VenID}] $directPath]
+		}
+
+		#here we know we are mellanox vendor
+		if {![catch {set tmp_node_type [GetParamValue Type $directPath]}]} {
+			if {$tmp_node_type != "SW"} {		#not switch
+				continue
+			}
+		} else {
+			inform "-E-ibdiagpath:generalInfoGet.db.error" [concat [concat {Type}] $directPath]
+		}
+
+		#here we know we are mellanox vendor + SW
+		if {![catch {set tmp_dev_id [GetParamValue DevID $directPath]}]} {
+			if {$tmp_dev_id == "0xa87c"} {	#InfiniScale generation 1
+				continue
+			}
+		} else {
+			inform "-E-ibdiagpath:generalInfoGet.db.error" [concat [concat {DevID}] $directPath]
+		}
+
+		#here we know we are mellanox vendor + SW + not InfiniScale generation 1
+		#no exception should be recieved in the next line by trying to getting LID without give entry port as args
+		#because if we aren't SW we did already continue and in case we are SW, we will get lid of port0 by default
+		if {![catch {set tmp_lid [GetParamValue LID $directPath]}]} {
+			if {[info exists GENERAL_INFO($tmp_node_guid.desc_list)]} {
+				#we can reach same SW from multiple direct routes, not query by MADs twice
+				continue
+			}
+
+			#add node to array
+			lappend GENERAL_INFO(found_nodes) $tmp_node_guid
+			#create desc list for this node
+			set GENERAL_INFO($tmp_node_guid.desc_list) [lappend tmp_desc_list "node_name" [DrPath2Name $directPath -nameOnly] "node_guid" $tmp_node_guid "lid" $tmp_lid]
+			#collect general_info_list for this node
+			if {[catch { set GENERAL_INFO($tmp_node_guid.general_info_list) [join [GetGeneralInfoList $tmp_lid]] } e] } {
+				inform "-E-ibdiagpath:generalInfoGet.failed" [concat $tmp_lid]
+				continue
+			}
+		} else {
+			inform "-E-ibdiagpath:generalInfoGet.db.error" [concat [concat {LID}] $directPath]
+		}
+	}
+
+	writeCSVGeneralInfoFile
+}
+
 
 ##############################
 #  SYNOPSIS     PMCounterQuery
@@ -5117,6 +5264,65 @@ proc writeSMFile {} {
     close $FileID
     return 0
 }
+
+
+##############################
+#  NAME         writeGeneralInfoFile
+#  SYNOPSIS     writeGeneralInfoFile
+#  FUNCTION     writes a dump of Geneal Info query
+#  INPUTS       NULL
+#  OUTPUT       NULL
+proc writeCSVGeneralInfoFile {} {
+	global G GENERAL_INFO;
+
+	if {![info exists G(argv:csv.dump)]} {return 0}
+	if {![info exists GENERAL_INFO]} {return 0}
+
+	set FileID [InitializeOutputFile $G(var:tool.name).dev_info_csv]
+
+	foreach curr_node_guid $GENERAL_INFO(found_nodes) {
+		#create header line
+		if {![info exists header_line]} {
+			for {set i 0} {$i < [llength $GENERAL_INFO($curr_node_guid.desc_list)]} {set i [expr {$i + 2}]} {
+				lappend header_line [lindex $GENERAL_INFO($curr_node_guid.desc_list) $i]
+			}
+			for {set i 0} {$i < [llength $GENERAL_INFO($curr_node_guid.general_info_list)]} {set i [expr {$i + 2}]} {
+				set curr_hdr_key [lindex $GENERAL_INFO($curr_node_guid.general_info_list) $i]
+				if {$curr_hdr_key == "sw_sub_minor" ||
+					$curr_hdr_key == "sw_minor" ||
+					$curr_hdr_key == "sw_major" ||
+					$curr_hdr_key == "fw_ini_ver"} {
+					#depcrated keys
+					continue
+				}
+				lappend header_line $curr_hdr_key
+			}
+			puts $FileID [join $header_line ,]
+		}
+
+		#create lines - line per node
+		for {set i 1} {$i < [llength $GENERAL_INFO($curr_node_guid.desc_list)]} {set i [expr {$i + 2}]} {
+			lappend node_line [lindex $GENERAL_INFO($curr_node_guid.desc_list) $i]
+		}
+		for {set i 1} {$i < [llength $GENERAL_INFO($curr_node_guid.general_info_list)]} {set i [expr {$i + 2}]} {
+			set curr_hdr_key [lindex $GENERAL_INFO($curr_node_guid.general_info_list) [expr {$i - 1}]]
+			if {$curr_hdr_key == "sw_sub_minor" ||
+				$curr_hdr_key == "sw_minor" ||
+				$curr_hdr_key == "sw_major" ||
+				$curr_hdr_key == "fw_ini_ver"} {
+				#depcrated keys
+				continue
+			}
+			lappend node_line [lindex $GENERAL_INFO($curr_node_guid.general_info_list) $i]
+		}
+		puts $FileID [join $node_line ,]
+	}
+
+	#close the file
+	close $FileID
+	return 0
+}
+
 
 ##############################
 #  NAME         writePMFile

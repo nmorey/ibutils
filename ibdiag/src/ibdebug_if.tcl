@@ -1559,6 +1559,15 @@ proc inform { msgCode args } {
 	    append msgText "Could not get PM info:%n"
 	    append msgText "\"pmGetPortCounters [join $args]\" failed $numOfRetries consecutive times."
 	}
+	"-E-ibdiagpath:generalInfoGet.db.error" {
+		append msgText "Got an internal DB error:%n"
+		append msgText "GetParamValue [join $args]\" failed."
+	}
+	"-E-ibdiagpath:generalInfoGet.failed" {
+		set noExiting 1
+		append msgText "Could not get General Info:%n"
+		append msgText "\"vsGetGeneralInfo [join $args]\" failed $numOfRetries consecutive times."
+	}
         "-E-ibdiagpath:PKeys.path.noShared" {
 	    append msgText "No shared PKeys found on Path! Nodes can not communicate!"
 	}
@@ -1883,7 +1892,12 @@ proc inform { msgCode args } {
 		append msgText $pmTrash
 	    }
 	}
-        "-I-ibdiagnet:pm.counter.report.header" {
+
+	"-I-ibdiagnet:general.info.report.header" {
+		append msgText "General Device Info"
+		set headerText "General Devices Info Report"
+	}
+	"-I-ibdiagnet:pm.counter.report.header" {
 	    append msgText "PM Counters Info"
 	    set headerText "Performance Counters Report"
 	}
@@ -1905,7 +1919,7 @@ proc inform { msgCode args } {
         "-W-ibdiagnet:local.link.in.init.state" {
             set CSV_scope "port"
             set CSV_severity 5
-            append msgText "The local link is in INIT state, no PM counter reading could take place"
+            append msgText "The local link is in INIT state, no PM counter / General Device Info reading could take place"
 	}
 	"-W-ibdiagnet:report.links.init.state" {
             set CSV_scope "port"

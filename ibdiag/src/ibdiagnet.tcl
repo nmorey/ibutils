@@ -104,6 +104,7 @@ writeCSVInventoryFile
 DumpBadLidsGuids
 DumpBadLinksLogic
 CheckSM
+GeneralInfoQuery
 PMCounterQuery
 CheckAllinksSettings
 CheckPartitions
