@@ -2085,19 +2085,10 @@ proc DumpBadLinksLogic {} {
     set bool_informBadLogicLinksReport 1
 
     if {[info exists G(data:list.links.not.active.logical.state)]} {
-	foreach link $G(data:list.links.not.active.logical.state) {
-	    if {[lrange $link 0 end-1] == ""} {
-		lappend listOfNames "$G(var:desc.local.dev) \"[DrPath2Name [lrange $link 0 end-1] nameOnly ]]\""
-	    } else {
-		lappend listOfNames \"[DrPath2Name [lrange $link 0 end-1] nameOnly ]\"
-	    }
-	    lappend listOfNames \"[DrPath2Name $link nameOnly ]\"
-	}
-
-	foreach link $G(data:list.links.not.active.logical.state) {
+    foreach link $G(data:list.links.not.active.logical.state) {
 	    if {[PathIsBad $link] > 1} {continue;}
 	    set paramlist "-DirectPath0 \{[lrange $link 0 end-1]\} -DirectPath1 \{$link\}"
-	    eval inform "-W-ibdiagnet:report.links.init.state" $paramlist -maxName [GetLengthMaxWord $listOfNames]
+	    eval inform "-W-ibdiagnet:report.links.init.state" $paramlist
 	    set bool_informBadLogicLinksReport 0
 	}
     }

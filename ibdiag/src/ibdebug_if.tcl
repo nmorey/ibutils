@@ -1926,9 +1926,9 @@ proc inform { msgCode args } {
             set CSV_severity 5
             set dontTrimLine 1
 	    append msgText "link with LOG=INI found at direct path \"$PATH(1)\"%n"
-	    append msgText "From: a $NODE(0,FullType,Spaces) $NODE(0,Name,Spaces)"
+	    append msgText "From: a $NODE(0,FullType,Spaces) $NODE(0,Name_Port,Spaces)"
 	    append msgText " PortGUID=$NODE(0,PortGUID) Port=[lindex [split $PATH(1) ,] end]%n"
-	    append msgText "To:   a $NODE(1,FullType,Spaces) $NODE(1,Name,Spaces)"
+	    append msgText "To:   a $NODE(1,FullType,Spaces) $NODE(1,Name_Port,Spaces)"
 	    append msgText " PortGUID=$NODE(1,PortGUID) Port=$NODE(1,EntryPort)"
 	}
 
