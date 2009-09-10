@@ -146,8 +146,8 @@ proc SetInfoArgv {} {
 	-p,default  ""
 	-p,param "port-num"
 	-p,desc  "Specifies the local device's port number used to connect to the IB fabric"
-	-p,regexp   "integer.pos.==1"
-	-p,error "-E-argv:not.pos.integer"
+	-p,regexp   "integer..==1"
+	-p,error "-E-argv:not.nonneg.integer"
 	-p,maxvalue "0xff"
 
 	-q,name  "query.mode"
