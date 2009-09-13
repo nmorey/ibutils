@@ -163,6 +163,10 @@ proc SetInfoArgv {} {
 	-s,param "sys-name"
 	-s,desc  "Specifies the local system name. Meaningful only if a topology file is specified"
 
+	-e,name  "edge.topomatch.algorithm"
+	-e,desc  "Use edge topology matching algorithm. Meaningful only if a topology file is specified"
+	-e,arglen   0
+
 	-t,name  "topo.file"
 	-t,param "topo-file"
 	-t,desc  "Specifies the topology file name"
@@ -331,7 +335,7 @@ proc SetToolsFlags {} {
 	ibping     "(n|l|d) . c w v o     . t s i p "
 	ibdiagpath "(n|l|d) . c   v o smp . t s i p    . pm pc P . lw ls sl ."
 	ibdiagui   "          c   v r u o   . t s i p    . pm pc P . lw ls ."
-	ibdiagnet  "          c   v r u o   . t s i p wt . pm pc P . lw ls    . skip load_db csv vlr"
+	ibdiagnet  "          c   v r u o   . t s e i p wt . pm pc P . lw ls    . skip load_db csv vlr"
 	ibcfg    "(n|l|d) (c|q)       . t s i p o"
 	ibmad    "(m) (a) (n|l|d)     . t s i p o ; (q) a"
 	ibsac    "(m) (a) k           . t s i p o ; (q) a"
@@ -645,6 +649,9 @@ proc ParseArgv {} {
 
     ## Command line check - Test6.0: If topology is not given and -s/-n  flags are specified
     if { ! [info exists G(argv:topo.file)]  } {
+	if {[info exists G(argv:edge.topomatch.algorithm)]} {
+		inform "-W-argv:-e.without.-t"
+	}
 	if {[info exists G(argv:sys.name)]} {
 	    inform "-W-argv:-s.without.-t"
 	}
@@ -1136,7 +1143,15 @@ proc inform { msgCode args } {
 	    append msgText "Illegal argument: I${llegalValMsg}: $msgF(cmdLine)%n"
 	    append msgText "Flag is provided by external package"
 	}
-        "-W-argv:-s.without.-t" {
+	"-W-argv:-e.with.-s" {
+		append msgText "Local system name and \"from edge\" algorithm are specified. "
+		append msgText "The former is ignored, only \"from edge\" algorithm will be used."
+	}
+	"-W-argv:-e.without.-t" {
+	    append msgText "Edge topo match algorithm is specified, but topology "
+	    append msgText "is not given. The former is ignored."
+	}
+	"-W-argv:-s.without.-t" {
 	    append msgText "Local system name is specified, but topology "
 	    append msgText "is not given. The former is ignored."
 	}
@@ -1463,10 +1478,13 @@ proc inform { msgCode args } {
 	    append msgText "Topology matching results"
 	    set headerText "Topology Matching Check"
 	 }
-
 	 "-I-topology:matching.perfect" {
 	    append msgText "The topology defined in $G(argv:topo.file) "
 	    append msgText "perfectly matches the discovered fabric."
+	 }
+	 "-I-topology:algorithm.with.from.edge" {
+		append msgText "The topology match algorithm that will be used is "
+		append msgText "\"from edge\" algorithm"
 	 }
 	 "-I-ibdiagnet:pathsl.header" {
 	    append msgText "SL Based Routing"
@@ -2754,6 +2772,10 @@ proc showHelpPage { args } {
     set SYNOPSYS "SYNOPSYS\n  $G(var:tool.name)"
     set OPTIONS "OPTIONS"
     foreach item [GetToolsFlags $G(var:tool.name)] {
+	if {$item == "e"} {	#HACK: we don't want to exposed -e option for all users yet
+		continue;
+	}
+
 	if { $item == ";" } {
 	    append SYNOPSYS "\n\n  $G(var:tool.name)"
 	    continue;

@@ -4122,16 +4122,28 @@ proc MatchTopology { lstFile args } {
 	return 1
     }
 
-    # Matching defined and discovered fabric
-    if { [info exists G(LocalDeviceDuplicated)] } {
-	if {[info exists G(argv:topo.file)] && $G(bool:sys.name.guessed)} {
-	    inform "-E-topology:localDevice.Duplicated"
-	    return 1
+    #set MatchingResult ""
+    if { [info exists G(argv:edge.topomatch.algorithm)] } {
+	inform "-I-topology:algorithm.with.from.edge"
+	if { ! $G(bool:sys.name.guessed) } {	#-s was provided
+	    inform "-W-argv:-e.with.-s"
 	}
+
+	set MatchingResult \
+			[ibdmMatchFabricsFromEdge $G(IBfabric:.topo) $G(IBfabric:.lst)]
+    } else {
+	# Matching defined and discovered fabric
+	if { [info exists G(LocalDeviceDuplicated)] } {
+		if {[info exists G(argv:topo.file)] && $G(bool:sys.name.guessed)} {
+			inform "-E-topology:localDevice.Duplicated"
+			return 1
+		}
+	}
+
+	set MatchingResult \
+		[ibdmMatchFabrics $G(IBfabric:.topo) $G(IBfabric:.lst) \
+		$G(argv:sys.name) $G(argv:port.num) $G(data:root.port.guid) ]
     }
-    set MatchingResult \
-	[ibdmMatchFabrics $G(IBfabric:.topo) $G(IBfabric:.lst) \
-	     $G(argv:sys.name) $G(argv:port.num) $G(data:root.port.guid) ]
 
     switch -- [lrange $MatchingResult 0 4] {
 	"Fail to find anchor port" -
