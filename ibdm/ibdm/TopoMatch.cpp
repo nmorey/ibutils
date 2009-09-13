@@ -315,41 +315,21 @@ TopoMarkMatcedNodes(IBNode *p_node1, IBNode *p_node2, int &matchCounter)
   }
 }
 
+
 // Perform a BFS on both fabrics and cross point between matching nodes.
 int
-TopoBFSAndMatchFromPorts(
-  IBPort *p_sPort, // Starting port on the specification fabrric
-  IBPort *p_dPort,
+TopoDoBFSAndMatch(
+  IBNode *p_sNodeAnchor,  // Starting node on the specification fabrric
+  IBNode *p_dNodeAnchor,  // Starting node on the discovered fabrric
+  int &numMatchedNodes,
   stringstream &diag)
 {
-  int numMatchedNodes = 0;
   int dNumNodes, sNumNodes;
-  IBNode *p_sNode, *p_sRemNode;
-  IBNode *p_dNode, *p_dRemNode;
+  IBNode *p_sNode, *p_dNode;
+  IBNode *p_sRemNode, *p_dRemNode;
   IBFabric *p_dFabric, *p_sFabric;
   int status;
 
-  if (! TopoMatchPorts(p_sPort, p_dPort, 1, diag)) {
-    diag << "Starting ports do not match. Did you switch the ports?" << endl;
-    return 1;
-  }
-
-  // Mark the start node as matched:
-  TopoMarkNodeAsMatchAlgoVisited(p_dPort->p_node);
-
-  // if we do not have a remote port what do we really match?
-  if (!p_dPort->p_remotePort) {
-    diag << "No link connected to starting port. Nothing more to match."
-         << endl;
-    return 1;
-  }
-
-  p_dRemNode = p_dPort->p_remotePort->p_node;
-  p_sRemNode = p_sPort->p_remotePort->p_node;
-
-  // Mark local and remote nodes as matching
-  TopoMarkMatcedNodes(p_dRemNode, p_sRemNode, numMatchedNodes);
-  TopoMarkMatcedNodes(p_dPort->p_node, p_sPort->p_node, numMatchedNodes);
 
   // BFS through the matching ports only.
   // we keep track of the the discovered nodes only as it needs to be matched
@@ -357,14 +337,14 @@ TopoBFSAndMatchFromPorts(
   // To mark visited nodes we use the appData2.val
   list < IBNode * > bfsFifo;
 
-  bfsFifo.push_back(p_dPort->p_remotePort->p_node);
-  TopoMarkNodeAsMatchAlgoVisited(p_dPort->p_remotePort->p_node);
+  bfsFifo.push_back(p_dNodeAnchor);
+  TopoMarkNodeAsMatchAlgoVisited(p_dNodeAnchor);
 
   // On discovered fabrics where the CA nodes are marked by name we
   // can start traversing from these nodes also - of they match any
   // spec system by name.
-  p_dFabric = p_dPort->p_node->p_fabric;
-  p_sFabric = p_sPort->p_node->p_fabric;
+  p_dFabric = p_dNodeAnchor->p_fabric;
+  p_sFabric = p_sNodeAnchor->p_fabric;
   if (p_dFabric->subnCANames) {
 
     if (FabricUtilsVerboseLevel & FABU_LOG_VERBOSE)
@@ -502,8 +482,8 @@ TopoBFSAndMatchFromPorts(
   }
 
   status = anyUnmatch;
-  sNumNodes = p_sPort->p_node->p_fabric->NodeByName.size();
-  dNumNodes = p_dPort->p_node->p_fabric->NodeByName.size();
+  sNumNodes = p_sNodeAnchor->p_fabric->NodeByName.size();
+  dNumNodes = p_dNodeAnchor->p_fabric->NodeByName.size();
   if (numMatchedNodes != sNumNodes) {
     diag << "Some nodes are missing!" << endl;
     status = 1;
@@ -513,8 +493,73 @@ TopoBFSAndMatchFromPorts(
     diag << "Some extra or unmatched nodes were discoeverd." << endl;
     status = 1;
   }
+
   return 0;
 }
+
+
+// Perform a BFS on both fabrics and cross point between matching nodes.
+// Start the algorithm from node on the specification fabric and node on the discoverd fabric
+int
+TopoBFSAndMatchFromNodes(
+  IBNode *p_sNode, // Starting port on the specification fabrric
+  IBNode *p_dNode,
+  stringstream &diag)
+{
+  int numMatchedNodes = 0;
+
+  // Mark local and remote nodes as matching
+  // this is an assumption because we need to start from some node
+  TopoMarkMatcedNodes(p_sNode, p_dNode, numMatchedNodes);
+
+  return TopoDoBFSAndMatch(p_sNode,
+			   p_dNode,
+			   numMatchedNodes,
+			   diag);
+}
+
+
+// Perform a BFS on both fabrics and cross point between matching nodes.
+// Start the algorithm from port on the specification fabric and port on the discoverd fabric
+int
+TopoBFSAndMatchFromPorts(
+  IBPort *p_sPort, // Starting port on the specification fabrric
+  IBPort *p_dPort,
+  stringstream &diag)
+{
+  int numMatchedNodes = 0;
+  IBNode *p_sRemNode;
+  IBNode *p_dRemNode;
+
+  // Check first that we have a match from the anchor starting ports
+  if (! TopoMatchPorts(p_sPort, p_dPort, 1, diag)) {
+    diag << "Starting ports do not match. Did you switch the ports?" << endl;
+    return 1;
+  }
+
+  // Mark the start node as visited:
+  TopoMarkNodeAsMatchAlgoVisited(p_dPort->p_node);
+
+  // if we do not have a remote port what do we really match?
+  if (!p_dPort->p_remotePort) {
+    diag << "No link connected to starting port. Nothing more to match."
+         << endl;
+    return 1;
+  }
+
+  p_dRemNode = p_dPort->p_remotePort->p_node;
+  p_sRemNode = p_sPort->p_remotePort->p_node;
+
+  // Mark local and remote nodes as matching
+  TopoMarkMatcedNodes(p_dRemNode, p_sRemNode, numMatchedNodes);
+  TopoMarkMatcedNodes(p_dPort->p_node, p_sPort->p_node, numMatchedNodes);
+
+  return TopoDoBFSAndMatch(p_sRemNode,
+			   p_dRemNode,
+			   numMatchedNodes,
+			   diag);
+}
+
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -1064,12 +1109,11 @@ TopoCleanUpBeforeMerge(IBFabric *p_sFabric, IBFabric *p_dFabric)
 // Report Topology Missmatched and Build the Merged Fabric:
 int
 TopoReportMissmatches(
-  IBPort *p_sPort, // Starting port on the specification fabrric
-  IBPort *p_dPort,
+  IBNode *p_sNodeAnchor, // Starting node on the specification fabrric
+  IBNode *p_dNodeAnchor,
   stringstream &diag)
 {
-  IBNode *p_sNode;
-  IBNode *p_dNode;
+  IBNode *p_sNode, *p_dNode;
   int anyMissmatchedSpecNodes = 0;
   int anyMissmatchedDiscNodes = 0;
   int anyMissmatchedLinks = 0;
@@ -1081,8 +1125,8 @@ TopoReportMissmatches(
   list < IBNode * > bfsFifo;
 
   // If the starting nodes match:
-  if (p_dPort->p_node->appData1.ptr)
-    bfsFifo.push_back(p_dPort->p_node);
+  if (p_dNodeAnchor->appData1.ptr)
+    bfsFifo.push_back(p_dNodeAnchor);
 
   // BFS through the fabric reporting
   while (! bfsFifo.empty()) {
@@ -1131,16 +1175,16 @@ TopoReportMissmatches(
 
   if (anyMissmatchedSpecNodes) diag << endl;
 
-  IBFabric *p_dFabric = p_dPort->p_node->p_fabric;
+  IBFabric *p_dFabric = p_dNodeAnchor->p_fabric;
 
   // now when we are done reporting missing - let us report extra nodes:
   // but we only want to count those who touch matching nodes BFS wise...
   // If the starting nodes match:
-  if (p_dPort->p_node->appData1.ptr) {
-    bfsFifo.push_back(p_dPort->p_node);
+  if (p_dNodeAnchor->appData1.ptr) {
+    bfsFifo.push_back(p_dNodeAnchor);
   } else {
-    diag << "Even starting ports do not match! "
-         << "Expected:" << p_sPort->getName()
+    diag << "Even starting nodes do not match! "
+         << "Expected:" << p_sNodeAnchor->name
          << " but it is probably not connected correctly." <<  endl;
     anyMissmatchedDiscNodes++;
   }
@@ -1227,24 +1271,14 @@ TopoMatchFabrics(
   stringstream diag, tmpDiag;
   int status = 0;
 
-  IBNode *p_sNode;
-  IBPort *p_sPort;
-  IBPort *p_dPort;
+  IBNode *p_sNode, *p_dNode;
+  IBPort *p_sPort, *p_dPort;
 
-  // get the anchor port on the spec fabric - by name:
+  // get the anchor node on the spec fabric - by name:
   p_sNode = p_sFabric->getNode(anchorNodeName);
   if (! p_sNode) {
     diag << "Fail to find anchor node:"
-         << anchorNodeName << " on the specification fabric." << endl;
-    status = 1;
-    goto Exit;
-  }
-
-  p_sPort = p_sNode->getPort(anchorPortNum);
-  if (! p_sPort) {
-    diag << "Fail to find anchor port:"
-         << anchorNodeName <<  anchorPortNum
-         << " in the specification fabric." << endl;
+	 << anchorNodeName << " on the specification fabric." << endl;
     status = 1;
     goto Exit;
   }
@@ -1253,29 +1287,60 @@ TopoMatchFabrics(
   p_dPort = p_dFabric->getPortByGuid(anchorPortGuid);
   if (! p_dPort) {
     diag << "Fail to find anchor port guid:"
-         << guid2str(anchorPortGuid)
-         << " in the discovered fabric." << endl;
+	 << guid2str(anchorPortGuid)
+	 << " in the discovered fabric." << endl;
     status = 1;
     goto Exit;
+  }
+
+  // get the anchor node on the discovered fabric - by port obj:
+  p_dNode = p_dPort->p_node;
+  if (! p_dNode) {
+    diag << "Fail to find anchor node:"
+	 << anchorNodeName << " on the discoverd fabric." << endl;
+    status = 1;
+    goto Exit;
+  }
+
+  // Not management port
+  if (anchorPortNum != 0) {
+    // get the anchor port on the spec fabric - by port num:
+    // we can do it only if we run from non management port because port0 isn't a phyisical port
+    p_sPort = p_sNode->getPort(anchorPortNum);
+    if (! p_sPort) {
+      diag << "Fail to find anchor port:"
+           << anchorNodeName <<  anchorPortNum
+	   << " in the specification fabric." << endl;
+      status = 1;
+      goto Exit;
+    }
   }
 
   // Cleanup the flags we use for tracking matching and progress
   TopoCleanUpBeforeMerge(p_sFabric, p_dFabric);
 
-  // Do a BFS matching nodes from each fabrics. When this leaves
-  // the appData1.ptr will cross point. status is 0 if there is no
-  // difference
-  status = TopoBFSAndMatchFromPorts(p_sPort, p_dPort, tmpDiag);
+  // Not management port
+  if (anchorPortNum != 0) {
+    // Do a BFS matching nodes from each fabrics. When this leaves
+    // the appData1.ptr will cross point. status is 0 if there is no
+    // difference
+    status = TopoBFSAndMatchFromPorts(p_sPort, p_dPort, tmpDiag);
+  } else {
+    // Do a BFS matching nodes from each fabrics. When this leaves
+    // the appData1.ptr will cross point. status is 0 if there is no
+    // difference
+    status = TopoBFSAndMatchFromNodes(p_sNode, p_dNode, tmpDiag);
+  }
   if (status) {
     cout << "-W- Topology Matching First Phase Found Missmatches:\n"
-         << tmpDiag.str() << endl;
+	 << tmpDiag.str() << endl;
   }
 
   // Do the second step in matching - rely on preexisting matched nodes
   // and try to map the unmatched.
   TopoMatchSpecNodesByAdjacentNode(p_sFabric);
 
-  if (TopoReportMissmatches(p_sPort, p_dPort, diag))
+  if (TopoReportMissmatches(p_sNode, p_dNode, diag))
     status = 1;
 
  Exit:
