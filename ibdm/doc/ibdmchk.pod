@@ -59,7 +59,7 @@ A file with all the roots node names (one on each line).
 
 =head1 VERIFICATION MODE DESCRIPTION
 
-After the cluster is built and OpenSM is run (using flag -D 0x43) it reports the subnet and FDB tables into the files osm-subnet.lst, osm.fdbs and osm.fdbs in /var/log/ (or subnet.lst, osm.fdbs and osm.mcfdbs into /tmp in older OpenSM versions). ibdiagnet is also producing the same files in its outoput directroy.
+After the cluster is built and OpenSM is run (using flag -D 0x43) it reports the subnet and FDB tables into the files osm-subnet.lst, osm.fdbs and osm.fdbs in /var/log/ (or subnet.lst, osm.fdbs and osm.mcfdbs into /tmp in older OpenSM versions). ibdiagnet is also producing the same files in its output directory.
 Based on these files the utility checks all CA to CA connectivity. Further analysis for credit deadlock potential is performed and reported.
 In case of an LMC > 0 it reports histograms for how many systems and nodes are common between the different paths for the same port pairs.
 
