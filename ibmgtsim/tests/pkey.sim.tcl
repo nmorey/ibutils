@@ -9,10 +9,10 @@ puts "Running Simulation flow for PKey test"
 # Group2 should only see group 2 and group 3 should see all.
 
 # to prevent the case where randomized pkeys match (on ports
-# from different group we only randomize partial membership
+# from different group we only randomize limited membership
 # pkeys (while the group pkeys are full)
 
-# In order to prevent cases where partial Pkey matches Full Pkey
+# In order to prevent cases where limited Pkey matches Full Pkey
 # we further split the space:
 # Partials are: 0x1000 - 0x7fff
 # Full are    : 0x8000 - 0x8fff

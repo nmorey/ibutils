@@ -36,7 +36,7 @@ ibdiagnet new features:
     are connected to.
   - Report for each partition the member hosts and their membership status.
     Full membership allows hosts to communicate to any other member.
-    Partial membership allows communication with full members only.
+    Limited membership allows communication with full members only.
     The new report file is named ibdiagnet.pkey.
 
 + IPoIB Subnets Check:

@@ -1978,7 +1978,7 @@ proc inform { msgCode args } {
 	"-W-ibdiagnet:PKeys.switch.part.pkey" {
 	    set name   [lindex $args 0]
 	    set pkey   [lindex $args 1]
-	    append msgText "Only partial PKey:[format 0x%04x $pkey] allowed by remote switch of node:$name"
+	    append msgText "Only limited PKey:[format 0x%04x $pkey] allowed by remote switch of node:$name"
 	}
 	"-I-ibdiagnet:PKeys.report.header" {
 	    append msgText "Fabric Partitions Report (see $G(var:tool.name).pkey for a full hosts list)"
@@ -1989,7 +1989,7 @@ proc inform { msgCode args } {
 	    set hosts [lindex $args 1]
 	    set full  [lindex $args 2]
 	    set part  [lindex $args 3]
-	    append msgText "   PKey:$base Hosts:$hosts full:$full partial:$part"
+	    append msgText "   PKey:$base Hosts:$hosts full:$full limited:$part"
 	}
 
 
