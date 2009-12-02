@@ -501,7 +501,7 @@ CrdLoopCleanup(IBFabric *p_fabric) {
       IBPort* p_Port = p_node->Ports[k];
       for (int j=0;j<nL;j++)
         if (p_Port->channels[j])
-          delete p_Port->channels[j];
+          ;//delete p_Port->channels[j];
     }
   }
 }
