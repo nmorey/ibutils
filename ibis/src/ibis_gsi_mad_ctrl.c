@@ -998,12 +998,13 @@ ibis_gsi_send_sync_mad_batch(
     Wait for all mads to retire:
 
     NOTE:
-    we can block forever since the mads are sent with
-    a timeout etc. So we should always get out eventually
+    we will block only in size of batch * timeout,
+    this is done because callback function will not be called
+    on timeout
   */
   wait_status = cl_event_wait_on(&p_batch_ctx->wait_for_resp,
-                                 120000000, // max 120sec anyway
-                                 TRUE);
+                                  p_batch_ctx->num_outstanding * ((&IbisObj)->p_opt->transaction_timeout * 1000),    //in usec
+                                  TRUE);
   if (wait_status != CL_SUCCESS)
   {
     status = IB_ERROR;
