@@ -5042,7 +5042,7 @@ proc lstInfo { type DirectPath port } {
 		    lappend Info "\{$value\}"
                 }
 	    }
-	    "DevID"  { lappend Info "${parameter}${sep}${value}0000" }
+	    "DevID"  { lappend Info "${parameter}${sep}${value}" }
 	    "VenID"  { lappend Info "${parameter}${sep}00${value}" }
 	    default  { lappend Info "${parameter}${sep}${value}" }
 	}
