@@ -11,7 +11,7 @@ dnl we use auto cheader
 AM_CONFIG_HEADER(config.h)
 
 dnl Auto make
-AM_INIT_AUTOMAKE(ibis,1.5)
+AM_INIT_AUTOMAKE(ibis,1.5.1)
 
 dnl Provides control over re-making of all auto files
 dnl We also use it to define swig dependencies so end
