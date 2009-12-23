@@ -29,7 +29,7 @@ AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
 MLX_PROG_SWIG(1.1.5, eq)
-AM_PROG_LEX 
+AM_PROG_LEX
 AC_PROG_YACC
 
 dnl We will use libtool for making ...
@@ -69,7 +69,7 @@ AC_CHECK_FUNCS([strchr strstr strtol strtoull index rindex])
 AC_REPLACE_FUNCS(memset)
 IS_INCLUDED_REGEX()
 
-dnl Just in case that the current version does not support the 
+dnl Just in case that the current version does not support the
 dnl usage of LTLIBOBJS
 
 dnl Xsed="sed -e s/^X//"
@@ -88,7 +88,7 @@ esac],[debug=false])
 AM_CONDITIONAL(DEBUG, test x$debug = xtrue)
 
 dnl Define an input config option to control final package prefix:
-dnl We compile and install in one dir - but we know eventually we 
+dnl We compile and install in one dir - but we know eventually we
 dnl will be moved to FINAL_PREFIX
 AC_ARG_WITH(final-prefix,
 [  --with-final-prefix=<dir>  Let IBDM know it will eventually be moved there],
