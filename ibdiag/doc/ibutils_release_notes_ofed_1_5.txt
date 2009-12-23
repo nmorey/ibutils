@@ -64,6 +64,7 @@ ibdiag:   This package provides 3 tools which provide the user interface
 
 * ibdiagnet: fixed regular expression for pkey matching
 
+* ibdiagnet: ibdiagnet.lst file has device IDs with trailing zeroes - fixed
 
 ===============================================================================
 4. Known Issues
@@ -71,5 +72,3 @@ ibdiag:   This package provides 3 tools which provide the user interface
 
 - Ibdiagnet "-wt" option may generate a bad topology file when running on a
   cluster that contains complex switch systems.
-
-- ibdiagnet.lst file has vendor and device IDs with leading/trailing zeroes.
