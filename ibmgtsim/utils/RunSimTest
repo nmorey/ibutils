@@ -447,8 +447,8 @@ proc getSMNodeInfo {simDir nodeName} {
       set autoLid 0
       while {[gets $f sLine] >= 0 } {
          incr lineNum
-         if {[regexp {^NODE\s+(\S+)/U[0-9]\s+(\S+)} $sLine d1 n ng]} {
-            set getSMNodeInfo_DB($n) $ng
+         if {[regexp {^NODE\s+(\S+)/U([0-9]+)\s+(\S+)} $sLine d1 n ca ng]} {
+            set getSMNodeInfo_DB($n/U$ca) [list $ca $ng]
          } elseif {[regexp {^PORT\s+(\S+)/P([0-9]+)\s+(\S+)} $sLine d1 n p pg]} {
             set getSMNodeInfo_DB($n/P$p) [list $pg [incr autoLid]]
          }
@@ -464,7 +464,8 @@ proc getSMNodeInfo {simDir nodeName} {
    }
 
    # return the node guid
-   set res $getSMNodeInfo_DB($nodeName)
+   set res {}
+   lappend res $getSMNodeInfo_DB($nodeName)
 
    # followed by each port guid and lid:
    foreach portName [lsort [array names getSMNodeInfo_DB $nodeName/P*]] {
@@ -496,7 +497,7 @@ proc makeProcFSForNode {simDir nodeName {portNum 0} {portLid 0}} {
 
    puts "-I- Node $nodeName data: $nodeData"
 
-   set ng [lindex $nodeData 0]
+   foreach {ca ng} [lindex $nodeData 0] {break}
    set nodeGuidStr [getPortGuidStr $ng]
 
    # we use the index into the nodeData...
@@ -505,15 +506,15 @@ proc makeProcFSForNode {simDir nodeName {portNum 0} {portLid 0}} {
    }
 
    # double check :
-   if {[llength $nodeData] < 2} {
-      error "expected 2 ports definition for HCA $nodeData"
-   }
+#   if {[llength $nodeData] < 2} {
+#      error "expected 2 ports definition for HCA $nodeData"
+#   }
 
    # Create the node dir
-   file mkdir [file join $simDir $nodeName ca1]
+   file mkdir [file join $simDir $nodeName ca$ca]
 
    # Node Info
-   set of [open [file join $simDir $nodeName ca1 info] w]
+   set of [open [file join $simDir $nodeName ca$ca info] w]
    puts $of "name:          InfiniHost0
 provider:      tavor
 node GUID:     $nodeGuidStr
@@ -525,9 +526,9 @@ FW revision:   0x300020002
 "
    close $of
 
-   # do the ports:
-   foreach portIdx {1 2} {
-      set portData [lindex $nodeData $portIdx]
+   # do the ports: (node data has node guid and ports)
+   for {set portIdx 1} {$portIdx < [llength $nodeData]} {incr portIdx} {
+      set portData [lindex $nodeData [expr $portIdx -0]]
       set pg [lindex $portData 0]
 
       # the port guid we need should look like 0000:0000:0000:0000
@@ -545,10 +546,10 @@ FW revision:   0x300020002
       }
 
       # Port1
-      file mkdir [file join $simDir $nodeName ca1 port$portIdx]
+      file mkdir [file join $simDir $nodeName ca$ca port$portIdx]
 
       # port info
-      set of [open [file join $simDir $nodeName ca1 port$portIdx info] w]
+      set of [open [file join $simDir $nodeName ca$ca port$portIdx info] w]
       puts $of "state:         INIT
 LID:           [format 0x%04x $lid]
 LMC:           0x0000
@@ -565,11 +566,11 @@ Capabilities:  IsTrapSupported
 
       close $of
 
-      set of [open [file join $simDir $nodeName ca1 port$portIdx pkey_table] w]
+      set of [open [file join $simDir $nodeName ca$ca port$portIdx pkey_table] w]
       puts $of {[  0] ffff}
       close $of
 
-      set of [open [file join $simDir $nodeName ca1 port$portIdx gid_table] w]
+      set of [open [file join $simDir $nodeName ca$ca port$portIdx gid_table] w]
       puts $of "\[  0\] fe80:0000:0000:0000:$portGuidStr"
       close $of
    }
@@ -719,7 +720,7 @@ set osmPath /usr/mellanox/osm-sim/bin/opensm
 # default verbosity show: time, context, fatal and error
 set moduleVerbosityList 0xA3
 set osmPortNum 1
-set osmNodeName "H-1"
+set osmNodeName "H-1/U1"
 set osmSubProcessIds {}
 set randomSeed [expr int(rand() * 100000)]
 
