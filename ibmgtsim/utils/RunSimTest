@@ -505,10 +505,8 @@ proc makeProcFSForNode {simDir nodeName {portNum 0} {portLid 0}} {
       set portNum 1
    }
 
-   # double check :
-#   if {[llength $nodeData] < 2} {
-#      error "expected 2 ports definition for HCA $nodeData"
-#   }
+   # number of ports
+   set numPorts [expr [llength $nodeData] -1]
 
    # Create the node dir
    file mkdir [file join $simDir $nodeName ca$ca]
@@ -518,7 +516,7 @@ proc makeProcFSForNode {simDir nodeName {portNum 0} {portLid 0}} {
    puts $of "name:          InfiniHost0
 provider:      tavor
 node GUID:     $nodeGuidStr
-ports:         2
+ports:         $numPorts
 vendor ID:     0x2c9
 device ID:     0x5a44
 HW revision:   0xa1
@@ -527,8 +525,8 @@ FW revision:   0x300020002
    close $of
 
    # do the ports: (node data has node guid and ports)
-   for {set portIdx 1} {$portIdx < [llength $nodeData]} {incr portIdx} {
-      set portData [lindex $nodeData [expr $portIdx -0]]
+   for {set portIdx 1} {$portIdx <= $numPorts} {incr portIdx} {
+      set portData [lindex $nodeData $portIdx]
       set pg [lindex $portData 0]
 
       # the port guid we need should look like 0000:0000:0000:0000
