@@ -508,11 +508,19 @@ int IBMSSma::nodeDescMad(ibms_mad_msg_t &respMadMsg)
   string desc;
   if (pSimNode->nodeInfo.node_type != 2)
   {
-    desc = (pSimNode->getIBNode())->p_system->name + string(" HCA-1 (Mellanox HCA)");
+    // parse node name of format sysname/U[0-9]
+    char *p_sep = strstr(pSimNode->getIBNode()->name.c_str(), "/U");
+    if (!p_sep) {
+	desc = (pSimNode->getIBNode())->p_system->name + string(" HCA-1 (Mellanox HCA)");
+    } else {
+	// HACK: assume nodes are named [^U]+/U[0-9]$...
+	desc = (pSimNode->getIBNode())->p_system->name + string(" HCA-") +
+	  string(p_sep+2) + string("  (Mellanox HCA)");
+    }
   }
   else
   {
-    desc =  (pSimNode->getIBNode())->p_system->name + string(" Infiniscale-III Mellanox Technologies");
+    desc = (pSimNode->getIBNode())->p_system->name + string(" Infiniscale-III Mellanox Technologies");
   }
 
   int descLen = desc.size();
