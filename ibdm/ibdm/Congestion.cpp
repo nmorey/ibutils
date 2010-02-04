@@ -195,7 +195,7 @@ CongZero(IBFabric *p_fabric)
 				map_pport_paths::iterator pI = congData.portPaths.find(p_port);
 
 				// now see what pairs are routed through the port
-				float sumFracs = 0;
+				float sumFracs = 0.0;
             for (list_src_dst::iterator lI = (*pI).second.begin();
                  lI != (*pI).second.end();
                  lI++) {
@@ -212,7 +212,7 @@ CongZero(IBFabric *p_fabric)
 				}
 
 				// update statistics
-				int numPaths = (int)sumFracs;
+				int numPaths = (int)(sumFracs);
 				congData.portNumPaths[p_port] = numPaths;
 
 				for(unsigned int i = congData.numPathsHist.size(); i <= numPaths; i++)
@@ -490,12 +490,15 @@ CongDump(IBFabric *p_fabric, ostringstream &out)
         pI != congData.portPaths.end();
         pI++)
    {
-      out << "PORT:" << (*pI).first->getName()
-			 << " NUM:" << congData.portNumPaths[(*pI).first] << endl;
-      for ( list_src_dst::iterator lI = (*pI).second.begin();
-            lI != (*pI).second.end();
-            lI++)
-         out << (*lI).first << " " << (*lI).second << endl;
+	  // NOTE: we can not use here the congData.portNumPaths as it is set by
+	  // by CongZero which clears the list of paths...
+	  int numPaths = (*pI).second.size();
+	  out << "PORT:" << (*pI).first->getName()
+			<< " NUM:" << numPaths << endl;
+	  for ( list_src_dst::iterator lI = (*pI).second.begin();
+			  lI != (*pI).second.end();
+			  lI++)
+		 out << (*lI).first << " " << (*lI).second << endl;
    }
    return(0);
 }
