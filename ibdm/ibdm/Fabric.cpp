@@ -1924,6 +1924,9 @@ IBFabric::parsePSLFile(string fn)
     // 0x0002c90000000099 154 0
     // srcguid dlid sl
     regExp slLine("0x([0-9a-z]+) ([0-9]+) ([0-9]+)");
+    // Switch 0x0002c902004050f8, base LID 13, "MF0;switch-112090:MTS3600/U1"
+    regExp osmLine1("^(Channel Adapter|Switch) 0x([0-9a-f]+),");
+    regExp osmLine2("^0x([0-9a-fA-F]+)[ \t]+:[ \t]+([0-9]+)[ \t]*$");
     rexMatch *p_rexRes;
 
     if (f.fail()) {
@@ -1938,10 +1941,14 @@ IBFabric::parsePSLFile(string fn)
     // Find max HCA LID
     while (f.good()) {
         f.getline(sLine,1024);
-        p_rexRes = slLine.apply(sLine);
-        if (p_rexRes) {
+        if ((p_rexRes = slLine.apply(sLine))) {
             unsigned int lid = strtoull(p_rexRes->field(2).c_str(), NULL, 10);
             maxLid = lid > maxLid ? lid:maxLid;
+		delete p_rexRes;
+	  } else if ((p_rexRes = osmLine2.apply(sLine))) {
+	    unsigned int lid = strtoull(p_rexRes->field(1).c_str(), NULL, 16);
+            maxLid = lid > maxLid ? lid:maxLid;
+		delete p_rexRes;
         } /*else {
             cout << "-E- Wrong file format:" << fn.c_str() << endl;
             anyErr++;
@@ -1956,31 +1963,54 @@ IBFabric::parsePSLFile(string fn)
         return 1;
     }
 
+    uint64_t guid = 0;
+    IBNode* p_node = NULL;
     while (f.good()) {
-        f.getline(sLine,1024);
-
-        p_rexRes = slLine.apply(sLine);
-        if (p_rexRes) {
-            uint64_t guid = strtoull(p_rexRes->field(1).c_str(), NULL, 16);
-            unsigned int lid = strtoull(p_rexRes->field(2).c_str(), NULL, 10);
-            uint8_t sl = strtoull(p_rexRes->field(3).c_str(), NULL, 10);
-
-            IBNode* p_node = getNodeByGuid(guid);
-            if (!p_node) {
-                cout << "-E- Fail to find node with guid:"
-                        << guid << endl;
-                anyErr++;
-            } else {
-                // Update number of used SLs
-                numSLs = sl+1 > numSLs ? sl+1:numSLs;
-                // Insert table entry
-                p_node->setPSLForLid(lid,maxLid,sl);
-            }
-            delete p_rexRes;
-        } /*else {
-            cout << "-E- Wrong file format:" << fn.c_str() << endl;
-            anyErr++;
-        }*/
+	f.getline(sLine,1024);
+	
+	if ((p_rexRes = slLine.apply(sLine))) {
+	  guid = strtoull(p_rexRes->field(1).c_str(), NULL, 16);
+	  unsigned int lid = strtoull(p_rexRes->field(2).c_str(), NULL, 10);
+	  uint8_t sl = strtoull(p_rexRes->field(3).c_str(), NULL, 10);
+	  
+	  p_node = getNodeByGuid(guid);
+	  if (!p_node) {
+	    cout << "-E- Fail to find node with guid:"
+		   << p_rexRes->field(1).c_str() << endl;
+	    anyErr++;
+	  } else {
+	    // Update number of used SLs
+	    numSLs = sl+1 > numSLs ? sl+1:numSLs;
+	    // Insert table entry
+	    p_node->setPSLForLid(lid,maxLid,sl);
+	  }
+	  delete p_rexRes;
+	} else if ((p_rexRes = osmLine1.apply(sLine))) {
+	  guid = strtoull(p_rexRes->field(2).c_str(), NULL, 16);
+	  IBPort *p_port =  getPortByGuid(guid);
+	  if (!p_port) {
+	    cout << "-E- Fail to find port with guid:"
+		   <<  p_rexRes->field(2).c_str() << endl;
+	    anyErr++;
+	    guid = 0;
+	  } else {
+	    p_node = p_port->p_node;
+	  }
+	  delete p_rexRes;
+	} else if ((p_rexRes = osmLine2.apply(sLine))) {
+	  if (guid != 0) {
+	    unsigned int lid = strtoull(p_rexRes->field(1).c_str(), NULL, 16);
+	    uint8_t sl = strtoull(p_rexRes->field(2).c_str(), NULL, 10);
+	    // Update number of used SLs
+	    numSLs = sl+1 > numSLs ? sl+1:numSLs;
+	    // Insert table entry
+	    p_node->setPSLForLid(lid,maxLid,sl);
+	  } else {
+	    cout << "-E- Skipping line since no guid is defined" << endl;
+	    anyErr++;
+	  }
+	  delete p_rexRes;
+	}
     }
     cout << "-I- Defined "<< (int)numSLs << " SLs in use" <<endl;
     f.close();
@@ -1997,7 +2027,12 @@ IBFabric::parseSLVLFile(string fn)
     char sLine[1024];
     // 0x0002c90000000201 5 1 0x01 0x23 0x45 0x67 0x89 0xab 0xcd 0xe7
     // guid iport oport 0x(sl0)(sl1) 0x(sl2)(sl3)...
-    regExp slLine("0x([0-9a-z]+) ([0-9]+) ([0-9]+) 0x([0-9a-z])([0-9a-z]) 0x([0-9a-z])([0-9a-z]) 0x([0-9a-z])([0-9a-z]) 0x([0-9a-z])([0-9a-z]) 0x([0-9a-z])([0-9a-z]) 0x([0-9a-z])([0-9a-z]) 0x([0-9a-z])([0-9a-z]) 0x([0-9a-z])([0-9a-z])");
+    regExp slLine("^0x([0-9a-f]+) ([0-9]+) ([0-9]+) 0x([0-9a-f])([0-9a-f]) 0x([0-9a-f])([0-9a-f]) 0x([0-9a-f])([0-9a-f]) 0x([0-9a-f])([0-9a-f]) 0x([0-9a-f])([0-9a-f]) 0x([0-9a-f])([0-9a-f]) 0x([0-9a-f])([0-9a-f]) 0x([0-9a-f])([0-9a-f])");
+    // Switch 0x0002c902004050f8, base LID 13, "MF0;switch-112090:MTS3600/U1"
+    regExp osmLine1("^(Channel Adapter|Switch) 0x([0-9a-f]+),");
+
+    // 14  11  : 0  1  2  3  4  5  6  7  8  9  10 11 12 13 14 7
+    regExp osmLine2("^([0-9]+)[ \t]+([0-9]+)[ \t]+:[ \t]+([0-9]+)[ \t]+([0-9]+)[ \t]+([0-9]+)[ \t]+([0-9]+)[ \t]+([0-9]+)[ \t]+([0-9]+)[ \t]+([0-9]+)[ \t]+([0-9]+)[ \t]+([0-9]+)[ \t]+([0-9]+)[ \t]+([0-9]+)[ \t]+([0-9]+)[ \t]+([0-9]+)[ \t]+([0-9]+)[ \t]+([0-9]+)[ \t]+([0-9]+)[ \t]*$");
     rexMatch *p_rexRes;
 
     if (f.fail()) {
@@ -2008,20 +2043,22 @@ IBFabric::parseSLVLFile(string fn)
     cout << "-I- Parsing SLVL file:" << fn.c_str() << endl;
 
     int anyErr = 0;
-
+    uint64_t guid;
+    IBNode* p_node;
     // Parse the file
     while (f.good()) {
         f.getline(sLine,1024);
         p_rexRes = slLine.apply(sLine);
         if (p_rexRes) {
-            uint64_t guid = strtoull(p_rexRes->field(1).c_str(), NULL, 16);
-            unsigned int iport = strtoull(p_rexRes->field(2).c_str(), NULL, 10);
-            unsigned int  oport = strtoull(p_rexRes->field(3).c_str(), NULL, 10);
-
-            IBNode* p_node = getNodeByGuid(guid);
+            guid = strtoull(p_rexRes->field(1).c_str(), NULL, 16);
+            unsigned int iport = 
+		  strtoull(p_rexRes->field(2).c_str(), NULL, 10);
+            unsigned int oport = 
+		  strtoull(p_rexRes->field(3).c_str(), NULL, 10);
+            p_node = getNodeByGuid(guid);
             if (!p_node) {
                 cout << "-E- Fail to find node with guid:"
-                        << guid << endl;
+                        << p_rexRes->field(1).c_str() << endl;
                 anyErr++;
             } else {
                 for (int i=0;i<IB_NUM_SL;i++) {
@@ -2033,10 +2070,38 @@ IBFabric::parseSLVLFile(string fn)
                 }
             }
             delete p_rexRes;
-        } /*else {
-            cout << "-E- Wrong file format:" << fn.c_str() << endl;
-            anyErr++;
-        }*/
+        } else if ((p_rexRes = osmLine1.apply(sLine))) {
+	    guid = strtoull(p_rexRes->field(2).c_str(), NULL, 16);
+	    IBPort *p_port =  getPortByGuid(guid);
+	    if (!p_port) {
+		cout << "-E- Fail to find node with guid: 0x"
+		     << p_rexRes->field(2).c_str() << endl;
+		anyErr++;
+		guid = 0;
+	    } else {
+		p_node = p_port->p_node;
+	    }
+	    delete p_rexRes;
+	  } else if ((p_rexRes = osmLine2.apply(sLine))) {
+	    if (guid != 0) {
+            unsigned int iport = 
+		  strtoull(p_rexRes->field(1).c_str(), NULL, 10);
+            unsigned int  oport = 
+		  strtoull(p_rexRes->field(2).c_str(), NULL, 10);
+		
+		for (int i=0;i<IB_NUM_SL;i++) {
+		  // Extract the VL value
+		  uint8_t vl = strtoull(p_rexRes->field(3+i).c_str(), NULL, 10);
+		  numVLs = (numVLs > vl+1) ? numVLs : vl+1;
+		  // Set the table entry
+		  p_node->setSLVL(iport,oport,i,vl);
+		}
+	    } else {
+		cout << "-E- Ignoring SL2VL line with no previous matching guid" 
+		     << endl;
+	    }
+	    delete p_rexRes;
+	  }
     }
     cout << "-I- Defined "<< (int)numVLs << " VLs in use" <<endl;
     f.close();
