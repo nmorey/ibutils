@@ -4326,12 +4326,22 @@ proc DrPath2Name { DirectPath args } {
 	    }
 	}
     }
-    if {[catch {set nodeName [IBNode_name_get $nodePointer]}]} {
-	return "$lidGuidDev port=$EntryPort"
-    } elseif { $nodeName == "" } {
-	return "$lidGuidDev port=$EntryPort"
+
+    if {$EntryPort != 0} {	#not port 0 in SW
+        if {[catch {set portPointer [IBNode_getPort $nodePointer $EntryPort]}]} {
+	    return "$lidGuidDev port=$EntryPort"
+	}
+	set EntryPortName [IBPort_getName  $portPointer]
     } else {
-	if {$addPort} {append nodeName "/P$EntryPort"}
+	set EntryPortName $EntryPort
+    }
+
+    if {[catch {set nodeName [IBNode_name_get $nodePointer]}]} {
+	return "$lidGuidDev port=$EntryPortName"
+    } elseif { $nodeName == "" } {
+	return "$lidGuidDev port=$EntryPortName"
+    } else {
+	if {$addPort} {set nodeName "$EntryPortName"}
 	if { $fullName } {
 	    return "\"$nodeName\" $lidGuidDev"
 	} else {

@@ -873,6 +873,17 @@ proc inform { msgCode args } {
 	set DrPath2Name_5 [DrPath2Name $msgF($entry) -nameLast -fullName -port $NODE($i,EntryPort)]
 	set DrPath2Name_6 [DrPath2Name $msgF($entry) -nameLast -fullName]
 
+
+	set prev_i [expr {$i-1}]
+        if {$prev_i >= 0} {
+	    if {$PATH($i) == ""} {	#if path is empty because local device
+	        set DrPath2Name_7 "$G(var:desc.local.dev) \"$DrPath2Name_4\""
+	    } else {
+                set DrPath2Name_7 "\"[DrPath2Name $PATH($prev_i) -port [lindex [split $PATH($i) ,] end]]\""
+	    }
+            set NODE($prev_i,Name_DRPort) "$DrPath2Name_7"
+	}
+
 	if { $msgF($entry) == "" } {
 	    set NODE($i,FullName)       "$G(var:desc.local.dev) $DrPath2Name_1"
 	    set NODE($i,Name)           "$G(var:desc.local.dev) \"$DrPath2Name_2\""
@@ -1857,10 +1868,10 @@ proc inform { msgCode args } {
             set CSV_severity 3
             set dontTrimLine 1
 	    append msgText "link with PHY=$msgF(phy) found at direct path \"$PATH(1)\"%n"
-	    append msgText "From: a $NODE(0,FullType,Spaces) $NODE(0,Name,Spaces)"
-	    append msgText " PortGUID=$NODE(0,PortGUID) Port=[lindex [split $PATH(1) ,] end]%n"
-	    append msgText "To:   a $NODE(1,FullType,Spaces) $NODE(1,Name,Spaces)"
-	    append msgText " PortGUID=$NODE(1,PortGUID) Port=$NODE(1,EntryPort)"
+	    append msgText "From: a $NODE(0,FullType,Spaces)"
+	    append msgText " PortGUID=$NODE(0,PortGUID) Port=$NODE(0,Name_DRPort)%n"
+	    append msgText "To:   a $NODE(1,FullType,Spaces)"
+	    append msgText " PortGUID=$NODE(1,PortGUID) Port=$NODE(1,Name_EntryPort)%n"
 	}
         "-I-ibdiagnet:bad.link.width.header" {
 	    append msgText "Links With links width != $G(argv:link.width) (as set by -lw option)"
@@ -1875,10 +1886,10 @@ proc inform { msgCode args } {
             set CSV_severity 3
             set dontTrimLine 1
 	    append msgText "link with SPD=$msgF(spd) found at direct path \"$PATH(1)\"%n"
-	    append msgText "From: a $NODE(0,FullType,Spaces) $NODE(0,Name,Spaces)"
-	    append msgText " PortGUID=$NODE(0,PortGUID) Port=[lindex [split $PATH(1) ,] end]%n"
-	    append msgText "To:   a $NODE(1,FullType,Spaces) $NODE(1,Name,Spaces)"
-	    append msgText " PortGUID=$NODE(1,PortGUID) Port=$NODE(1,EntryPort)"
+	    append msgText "From: a $NODE(0,FullType,Spaces)"
+	    append msgText " PortGUID=$NODE(0,PortGUID) Port=$NODE(0,Name_DRPort)%n"
+	    append msgText "To:   a $NODE(1,FullType,Spaces)"
+	    append msgText " PortGUID=$NODE(1,PortGUID) Port=$NODE(1,Name_EntryPort)%n"
 	}
         "-I-ibdiagnet:bad.link.speed.header" {
 	    append msgText "Links With links speed != $G(argv:link.speed) (as set by -ls option)"
@@ -1944,10 +1955,10 @@ proc inform { msgCode args } {
             set CSV_severity 5
             set dontTrimLine 1
 	    append msgText "link with LOG=INI found at direct path \"$PATH(1)\"%n"
-	    append msgText "From: a $NODE(0,FullType,Spaces) $NODE(0,Name_Port,Spaces)"
-	    append msgText " PortGUID=$NODE(0,PortGUID) Port=[lindex [split $PATH(1) ,] end]%n"
-	    append msgText "To:   a $NODE(1,FullType,Spaces) $NODE(1,Name_Port,Spaces)"
-	    append msgText " PortGUID=$NODE(1,PortGUID) Port=$NODE(1,EntryPort)"
+	    append msgText "From: a $NODE(0,FullType,Spaces)"
+	    append msgText " PortGUID=$NODE(0,PortGUID) Port=$NODE(0,Name_DRPort)%n"
+	    append msgText "To:   a $NODE(1,FullType,Spaces)"
+	    append msgText " PortGUID=$NODE(1,PortGUID) Port=$NODE(1,Name_EntryPort)%n"
 	}
 
         "-E-ibdiagnet:PKeys.getPkey" {
