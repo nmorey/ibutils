@@ -591,6 +591,11 @@ proc SetPortNDevice {_ibisInfo} {
     set G(argv:port.num) $argv_portNum
     set G(argv:dev.idx) $argv_devIdx
 
+    if {$G(argv:port.num) == 0} {
+	set G(argv:skip.checks) "$G(argv:skip.checks) dup_guids"
+	inform "-W-skipping:dup_guids.when.running.from.SW"
+    }
+
     ## Setting G with port/dev info - Step1.1: Set port GUID & LID
     set G(data:root.port.guid) $PORT_HCA($argv_devIdx.$argv_portNum:portGuid)
     set G(data:root.port.lid)  $PORT_HCA($argv_devIdx.$argv_portNum:portLid)

@@ -1249,6 +1249,9 @@ proc inform { msgCode args } {
 	    set msgText "Loading $msgF(package)"
 	}
 
+	"-W-skipping:dup_guids.when.running.from.SW" {
+	    append msgText "Duplicated GUIDs detection will be skipped when running from a Switch"
+	}
 
 	"-E-localPort:all.ports.down" {
 	    if { $G(var:tool.name) == "ibdiagpath" } {
