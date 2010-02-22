@@ -1,12 +1,26 @@
 #!/bin/bash
+
+#--
+# Copyright (c) 2004-2010 Mellanox Technologies LTD. All rights reserved.
 #
 # This software is available to you under a choice of one of two
 # licenses.  You may choose to be licensed under the terms of the GNU
-# General Public License (GPL) Version 2, available at
-# <http://www.fsf.org/copyleft/gpl.html>, or the OpenIB.org BSD
-# license, available in the LICENSE.TXT file accompanying this
-# software.  These details are also available at
-# <http://openib.org/license.html>.
+# General Public License (GPL) Version 2, available from the file
+# COPYING in the main directory of this source tree, or the
+# OpenIB.org BSD license below:
+#
+#     Redistribution and use in source and binary forms, with or
+#     without modification, are permitted provided that the following
+#     conditions are met:
+#
+#      - Redistributions of source code must retain the above
+#        copyright notice, this list of conditions and the following
+#        disclaimer.
+#
+#      - Redistributions in binary form must reproduce the above
+#        copyright notice, this list of conditions and the following
+#        disclaimer in the documentation and/or other materials
+#        provided with the distribution.
 #
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
 # EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
@@ -16,8 +30,7 @@
 # ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-# Copyright (c) 2004 Mellanox Technologies Ltd.  All rights reserved.
-#
+#--
 
 # pointing to the dir where this install script resides
 PACKAGE_ORIG_DIR=`cd ${0%*/*};pwd`
