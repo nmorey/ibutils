@@ -1,7 +1,12 @@
-This software is available to you under a choice of one of two
-licenses. You may chose to be licensed under the terms of the
-the OpenIB.org BSD license or the GNU General Public License
-(GPL) Version 2, both included below.
+This software with the exception of libreplace is available to
+you under a choice of one of two licenses. You may chose to be
+licensed under the terms of the the OpenIB.org BSD license or
+the GNU General Public License (GPL) Version 2, both included
+below.
+
+libreplace (ibdm/replace) is licensed under GNU General Public
+License, either version 2 of the License (included velow), or
+at your option, any later version.
 
 Copyright (c) 2004-2010 Mellanox Technologies LTD. All rights reserved.
 
