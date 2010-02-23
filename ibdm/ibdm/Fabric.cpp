@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004 Mellanox Technologies LTD. All rights reserved.
+ * Copyright (c) 2004-2010 Mellanox Technologies LTD. All rights reserved.
  *
  * This software is available to you under a choice of one of two
  * licenses.  You may choose to be licensed under the terms of the GNU
@@ -29,7 +29,6 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
- * $Id$
  */
 
 /*
@@ -1967,12 +1966,12 @@ IBFabric::parsePSLFile(string fn)
     IBNode* p_node = NULL;
     while (f.good()) {
 	f.getline(sLine,1024);
-	
+
 	if ((p_rexRes = slLine.apply(sLine))) {
 	  guid = strtoull(p_rexRes->field(1).c_str(), NULL, 16);
 	  unsigned int lid = strtoull(p_rexRes->field(2).c_str(), NULL, 10);
 	  uint8_t sl = strtoull(p_rexRes->field(3).c_str(), NULL, 10);
-	  
+
 	  p_node = getNodeByGuid(guid);
 	  if (!p_node) {
 	    cout << "-E- Fail to find node with guid:"
@@ -2051,9 +2050,9 @@ IBFabric::parseSLVLFile(string fn)
         p_rexRes = slLine.apply(sLine);
         if (p_rexRes) {
             guid = strtoull(p_rexRes->field(1).c_str(), NULL, 16);
-            unsigned int iport = 
+            unsigned int iport =
 		  strtoull(p_rexRes->field(2).c_str(), NULL, 10);
-            unsigned int oport = 
+            unsigned int oport =
 		  strtoull(p_rexRes->field(3).c_str(), NULL, 10);
             p_node = getNodeByGuid(guid);
             if (!p_node) {
@@ -2084,11 +2083,11 @@ IBFabric::parseSLVLFile(string fn)
 	    delete p_rexRes;
 	  } else if ((p_rexRes = osmLine2.apply(sLine))) {
 	    if (guid != 0) {
-            unsigned int iport = 
+            unsigned int iport =
 		  strtoull(p_rexRes->field(1).c_str(), NULL, 10);
-            unsigned int  oport = 
+            unsigned int  oport =
 		  strtoull(p_rexRes->field(2).c_str(), NULL, 10);
-		
+
 		for (int i=0;i<IB_NUM_SL;i++) {
 		  // Extract the VL value
 		  uint8_t vl = strtoull(p_rexRes->field(3+i).c_str(), NULL, 10);
@@ -2097,7 +2096,7 @@ IBFabric::parseSLVLFile(string fn)
 		  p_node->setSLVL(iport,oport,i,vl);
 		}
 	    } else {
-		cout << "-E- Ignoring SL2VL line with no previous matching guid" 
+		cout << "-E- Ignoring SL2VL line with no previous matching guid"
 		     << endl;
 	    }
 	    delete p_rexRes;
