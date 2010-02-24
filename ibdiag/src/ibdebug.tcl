@@ -161,7 +161,7 @@ proc InitializeIBDIAG {} {
     global G argv argv0 InfoArgv INFO_LST MASK
 
     ### InitializeIBDIAG - Set general vars
-    set G(var:version.num)          1.5.1
+    set G(var:version.num)          1.5.2
     set G(var:tool.name)            [file rootname [file tail $argv0]]
     set G(var:start.clock.seconds)  [clock seconds]
     set G(var:desc.local.dev)       "The Local Device"
