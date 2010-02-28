@@ -40,7 +40,7 @@ AC_CONFIG_AUX_DIR(config)
 dnl Defines the Language
 AC_LANG_CPLUSPLUS
 
-dnl we use auto cheader
+dnl we use auto header
 AM_CONFIG_HEADER(config.h)
 
 dnl Auto make
@@ -99,7 +99,6 @@ dnl AC_FUNC_MALLOC
 dnl AC_FUNC_REALLOC
 AC_CHECK_FUNCS([strchr strstr strtol strtoull index rindex])
 AC_REPLACE_FUNCS(memset)
-IS_INCLUDED_REGEX()
 
 dnl Just in case that the current version does not support the
 dnl usage of LTLIBOBJS
@@ -130,5 +129,5 @@ AC_MSG_NOTICE(Using FINAL_PREFIX=$with_final_prefix)
 AM_CONDITIONAL(USE_FINAL_PREFIX, test x$with_final_prefix != x)
 
 dnl Create the following Makefiles
-AC_OUTPUT(Makefile replace/Makefile ibnl/Makefile src/Makefile ibdm/Makefile Clusters/Makefile doc/Makefile)
+AC_OUTPUT(Makefile ibnl/Makefile src/Makefile ibdm/Makefile Clusters/Makefile doc/Makefile)
 

@@ -70,16 +70,16 @@ else
 IBNL_PATH=-DIBDM_IBNL_DIR='"$(libdir)/ibdm$(VERSION)"'
 endif
 
-AM_CXXFLAGS = $(DBG) $(IBNL_PATH) $(TCL_CPPFLAGS) $(REGEXP_INCLUDE)
-AM_CFLAGS =   $(DBG) $(IBNL_PATH) $(TCL_CFLAGS) $(REGEXP_INCLUDE)
+AM_CXXFLAGS = $(DBG) $(IBNL_PATH) $(TCL_CPPFLAGS)
+AM_CFLAGS =   $(DBG) $(IBNL_PATH) $(TCL_CFLAGS)
 
 lib_LTLIBRARIES = libibdmcom.la libibdm.la
 libibdmcom_la_SOURCES = $(common_SOURCES)
-libibdmcom_la_LIBADD = -L../replace -lreplace
+libibdmcom_la_LIBADD = 
 libibdmcom_la_LDFLAGS = -version-info $(LIB_VER_TRIPLET)
 
 libibdm_la_SOURCES = ibdm_wrap.cpp ibdm.i $(common_SOURCES)
-libibdm_la_LIBADD = $(TCL_LIBS) -L../replace -lreplace
+libibdm_la_LIBADD = $(TCL_LIBS) 
 libibdm_la_LDFLAGS = -Wl,-rpath -Wl,$(TCL_PREFIX)/lib -version-info $(LIB_VER_TRIPLET) -no-undefined
 
 bin_PROGRAMS  = ibdmsh
