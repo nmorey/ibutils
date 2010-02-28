@@ -66,6 +66,7 @@ if test $? = 1; then
 fi
 
 aclocal -I config 2>&1 |  grep -v "arning: underquoted definition of"
+autoheader
 libtoolize --automake --copy
 automake --add-missing --gnu --copy --force
 autoconf
