@@ -34,26 +34,28 @@
 #ifndef IBDM_SUBN_MGT_H
 #define IBDM_SUBN_MGT_H
 
+
 /*
+    Subnet Utilities:
 
-  Subnet Utilities:
+    The file holds a set of utilities to be run on the subnet to mimic OpenSM
+    initialization and analyze the results:
 
-  The file holds a set of utilities to be run on the subnet to mimic OpenSM
-  initialization and analyze the results:
-
-  Assign Lids: SubnMgtAssignLids
-  Init min hop tables: SubnMgtCalcMinHopTables
-  Perform Enhanced LMC aware routing: SubnMgtOsmEnhancedRoute
-  Perform standard routing: SubnMgtOsmRoute
-  Verify all CA to CA routes: SubnMgtVerifyAllCaToCaRoutes
-
+    Assign Lids: SubnMgtAssignLids
+    Init min hop tables: SubnMgtCalcMinHopTables
+    Perform Enhanced LMC aware routing: SubnMgtOsmEnhancedRoute
+    Perform standard routing: SubnMgtOsmRoute
+    Verify all CA to CA routes: SubnMgtVerifyAllCaToCaRoutes
 */
 
+
 // Assign lids
-int SubnMgtAssignLids (IBPort *p_smNodePort, unsigned int lmc = 0);
+int
+SubnMgtAssignLids (IBPort *p_smNodePort, unsigned int lmc = 0);
 
 // Calculate the minhop table for the switches
-int SubnMgtCalcMinHopTables (IBFabric *p_fabric);
+int
+SubnMgtCalcMinHopTables (IBFabric *p_fabric);
 
 // Fill in the FDB tables in an OpesnSM style routing
 // which is switch based, uses number of routes per port
