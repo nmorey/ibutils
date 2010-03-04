@@ -875,7 +875,7 @@
 %section "IBDM Constants"
 /* These constants are provided by IBDM: */
 
-typedef enum {IB_UNKNOWN_NODE_TYPE, IB_SW_NODE, IB_CA_NODE} IBNodeType;
+typedef enum {IB_UNKNOWN_NODE_TYPE, IB_CA_NODE, IB_SW_NODE} IBNodeType;
 /* Node Types */
 
 %subsection "Log Verbosity Flags",before,pre

@@ -606,8 +606,8 @@ SWIGEXPORT(int,Ibdm_Init)(Tcl_Interp *);
 
 #define new_uint64_t uint64_t
 static int  _wrap_const_IB_UNKNOWN_NODE_TYPE = IB_UNKNOWN_NODE_TYPE;
-static int  _wrap_const_IB_SW_NODE = IB_SW_NODE;
 static int  _wrap_const_IB_CA_NODE = IB_CA_NODE;
+static int  _wrap_const_IB_SW_NODE = IB_SW_NODE;
 static int  _wrap_const_FABU_LOG_NONE = 0x0;
 static int  _wrap_const_FABU_LOG_ERROR = 0x1;
 static int  _wrap_const_FABU_LOG_INFO = 0x2;
@@ -18587,8 +18587,8 @@ SWIGEXPORT(int,Ibdm_Init)(Tcl_Interp *interp) {
 		 return TCL_ERROR;
 	 SWIG_RegisterType();
 	 Tcl_LinkVar(interp, SWIG_prefix "IB_UNKNOWN_NODE_TYPE", (char *) &_wrap_const_IB_UNKNOWN_NODE_TYPE, TCL_LINK_INT | TCL_LINK_READ_ONLY);
-	 Tcl_LinkVar(interp, SWIG_prefix "IB_SW_NODE", (char *) &_wrap_const_IB_SW_NODE, TCL_LINK_INT | TCL_LINK_READ_ONLY);
 	 Tcl_LinkVar(interp, SWIG_prefix "IB_CA_NODE", (char *) &_wrap_const_IB_CA_NODE, TCL_LINK_INT | TCL_LINK_READ_ONLY);
+	 Tcl_LinkVar(interp, SWIG_prefix "IB_SW_NODE", (char *) &_wrap_const_IB_SW_NODE, TCL_LINK_INT | TCL_LINK_READ_ONLY);
 	 Tcl_LinkVar(interp, SWIG_prefix "FABU_LOG_NONE", (char *) &_wrap_const_FABU_LOG_NONE, TCL_LINK_INT | TCL_LINK_READ_ONLY);
 	 Tcl_LinkVar(interp, SWIG_prefix "FABU_LOG_ERROR", (char *) &_wrap_const_FABU_LOG_ERROR, TCL_LINK_INT | TCL_LINK_READ_ONLY);
 	 Tcl_LinkVar(interp, SWIG_prefix "FABU_LOG_INFO", (char *) &_wrap_const_FABU_LOG_INFO, TCL_LINK_INT | TCL_LINK_READ_ONLY);

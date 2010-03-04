@@ -67,7 +67,7 @@ while {($numNodesUsed < $numNodes / 10) && ($numNodesUsed < 12) && ($idx < $numN
    set node [lindex $randNodes $idx]
    # ignore the root node:
    if {[IBNode_name_get $node] != "H-1/U1"} {
-      if {[IBNode_type_get $node] != 1} {
+      if {[IBNode_type_get $node] != $IB_SW_NODE} {
          setNodePortErrProfile $node
          incr numNodesUsed
       }

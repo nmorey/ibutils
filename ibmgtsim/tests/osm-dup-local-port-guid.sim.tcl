@@ -77,6 +77,8 @@ proc dupPortGuid {fromNodeNPort toNodeNPort} {
 # get a random order of all the fabric endports:
 # a list of {node port-num random}
 proc getEndPortsByRandomOreder {fabric} {
+   global IB_SW_NODE
+
    # get number of nodes:
    set nodesByName [IBFabric_NodeByName_get $fabric]
 
@@ -85,7 +87,7 @@ proc getEndPortsByRandomOreder {fabric} {
       set node [lindex $nodeNameNId 1]
       set nodeName [lindex $nodeNameNId 0]
       # each node might be a switch (then take port 0)
-      if {[IBNode_type_get $node] != 1} {
+      if {[IBNode_type_get $node] != $IB_SW_NODE} {
          # only connected ports please:
          set numPorts [IBNode_numPorts_get $node]
          for {set pn 1} {$pn <= $numPorts} {incr pn} {
@@ -109,12 +111,13 @@ proc getEndPortsByRandomOreder {fabric} {
 # set the change bit on one of the switches:
 proc setOneSwitchChangeBit {fabric} {
    global DISCONNECTED_NODES
+   global IB_SW_NODE
 
    set allNodes [IBFabric_NodeByName_get $fabric]
 
    foreach nameNNode $allNodes {
       set node [lindex $nameNNode 1]
-      if {[IBNode_type_get $node] == 1} {
+      if {[IBNode_type_get $node] == $IB_SW_NODE} {
          if {![info exists DISCONNECTED_NODES($node)]} {
             set swi [IBMSNode_getSwitchInfo sim$node]
             set lifeState [ib_switch_info_t_life_state_get $swi]

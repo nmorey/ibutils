@@ -34,6 +34,8 @@ puts "FLOW: set some unicast partial connectivity"
 
 # get random list of switch nodes:
 proc getRandomSwitchNodesList {fabric} {
+   global IB_SW_NODE
+
    # get number of nodes:
    set nodesByName [IBFabric_NodeByName_get $fabric]
 
@@ -42,7 +44,7 @@ proc getRandomSwitchNodesList {fabric} {
       set node [lindex $nodeNameNId 1]
 
       # only switches please
-      if {[IBNode_type_get $node] == 1} {
+      if {[IBNode_type_get $node] == $IB_SW_NODE} {
          lappend nodeNOrderList [list $node [rmRand]]
       }
    }

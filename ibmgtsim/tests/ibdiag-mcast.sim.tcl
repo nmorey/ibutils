@@ -35,6 +35,8 @@ puts "FLOW: have some multicats groups with some partial connectivity too"
 # get a random order of all the fabric HCA endports:
 # a list of {node port-num random}
 proc getEndPortsByRandomOrder {fabric} {
+   global IB_SW_NODE
+
    # get number of nodes:
    set nodesByName [IBFabric_NodeByName_get $fabric]
 
@@ -42,7 +44,7 @@ proc getEndPortsByRandomOrder {fabric} {
    foreach nodeNameNId [IBFabric_NodeByName_get $fabric] {
       set node [lindex $nodeNameNId 1]
 
-      if {[IBNode_type_get $node] != 1} {
+      if {[IBNode_type_get $node] != $IB_SW_NODE} {
          # only connected ports please:
          set numPorts [IBNode_numPorts_get $node]
          for {set pn 1} {$pn <= $numPorts} {incr pn} {
@@ -63,6 +65,8 @@ proc getEndPortsByRandomOrder {fabric} {
 
 # get random list of switch nodes:
 proc getRandomSwitchNodesList {fabric} {
+   global IB_SW_NODE
+
    # get number of nodes:
    set nodesByName [IBFabric_NodeByName_get $fabric]
 
@@ -71,7 +75,7 @@ proc getRandomSwitchNodesList {fabric} {
       set node [lindex $nodeNameNId 1]
 
       # only switches please
-      if {[IBNode_type_get $node] == 1} {
+      if {[IBNode_type_get $node] == $IB_SW_NODE} {
          lappend nodeNOrderList [list $node [rmRand]]
       }
    }

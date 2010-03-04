@@ -36,6 +36,8 @@
 # we need to provide back the list of node/portNum pairs
 proc getAddressiblePorts {fabric} {
    global PORT_LID LID_PORTS
+   global IB_SW_NODE
+
    set nodePortNumPairs {}
 
    # go over all nodes
@@ -43,7 +45,7 @@ proc getAddressiblePorts {fabric} {
       set node [lindex $nodeNameNId 1]
 
       # switches has only one port - port 0
-      if {[IBNode_type_get $node] == 1} {
+      if {[IBNode_type_get $node] == $IB_SW_NODE} {
          lappend nodePortNumPairs [list $node 0]
          for {set pn $pMin} {$pn <= $pMax} {incr pn} {
             set port [IBNode_getPort $node $pn]

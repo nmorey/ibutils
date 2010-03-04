@@ -68,6 +68,7 @@ proc setNodePortErrProfile {fabric nodeName portNum dropRate} {
 # obtain the list of lids of HCA ports in the fabric
 # set the global LIDS to that list
 proc getAddressiblePortLids {fabric} {
+        global IB_SW_NODE
 	global LIDS
 	global HCA_PORT_BY_LID
 
@@ -76,7 +77,7 @@ proc getAddressiblePortLids {fabric} {
       set node [lindex $nodeNameNId 1]
 
       # switches has only one port - port 0
-      if {[IBNode_type_get $node] != 1} {
+      if {[IBNode_type_get $node] != $IB_SW_NODE} {
          set pMin 1
          set pMax [IBNode_numPorts_get $node]
          for {set pn $pMin} {$pn <= $pMax} {incr pn} {

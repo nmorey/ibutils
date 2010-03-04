@@ -658,6 +658,7 @@ proc SetPortNDevice {_ibisInfo} {
 #  RESULT       set G(argv:sys.name)
 proc SetTopologyNSysName {} {
     global G
+    global IB_SW_NODE
 
     ### SetTopologyNSysName - Pre Settings
     ## Pre Settings - Step1.0: Local vars
@@ -726,7 +727,7 @@ proc SetTopologyNSysName {} {
     foreach sysName $list_sysNames {
 	set sysPointer $TOPO_SYS($sysName)
 	foreach nodeName [IBSystem_NodeByName_get $sysPointer] {
-	    if { [IBNode_type_get [lindex $nodeName 1]] != 1 } {
+	    if { [IBNode_type_get [lindex $nodeName 1]] != $IB_SW_NODE } {
 		lappend HCAnames $sysName
 		break;
 	    }
@@ -4452,6 +4453,8 @@ proc linkNamesGet { DirectPath args } {
 # extract the name(s) of the port(s) from the -n flag
 proc GetArgvPortNames {} {
     global G argv
+    global IB_SW_NODE
+
     if { ![info exists G(argv:by-name.route)] || [CheckSkipStatus load_ibdm]} {
 	return
     }
@@ -4471,7 +4474,7 @@ proc GetArgvPortNames {} {
 	catch { unset portPointer portPointers }
 	if {[catch { set portPointer $topoPortsArray($name) }]} {
 	    if { ! [catch { set nodePointer $topoNodesArray($name) }] } {
-		if { [IBNode_type_get $nodePointer] == 1 } { ; # 1=SW 2=CA 3=Rt
+		if { [IBNode_type_get $nodePointer] == $IB_SW_NODE } {
 		    set portPointer [lindex [IBNode_Ports_get $nodePointer] 0]
 		}
 	    } elseif { ! [catch { set sysPointer $topoSysArray($name) }] } {
@@ -4523,6 +4526,8 @@ proc GetArgvPortNames {} {
 ##############################
 proc Name2Lid {localPortPtr destPortPtr exitPort} {
     global G
+    global IB_SW_NODE
+
     if {[CheckSkipStatus load_ibdm]} {
 	return -1
     }
@@ -4540,14 +4545,14 @@ proc Name2Lid {localPortPtr destPortPtr exitPort} {
 	set destNodePtr     [IBPort_p_node_get  $destPortPtr]
 
 	if {$destPortPtr == $localPortPtr} {
-	    if {$localNodetype == 1} {
+	    if {$localNodetype == $IB_SW_NODE} {
 		return "$DirectPath 0"
 	    } else {
 		return $DirectPath
 	    }
 	}
-	if {($localNodetype != 1) } {continue;}
-	if {(($localNodetype == 1) && ($localNodePtr == $destNodePtr))|| ($index == 1) } {
+	if {($localNodetype != $IB_SW_NODE) } {continue;}
+	if {(($localNodetype == $IB_SW_NODE) && ($localNodePtr == $destNodePtr))|| ($index == 1) } {
 	    # in the current switch check if it's any of the switch ports
 	    for {set i 1} {$i <= [IBNode_numPorts_get $localNodePtr]} {incr i} {
 		set tmpPort [IBNode_getPort $localNodePtr $i]

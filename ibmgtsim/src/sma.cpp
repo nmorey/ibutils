@@ -208,14 +208,14 @@ void IBMSSma::initNodeInfo()
 
   // HACK: as the devId is not really meaningful due to IBDM limitation
   // we only rely on the type of device. HCAs get 64 PKeys switches: 24.
-  if (pNodeData->type == 1)
+  if (pNodeData->type == IB_NODE_TYPE_SWITCH)
   {
     //Switch
     pSimNode->nodeInfo.node_type = IB_NODE_TYPE_SWITCH;
     pSimNode->nodeInfo.partition_cap = CL_HTON16(24);
     initSwitchInfo();
   }
-  else if (pNodeData->type == 2)
+  else if (pNodeData->type == IB_NODE_TYPE_CA)
   {
     //HCA
     pSimNode->nodeInfo.node_type = IB_NODE_TYPE_CA;
@@ -505,7 +505,7 @@ int IBMSSma::nodeDescMad(ibms_mad_msg_t &respMadMsg)
   pRespMad = (ib_smp_t*) &respMadMsg.header;
 
   string desc;
-  if (pSimNode->nodeInfo.node_type != 2)
+  if (pSimNode->nodeInfo.node_type != IB_NODE_TYPE_SWITCH)
   {
     // parse node name of format sysname/U[0-9]
     char *p_sep = strstr(pSimNode->getIBNode()->name.c_str(), "/U");
@@ -543,7 +543,7 @@ int IBMSSma::nodeInfoMad(ibms_mad_msg_t &respMadMsg, uint8_t inPort)
   memcpy (pRespMad->data, &(pSimNode->nodeInfo), sizeof(pSimNode->nodeInfo));
 
   /* provide the port guid for CA ports */
-  if (pSimNode->nodeInfo.node_type != 2)
+  if (pSimNode->nodeInfo.node_type != IB_NODE_TYPE_SWITCH)
   {
     ib_node_info_t *p_node_info = (ib_node_info_t *)pRespMad->data;
     IBPort *pPort = pSimNode->getIBNode()->getPort(inPort);

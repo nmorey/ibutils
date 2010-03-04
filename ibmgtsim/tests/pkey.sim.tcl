@@ -121,6 +121,8 @@ proc getPkeyBlocks {pkeys} {
 
 # find all active HCA ports
 proc getAllActiveHCAPorts {fabric} {
+   global IB_SW_NODE
+
    set hcaPorts {}
 
    # go over all nodes:
@@ -128,7 +130,7 @@ proc getAllActiveHCAPorts {fabric} {
       set node [lindex $nodeNameId 1]
 
       # we do care about non switches only
-      if {[IBNode_type_get $node] != 1} {
+      if {[IBNode_type_get $node] != $IB_SW_NODE} {
          # go over all ports:
          for {set pn 1} {$pn <= [IBNode_numPorts_get $node]} {incr pn} {
             set port [IBNode_getPort $node $pn]
@@ -370,11 +372,13 @@ proc dumpPKeyTables {fabric} {
 
 # set the change bit on one of the switches:
 proc setOneSwitchChangeBit {fabric} {
+   global IB_SW_NODE
+
    set allNodes [IBFabric_NodeByName_get $fabric]
    foreach nameNNode $allNodes {
       set node [lindex $nameNNode 1]
       #if Switch
-      if {[IBNode_type_get $node] == 1} {
+      if {[IBNode_type_get $node] == $IB_SW_NODE} {
 			set numPorts [IBNode_numPorts_get $node]
 			for {set pn 1} {$pn <= $numPorts} {incr pn} {
 				set pi [IBMSNode_getPortInfo sim$node $pn]

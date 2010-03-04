@@ -141,7 +141,24 @@ char *ibdmGetAndClearInternalLog();
 
 ///////////////////////////////////////////////////////////////////////////////
 // We only recognize CA or SW nodes
-typedef enum {IB_UNKNOWN_NODE_TYPE, IB_SW_NODE, IB_CA_NODE} IBNodeType;
+typedef enum {IB_UNKNOWN_NODE_TYPE, IB_CA_NODE, IB_SW_NODE} IBNodeType;
+
+static inline IBNodeType char2nodetype(const char *w)
+{
+    if (!w || (*w == '\0')) return IB_UNKNOWN_NODE_TYPE;
+    if (!strcmp(w,"SW")) return IB_SW_NODE;
+    if (!strcmp(w,"CA")) return IB_CA_NODE;
+    return IB_UNKNOWN_NODE_TYPE;
+};
+
+static inline const char * nodetype2char(const IBNodeType w)
+{
+    switch (w) {
+    case IB_SW_NODE: return("SW"); break;
+    case IB_CA_NODE: return("CA"); break;
+    default: return("UNKNOWN");
+    }
+};
 
 
 typedef enum {IB_UNKNOWN_LINK_WIDTH = 0,

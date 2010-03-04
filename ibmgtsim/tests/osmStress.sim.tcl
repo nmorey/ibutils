@@ -16,11 +16,13 @@ proc notToDo {} {
 # set the change bit on one of the switches:
 # TEMPORARY - need to add traps instead
 proc setOneSwitchChangeBit {fabric} {
+   global IB_SW_NODE
+
    set allNodes [IBFabric_NodeByName_get $fabric]
    foreach nameNNode $allNodes {
       set node [lindex $nameNNode 1]
       #if Switch
-      if {[IBNode_type_get $node] == 1} {
+      if {[IBNode_type_get $node] == $IB_SW_NODE} {
          set swi [IBMSNode_getSwitchInfo sim$node]
          set lifeState [ib_switch_info_t_life_state_get $swi]
          set lifeState [expr ($lifeState & 0xf8) | 4 ]
@@ -36,6 +38,8 @@ proc setOneSwitchChangeBit {fabric} {
 # since the IBDM does not support port 0 (all port are really physp)
 # we need to provide back the list of node/portNum pairs
 proc getAddressiblePorts {fabric} {
+   global IB_SW_NODE
+
    set nodePortNumPairs {}
 
    # go over all nodes
@@ -43,7 +47,7 @@ proc getAddressiblePorts {fabric} {
       set node [lindex $nodeNameNId 1]
 
       # switches has only one port - port 0
-      if {[IBNode_type_get $node] == 1} {
+      if {[IBNode_type_get $node] == $IB_SW_NODE} {
          lappend nodePortNumPairs [list $node 0]
       } else {
          set pMin 1
@@ -207,6 +211,7 @@ proc getUsedLid {} {
 
 proc setNodePortsState {node state} {
    global DISCONNECTED_NODES
+   global IB_SW_NODE
 
    set name [IBNode_name_get $node]
    # simply go over all ports of the node excluding port 0 and
@@ -246,7 +251,7 @@ proc setNodePortsState {node state} {
             set remName [IBNode_name_get $remNode]
             # if the remote port is of an HCA we need to mark it too as
             # BAD or clean it out:
-            if {[IBNode_type_get $remNode] != 1} {
+            if {[IBNode_type_get $remNode] != $IB_SW_NODE} {
                if {$state == 1} {
                   # disconnected
                   puts "-I- Disconnecting node:$remName guid:$remPortGuid port:$remPn"
@@ -551,12 +556,13 @@ proc checkLidValues {fabric lmc} {
 # set the change bit on one of the switches:
 proc setOneSwitchChangeBit {fabric} {
    global DISCONNECTED_NODES
+   global IB_SW_NODE
 
    set allNodes [IBFabric_NodeByName_get $fabric]
 
    foreach nameNNode $allNodes {
       set node [lindex $nameNNode 1]
-      if {[IBNode_type_get $node] == 1} {
+      if {[IBNode_type_get $node] == $IB_SW_NODE} {
          if {![info exists DISCONNECTED_NODES($node)]} {
             set swi [IBMSNode_getSwitchInfo sim$node]
             set lifeState [ib_switch_info_t_life_state_get $swi]
@@ -622,6 +628,8 @@ proc sendJoinLeaveForPort {fabric port isLeave} {
 
 # find all active HCA ports
 proc getAllActiveHCAPorts {fabric} {
+   global IB_SW_NODE
+
    set hcaPorts {}
 
    # go over all nodes:
@@ -629,7 +637,7 @@ proc getAllActiveHCAPorts {fabric} {
       set node [lindex $nodeNameId 1]
 
       # we do care about non switches only
-      if {[IBNode_type_get $node] != 1} {
+      if {[IBNode_type_get $node] != $IB_SW_NODE} {
          # go over all ports:
          for {set pn 1} {$pn <= [IBNode_numPorts_get $node]} {incr pn} {
             set port [IBNode_getPort $node $pn]

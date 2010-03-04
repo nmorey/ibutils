@@ -36,6 +36,8 @@ proc sendJoinForPort {port smLid} {
 
 # find all active HCA ports
 proc getAllActiveHCAPorts {fabric} {
+   global IB_SW_NODE
+
    set hcaPorts {}
 
    # go over all nodes:
@@ -43,7 +45,7 @@ proc getAllActiveHCAPorts {fabric} {
       set node [lindex $nodeNameId 1]
 
       # we do care about non switches only
-      if {[IBNode_type_get $node] != 1} {
+      if {[IBNode_type_get $node] != $IB_SW_NODE} {
          # go over all ports:
          for {set pn 1} {$pn <= [IBNode_numPorts_get $node]} {incr pn} {
             set port [IBNode_getPort $node $pn]

@@ -89,6 +89,8 @@
 # since the IBDM does not support port 0 (all port are really physp)
 # we need to provide back the list of node/portNum pairs
 proc getAddressiblePorts {fabric} {
+   global IB_SW_NODE
+
    set nodePortNumPairs {}
 
    # go over all nodes
@@ -96,7 +98,7 @@ proc getAddressiblePorts {fabric} {
       set node [lindex $nodeNameNId 1]
 
       # switches has only one port - port 0
-      if {[IBNode_type_get $node] == 1} {
+      if {[IBNode_type_get $node] == $IB_SW_NODE} {
          lappend nodePortNumPairs [list $node 0]
       } else {
          set pMin 1
@@ -260,6 +262,8 @@ proc getUsedLid {} {
 
 proc setNodePortsState {node state} {
    global DISCONNECTED_NODES
+   global IB_SW_NODE
+
    # simply go over all ports of the node excluding port 0 and
    # set the link logic state on the port info to DOWN
    for {set pn 1} {$pn <= [IBNode_numPorts_get $node]} {incr pn} {
@@ -281,7 +285,7 @@ proc setNodePortsState {node state} {
                [expr $speed_state & 0xf0 | $state]
             # if the remote port is of an HCA we need to mark it too as
             # BAD or clean it out:
-            if {[IBNode_type_get $remNode] != 1} {
+            if {[IBNode_type_get $remNode] != $IB_SW_NODE} {
                if {$state == 1} {
                   # disconnected
                   puts "-I- Disconnecting node:$remNode guid:$remPortGuid"

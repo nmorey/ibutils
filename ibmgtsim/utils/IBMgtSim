@@ -127,6 +127,8 @@ proc getPortGuidStr {guid} {
 # Update Node Information file for the given node
 #
 proc updateProcFSForNode {fabric simDir nodeName smNodeName smPortNum} {
+   global IB_SW_NODE
+
    # obtain the node
    set node [IBFabric_getNode $fabric $nodeName]
    if {$node == ""} {
@@ -134,7 +136,7 @@ proc updateProcFSForNode {fabric simDir nodeName smNodeName smPortNum} {
       return 1
    }
 
-   if {[IBNode_type_get $node] == 1} {
+   if {[IBNode_type_get $node] == $IB_SW_NODE} {
       puts "-E- Can not create proc file for switch node:$nodeName"
       return 1
    }

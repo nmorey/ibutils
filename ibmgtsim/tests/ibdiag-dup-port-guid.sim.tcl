@@ -80,6 +80,8 @@ proc dupPortGuid {fromNodeNPort toNodeNPort} {
 # get a random order of all the fabric endports:
 # a list of {node port-num random}
 proc getEndPortsByRandomOreder {fabric} {
+   global IB_SW_NODE
+
    # get number of nodes:
    set nodesByName [IBFabric_NodeByName_get $fabric]
 
@@ -88,7 +90,7 @@ proc getEndPortsByRandomOreder {fabric} {
       set node [lindex $nodeNameNId 1]
 
       # each node might be a switch (then take port 0)
-      if {[IBNode_type_get $node] == 1} {
+      if {[IBNode_type_get $node] == $IB_SW_NODE} {
          lappend nodePortNOrderList [list $node 0 [rmRand]]
       } else {
          # only connected ports please:
