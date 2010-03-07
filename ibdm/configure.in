@@ -44,7 +44,7 @@ dnl we use auto header
 AM_CONFIG_HEADER(config.h)
 
 dnl Auto make
-AM_INIT_AUTOMAKE(ibdm,1.5.3)
+AM_INIT_AUTOMAKE(ibdm,1.5.4)
 
 dnl Provides control over re-making of all auto files
 dnl We also use it to define swig dependencies so end
