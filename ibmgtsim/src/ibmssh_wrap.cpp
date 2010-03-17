@@ -606,8 +606,8 @@ SWIGEXPORT(int,Ibdm_Init)(Tcl_Interp *);
 
 #define new_uint64_t uint64_t
 static int  _wrap_const_IB_UNKNOWN_NODE_TYPE = IB_UNKNOWN_NODE_TYPE;
-static int  _wrap_const_IB_SW_NODE = IB_SW_NODE;
 static int  _wrap_const_IB_CA_NODE = IB_CA_NODE;
+static int  _wrap_const_IB_SW_NODE = IB_SW_NODE;
 static int  _wrap_const_FABU_LOG_NONE = 0x0;
 static int  _wrap_const_FABU_LOG_ERROR = 0x1;
 static int  _wrap_const_FABU_LOG_INFO = 0x2;
@@ -28970,7 +28970,7 @@ static int _wrap_IBMSNode_setPKeyTblBlock(ClientData clientData, Tcl_Interp *int
 {
   char buf[256];
   char *p_pkey;
-  char *str_token;
+  char *str_token = NULL;
   int i = 0;
   memset(&tmp, 0, sizeof(ib_pkey_table_t));
 
@@ -29786,7 +29786,7 @@ static int _wrap_IBMSNode_setMFTBlock(ClientData clientData, Tcl_Interp *interp,
 {
   char buf[256];
   char *p_mftEntry;
-  char *str_token;
+  char *str_token = NULL;
   int i = 0;
 
   strncpy(buf, Tcl_GetStringFromObj(objv[4],NULL), 255);
@@ -30109,7 +30109,7 @@ static int _wrap_madMcMemberRec_mgid_set(ClientData clientData, Tcl_Interp *inte
 {
   char buf[36];
   char *p_prefix, *p_guid;
-  char *str_token;
+  char *str_token = NULL;
 
   strcpy(buf, Tcl_GetStringFromObj(objv[2],NULL));
   p_prefix = strtok_r(buf,":", &str_token);
@@ -30210,7 +30210,7 @@ static int _wrap_madMcMemberRec_port_gid_set(ClientData clientData, Tcl_Interp *
 {
   char buf[36];
   char *p_prefix, *p_guid;
-  char *str_token;
+  char *str_token = NULL;
 
   strcpy(buf, Tcl_GetStringFromObj(objv[2],NULL));
   p_prefix = strtok_r(buf,":", &str_token);
@@ -31740,7 +31740,7 @@ static int _wrap_madPathRec_dgid_set(ClientData clientData, Tcl_Interp *interp, 
 {
   char buf[36];
   char *p_prefix, *p_guid;
-  char *str_token;
+  char *str_token = NULL;
 
   strcpy(buf, Tcl_GetStringFromObj(objv[2],NULL));
   p_prefix = strtok_r(buf,":", &str_token);
@@ -31841,7 +31841,7 @@ static int _wrap_madPathRec_sgid_set(ClientData clientData, Tcl_Interp *interp, 
 {
   char buf[36];
   char *p_prefix, *p_guid;
-  char *str_token;
+  char *str_token = NULL;
 
   strcpy(buf, Tcl_GetStringFromObj(objv[2],NULL));
   p_prefix = strtok_r(buf,":", &str_token);
@@ -33467,7 +33467,7 @@ static int _wrap_madServiceRec_service_gid_set(ClientData clientData, Tcl_Interp
 {
   char buf[36];
   char *p_prefix, *p_guid;
-  char *str_token;
+  char *str_token = NULL;
 
   strcpy(buf, Tcl_GetStringFromObj(objv[2],NULL));
   p_prefix = strtok_r(buf,":", &str_token);
@@ -35669,7 +35669,7 @@ static int _wrap_madNotice128_issuer_gid_set(ClientData clientData, Tcl_Interp *
 {
   char buf[36];
   char *p_prefix, *p_guid;
-  char *str_token;
+  char *str_token = NULL;
 
   strcpy(buf, Tcl_GetStringFromObj(objv[2],NULL));
   p_prefix = strtok_r(buf,":", &str_token);
@@ -36872,7 +36872,7 @@ static int _wrap_madNotice129_issuer_gid_set(ClientData clientData, Tcl_Interp *
 {
   char buf[36];
   char *p_prefix, *p_guid;
-  char *str_token;
+  char *str_token = NULL;
 
   strcpy(buf, Tcl_GetStringFromObj(objv[2],NULL));
   p_prefix = strtok_r(buf,":", &str_token);
@@ -38173,7 +38173,7 @@ static int _wrap_madNotice144_issuer_gid_set(ClientData clientData, Tcl_Interp *
 {
   char buf[36];
   char *p_prefix, *p_guid;
-  char *str_token;
+  char *str_token = NULL;
 
   strcpy(buf, Tcl_GetStringFromObj(objv[2],NULL));
   p_prefix = strtok_r(buf,":", &str_token);
@@ -38725,7 +38725,7 @@ static int _wrap_madGenericInform_gid_set(ClientData clientData, Tcl_Interp *int
 {
   char buf[36];
   char *p_prefix, *p_guid;
-  char *str_token;
+  char *str_token = NULL;
 
   strcpy(buf, Tcl_GetStringFromObj(objv[2],NULL));
   p_prefix = strtok_r(buf,":", &str_token);
@@ -40058,8 +40058,8 @@ SWIGEXPORT(int,Ibdm_Init)(Tcl_Interp *interp) {
 		 return TCL_ERROR;
 	 SWIG_RegisterType();
 	 Tcl_LinkVar(interp, SWIG_prefix "IB_UNKNOWN_NODE_TYPE", (char *) &_wrap_const_IB_UNKNOWN_NODE_TYPE, TCL_LINK_INT | TCL_LINK_READ_ONLY);
-	 Tcl_LinkVar(interp, SWIG_prefix "IB_SW_NODE", (char *) &_wrap_const_IB_SW_NODE, TCL_LINK_INT | TCL_LINK_READ_ONLY);
 	 Tcl_LinkVar(interp, SWIG_prefix "IB_CA_NODE", (char *) &_wrap_const_IB_CA_NODE, TCL_LINK_INT | TCL_LINK_READ_ONLY);
+	 Tcl_LinkVar(interp, SWIG_prefix "IB_SW_NODE", (char *) &_wrap_const_IB_SW_NODE, TCL_LINK_INT | TCL_LINK_READ_ONLY);
 	 Tcl_LinkVar(interp, SWIG_prefix "FABU_LOG_NONE", (char *) &_wrap_const_FABU_LOG_NONE, TCL_LINK_INT | TCL_LINK_READ_ONLY);
 	 Tcl_LinkVar(interp, SWIG_prefix "FABU_LOG_ERROR", (char *) &_wrap_const_FABU_LOG_ERROR, TCL_LINK_INT | TCL_LINK_READ_ONLY);
 	 Tcl_LinkVar(interp, SWIG_prefix "FABU_LOG_INFO", (char *) &_wrap_const_FABU_LOG_INFO, TCL_LINK_INT | TCL_LINK_READ_ONLY);

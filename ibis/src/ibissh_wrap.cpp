@@ -3496,7 +3496,7 @@ static int _wrap_crReadMulti(ClientData clientData, Tcl_Interp *interp, int objc
     char *str_tcl;
     int i;
     char *loc_buf;
-    char *str_token;
+    char *str_token = NULL;
 
     str_tcl = Tcl_GetStringFromObj(objv[2],NULL);
     loc_buf = (char *)malloc((strlen(str_tcl)+1)*sizeof(char));
@@ -3579,7 +3579,7 @@ static int _wrap_crWriteMulti(ClientData clientData, Tcl_Interp *interp, int obj
     char *str_tcl;
     int i;
     char *loc_buf;
-    char *str_token;
+    char *str_token = NULL;
 
     str_tcl = Tcl_GetStringFromObj(objv[2],NULL);
     loc_buf = (char *)malloc((strlen(str_tcl)+1)*sizeof(char));
@@ -3766,7 +3766,7 @@ static int _wrap_pmGetPortCountersMulti(ClientData clientData, Tcl_Interp *inter
     char *str_tcl;
     int i;
     char *loc_buf;
-    char *str_token;
+    char *str_token = NULL;
 
     str_tcl = Tcl_GetStringFromObj(objv[2],NULL);
     loc_buf = (char *)malloc((strlen(str_tcl)+1)*sizeof(char));
@@ -3788,7 +3788,7 @@ static int _wrap_pmGetPortCountersMulti(ClientData clientData, Tcl_Interp *inter
   char *str_tcl;
   int i;
   char *loc_buf;
-  char *str_token;
+  char *str_token = NULL;
 
   str_tcl = Tcl_GetStringFromObj(objv[3],NULL);
   loc_buf = (char *)malloc((strlen(str_tcl)+1)*sizeof(char));
@@ -3871,7 +3871,7 @@ static int _wrap_pmGetExtPortCountersMulti(ClientData clientData, Tcl_Interp *in
     char *str_tcl;
     int i;
     char *loc_buf;
-    char *str_token;
+    char *str_token = NULL;
 
     str_tcl = Tcl_GetStringFromObj(objv[2],NULL);
     loc_buf = (char *)malloc((strlen(str_tcl)+1)*sizeof(char));
@@ -3893,7 +3893,7 @@ static int _wrap_pmGetExtPortCountersMulti(ClientData clientData, Tcl_Interp *in
   char *str_tcl;
   int i;
   char *loc_buf;
-  char *str_token;
+  char *str_token = NULL;
 
   str_tcl = Tcl_GetStringFromObj(objv[3],NULL);
   loc_buf = (char *)malloc((strlen(str_tcl)+1)*sizeof(char));
@@ -4023,7 +4023,7 @@ static int _wrap_pmClrAllCountersMulti(ClientData clientData, Tcl_Interp *interp
     char *str_tcl;
     int i;
     char *loc_buf;
-    char *str_token;
+    char *str_token = NULL;
 
     str_tcl = Tcl_GetStringFromObj(objv[2],NULL);
     loc_buf = (char *)malloc((strlen(str_tcl)+1)*sizeof(char));
@@ -4045,7 +4045,7 @@ static int _wrap_pmClrAllCountersMulti(ClientData clientData, Tcl_Interp *interp
   char *str_tcl;
   int i;
   char *loc_buf;
-  char *str_token;
+  char *str_token = NULL;
 
   str_tcl = Tcl_GetStringFromObj(objv[3],NULL);
   loc_buf = (char *)malloc((strlen(str_tcl)+1)*sizeof(char));
@@ -4244,7 +4244,7 @@ static int _wrap_vsCpuWrite(ClientData clientData, Tcl_Interp *interp, int objc,
     char *str_tcl;
     int i;
     char *loc_buf;
-    char *str_token;
+    char *str_token = NULL;
 
     str_tcl = Tcl_GetStringFromObj(objv[4],NULL);
     loc_buf = (char *)malloc((strlen(str_tcl)+1)*sizeof(char));
@@ -4420,7 +4420,7 @@ static int _wrap_vsI2cWrite(ClientData clientData, Tcl_Interp *interp, int objc,
     char *str_tcl;
     int i;
     char *loc_buf;
-    char *str_token;
+    char *str_token = NULL;
 
     str_tcl = Tcl_GetStringFromObj(objv[6],NULL);
     loc_buf = (char *)malloc((strlen(str_tcl)+1)*sizeof(char));
@@ -4502,7 +4502,7 @@ static int _wrap_vsI2cReadMulti(ClientData clientData, Tcl_Interp *interp, int o
   char *str_tcl;
   int i;
   char *loc_buf;
-  char *str_token;
+  char *str_token = NULL;
 
   str_tcl = Tcl_GetStringFromObj(objv[2],NULL);
   loc_buf = (char *)malloc((strlen(str_tcl)+1)*sizeof(char));
@@ -4607,7 +4607,7 @@ static int _wrap_vsI2cWriteMulti(ClientData clientData, Tcl_Interp *interp, int 
   char *str_tcl;
   int i;
   char *loc_buf;
-  char *str_token;
+  char *str_token = NULL;
 
   str_tcl = Tcl_GetStringFromObj(objv[2],NULL);
   loc_buf = (char *)malloc((strlen(str_tcl)+1)*sizeof(char));
@@ -4645,7 +4645,7 @@ static int _wrap_vsI2cWriteMulti(ClientData clientData, Tcl_Interp *interp, int 
     char *str_tcl;
     int i;
     char *loc_buf;
-    char *str_token;
+    char *str_token = NULL;
 
     str_tcl = Tcl_GetStringFromObj(objv[7],NULL);
     loc_buf = (char *)malloc((strlen(str_tcl)+1)*sizeof(char));
@@ -4831,7 +4831,7 @@ static int _wrap_vsSWReset(ClientData clientData, Tcl_Interp *interp, int objc, 
   char *str_tcl;
   int i;
   char *loc_buf;
-  char *str_token;
+  char *str_token = NULL;
 
   str_tcl = Tcl_GetStringFromObj(objv[2],NULL);
   loc_buf = (char *)malloc((strlen(str_tcl)+1)*sizeof(char));
@@ -4914,7 +4914,7 @@ static int _wrap_vsFlashStartMulti(ClientData clientData, Tcl_Interp *interp, in
   char *str_tcl;
   int i;
   char *loc_buf;
-  char *str_token;
+  char *str_token = NULL;
 
   str_tcl = Tcl_GetStringFromObj(objv[2],NULL);
   loc_buf = (char *)malloc((strlen(str_tcl)+1)*sizeof(char));
@@ -4948,7 +4948,7 @@ static int _wrap_vsFlashStartMulti(ClientData clientData, Tcl_Interp *interp, in
     char *str_tcl;
     int i;
     char *loc_buf;
-    char *str_token;
+    char *str_token = NULL;
 
     str_tcl = Tcl_GetStringFromObj(objv[6],NULL);
     loc_buf = (char *)malloc((strlen(str_tcl)+1)*sizeof(char));
@@ -5028,7 +5028,7 @@ static int _wrap_vsFlashStopMulti(ClientData clientData, Tcl_Interp *interp, int
   char *str_tcl;
   int i;
   char *loc_buf;
-  char *str_token;
+  char *str_token = NULL;
 
   str_tcl = Tcl_GetStringFromObj(objv[2],NULL);
   loc_buf = (char *)malloc((strlen(str_tcl)+1)*sizeof(char));
@@ -5113,7 +5113,7 @@ static int _wrap_vsFlashSetBankMulti(ClientData clientData, Tcl_Interp *interp, 
   char *str_tcl;
   int i;
   char *loc_buf;
-  char *str_token;
+  char *str_token = NULL;
 
   str_tcl = Tcl_GetStringFromObj(objv[2],NULL);
   loc_buf = (char *)malloc((strlen(str_tcl)+1)*sizeof(char));
@@ -5198,7 +5198,7 @@ static int _wrap_vsFlashEraseSectorMulti(ClientData clientData, Tcl_Interp *inte
   char *str_tcl;
   int i;
   char *loc_buf;
-  char *str_token;
+  char *str_token = NULL;
 
   str_tcl = Tcl_GetStringFromObj(objv[2],NULL);
   loc_buf = (char *)malloc((strlen(str_tcl)+1)*sizeof(char));
@@ -5285,7 +5285,7 @@ static int _wrap_vsFlashReadSectorMulti(ClientData clientData, Tcl_Interp *inter
   char *str_tcl;
   int i;
   char *loc_buf;
-  char *str_token;
+  char *str_token = NULL;
 
   str_tcl = Tcl_GetStringFromObj(objv[2],NULL);
   loc_buf = (char *)malloc((strlen(str_tcl)+1)*sizeof(char));
@@ -5373,7 +5373,7 @@ static int _wrap_vsFlashWriteSectorMulti(ClientData clientData, Tcl_Interp *inte
   char *str_tcl;
   int i;
   char *loc_buf;
-  char *str_token;
+  char *str_token = NULL;
 
   str_tcl = Tcl_GetStringFromObj(objv[2],NULL);
   loc_buf = (char *)malloc((strlen(str_tcl)+1)*sizeof(char));
@@ -5403,7 +5403,7 @@ static int _wrap_vsFlashWriteSectorMulti(ClientData clientData, Tcl_Interp *inte
     char *str_tcl;
     int i;
     char *loc_buf;
-    char *str_token;
+    char *str_token = NULL;
 
     str_tcl = Tcl_GetStringFromObj(objv[5],NULL);
     loc_buf = (char *)malloc((strlen(str_tcl)+1)*sizeof(char));
@@ -17565,7 +17565,7 @@ static int _wrap_sacPathRec_dgid_set(ClientData clientData, Tcl_Interp *interp, 
 {
   char buf[40];
   char *p_prefix, *p_guid;
-  char *str_token;
+  char *str_token = NULL;
 
   strcpy(buf, Tcl_GetStringFromObj(objv[2],NULL));
   p_prefix = strtok_r(buf,":", &str_token);
@@ -17711,7 +17711,7 @@ static int _wrap_sacPathRec_sgid_set(ClientData clientData, Tcl_Interp *interp, 
 {
   char buf[40];
   char *p_prefix, *p_guid;
-  char *str_token;
+  char *str_token = NULL;
 
   strcpy(buf, Tcl_GetStringFromObj(objv[2],NULL));
   p_prefix = strtok_r(buf,":", &str_token);
@@ -20288,7 +20288,7 @@ static int _wrap_sacMCMRec_mgid_set(ClientData clientData, Tcl_Interp *interp, i
 {
   char buf[40];
   char *p_prefix, *p_guid;
-  char *str_token;
+  char *str_token = NULL;
 
   strcpy(buf, Tcl_GetStringFromObj(objv[2],NULL));
   p_prefix = strtok_r(buf,":", &str_token);
@@ -20434,7 +20434,7 @@ static int _wrap_sacMCMRec_port_gid_set(ClientData clientData, Tcl_Interp *inter
 {
   char buf[40];
   char *p_prefix, *p_guid;
-  char *str_token;
+  char *str_token = NULL;
 
   strcpy(buf, Tcl_GetStringFromObj(objv[2],NULL));
   p_prefix = strtok_r(buf,":", &str_token);
@@ -22705,7 +22705,7 @@ static int _wrap_sacClassPortInfo_redir_gid_set(ClientData clientData, Tcl_Inter
 {
   char buf[40];
   char *p_prefix, *p_guid;
-  char *str_token;
+  char *str_token = NULL;
 
   strcpy(buf, Tcl_GetStringFromObj(objv[2],NULL));
   p_prefix = strtok_r(buf,":", &str_token);
@@ -23401,7 +23401,7 @@ static int _wrap_sacClassPortInfo_trap_gid_set(ClientData clientData, Tcl_Interp
 {
   char buf[40];
   char *p_prefix, *p_guid;
-  char *str_token;
+  char *str_token = NULL;
 
   strcpy(buf, Tcl_GetStringFromObj(objv[2],NULL));
   p_prefix = strtok_r(buf,":", &str_token);
@@ -24549,7 +24549,7 @@ static int _wrap_sacInformInfo_gid_set(ClientData clientData, Tcl_Interp *interp
 {
   char buf[40];
   char *p_prefix, *p_guid;
-  char *str_token;
+  char *str_token = NULL;
 
   strcpy(buf, Tcl_GetStringFromObj(objv[2],NULL));
   p_prefix = strtok_r(buf,":", &str_token);
@@ -27712,7 +27712,7 @@ static int _wrap_sacServiceRec_service_gid_set(ClientData clientData, Tcl_Interp
 {
   char buf[40];
   char *p_prefix, *p_guid;
-  char *str_token;
+  char *str_token = NULL;
 
   strcpy(buf, Tcl_GetStringFromObj(objv[2],NULL));
   p_prefix = strtok_r(buf,":", &str_token);
@@ -46831,7 +46831,7 @@ static int _wrap_smNotice_issuer_gid_set(ClientData clientData, Tcl_Interp *inte
 {
   char buf[38];
   char *p_prefix, *p_guid;
-  char *str_token;
+  char *str_token = NULL;
 
   strcpy(buf, Tcl_GetStringFromObj(objv[2],NULL));
   p_prefix = strtok_r(buf,":", &str_token);
@@ -49951,7 +49951,7 @@ static int _wrap_smNotice_data_details_ntc_64_67_gid_set(ClientData clientData, 
 {
   char buf[38];
   char *p_prefix, *p_guid;
-  char *str_token;
+  char *str_token = NULL;
 
   strcpy(buf, Tcl_GetStringFromObj(objv[2],NULL));
   p_prefix = strtok_r(buf,":", &str_token);
@@ -54723,7 +54723,7 @@ static int _wrap_smNotice_data_details_ntc_257_258_gid1_set(ClientData clientDat
 {
   char buf[38];
   char *p_prefix, *p_guid;
-  char *str_token;
+  char *str_token = NULL;
 
   strcpy(buf, Tcl_GetStringFromObj(objv[2],NULL));
   p_prefix = strtok_r(buf,":", &str_token);
@@ -54858,7 +54858,7 @@ static int _wrap_smNotice_data_details_ntc_257_258_gid2_set(ClientData clientDat
 {
   char buf[38];
   char *p_prefix, *p_guid;
-  char *str_token;
+  char *str_token = NULL;
 
   strcpy(buf, Tcl_GetStringFromObj(objv[2],NULL));
   p_prefix = strtok_r(buf,":", &str_token);
@@ -56143,7 +56143,7 @@ static int _wrap_smNotice_data_details_ntc_259_gid1_set(ClientData clientData, T
 {
   char buf[38];
   char *p_prefix, *p_guid;
-  char *str_token;
+  char *str_token = NULL;
 
   strcpy(buf, Tcl_GetStringFromObj(objv[2],NULL));
   p_prefix = strtok_r(buf,":", &str_token);
@@ -56278,7 +56278,7 @@ static int _wrap_smNotice_data_details_ntc_259_gid2_set(ClientData clientData, T
 {
   char buf[38];
   char *p_prefix, *p_guid;
-  char *str_token;
+  char *str_token = NULL;
 
   strcpy(buf, Tcl_GetStringFromObj(objv[2],NULL));
   p_prefix = strtok_r(buf,":", &str_token);
@@ -57376,7 +57376,7 @@ static int _wrap_ccClassPortInfo_redir_gid_set(ClientData clientData, Tcl_Interp
 {
 	char buf[38];
 	char *p_prefix, *p_guid;
-	char *str_token;
+	char *str_token = NULL;
 
 	strcpy(buf, Tcl_GetStringFromObj(objv[2],NULL));
 	p_prefix = strtok_r(buf,":", &str_token);
@@ -58061,7 +58061,7 @@ static int _wrap_ccClassPortInfo_trap_gid_set(ClientData clientData, Tcl_Interp 
 {
 	char buf[38];
 	char *p_prefix, *p_guid;
-	char *str_token;
+	char *str_token = NULL;
 
 	strcpy(buf, Tcl_GetStringFromObj(objv[2],NULL));
 	p_prefix = strtok_r(buf,":", &str_token);
@@ -60769,7 +60769,7 @@ static int _wrap_ccNotice_ntc0__source_gid_set(ClientData clientData, Tcl_Interp
 {
 	char buf[38];
 	char *p_prefix, *p_guid;
-	char *str_token;
+	char *str_token = NULL;
 
 	strcpy(buf, Tcl_GetStringFromObj(objv[2],NULL));
 	p_prefix = strtok_r(buf,":", &str_token);
@@ -61050,7 +61050,7 @@ static int _wrap_ccNotice_issuer_gid_set(ClientData clientData, Tcl_Interp *inte
 {
 	char buf[38];
 	char *p_prefix, *p_guid;
-	char *str_token;
+	char *str_token = NULL;
 
 	strcpy(buf, Tcl_GetStringFromObj(objv[2],NULL));
 	p_prefix = strtok_r(buf,":", &str_token);
