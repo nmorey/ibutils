@@ -649,7 +649,7 @@ ibvs_general_info_get_global(
   char *str_tcl;
   int i;
   char *loc_buf;
-  char *str_token;
+  char *str_token = NULL;
 
   str_tcl = Tcl_GetStringFromObj($source,NULL);
   loc_buf = (char *)malloc((strlen(str_tcl)+1)*sizeof(char));
@@ -675,7 +675,7 @@ ibvs_general_info_get_global(
     char *str_tcl;
     int i;
     char *loc_buf;
-    char *str_token;
+    char *str_token = NULL;
 
     str_tcl = Tcl_GetStringFromObj($source,NULL);
     loc_buf = (char *)malloc((strlen(str_tcl)+1)*sizeof(char));

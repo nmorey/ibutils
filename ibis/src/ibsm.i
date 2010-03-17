@@ -120,7 +120,7 @@
 %typemap(tcl8,in) ib_gid_t*(ib_gid_t temp) {
   char buf[38];
   char *p_prefix, *p_guid;
-  char *str_token;
+  char *str_token = NULL;
 
   strcpy(buf, Tcl_GetStringFromObj($source,NULL));
   p_prefix = strtok_r(buf,":", &str_token);
