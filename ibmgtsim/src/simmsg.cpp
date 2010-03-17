@@ -115,11 +115,12 @@ __ibms_dump_bind_msg(
     sprintf(msg, "%s Method:0x%X ", msg, p_msg->msg.bind.method);
   if (p_msg->msg.bind.mask & IBMS_BIND_MASK_ATTR)
     sprintf(msg, "%s Attribute:0x%X ", msg, p_msg->msg.bind.attribute);
-  if (p_msg->msg.bind.mask & IBMS_BIND_MASK_INPUT)
+  if (p_msg->msg.bind.mask & IBMS_BIND_MASK_INPUT) {
     if (p_msg->msg.bind.only_input)
       sprintf(msg, "%s Direction:IN",msg);
     else
       sprintf(msg, "%s Direction:IN/OUT", msg);
+  }
   return msg;
 }
 
@@ -259,7 +260,7 @@ ibms_dump_msg(
   printf("%s", ibms_get_msg_str(p_msg).c_str());
 }
 
-char *
+const char *
 ibms_get_resp_str(
   IN const ibms_response_t *p_response)
 {

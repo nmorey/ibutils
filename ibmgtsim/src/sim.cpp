@@ -45,22 +45,15 @@
 // CLASS  IBMgtSim
 //
 
-char *IBMgtSim::getSimulatorDir()
+const char *IBMgtSim::getSimulatorDir()
 {
-  static char *ibmgtSimDir = NULL;
-  static char *defaultIbmgtSimDir = "/tmp/ibmgtsim";
-
-  if (ibmgtSimDir == NULL)
-  {
-    ibmgtSimDir = getenv("IBMGTSIM_DIR");
-    if (ibmgtSimDir == NULL) {
-      printf("-W- Environment variable: IBMGTSIM_DIR does not exist.\n");
-      printf("    Please create one used by the simulator.\n");
-      printf("    Using /tmp/ibmgtsim as default.\n");
-      ibmgtSimDir = defaultIbmgtSimDir;
-    }
+  if (!getenv("IBMGTSIM_DIR")) {
+    printf("-W- Environment variable: IBMGTSIM_DIR does not exist.\n");
+    printf("    Please create one used by the simulator.\n");
+    printf("    Using /tmp/ibmgtsim as default.\n");
+    return "/tmp/ibmgtsim";
   }
-  return ibmgtSimDir;
+  return getenv("IBMGTSIM_DIR");
 }
 
 /* allocate guids to the nodes */

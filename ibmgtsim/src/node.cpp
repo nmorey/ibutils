@@ -568,15 +568,8 @@ int IBMSNode::setLinkStatus(
   }
 
   /* In case of a switch */
-  if ((newState == IB_LINK_DOWN) &&
-      ((oldState == IB_LINK_INIT) ||
-       (oldState == IB_LINK_ARMED) ||
-       (oldState == IB_LINK_ACTIVE)) ||
-      (oldState == IB_LINK_DOWN) &&
-      ((newState == IB_LINK_INIT) ||
-       (newState == IB_LINK_ARMED) ||
-       (newState == IB_LINK_ACTIVE))
-      )
+  if ((newState == IB_LINK_DOWN && (oldState == IB_LINK_INIT || oldState == IB_LINK_ARMED || oldState == IB_LINK_ACTIVE)) || 
+      (oldState == IB_LINK_DOWN && (newState == IB_LINK_INIT || newState == IB_LINK_ARMED || newState == IB_LINK_ACTIVE)))
   {
     //  3. if node is a switch update the portStateChange
     ib_switch_info_set_state_change(&switchInfo);

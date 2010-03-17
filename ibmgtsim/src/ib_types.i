@@ -96,7 +96,7 @@
 %typemap(tcl8,in) ib_gid_t*(ib_gid_t temp) {
   char buf[36];
   char *p_prefix, *p_guid;
-  char *str_token;
+  char *str_token = NULL;
 
   strcpy(buf, Tcl_GetStringFromObj($source,NULL));
   p_prefix = strtok_r(buf,":", &str_token);
@@ -283,7 +283,7 @@
 %typemap(tcl8,in) ib_pkey_table_t* (ib_pkey_table_t tmp) {
   char buf[256];
   char *p_pkey;
-  char *str_token;
+  char *str_token = NULL;
   int i = 0;
   memset(&tmp, 0, sizeof(ib_pkey_table_t));
 
@@ -338,7 +338,7 @@
 %typemap(tcl8,in) ib_mft_table_t* (ib_mft_table_t tmp) {
   char buf[256];
   char *p_mftEntry;
-  char *str_token;
+  char *str_token = NULL;
   int i = 0;
 
   strncpy(buf, Tcl_GetStringFromObj($source,NULL), 255);

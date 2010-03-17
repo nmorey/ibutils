@@ -131,6 +131,7 @@ void* SMATimer::timerRun(void* p)
     }
     pthread_mutex_unlock(&p_timer->timerMutex);
   }
+  return NULL;
 }
 
 void SMATimer::reg (reg_t r)
@@ -508,7 +509,7 @@ int IBMSSma::nodeDescMad(ibms_mad_msg_t &respMadMsg)
   if (pSimNode->nodeInfo.node_type != IB_NODE_TYPE_SWITCH)
   {
     // parse node name of format sysname/U[0-9]
-    char *p_sep = strstr(pSimNode->getIBNode()->name.c_str(), "/U");
+    const char *p_sep = strstr(pSimNode->getIBNode()->name.c_str(), "/U");
     if (!p_sep) {
 	desc = (pSimNode->getIBNode())->p_system->name + string(" HCA-1 (Mellanox HCA)");
     } else {
@@ -1275,7 +1276,7 @@ int IBMSSma::setPortInfoSwExtPort(ibms_mad_msg_t &respMadMsg,
 
   // TODO check if legal
   pNodePortInfo->vl_enforce =
-	 pNodePortInfo->vl_enforce & 0xf0 | pReqPortInfo->vl_enforce & 0xf;
+	 (pNodePortInfo->vl_enforce & 0xf0) | (pReqPortInfo->vl_enforce & 0xf);
 
   MSG_EXIT_FUNC;
   return status;

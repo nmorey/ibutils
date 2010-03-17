@@ -92,7 +92,7 @@ class IBMgtSim {
   int init(string topoFileName, int serverPortNum, int numWorkers);
 
   /* get the directory name where the simulator rendezvous exists */
-  char *getSimulatorDir();
+  const char *getSimulatorDir();
 
   /* set the random number seed */
   int setRandomSeed( int seed );
