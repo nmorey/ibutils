@@ -34,7 +34,7 @@
 
 # Support debug mode through config variable
 if DEBUG
-DBG = -O0 -g -Wall -Werror
+DBG = -O0 -g -Wall
 else
 DBG = -O2 -Wall
 endif
