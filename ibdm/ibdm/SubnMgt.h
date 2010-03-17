@@ -92,7 +92,7 @@ SubnMgtCalcUpDnMinHopTbls(IBFabric *p_fabric , map_pnode_int &nodesRank);
 
 //Calc by Up-Down Min Hop Algorithm the Switch Tables
 int
-SubnMgtCalcUpDnMinHopTblsByRootNodesRex(IBFabric *p_fabric , char * rootNodesNameRex);
+SubnMgtCalcUpDnMinHopTblsByRootNodesRex(IBFabric *p_fabric , const char * rootNodesNameRex);
 
 // Analyze the fabric to find its root nodes assuming it is
 // a pure tree (keeping all levels in place).
@@ -137,7 +137,7 @@ FatTreeAnalysis(IBFabric *p_fabric);
 
 // Perform FatTree optimal permutation routing
 int
-FatTreeRouteByPermutation(IBFabric* p_fabric, char* srcs, char* dsts);
+FatTreeRouteByPermutation(IBFabric* p_fabric, const char* srcs, const char* dsts);
 
 // Report all CA 2 CA Paths through a port
 int

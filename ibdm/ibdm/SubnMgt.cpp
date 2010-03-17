@@ -783,7 +783,7 @@ SubnRankFabricNodesByRootNodes(IBFabric *p_fabric,
 // note we use the provided map of IBNode* to int for storing the rank
 int
 SubnRankFabricNodesByRegexp(IBFabric *p_fabric,
-        char * nodeNameRex,
+        const char * nodeNameRex,
         map_pnode_int &nodesRank)
 {
     regExp nodeRex(nodeNameRex);
@@ -1776,7 +1776,7 @@ SubnMgtCalcUpDnMinHopTbls(IBFabric *p_fabric,
 // root nodes
 int
 SubnMgtCalcUpDnMinHopTblsByRootNodesRex(IBFabric *p_fabric,
-        char * rootNodesNameRex)
+        const char * rootNodesNameRex)
 {
     map_pnode_int nodesRank;
 

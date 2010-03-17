@@ -661,7 +661,7 @@ public:
     int dumpNameMap(const char *fileName);
 
     // Parse name map file and set GUIDs of the nodes by their name
-    int setNodeGuidsByNameMapFile(char *fileName);
+    int setNodeGuidsByNameMapFile(const char *fileName);
 
 private:
     int parseSubnetLine(char *line);

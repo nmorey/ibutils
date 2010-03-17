@@ -2354,7 +2354,7 @@ IBFabric::dumpNameMap(const char *fileName)
 // Parse a name to guid and LID map file and update the GUID of the fabric
 // nodes by name
 int
-IBFabric::setNodeGuidsByNameMapFile(char *fileName)
+IBFabric::setNodeGuidsByNameMapFile(const char *fileName)
 {
     ifstream sin;
     sin.open(fileName);

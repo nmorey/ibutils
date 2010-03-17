@@ -1204,7 +1204,7 @@ class IBFabric {
   int dumpNameMap(const char *fileName);
   // write out node names map file (guid, lid and name for each node)
 
-  int setNodeGuidsByNameMapFile(char *fileName);
+  int setNodeGuidsByNameMapFile(const char *fileName);
   // parse a name to guid and LID map file and update node GUIDs
 
 };
@@ -1248,7 +1248,7 @@ They all return 0 on succes.
 // Calculate the minhop table for the switches
 
 %name(ibdmCalcUpDnMinHopTbls)
- int SubnMgtCalcUpDnMinHopTblsByRootNodesRex(IBFabric *p_fabric, char *rootNodesNameRex);
+ int SubnMgtCalcUpDnMinHopTblsByRootNodesRex(IBFabric *p_fabric, const char *rootNodesNameRex);
 // Fill in the FDB tables in a Up Down routing.
 // Start the tree from the given nodes by regular expression
 
@@ -1275,7 +1275,7 @@ int ibdmFatTreeRoute(IBFabric *p_fabric, list_pnode rootNodes);
 %name(ibdmFatTreeAnalysis) int FatTreeAnalysis(IBFabric *p_fabric);
 // Performs FatTree structural analysis
 
-%name(ibdmFatTreeRouteByPermutation) int FatTreeRouteByPermutation(IBFabric *p_fabric, char* srcs, char* dsts);
+%name(ibdmFatTreeRouteByPermutation) int FatTreeRouteByPermutation(IBFabric *p_fabric, const char* srcs, const char* dsts);
 // Performs optimal permutation routing in FatTree
 
 %name(ibdmVerifyCAtoCARoutes)

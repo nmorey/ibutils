@@ -1308,7 +1308,7 @@ int FatTreeAnalysis(IBFabric *p_fabric)
   return(0);
 }
 
-int FatTreeRouteByPermutation( IBFabric *p_fabric, char *srcs, char* dsts )
+int FatTreeRouteByPermutation( IBFabric *p_fabric, const char *srcs, const char* dsts )
 {
   vector <string> sources;
   vector <string> destinations;
