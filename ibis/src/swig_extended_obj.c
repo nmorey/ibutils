@@ -80,7 +80,7 @@ static void ptr_to_key(void *ptr, uint64_t *key) {
  * CL MAPS work off a unit64 key so we need to copy the given string
  * to a uint64_t to search for it
  */
-void strToUInt64(char *swig_type, uint64_t *res_p) {
+void strToUInt64(const char *swig_type, uint64_t *res_p) {
   int i;
   swig_type = swig_type + 4; // assuming all objects types start with "_ib_"
   i = strlen(swig_type);
@@ -90,7 +90,7 @@ void strToUInt64(char *swig_type, uint64_t *res_p) {
 }
 
 /* introduce a new valid object by registering it into the maps */
-int SWIG_AltMnglRegObj(char * type, void * ptr) {
+int SWIG_AltMnglRegObj(const char * type, void * ptr) {
   cl_map_t *p_typeByPtrMap = &(SWIG_AltMnglTypeByPtr);
   char *p_type;
   uint64_t key;
@@ -149,7 +149,7 @@ int SWIG_AltMnglUnregObj( void * ptr) {
 }
 
 /* given a pointer return it's object name */
-int SWIG_AltMnglGetObjNameByPtr(Tcl_Obj *objPt, char *p_expType, void * ptr) {
+int SWIG_AltMnglGetObjNameByPtr(Tcl_Obj *objPt, const char *p_expType, void * ptr) {
   char res[64];
   unsigned long int idx;
   char *p_type;
@@ -219,7 +219,7 @@ int SWIG_AltMnglGetObjPtrByName(Tcl_Obj *objPtr, void **ptr) {
 }
 
 /* Register a SWIG type to Object Prefix */
-void SWIG_AltMnglRegTypeToPrefix (char *swig_type, char *objNamePrefix) {
+void SWIG_AltMnglRegTypeToPrefix (const char *swig_type, const char *objNamePrefix) {
   uint64_t type_key;
 
   strToUInt64(swig_type, &type_key);
@@ -248,7 +248,7 @@ int SWIG_AltMnglInit(void) {
  *---------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------
- * void SWIG_SetPointerObj(Tcl_Obj *objPtr, void *ptr, char *type)
+ * void SWIG_SetPointerObj(Tcl_Obj *objPtr, void *ptr, const char *type)
  *
  * Sets a Tcl object to a pointer value.
  *           ptr = void pointer value
@@ -257,7 +257,7 @@ int SWIG_AltMnglInit(void) {
  * CONVERT THE OBJECT POINTER GIVEN INTO A TCL NAME
  *---------------------------------------------------------------------*/
 SWIGSTATIC
-void SWIG_SetPointerObj(Tcl_Obj *objPtr, void *_ptr, char *type) {
+void SWIG_SetPointerObj(Tcl_Obj *objPtr, void *_ptr, const char *type) {
 
   // if we have an alternate mangling use it:
   static char _hex[16] =
@@ -310,7 +310,7 @@ void SWIG_SetPointerObj(Tcl_Obj *objPtr, void *_ptr, char *type) {
 }
 
 /*---------------------------------------------------------------------
- * char *SWIG_GetPointerObj(Tcl_Interp *interp, Tcl_Obj *objPtr, void **ptr, char *type)
+ * char *SWIG_GetPointerObj(Tcl_Interp *interp, Tcl_Obj *objPtr, void **ptr, const char *type)
  *
  * Attempts to extract a pointer value from our pointer type.
  * Upon failure, returns a string corresponding to the actual datatype.
@@ -320,7 +320,7 @@ void SWIG_SetPointerObj(Tcl_Obj *objPtr, void *_ptr, char *type) {
  *---------------------------------------------------------------------*/
 
 SWIGSTATIC
-char *SWIG_GetPointerObj(Tcl_Interp *interp, Tcl_Obj *objPtr, void **ptr, char *_t) {
+char *SWIG_GetPointerObj(Tcl_Interp *interp, Tcl_Obj *objPtr, void **ptr, const char *_t) {
   unsigned long _p;
   char temp_type[256];
   char *name;
