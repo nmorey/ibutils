@@ -504,7 +504,7 @@ public:
             int numBoards);
 
     // Write system IBNL into the given directory and return IBNL name
-    int dumpIBNL(char *ibnlDir, string &sysType);
+    int dumpIBNL(const char *ibnlDir, string &sysType);
 
     inline uint64_t guid_get() {return guid;};
     void guid_set(uint64_t g);
@@ -655,10 +655,10 @@ public:
     void dump(ostream &sout);
 
     // write out a topology file
-    int dumpTopology(char *fileName, char *ibnlDir);
+    int dumpTopology(const char *fileName, const char *ibnlDir);
 
     // Write out the name to guid and LID map
-    int dumpNameMap(char *fileName);
+    int dumpNameMap(const char *fileName);
 
     // Parse name map file and set GUIDs of the nodes by their name
     int setNodeGuidsByNameMapFile(char *fileName);

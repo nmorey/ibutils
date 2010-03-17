@@ -1198,10 +1198,10 @@ class IBFabric {
   inline IBPort *getPortByLid (unsigned int lid);
   // get a port by lid
 
-  int dumpTopology(char *fileName, char *ibnlDir);
+  int dumpTopology(const char *fileName, const char *ibnlDir);
   // write out a topology file and IBNLs into given directory
 
-  int dumpNameMap(char *fileName);
+  int dumpNameMap(const char *fileName);
   // write out node names map file (guid, lid and name for each node)
 
   int setNodeGuidsByNameMapFile(char *fileName);

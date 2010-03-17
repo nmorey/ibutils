@@ -94,9 +94,9 @@ int main (int argc, char **argv) {
    * Parseing of Command Line
    */
 
-  char * startSystemName = "H-1";
-  char * topoFileName = "ibdm.topo";
-  char * subnetFileName = "subnet.lst";
+  const char * startSystemName = "H-1";
+  const char * topoFileName = "ibdm.topo";
+  const char * subnetFileName = "subnet.lst";
   int startPortNum = 1;
   uint64_t startPortGuid = 0;
   int runEdgeMode = 0;

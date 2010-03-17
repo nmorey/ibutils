@@ -61,7 +61,7 @@ class IBSysInstPort {
   IBLinkSpeed          speed;
 
  public:
-  IBSysInstPort(string n, char *toNode, char *toPort, IBLinkWidth w, IBLinkSpeed s) {
+  IBSysInstPort(string n, const char *toNode, const char *toPort, IBLinkWidth w, IBLinkSpeed s) {
     name = n; remInstName = toNode; remPortName = toPort; width = w; speed = s;
   };
 

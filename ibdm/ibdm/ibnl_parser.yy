@@ -172,7 +172,7 @@
   }
 
   void ibnlMakeNodeToNodeConn(
-    int fromPort, char *width, char *speed, char *toNode, int toPort) {
+    int fromPort, const char *width, char *speed, const char *toNode, int toPort) {
 #ifdef DEBUG
     printf("  Connecting N-N port:%d to Node:%s/%d (w=%s,s=%s)\n",
            fromPort, toNode, toPort, width, speed);
@@ -187,7 +187,7 @@
   }
 
   void ibnlMakeNodeToPortConn(
-    int fromPort, char *width, char *speed, char *sysPortName) {
+    int fromPort, const char *width, const char *speed, const char *sysPortName) {
 #ifdef DEBUG
     printf("  System port:%s on port:%d (w=%s,s=%s)\n",
            sysPortName, fromPort, width, speed);
@@ -228,7 +228,7 @@
   }
 
   void ibnlMakeSubsystemToPortConn(
-    char *fromPort, char *width, char *speed, char *toPort) {
+    const char *fromPort, const char *width, const char *speed, const char *toPort) {
 #ifdef DEBUG
     printf("  Connecting port:%s to SysPort:%s\n",
          fromPort, toPort);
@@ -432,5 +432,3 @@ int ibnlParseSysDefs (IBSystemsCollection *p_sysColl, const char *fileName) {
   fclose(yyin);
   return(ibnlErr);
 }
-
-

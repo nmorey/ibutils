@@ -878,7 +878,7 @@ IBSystem::removeBoard(string boardName)
 // In the case of a combined system we can not tell. Adding new connections
 // will require regenerating the IBNL (which is by SysGuid anyway)
 int
-IBSystem::dumpIBNL(char *ibnlDir, string &sysType)
+IBSystem::dumpIBNL(const char *ibnlDir, string &sysType)
 {
     char sysTypeStr[256];
     // if we got just one node  it is simple - write a corresponding
@@ -2269,7 +2269,7 @@ IBFabric::dump(ostream &sout)
 // dump out the contents of the entire fabric as a topology file with
 // required set of IBNL's if unknown
 int
-IBFabric::dumpTopology(char *fileName, char * ibnlDir)
+IBFabric::dumpTopology(const char *fileName, const char * ibnlDir)
 {
     ofstream sout;
     sout.open(fileName);
@@ -2327,7 +2327,7 @@ IBFabric::dumpTopology(char *fileName, char * ibnlDir)
 // dump out the name to guid and LID map of the given topolgy
 // including all NODEs of the fabric
 int
-IBFabric::dumpNameMap(char *fileName)
+IBFabric::dumpNameMap(const char *fileName)
 {
     ofstream sout;
     sout.open(fileName);

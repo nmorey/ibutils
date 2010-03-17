@@ -35,11 +35,11 @@
 // fill in the messages char array with diagnostics..
 int
 TopoMatchFabrics(
-  IBFabric *p_sFabric,      // The specification fabric
-  IBFabric *p_dFabric,      // The discovered fabric
-  char     *anchorNodeName, // The name of the node to be the anchor point
-  int       anchorPortNum,  // The port number of the anchor port
-  uint64_t  anchorPortGuid, // Guid of the anchor port
+  IBFabric   *p_sFabric,      // The specification fabric
+  IBFabric   *p_dFabric,      // The discovered fabric
+  const char *anchorNodeName, // The name of the node to be the anchor point
+  int         anchorPortNum,  // The port number of the anchor port
+  uint64_t    anchorPortGuid, // Guid of the anchor port
   char **messages);
 
 // Build a merged fabric from a matched discovered and spec fabrics:
