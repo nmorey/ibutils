@@ -651,6 +651,7 @@ ibis_gsi_mad_ctrl_bind(
     goto Exit;
   }
 
+  memset(&bind_info, 0, sizeof(osm_bind_info_t));
   bind_info.class_version = class_version;
   bind_info.is_responder = FALSE;
   bind_info.is_report_processor = FALSE;
