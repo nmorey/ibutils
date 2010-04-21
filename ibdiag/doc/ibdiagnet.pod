@@ -51,7 +51,7 @@ A dump of the pm Counters values, of the fabric links
 
 A dump of the the existing partitions and their member host ports
 
-=item F<ibdiagnet.mcg> -
+=item F<ibdiagnet.mcgs> -
 
 A dump of the multicast groups, their properties and member host ports
 
