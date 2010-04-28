@@ -225,7 +225,7 @@ TopoMatchPorts(IBPort *p_sPort,
 // Consider node matching by inspecting all their ports.
 // All ports but maxMiss should be matched to pass.
 // RETURN: 1 if qualified as matching 0 otherwise.
-int
+static int
 TopoQalifyNodesMatching(IBNode *p_sNode, IBNode *p_dNode)
 {
     int maxMissed = 2;          // TODO : Maybe need to restrict by the number of ports?
@@ -316,7 +316,7 @@ TopoMarkMatcedNodes(IBNode *p_node1, IBNode *p_node2, int &matchCounter)
 
 
 // Perform a BFS on both fabrics and cross point between matching nodes.
-int
+static int
 TopoDoBFSAndMatch(IBNode *p_sNodeAnchor,  // Starting node on the specification fabrric
         IBNode *p_dNodeAnchor,  // Starting node on the discovered fabrric
         int &numMatchedNodes,
@@ -487,7 +487,7 @@ TopoDoBFSAndMatch(IBNode *p_sNodeAnchor,  // Starting node on the specification 
 
 // Perform a BFS on both fabrics and cross point between matching nodes.
 // Start the algorithm from node on the specification fabric and node on the discovered fabric
-int
+static int
 TopoBFSAndMatchFromNodes(IBNode *p_sNode, // Starting port on the specification fabrric
         IBNode *p_dNode,
         stringstream &diag)
@@ -507,7 +507,7 @@ TopoBFSAndMatchFromNodes(IBNode *p_sNode, // Starting port on the specification 
 
 // Perform a BFS on both fabrics and cross point between matching nodes.
 // Start the algorithm from port on the specification fabric and port on the discovered fabric
-int
+static int
 TopoBFSAndMatchFromPorts(IBPort *p_sPort, // Starting port on the specification fabrric
         IBPort *p_dPort,
         stringstream &diag)
@@ -562,7 +562,7 @@ TopoBFSAndMatchFromPorts(IBPort *p_sPort, // Starting port on the specification 
 // mark it as matching.
 typedef map < IBNode *, int , less < IBNode * > >  map_pnode_int;
 
-int
+static int
 TopoMatchNodeByAdjacentMatched(IBNode *p_sNode)
 {
     int succeedMatch;
@@ -630,7 +630,7 @@ TopoMatchNodeByAdjacentMatched(IBNode *p_sNode)
 
 // Provide the list of un-matched spec nodes that
 // are adjecant to a matched nodes
-list < IBNode *>
+static list < IBNode *>
 TopoGetAllSpecUnMatchedAdjacentToMatched(IBFabric *p_sFabric)
 {
     list < IBNode *> adjNodes;
@@ -664,7 +664,7 @@ TopoGetAllSpecUnMatchedAdjacentToMatched(IBFabric *p_sFabric)
 
 // Second Matching step
 // Return the number of matched nodes by this step
-int
+static int
 TopoMatchSpecNodesByAdjacentNode(IBFabric *p_sFabric)
 {
     list < IBNode *> unMatchedWithAdjacentMatched;
@@ -1055,7 +1055,7 @@ TopoReportMatchedNodesUnMatchingLinks(IBNode *p_sNode,
 
 
 // Report Topology Missmatched and Build the Merged Fabric:
-int
+static int
 TopoReportMissmatches(IBNode *p_sNodeAnchor,            // Starting node on the specification fabrric
         IBNode *p_dNodeAnchor,
         stringstream &diag)
@@ -1528,7 +1528,8 @@ TopoMergeDiscAndSpecFabrics(IBFabric  *p_sFabric,
 // moving into the fabric. Using NAMES to match.
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
-int isGUIDBasedName(IBNode *p_node) {
+static int
+isGUIDBasedName(IBNode *p_node) {
     string g = guid2str(p_node->guid_get());
     string n = p_node->name;
     const char *gs = g.c_str()+2;
@@ -1539,7 +1540,7 @@ int isGUIDBasedName(IBNode *p_node) {
 
 // Scan through all CA nodes and try to match them by the name
 // return the list of matches found an error for those extra or missing
-int
+static int
 TopoMatchCAsByName(IBFabric *p_sFabric, IBFabric *p_dFabric,
         list<IBNode*> &matchingDiscHosts, stringstream &s)
 {
@@ -1603,7 +1604,7 @@ TopoMatchCAsByName(IBFabric *p_sFabric, IBFabric *p_dFabric,
 // they should have connect and check the grouping matches
 // return the number of miss matching groups found and the list
 // of matching switches
-int
+static int
 AnalyzeMatchingCAGroups(IBFabric *p_sFabric, IBFabric *p_dFabric,
         list<IBNode*> &matchingDiscHosts,
         list<IBNode*> &matchingDiscLeafSw, stringstream &s)
@@ -1725,7 +1726,8 @@ AnalyzeMatchingCAGroups(IBFabric *p_sFabric, IBFabric *p_dFabric,
 
 
 // Validate all matching host ports are connected to correct switch port
-int CheckMatchingCAPortsToMatchingSwPortNums(IBFabric *p_sFabric, IBFabric *p_dFabric,
+static int
+CheckMatchingCAPortsToMatchingSwPortNums(IBFabric *p_sFabric, IBFabric *p_dFabric,
     list<IBNode*> &matchingDiscHosts,
     stringstream &s)
 {
@@ -1798,7 +1800,7 @@ int CheckMatchingCAPortsToMatchingSwPortNums(IBFabric *p_sFabric, IBFabric *p_dF
 // now go over all reached switches and validate back all connections
 // to matched switches - report missmatches or report the new set
 // return the number of new matches found
-int
+static int
 TopoMatchSwitches(IBFabric *p_sFabric,
         IBFabric *p_dFabric,
         list<IBNode*> &oldMatchingSws,
@@ -2000,7 +2002,8 @@ TopoMatchSwitches(IBFabric *p_sFabric,
 
 // go over entire fabric from edges and in and report
 // each missmatch - do not propogate inwards through missmatches
-int BfsFromEdgReportingMatcStatus(IBFabric *p_sFabric, IBFabric *p_dFabric,
+static int
+BfsFromEdgReportingMatcStatus(IBFabric *p_sFabric, IBFabric *p_dFabric,
         stringstream &s)
 {
     // go over all matching nodes
