@@ -31,28 +31,32 @@
  *
  */
 
+
 // Return 0 if fabrics match 1 otherwise.
 // fill in the messages char array with diagnostics..
 int
 TopoMatchFabrics(
-  IBFabric   *p_sFabric,      // The specification fabric
-  IBFabric   *p_dFabric,      // The discovered fabric
-  const char *anchorNodeName, // The name of the node to be the anchor point
-  int         anchorPortNum,  // The port number of the anchor port
-  uint64_t    anchorPortGuid, // Guid of the anchor port
-  char **messages);
+        IBFabric   *p_sFabric,          // The specification fabric
+        IBFabric   *p_dFabric,          // The discovered fabric
+        const char *anchorNodeName,     // The name of the node to be the anchor point
+        int         anchorPortNum,      // The port number of the anchor port
+        uint64_t    anchorPortGuid,     // Guid of the anchor port
+        char **messages);
+
 
 // Build a merged fabric from a matched discovered and spec fabrics:
 // * Every node from the discovered fabric must appear
 // * We sued matched nodes adn system names.
 int
 TopoMergeDiscAndSpecFabrics(
-  IBFabric  *p_sFabric,
-  IBFabric  *p_dFabric,
-  IBFabric  *p_mFabric);
+        IBFabric  *p_sFabric,
+        IBFabric  *p_dFabric,
+        IBFabric  *p_mFabric);
+
 
 int
 TopoMatchFabricsFromEdge(
-  IBFabric *p_sFabric,      // The specification fabric
-  IBFabric *p_dFabric,      // The discovered fabric
-  char **messages);
+        IBFabric *p_sFabric,            // The specification fabric
+        IBFabric *p_dFabric,            // The discovered fabric
+        char **messages);
+
