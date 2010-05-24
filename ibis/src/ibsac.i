@@ -62,7 +62,6 @@
      Not supported by OpenSM:
      Notice
      MulticastForwardingTableRecord
-     GUIDInfoRecord
      InformInfoRecord
 
      Later:
@@ -90,6 +89,8 @@
   typedef ib_vl_arb_table_record_t sacVlArbRec;
   typedef ib_pkey_table_t          sacPKeyTbl;
   typedef ib_pkey_table_record_t   sacPKeyRec;
+  typedef ib_guid_info_t           sacGuidInfo;
+  typedef ib_guidinfo_record_t     sacGuidRec;
   typedef uint8_t                  ib_lft_t;
 %}
 
@@ -98,21 +99,21 @@
 #include "swig_extended_obj.c"
 
   /* Pre allocated Query Objects */
-  ib_node_record_t        ibsac_node_rec;
-  ib_portinfo_record_t    ibsac_portinfo_rec;
-  ib_sminfo_record_t      ibsac_sminfo_rec;
-  ib_switch_info_record_t ibsac_swinfo_rec;
-  ib_link_record_t        ibsac_link_rec; // no sub type
-  ib_path_rec_t           ibsac_path_rec; // no sub type
-  ib_lft_record_t         ibsac_lft_rec; // no sub type
-  ib_member_rec_t         ibsac_mcm_rec; // no sub type
-
-  ib_class_port_info_t    ibsac_class_port_info; // no sub type
-  ib_inform_info_t        ibsac_inform_info; // no sub type
-  ib_service_record_t     ibsac_svc_rec;  // no sub type
-  ib_slvl_table_record_t  ibsac_slvl_rec; // ib_slvl_table_t
-  ib_vl_arb_table_record_t ibsac_vlarb_rec; // ib_vl_arb_table_t
-  ib_pkey_table_record_t  ibsac_pkey_rec; // ib_pkey_table_t
+  ib_node_record_t          ibsac_node_rec;             // ib_node_info_t
+  ib_portinfo_record_t      ibsac_portinfo_rec;         // ib_port_info_t
+  ib_sminfo_record_t        ibsac_sminfo_rec;           // ib_sm_info_t
+  ib_switch_info_record_t   ibsac_swinfo_rec;           // ib_switch_info_t
+  ib_link_record_t          ibsac_link_rec;             // no sub type
+  ib_path_rec_t             ibsac_path_rec;             // no sub type
+  ib_lft_record_t           ibsac_lft_rec;              // no sub type
+  ib_member_rec_t           ibsac_mcm_rec;              // no sub type
+  ib_class_port_info_t      ibsac_class_port_info;      // no sub type
+  ib_inform_info_t          ibsac_inform_info;          // no sub type
+  ib_service_record_t       ibsac_svc_rec;              // no sub type
+  ib_slvl_table_record_t    ibsac_slvl_rec;             // ib_slvl_table_t
+  ib_vl_arb_table_record_t  ibsac_vlarb_rec;            // ib_vl_arb_table_t
+  ib_pkey_table_record_t    ibsac_pkey_rec;             // ib_pkey_table_t
+  ib_guidinfo_record_t      ibsac_guidinfo_rec;         // ib_guid_info_t
 
   /* Query Functions for each record */
   /* These are TCL specific thus are here */
@@ -922,6 +923,65 @@
 	 return(p_res_str);
   }
 
+char *ibsacGuidRecordQuery(
+	 ib_guidinfo_record_t *self,
+	 uint64_t comp_mask,
+	 uint8_t method) {
+	 ib_guidinfo_record_t *p_rec;
+	 uint32_t i;
+	 ib_api_status_t status;
+	 uint32_t num_recs = 0;
+	 osm_madw_t *p_result_madw;
+	 char *p_res_str = NULL, *tmp;
+	 Tcl_Obj *p_tclObj;
+	 int nameLength;
+
+	 status = ibsac_query(
+		&IbisObj, IB_MAD_ATTR_GUIDINFO_RECORD, self, comp_mask, method,
+		&num_recs, &p_result_madw
+		);
+
+	 for( i = 0; i < num_recs; i++ )
+	 {
+		/* we need to create a new node info and copy */
+		p_rec = (ib_guidinfo_record_t *)malloc(sizeof(ib_guidinfo_record_t));
+
+		/* copy into it */
+		*p_rec = *((ib_guidinfo_record_t*)osmv_get_query_result( p_result_madw, i ));
+
+		/* register it as a new object */
+		SWIG_AltMnglRegObj("gr",p_rec);
+		SWIG_AltMnglRegObj("gi",&(p_rec->guid_info));
+
+		p_tclObj = Tcl_NewObj();
+
+		/* get the assigned name */
+		if (SWIG_AltMnglGetObjNameByPtr(p_tclObj, "gr", p_rec)) {
+		  printf("-E- Fail to get name of object %p\n", p_rec);
+		} else {
+		  tmp = Tcl_GetStringFromObj(p_tclObj, &nameLength);
+
+		  /* enlarge the result string length */
+		  if (p_res_str)
+			 p_res_str = (char *)realloc(p_res_str, strlen(p_res_str) + nameLength + 2);
+		  else {
+			 p_res_str = (char *)malloc(nameLength + 2);
+			 p_res_str[0] = '\0';
+		  }
+
+		  strcat(p_res_str, tmp);
+		  strcat(p_res_str, " ");
+		}
+		Tcl_DecrRefCount(p_tclObj);
+	 }
+
+	 if( p_result_madw != NULL )
+		osm_mad_pool_put( &IbisObj.mad_pool, p_result_madw );
+
+	 return(p_res_str);
+  }
+
+
 %}
 
 //
@@ -963,7 +1023,6 @@
   $target = &temp;
 }
 
-
 %typemap(tcl8,out) ib_node_desc_t * {
   /* we must make sure we do not overflow the node desc length */
   char buff[IB_NODE_DESCRIPTION_SIZE];
@@ -994,6 +1053,7 @@
   strcpy((char *)temp.description, Tcl_GetStringFromObj($source,NULL));
   $target = &temp;
 }
+
 
 //
 // INTERFACE DEFINITION (~copy of h file)
@@ -1888,6 +1948,65 @@ typedef struct _ib_pkey_table_record
   void delete() {
 	 SWIG_AltMnglUnregObj(&(self->pkey_tbl));
 	 SWIG_AltMnglUnregObj(self);
+    free(self);
+  }
+}
+
+/* -----------------------------------------------------
+	GuidInfo INFO
+	-----------------------------------------------------*/
+#define IB_GIR_COMPMASK_LID             "0x1"
+#define IB_GIR_COMPMASK_BLOCKNUM        "0x2"
+#define IB_GIR_COMPMASK_GID0            "0x10"
+#define IB_GIR_COMPMASK_GID1            "0x20"
+#define IB_GIR_COMPMASK_GID2            "0x40"
+#define IB_GIR_COMPMASK_GID3            "0x80"
+#define IB_GIR_COMPMASK_GID4            "0x100"
+#define IB_GIR_COMPMASK_GID5            "0x200"
+#define IB_GIR_COMPMASK_GID6            "0x400"
+#define IB_GIR_COMPMASK_GID7            "0x800"
+
+typedef struct _ib_guid_info {
+        ib_net64_array_t guid[GUID_TABLE_MAX_ENTRIES];
+} sacGuidInfo;
+
+%addmethods sacGuidInfo {
+  void delete() {
+    SWIG_AltMnglUnregObj(self);
+    free(self);
+  }
+}
+
+typedef struct _ib_guidinfo_record {
+        ib_net16_t lid;
+        uint8_t block_num;
+        uint8_t resv;
+        uint32_t reserved;
+        sacGuidInfo guid_info;
+} sacGuidRec;
+
+%addmethods sacGuidRec {
+  %new char *get(uint64_t comp_mask) {
+    return(ibsacGuidRecordQuery(self, cl_hton64(comp_mask),
+                                IB_MAD_METHOD_GET));
+  };
+  %new char *set(uint64_t comp_mask) {
+    return(ibsacGuidRecordQuery(self, cl_hton64(comp_mask),
+                                IB_MAD_METHOD_SET));
+  };
+  %new char *getTable(uint64_t comp_mask) {
+    return(ibsacGuidRecordQuery(self, cl_hton64(comp_mask),
+                                IB_MAD_METHOD_GETTABLE));
+  };
+  %new char *delete(uint64_t comp_mask) {
+    return(ibsacGuidRecordQuery(self, cl_hton64(comp_mask),
+                                IB_MAD_METHOD_DELETE));
+  };
+
+  void obj_delete() {
+    /* we need to de-register both the guid info and guid record */
+    SWIG_AltMnglUnregObj(&(self->guid_info));
+    SWIG_AltMnglUnregObj(self);
     free(self);
   }
 }

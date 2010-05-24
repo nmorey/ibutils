@@ -652,6 +652,13 @@ extern char * ibisSourceVersion;
       memset(&ibsac_path_rec, 0, sizeof(ib_path_rec_t));
       memset(&ibsac_lft_rec, 0, sizeof(ib_lft_record_t));
       memset(&ibsac_mcm_rec, 0, sizeof(ib_member_rec_t));
+      memset(&ibsac_class_port_info, 0, sizeof(ib_class_port_info_t));
+      memset(&ibsac_inform_info, 0, sizeof(ib_inform_info_t));
+      memset(&ibsac_svc_rec, 0, sizeof(ib_service_record_t));
+      memset(&ibsac_slvl_rec, 0, sizeof(ib_slvl_table_record_t));
+      memset(&ibsac_vlarb_rec, 0, sizeof(ib_vl_arb_table_record_t));
+      memset(&ibsac_pkey_rec, 0, sizeof(ib_pkey_table_record_t));
+      memset(&ibsac_guidinfo_rec, 0, sizeof(ib_guidinfo_record_t));
 
       /*
        * A1 Supported features:
@@ -699,6 +706,8 @@ extern char * ibisSourceVersion;
       SWIG_AltMnglRegTypeToPrefix("_sacVlArbRec_p", "vlarb");
       SWIG_AltMnglRegTypeToPrefix("_sacPKeyTbl_p", "pkt");
       SWIG_AltMnglRegTypeToPrefix("_sacPKeyRec_p", "pkr");
+      SWIG_AltMnglRegTypeToPrefix("_sacGuidInfo_p", "gi");
+      SWIG_AltMnglRegTypeToPrefix("_sacGuidRec_p", "gr");
 
       // register the pre-allocated objects
       SWIG_AltMnglRegObj("ni",&(ibsac_node_rec.node_info));
@@ -732,6 +741,9 @@ extern char * ibisSourceVersion;
 
       SWIG_AltMnglRegObj("pkt", &(ibsac_pkey_rec.pkey_tbl));
       SWIG_AltMnglRegObj("pkr", &(ibsac_pkey_rec));
+
+      SWIG_AltMnglRegObj("gi", &(ibsac_guidinfo_rec.guid_info));
+      SWIG_AltMnglRegObj("gr", &(ibsac_guidinfo_rec));
 
       usleep(1000);
     }
@@ -900,6 +912,11 @@ extern char * ibisSourceVersion;
 	 Tcl_CreateObjCommand(interp,"sacPKeyQuery",
 								 TclsacPKeyRecMethodCmd,
 								 (ClientData)&ibsac_pkey_rec, 0);
+
+	 Tcl_CreateObjCommand(interp,"sacGuidQuery",
+								 TclsacGuidRecMethodCmd,
+								 (ClientData)&ibsac_guidinfo_rec, 0);
+
 
     /*
       use an embedded Tcl code for doing init if given command line
