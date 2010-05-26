@@ -472,6 +472,11 @@ proc getSMNodeInfo {simDir nodeName} {
    foreach portName [lsort [array names getSMNodeInfo_DB $nodeName/P*]] {
       lappend res $getSMNodeInfo_DB($portName)
    }
+   if {[regexp {(.*)/U1} $nodeName d1 nodeNameNoU]} {
+   foreach portName [lsort [array names getSMNodeInfo_DB $nodeNameNoU/P*]] {
+      lappend res $getSMNodeInfo_DB($portName)
+   }
+  }
    return $res
 }
 
