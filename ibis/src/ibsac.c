@@ -322,6 +322,9 @@ ibsac_query( IN ibis_t *   const p_ibis,
   case IB_MAD_ATTR_PORTINFO_RECORD:
     user.attr_offset = ib_get_attr_offset( sizeof(ib_portinfo_record_t) );
     break;
+  case IB_MAD_ATTR_GUIDINFO_RECORD:
+    user.attr_offset = ib_get_attr_offset( sizeof( ib_guidinfo_record_t ) );
+    break;
   case IB_MAD_ATTR_SERVICE_RECORD:
     user.attr_offset = ib_get_attr_offset( sizeof( ib_service_record_t ) );
     break;
