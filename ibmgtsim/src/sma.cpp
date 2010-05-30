@@ -244,6 +244,56 @@ void IBMSSma::initNodeInfo()
   MSGSND(inf1);
 }
 
+void IBMSSma::initGuidInfo()
+{
+  /* initialize guids */
+  ib_guid_info_t zeroGuidInfo;
+  ib_guid_info_t firstBlockGuidInfo;
+  memset(&zeroGuidInfo, 0, sizeof(ib_guid_info_t));
+  memset(&firstBlockGuidInfo, 0, sizeof(ib_guid_info_t));
+
+  unsigned int numBlocks;
+  vector< ib_guid_info_t > emptyGuidInfoVector;
+  IBPort *pNodePortData = NULL;
+
+  if (pSimNode->nodeInfo.node_type == IB_NODE_TYPE_SWITCH) {
+    //guid info only for the port 0
+    pSimNode->nodeGuidsInfo.push_back(emptyGuidInfoVector);
+    firstBlockGuidInfo.guid[0] = cl_hton64(pSimNode->nodeInfo.port_guid);
+    numBlocks = (pSimNode->nodePortsInfo[0].guid_cap + 7) / 8;
+    for (unsigned int block = 0; block < numBlocks; block++) {
+      if (block) {
+        pSimNode->nodeGuidsInfo[0].push_back(zeroGuidInfo);
+      } else {
+        pSimNode->nodeGuidsInfo[0].push_back(firstBlockGuidInfo);
+      }
+    }
+  } else {  //hca
+    for (unsigned int pn = 0; pn < pSimNode->nodeInfo.num_ports; pn++) {
+      pSimNode->nodeGuidsInfo.push_back(emptyGuidInfoVector);
+      pNodePortData = pSimNode->getIBNode()->getPort(pn);
+      if ((pNodePortData == NULL) || (pNodePortData->p_remotePort == NULL)) {
+        MSGREG(wrn0, 'W', "Attempt to reach port $ failed - no such port OR it's not connected!", "initGuidInfo");
+        MSGSND(wrn0, pn);
+        MSGREG(wrn1, 'W', " Entering dummy entry !", "initGuidInfo");
+        MSGSND(wrn1);
+        //TODO handle not connected port generic - remove all assignments from below
+        firstBlockGuidInfo.guid[0] = cl_hton64(pSimNode->nodeInfo.port_guid);
+      } else {
+        firstBlockGuidInfo.guid[0] = cl_hton64(pNodePortData->guid_get());
+      }
+      numBlocks = (pSimNode->nodePortsInfo[pn].guid_cap + 7) / 8;
+      for (unsigned int block = 0; block < numBlocks; block++) {
+        if (block) {
+          pSimNode->nodeGuidsInfo[pn].push_back(zeroGuidInfo);
+        } else {
+          pSimNode->nodeGuidsInfo[pn].push_back(firstBlockGuidInfo);
+        }
+      }
+    }
+  }
+}
+
 void IBMSSma::initPKeyTables()
 {
 
@@ -380,6 +430,7 @@ void IBMSSma::initPortInfo()
     ib_port_info_set_port_phys_state( 5, &tmpPortInfo);
 
     tmpPortInfo.subnet_timeout = 0;
+    tmpPortInfo.guid_cap = 1;   //switch is supported only one guid
     tmpPortInfo.resp_time_value = 0x6;
 
   }
@@ -445,11 +496,15 @@ void IBMSSma::initPortInfo()
     tmpPortInfo.mtu_smsl = 1;
     ib_port_info_set_neighbor_mtu( &tmpPortInfo, 4);
     ib_port_info_set_vl_cap(&tmpPortInfo, 4);
-	 tmpPortInfo.vl_high_limit = 1;
-	 tmpPortInfo.vl_arb_high_cap = 8;
-	 tmpPortInfo.vl_arb_low_cap = 8;
-	 tmpPortInfo.mtu_cap = 4;
-    tmpPortInfo.guid_cap = 32;
+    tmpPortInfo.vl_high_limit = 1;
+    tmpPortInfo.vl_arb_high_cap = 8;
+    tmpPortInfo.vl_arb_low_cap = 8;
+    tmpPortInfo.mtu_cap = 4;
+    if (pSimNode->nodeInfo.node_type == IB_NODE_TYPE_CA)    //In switch there is not alias guids in
+                                                            //phisical ports
+    {
+      tmpPortInfo.guid_cap = 128;
+    }
     tmpPortInfo.resp_time_value = 20;
 
     pSimNode->nodePortsInfo.push_back( tmpPortInfo );
@@ -468,14 +523,26 @@ IBMSSma::IBMSSma(IBMSNode *pSNode, list_uint16 mgtClasses) :
   IBNode*     pNodeData;
 
   pNodeData = pSNode->getIBNode();
+
   //Init NodeInfo structure of the node
   initNodeInfo();
-  //Init P_Key ports vector size
-  pSimNode->nodePortPKeyTable.resize(pSimNode->nodeInfo.num_ports + 1);
-  //Init PortInfo structure of the node + Init P_Key Tables of ports
+
+  //Init PortInfo structure of the node
   initPortInfo();
+
+  //Init GuidInfo ports vector size and table
+  if (pSimNode->nodeInfo.node_type != IB_NODE_TYPE_SWITCH)  //hca
+    pSimNode->nodeGuidsInfo.resize(pSimNode->nodeInfo.num_ports + 1);
+  initGuidInfo();
+
   //Init VL Arbitration ports vector size and table
   pSimNode->vlArbPortEntry.resize(pSimNode->nodeInfo.num_ports + 1);
+  initVlArbitTable();
+
+  //Init P_Key ports vector size + and table
+  pSimNode->nodePortPKeyTable.resize(pSimNode->nodeInfo.num_ports + 1);
+  initPKeyTables();
+
   //Init ports' timing vector
   vPT.resize(pSimNode->nodeInfo.num_ports + 1);
   for (unsigned i=0;i<vPT.size();i++)
@@ -484,9 +551,6 @@ IBMSSma::IBMSSma(IBMSNode *pSNode, list_uint16 mgtClasses) :
       pthread_mutex_init(&vPT[i].mut, NULL);
       vPT[i].timerOn = 0;
     }
-  initVlArbitTable();
-
-  initPKeyTables();
 
   MSG_EXIT_FUNC;
 };
@@ -1493,6 +1557,61 @@ int IBMSSma::portInfoMad(ibms_mad_msg_t &respMadMsg, ibms_mad_msg_t &reqMadMsg, 
   return status;
 }
 
+int IBMSSma::guidInfoMad(ibms_mad_msg_t &respMadMsg, ibms_mad_msg_t &reqMadMsg, uint8_t inPort)
+{
+  MSG_ENTER_FUNC;
+
+  ib_smp_t*           pRespMad;
+  ib_smp_t*           pReqMad;
+  ib_net16_t          status = 0;
+  ib_guid_info_t      GuidInfoBlockElem;
+  ib_guid_info_t*     pGuidInfoBlockElem;
+  int                 portNum=0;
+  int                 GuidInfoBlockNum=0;
+
+  if (pSimNode->nodeInfo.node_type == IB_NODE_TYPE_CA) {
+    //HCA
+    portNum = inPort;
+    if (portNum == 0) portNum = 1;
+  } else if (pSimNode->nodeInfo.node_type == IB_NODE_TYPE_SWITCH) {
+    //Switch
+    portNum = 0;
+  }
+
+  GuidInfoBlockNum = cl_ntoh32(reqMadMsg.header.attr_mod) & 0xffff;
+  MSGREG(inf2, 'V', "Guid Info block number $ on port $ !", "guidInfoMad");
+  MSGSND(inf2, GuidInfoBlockNum, portNum);
+
+  if (GuidInfoBlockNum > ((pSimNode->nodePortsInfo[portNum].guid_cap + 7) / 8)) {
+    MSGREG(err0, 'E', "Guid Info block number $ is un-supported limited to $ blocks !", "guidInfoMad");
+    MSGSND(err0, GuidInfoBlockNum, (pSimNode->nodePortsInfo[portNum].guid_cap + 7) / 8);
+    status = IB_MAD_STATUS_INVALID_FIELD;
+
+    MSG_EXIT_FUNC;
+    return status;
+  }
+
+  pRespMad = (ib_smp_t*) &respMadMsg.header;
+  pReqMad = (ib_smp_t*) &reqMadMsg.header;
+  if (reqMadMsg.header.method == IB_MAD_METHOD_GET) {
+    MSGREG(inf3, 'V', "GuidInfo SubnGet !", "guidInfoMad");
+    MSGSND(inf3);
+
+    GuidInfoBlockElem = (pSimNode->nodeGuidsInfo[portNum])[GuidInfoBlockNum];
+    memcpy ((void*)(pRespMad->data), (void*)(&GuidInfoBlockElem), sizeof(ib_guid_info_t));
+  } else {
+    MSGREG(inf4, 'V', "GuidInfo SubnSet !", "guidInfoMad");
+    MSGSND(inf4);
+
+    pGuidInfoBlockElem = &(pSimNode->nodeGuidsInfo[portNum])[GuidInfoBlockNum];
+    memcpy ((void*)(pGuidInfoBlockElem), (void*)(pReqMad->data), sizeof(ib_guid_info_t));
+    memcpy ((void*)(pRespMad->data), (void*)(pReqMad->data), sizeof(ib_guid_info_t));
+  }
+
+  MSG_EXIT_FUNC;
+  return status;
+}
+
 int IBMSSma::pKeyMad(ibms_mad_msg_t &respMadMsg, ibms_mad_msg_t &reqMadMsg, uint8_t inPort)
 {
   MSG_ENTER_FUNC;
@@ -1748,6 +1867,12 @@ int IBMSSma::processMad(uint8_t inPort, ibms_mad_msg_t &madMsg)
     MSGSND(inf12, CL_NTOH16(IB_MAD_ATTR_VL_ARBITRATION));
 
     status = vlArbMad(respMadMsg, madMsg, inPort);
+    break;
+  case IB_MAD_ATTR_GUID_INFO:
+    MSGREG(inf13, 'I', "Attribute being handled is $ !", "processMad");
+    MSGSND(inf13, CL_NTOH16(IB_MAD_ATTR_VL_ARBITRATION));
+
+    status = guidInfoMad(respMadMsg, madMsg, inPort);
     break;
   default:
     MSGREG(err1, 'E', "No handler for requested attribute:$", "processMad");

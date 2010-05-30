@@ -155,6 +155,7 @@ class IBMSNode {
   ib_switch_info_t switchInfo;
   ib_node_info_t nodeInfo;
   std::vector < ib_port_info_t > nodePortsInfo;
+  std::vector < std::vector < ib_guid_info_t > > nodeGuidsInfo;
   std::vector < std::vector < ib_pkey_table_t > > nodePortPKeyTable;
   std::vector < std::vector < ib_mft_table_t > > switchMftPortsEntry;
   std::vector < ib_slvl_table_t > sl2VlOutPortEntry;
@@ -229,6 +230,41 @@ class IBMSNode {
     return &switchInfo;
   };
 
+  /* get GuidInfo table block */
+  ib_guid_info_t *getGuidInfoBlock(uint8_t portNum, uint16_t blockNum) {
+    if (portNum >= nodeGuidsInfo.size()) {
+      printf("-E- Node:%s given port number out of range:%u > %u\n",
+             pNode->name.c_str(), portNum, (unsigned int)(nodeGuidsInfo.size() - 1));
+      return NULL;
+    }
+    if (blockNum >= nodeGuidsInfo[portNum].size()) {
+       printf("-E- Node:%s port:%u given GuidInfo block number out of range:%u > %u\n",
+              pNode->name.c_str(), portNum,
+              blockNum, (unsigned int)(nodeGuidsInfo[portNum].size() - 1));
+       return NULL;
+    }
+    return &((nodeGuidsInfo[portNum])[blockNum]);
+  }
+
+  /* set GuidInfo table block */
+  int setGuidInfoBlock(uint8_t portNum, uint16_t blockNum,
+          ib_guid_info_t *tbl) {
+    if (portNum >= nodeGuidsInfo.size()) {
+      printf("-E- Given port number out of range:%u > %u\n",
+             portNum, (unsigned int)(nodeGuidsInfo.size() - 1));
+      return 1;
+    }
+    if (blockNum >= nodeGuidsInfo[portNum].size()) {
+      ib_guid_info_t emptyTable;
+      memset(&emptyTable, 0, sizeof(ib_guid_info_t));
+      for(uint16_t i = nodeGuidsInfo[portNum].size();
+           i <= blockNum; i++)
+        nodeGuidsInfo[portNum].push_back(emptyTable);
+    }
+    (nodeGuidsInfo[portNum])[blockNum] = *tbl;
+    return(0);
+  };
+
   /* get pkey table block */
   ib_pkey_table_t *getPKeyTblBlock(uint8_t portNum, uint16_t blockNum) {
     if (portNum >= nodePortPKeyTable.size())
@@ -247,6 +283,7 @@ class IBMSNode {
     return &((nodePortPKeyTable[portNum])[blockNum]);
   }
 
+  /* set pkey table block */
   int setPKeyTblBlock(uint8_t portNum, uint16_t blockNum,
                       ib_pkey_table_t *tbl) {
 

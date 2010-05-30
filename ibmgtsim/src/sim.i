@@ -447,6 +447,12 @@ class IBMSNode {
   ib_switch_info_t *getSwitchInfo();
   /* get the switch info */
 
+  ib_guid_info_t *getGuidInfoBlock(uint8_t portNum, uint16_t blockNum);
+  /* get GuidInfo table block */
+
+  int setGuidInfoBlock(uint8_t portNum, uint16_t blockNum, ib_guid_info_t *tbl);
+  /* set GuidInfo table block */
+
   ib_pkey_table_t *getPKeyTblBlock(uint8_t portNum, uint16_t blockNum);
   /* get pkey table block */
 
@@ -528,6 +534,9 @@ extern char * ibmsSourceVersion;
 
     SWIG_AlternateObjMangling["_ib_slvl_table_t_p"] = &ibmsGetIBStructObjNameByPtr;
     SWIG_AlternateNameToObj  ["_ib_slvl_table_t_p"] = &ibmsGetIBStructObjPtrByTclName;
+
+    SWIG_AlternateObjMangling["_ib_guid_info_t_p"] = &ibmsGetIBStructObjNameByPtr;
+    SWIG_AlternateNameToObj  ["_ib_guid_info_t_p"] = &ibmsGetIBStructObjPtrByTclName;
 
     SWIG_AlternateObjMangling["_ib_pkey_table_t_p"] = &ibmsGetIBStructObjNameByPtr;
     SWIG_AlternateNameToObj  ["_ib_pkey_table_t_p"] = &ibmsGetIBStructObjPtrByTclName;

@@ -140,6 +140,7 @@ class IBMSSma : IBMSMadProcessor {
   /* init functions of node structures */
   void initSwitchInfo();
   void initNodeInfo();
+  void initGuidInfo();
   void initPortInfo();
   void initPKeyTables();
   void initMftTable();
@@ -201,6 +202,8 @@ class IBMSSma : IBMSMadProcessor {
   int sl2VlMad(ibms_mad_msg_t &respMadMsg, ibms_mad_msg_t &reqMadMsg, uint8_t inPort);
   /* VL Arbitration */
   int vlArbMad(ibms_mad_msg_t &respMadMsg, ibms_mad_msg_t &reqMadMsg, uint8_t inPort);
+  /* GuidInfo */
+  int guidInfoMad(ibms_mad_msg_t &respMadMsg, ibms_mad_msg_t &reqMadMsg, uint8_t inPort);
 
  public:
   /* Top level of handling the SMA MAD. Might result with a call to the
