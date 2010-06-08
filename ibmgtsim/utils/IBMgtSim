@@ -220,7 +220,7 @@ Capabilities:  IsTrapSupported
          close $of
       }
    }
-   return 0
+   return $sysName
 }
 
 ##############################################################################
