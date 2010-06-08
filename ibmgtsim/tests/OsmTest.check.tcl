@@ -28,6 +28,7 @@ proc runner {simDir osmPath osmPortGuid} {
 # Return the exit code
 proc checker {simDir osmPath osmPortGuid} {
    global simCtrlSock
+   global env
 
    set osmTestPath      [file join [file dirname $osmPath] osmtest]
    set osmTestLog       [file join $simDir osmtest.log]
@@ -41,9 +42,11 @@ proc checker {simDir osmPath osmPortGuid} {
    }
 
    # update node proc file
-   puts $simCtrlSock "updateProcFSForNode \$fabric $simDir H-1/U1 H-1/U1 1"
+   puts $simCtrlSock "updateProcFSForNode \$fabric $simDir $env(IBMGTSIM_NODE) $env(IBMGTSIM_NODE) 1"
    set res [gets $simCtrlSock]
+   if {$res == 1} {return 1}
    puts "SIM: Updated H-1 proc file:$res"
+   set env(IBMGTSIM_NODE) $res
 
    # if we did get a subnet up:
    set osmTestCmd1 "$osmTestPath -v -t 1000 -g $osmPortGuid -l $osmTestLog -f c -i $osmTestInventory"

@@ -301,8 +301,8 @@ proc checker {simDir osmPath osmPortGuid} {
       set nodeName [lindex $nodeNPortNGroup 0]
       set portNum  [lindex $nodeNPortNGroup 1]
       set group    [lindex $nodeNPortNGroup 2]
-      set portGuid [makeProcFSForNode $simDir $nodeName $portNum 1]
-      set env(IBMGTSIM_NODE) $nodeName
+      set portGuid [makeProcFSForNode $simDir $nodeName/U1 $portNum 1]
+      set env(IBMGTSIM_NODE) $nodeName/U1
 
       puts "-I- Invoking osmtest from node:$nodeName port:$portNum"
 

@@ -83,8 +83,9 @@ proc checker {simDir osmPath osmPortGuid} {
    }
 
    # update node proc file
-   puts $simCtrlSock "updateProcFSForNode \$fabric $simDir H-1/U1 H-1/U1 1"
+   puts $simCtrlSock "updateProcFSForNode \$fabric $simDir $env(IBMGTSIM_NODE) $env(IBMGTSIM_NODE) 1"
    set res [gets $simCtrlSock]
+   if {$res == 1} {return 1}
    puts "SIM: Updated H-1 proc file:$res"
 
    # check for lid validity:
@@ -118,9 +119,11 @@ proc checker {simDir osmPath osmPortGuid} {
       if {[osmWaitForUpOrDeadWithTimeout $osmLog 1000000]} {
          return 1
       }
-      puts $simCtrlSock "updateProcFSForNode \$fabric $simDir H-1/U1 H-1/U1 1"
+      puts $simCtrlSock "updateProcFSForNode \$fabric $simDir $env(IBMGTSIM_NODE) $env(IBMGTSIM_NODE) 1"
       set res [gets $simCtrlSock]
+      if {$res == 1} {return 1}
       puts "SIM: Updated H-1 proc file:$res"
+      set env(IBMGTSIM_NODE) $res
 
       # wait 3 seconds
       after 3000
@@ -202,7 +205,7 @@ proc checker {simDir osmPath osmPortGuid} {
          }
       }
 
-      set cmd "ibdiagnet -v -r -t $topologyFile -o $simDir"
+      set cmd "ibdiagnet -v -r -t $topologyFile -o $simDir -s $env(IBMGTSIM_NODE)"
       set ibdiagnetLog [file join $simDir ibdiagnet.stdout.log]
       puts "-I- Invoking $cmd "
       if {[catch {set res [eval "exec $cmd >& $ibdiagnetLog"]} e]} {
