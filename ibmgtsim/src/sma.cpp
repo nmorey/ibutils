@@ -261,7 +261,7 @@ void IBMSSma::initGuidInfo()
     pSimNode->nodeGuidsInfo.push_back(emptyGuidInfoVector);
     firstBlockGuidInfo.guid[0] = cl_hton64(pSimNode->nodeInfo.port_guid);
     numBlocks = (pSimNode->nodePortsInfo[0].guid_cap + 7) / 8;
-    for (unsigned int block = 0; block < numBlocks; block++) {
+    for (unsigned int block = 0; block < numBlocks; ++block) {
       if (block) {
         pSimNode->nodeGuidsInfo[0].push_back(zeroGuidInfo);
       } else {
@@ -269,12 +269,16 @@ void IBMSSma::initGuidInfo()
       }
     }
   } else {  //hca
-    for (unsigned int pn = 0; pn < pSimNode->nodeInfo.num_ports; pn++) {
-      pSimNode->nodeGuidsInfo.push_back(emptyGuidInfoVector);
+    //dummy port 0 for hca
+    pSimNode->nodeGuidsInfo.push_back(emptyGuidInfoVector);
+    pSimNode->nodeGuidsInfo[0].push_back(zeroGuidInfo);
+
+    //other ports for hca
+    for (unsigned int pn = 1; pn <= pSimNode->nodeInfo.num_ports; ++pn) {
       pNodePortData = pSimNode->getIBNode()->getPort(pn);
       if ((pNodePortData == NULL) || (pNodePortData->p_remotePort == NULL)) {
-        MSGREG(wrn0, 'W', "Attempt to reach port $ failed - no such port OR it's not connected!", "initGuidInfo");
-        MSGSND(wrn0, pn);
+        MSGREG(wrn0, 'W', "Attempt to reach port $ $ failed - no such port OR it's not connected!", "initGuidInfo");
+        MSGSND(wrn0, pn, pSimNode->getIBNode()->name);
         MSGREG(wrn1, 'W', " Entering dummy entry !", "initGuidInfo");
         MSGSND(wrn1);
         //TODO handle not connected port generic - remove all assignments from below
@@ -282,6 +286,8 @@ void IBMSSma::initGuidInfo()
       } else {
         firstBlockGuidInfo.guid[0] = cl_hton64(pNodePortData->guid_get());
       }
+
+      //enter blocks for each port
       numBlocks = (pSimNode->nodePortsInfo[pn].guid_cap + 7) / 8;
       for (unsigned int block = 0; block < numBlocks; block++) {
         if (block) {
@@ -1560,6 +1566,7 @@ int IBMSSma::portInfoMad(ibms_mad_msg_t &respMadMsg, ibms_mad_msg_t &reqMadMsg, 
 int IBMSSma::guidInfoMad(ibms_mad_msg_t &respMadMsg, ibms_mad_msg_t &reqMadMsg, uint8_t inPort)
 {
   MSG_ENTER_FUNC;
+  //return 0;
 
   ib_smp_t*           pRespMad;
   ib_smp_t*           pReqMad;
@@ -1572,17 +1579,18 @@ int IBMSSma::guidInfoMad(ibms_mad_msg_t &respMadMsg, ibms_mad_msg_t &reqMadMsg, 
   if (pSimNode->nodeInfo.node_type == IB_NODE_TYPE_CA) {
     //HCA
     portNum = inPort;
-    if (portNum == 0) portNum = 1;
-  } else if (pSimNode->nodeInfo.node_type == IB_NODE_TYPE_SWITCH) {
+    if (portNum == 0)
+      portNum = 1;
+  } else {
     //Switch
     portNum = 0;
   }
 
   GuidInfoBlockNum = cl_ntoh32(reqMadMsg.header.attr_mod) & 0xffff;
-  MSGREG(inf2, 'V', "Guid Info block number $ on port $ !", "guidInfoMad");
-  MSGSND(inf2, GuidInfoBlockNum, portNum);
+  MSGREG(inf2, 'V', "Guid Info block number $ on port $ node $ !", "guidInfoMad");
+  MSGSND(inf2, GuidInfoBlockNum, portNum, pSimNode->getIBNode()->name);
 
-  if (GuidInfoBlockNum > ((pSimNode->nodePortsInfo[portNum].guid_cap + 7) / 8)) {
+  if (GuidInfoBlockNum > (((pSimNode->nodePortsInfo[portNum].guid_cap + 7) / 8) - 1)) {
     MSGREG(err0, 'E', "Guid Info block number $ is un-supported limited to $ blocks !", "guidInfoMad");
     MSGSND(err0, GuidInfoBlockNum, (pSimNode->nodePortsInfo[portNum].guid_cap + 7) / 8);
     status = IB_MAD_STATUS_INVALID_FIELD;
