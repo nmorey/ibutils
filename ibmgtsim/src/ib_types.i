@@ -263,6 +263,47 @@
   $target = &tmp;
 }
 
+%typemap(tcl8,out) ib_guid_info_t* {
+  char buff[36];
+  int i;
+  if ($source != NULL)
+  {
+    for (i = 0; i < 8; i++)
+    {
+      sprintf(buff, "0x%016" PRIx64, cl_ntoh64($source->guid[i]));
+      Tcl_AppendToObj($target,buff,strlen(buff));
+    }
+  }
+  else
+  {
+    Tcl_SetStringObj($target, "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0", 64);
+  }
+}
+
+%typemap(tcl8,in) ib_guid_info_t* (ib_guid_info_t tmp) {
+  char buf[256];
+  char *p_guid;
+  char *str_token = NULL;
+  int i = 0;
+  memset(&tmp, 0, sizeof(ib_guid_info_t));
+
+  strncpy(buf, Tcl_GetStringFromObj($source,NULL), 255);
+  buf[255] = '\0';
+  p_guid = strtok_r(buf," ", &str_token);
+  while (p_guid && (i < 8))
+  {
+    errno = 0;
+    tmp.guid[i++] = cl_hton64(strtoul(p_guid, NULL, 0));
+    if (errno) {
+      printf("Wrong format for guid:%s\n", p_guid);
+      return TCL_ERROR;
+    }
+
+    p_guid = strtok_r(NULL," ", &str_token);
+  }
+  $target = &tmp;
+}
+
 %typemap(tcl8,out) ib_pkey_table_t* {
   char buff[36];
   int i;

@@ -251,6 +251,93 @@ struct madPathRec
     }
 }
 
+
+%{
+#define madGuidRec ib_guidinfo_record_t
+#define guidRecGuidInfoBlock ib_guid_info_t
+%}
+
+struct guidRecGuidInfoBlock {
+  guidRecGuidInfoBlock();
+  ~guidRecGuidInfoBlock();
+  ib_net64_array_t guid[GUID_TABLE_MAX_ENTRIES];
+}
+
+struct madGuidRec
+{
+  madGuidRec();
+  ~madGuidRec();
+
+  ib_net16_t lid;
+  uint8_t block_num;
+  uint8_t resv;
+  uint32_t reserved;
+  guidRecGuidInfoBlock guid_info;
+}
+
+%addmethods madGuidRec {
+  int send_set(
+    IBMSNode *pFromNode,
+    uint8_t   fromPort,
+    uint16_t  destLid,
+    uint64_t  comp_mask)
+    {
+      return( send_sa_mad(
+                pFromNode,
+                fromPort,
+                destLid,
+                IB_MCLASS_SUBN_ADM,
+                IB_MAD_METHOD_SET,
+                cl_ntoh16(IB_MAD_ATTR_GUIDINFO_RECORD),
+                comp_mask,
+                (uint8_t*)self,
+                sizeof(madGuidRec)
+                )
+              );
+    }
+
+  int send_get(
+    IBMSNode *pFromNode,
+    uint8_t   fromPort,
+    uint16_t  destLid,
+    uint64_t  comp_mask)
+    {
+      return( send_sa_mad(
+                pFromNode,
+                fromPort,
+                destLid,
+                IB_MCLASS_SUBN_ADM,
+                IB_MAD_METHOD_GET,
+                cl_ntoh16(IB_MAD_ATTR_GUIDINFO_RECORD),
+                comp_mask,
+                (uint8_t*)self,
+                sizeof(madGuidRec)
+                )
+              );
+    }
+
+  int send_del(
+    IBMSNode *pFromNode,
+    uint8_t   fromPort,
+    uint16_t  destLid,
+    uint64_t  comp_mask)
+    {
+      return( send_sa_mad(
+                pFromNode,
+                fromPort,
+                destLid,
+                IB_MCLASS_SUBN_ADM,
+                IB_MAD_METHOD_DELETE,
+                cl_ntoh16(IB_MAD_ATTR_GUIDINFO_RECORD),
+                comp_mask,
+                (uint8_t*)self,
+                sizeof(madGuidRec)
+                )
+              );
+    }
+}
+
+
 %{
 #define madServiceRec ib_service_record_t
 %}
