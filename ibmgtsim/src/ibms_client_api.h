@@ -33,37 +33,40 @@
 
 /****h* IBMgtSim/ClientInterface
  * NAME
- *	IBIS
+ *  IBIS
  *
  * DESCRIPTION
- * 	Declaration of C API for clients
+ *  Declaration of C API for clients
  *
  * Environment:
- * 	Linux User Mode
+ *  Linux User Mode
  *
  * $Revision: 1.4 $
  *
  * AUTHOR
- *	Eitan Zahavi, Mellanox
+ *  Eitan Zahavi, Mellanox
  *
  *********/
 
 #ifndef IBMGTSIM_CLIENT_API
 #define IBMGTSIM_CLIENT_API
 
+
 #include "simmsg.h"
+
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
+
 /****f* IBMS Client API/ibms_pfn_receive_cb_t
 * NAME
-*	ibms_pfn_receive_cb_t
+*   ibms_pfn_receive_cb_t
 *
 * DESCRIPTION
-*	User-defined callback invoked on receiving new messages
+*   User-defined callback invoked on receiving new messages
 *
 * SYNOPSIS
 */
@@ -73,8 +76,8 @@ typedef void
   IN ibms_mad_msg_t *p_mad);
 /*
 * PARAMETERS
-*	p_ctx
-*		[in] The context provided during the client registration by ibms_connect
+*   p_ctx
+*     [in] The context provided during the client registration by ibms_connect
 *
 *  p_mad
 *     [in] Pointer to the incoming mad message
@@ -96,29 +99,38 @@ typedef void * ibms_conn_handle_t;
 *
 *****/
 
+
 /* connect to the server to the port guid. Registering incoming messages callbacks */
 ibms_conn_handle_t
-ibms_connect(uint64_t portGuid, ibms_pfn_receive_cb_t receiveCb, void* context);
+ibms_connect(uint64_t portGuid,
+        ibms_pfn_receive_cb_t receiveCb,
+        void* context);
 
 /* bind to a specific mad messages */
 int
-ibms_bind(ibms_conn_handle_t conHdl, ibms_bind_msg_t *pBindMsg);
+ibms_bind(ibms_conn_handle_t conHdl,
+        ibms_bind_msg_t *pBindMsg);
 
 /* set port capabilities */
 int
-ibms_set_cap(ibms_conn_handle_t conHdl, ibms_cap_msg_t *pCapMsg);
+ibms_set_cap(ibms_conn_handle_t conHdl,
+        ibms_cap_msg_t *pCapMsg);
 
 /* send a message to the simulator */
 int
-ibms_send(ibms_conn_handle_t conHdl, ibms_mad_msg_t *pMadMsg);
+ibms_send(ibms_conn_handle_t conHdl,
+        ibms_mad_msg_t *pMadMsg);
 
 /* disconnect from the simulator */
 int
 ibms_disconnect(ibms_conn_handle_t conHdl);
+
 
 #ifdef __cplusplus
 /* extern "C" */
 }
 #endif
 
+
 #endif /* IBMGTSIM_CLIENT_API */
+
