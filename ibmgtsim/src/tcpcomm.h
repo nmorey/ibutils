@@ -42,7 +42,6 @@
 *
 * DESCRIPTION
 *	Basic functionality of TCP/IP server (multi threaded) and Client.
-*  and receive mads.
 *
 *  There are basically two objects:
 *  GenServer and GenClient. They are acting as echo servers if not
@@ -56,103 +55,117 @@
 
 #include <list>
 
+/****************************************************/
+/***************** class GenServer ******************/
+/****************************************************/
 /*
-   The server:
-   allows multiple clients to connect and handles each one by
-   a separate thread
-*/
+ * The server:
+ *  allows multiple clients to connect and handles each one by
+ *  a separate thread
+ */
 class GenServer {
- protected:
-  /* a lock used to synchronize insertions into the map and client threads */
-  pthread_mutex_t lock;
+protected:
+    /* a lock used to synchronize insertions into the map and client threads */
+    pthread_mutex_t lock;
 
- private:
-  /* the port we server on */
-  unsigned short int serverPort;
+private:
+    /* the port we server on */
+    unsigned short int serverPort;
 
-  /* the maximal single message length in bytes */
-  int maxMsgBytes;
+    /* the maximal single message length in bytes */
+    int maxMsgBytes;
 
-  /* all client thread ids are stored in here */
-  std::list< pthread_t > clientThreadsList;
+    /* all client thread ids are stored in here */
+    std::list< pthread_t > clientThreadsList;
 
-  /* the server thread gets the port number and a pointer back to the object */
-  struct ServerThreadArgs {
-    class GenServer *pServer;
-  };
+    /* the server thread gets the port number and a pointer back to the object */
+    struct ServerThreadArgs {
+        class GenServer *pServer;
+    };
 
-  struct ClientThreadArgs {
-    class GenServer *pServer;
-    int              clientSock;
-  };
+    struct ClientThreadArgs {
+        class GenServer *pServer;
+        int              clientSock;
+    };
 
-  /* the server thread */
-  pthread_t serverThreadId;
+    /* the server thread */
+    pthread_t serverThreadId;
 
-  /* the server socket */
-  int serverSock;
+    /* the server socket */
+    int serverSock;
 
-  /* the worker function of the server thread */
-  static void *serverThreadMain(void *);
+    /* the worker function of the server thread */
+    static void *serverThreadMain(void *);
 
-  /* create the tcp server socket */
-  int createServerSocket(unsigned short portNum);
+    /* create the tcp server socket */
+    int createServerSocket(unsigned short portNum);
 
-  /* the worker function of the client thread */
-  static void *clientThreadMain(void *threadArgs);
+    /* the worker function of the client thread */
+    static void *clientThreadMain(void *threadArgs);
 
  public:
-  /* construct and initialize the server */
-  GenServer(unsigned short portNum, int maxMsgLen);
+    /* construct and initialize the server */
+    GenServer(unsigned short portNum, int maxMsgLen);
 
-  /* destructor */
-  virtual ~GenServer();
+    /* destructor */
+    virtual ~GenServer();
 
-  /* return 1 if the server is well */
-  int isAlive() { if (serverSock > 0) return 1; else return 0;};
+    /* return 1 if the server is well */
+    int isAlive() {
+        if (serverSock > 0)
+            return 1;
+        else
+            return 0;
+    };
 
-  /* handle client request - this is the function to override . */
-  virtual int proccessClientMsg(
-    int clientSock,
-    int reqLen, char request[],
-    int &resLen, char *(pResponse[]) );
+    /* handle client request - this is the function to override . */
+    virtual int proccessClientMsg(int clientSock,
+            int reqLen, char request[],
+            int &resLen, char *(pResponse[]));
 
-  /* virtual function called when a client is closed - under a lock */
-  virtual int closingClient(int clientSock) {return(0);};
+    /* virtual function called when a client is closed - under a lock */
+    virtual int closingClient(int clientSock) {
+        return(0);
+    };
 };
 
+
+/****************************************************/
+/***************** class GenClient ******************/
+/****************************************************/
 /*
-   The client:
-   connects to a server
-*/
+ * The client:
+ *  connects to a server
+ */
 class GenClient {
-  /* host name of the server */
-  char *hostName;
+private:
+    /* host name of the server */
+    char *hostName;
 
-  /* the server port number */
-  unsigned short int serverPort;
+    /* the server port number */
+    unsigned short int serverPort;
 
-  /* the socket to communicate through */
-  int sock;
+    /* the socket to communicate through */
+    int sock;
 
-  /* the maximal single response length in bytes */
-  int maxResponseBytes;
+    /* the maximal single response length in bytes */
+    int maxResponseBytes;
 
  public:
-  /* construct and initialize the client connection */
-  GenClient(char *pHostName, unsigned short portNum, int maxRespLen);
+    /* construct and initialize the client connection */
+    GenClient(char *pHostName, unsigned short portNum, int maxRespLen);
 
-  /* destruct a client connection */
-  ~GenClient();
+    /* destruct a client connection */
+    ~GenClient();
 
-  /*
-    send a message and wait for result
-    The response buffer should be pre-allocated
-  */
-  int sendMsg(int reqLen, char request[],
-              int &resLen, char response[] );
-
+    /*
+        send a message and wait for result
+        The response buffer should be pre-allocated
+     */
+    int sendMsg(int reqLen, char request[],
+            int &resLen, char response[]);
 };
+
 
 #endif /* IBMS_TCPCOMM_H */
 
