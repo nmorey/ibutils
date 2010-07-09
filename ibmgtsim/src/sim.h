@@ -42,7 +42,6 @@
 *	Eitan Zahavi, Mellanox
 *
 *********/
-
 #ifndef IBMS_SIM_H
 #define IBMS_SIM_H
 
@@ -51,54 +50,60 @@
 #include "server.h"
 #include "dispatcher.h"
 
+
+/****************************************************/
+/****************** class IBMgtSim ******************/
+/****************************************************/
 class IBMgtSim {
-  /* Stores the entire topology */
-  class IBFabric *pFabric;
+private:
+    /* Stores the entire topology */
+    class IBFabric *pFabric;
 
-  /* Server to handle client connections */
-  class IBMSServer *pServer;
+    /* Server to handle client connections */
+    class IBMSServer *pServer;
 
-  /* Dispatcher for MAD messages */
-  class IBMSDispatcher *pDispatcher;
+    /* Dispatcher for MAD messages */
+    class IBMSDispatcher *pDispatcher;
 
-  /* allocate guids to the nodes */
-  int allocateFabricNodeGuids();
+    /* allocate guids to the nodes */
+    int allocateFabricNodeGuids();
 
-  /* initialize simulator nodes */
-  int populateFabricNodes();
+    /* initialize simulator nodes */
+    int populateFabricNodes();
 
-  /* the random generator seed */
-  unsigned int randomSeed;
+    /* the random generator seed */
+    unsigned int randomSeed;
 
-  /* lock - enables locking the simulator */
-  pthread_mutex_t lock;
+    /* lock - enables locking the simulator */
+    pthread_mutex_t lock;
 
- public:
-  /* constructor */
-  IBMgtSim() {
-    pFabric = NULL;
-    pServer = NULL;
-    pDispatcher = NULL;
-    randomSeed = 0;
-    pthread_mutex_init( &lock, NULL );
-  };
+public:
+    /* constructor */
+    IBMgtSim() {
+        pFabric = NULL;
+        pServer = NULL;
+        pDispatcher = NULL;
+        randomSeed = 0;
+        pthread_mutex_init( &lock, NULL );
+    };
 
-  /* access function */
-  inline class IBFabric *getFabric() { return pFabric;};
-  inline class IBMSServer *getServer() { return pServer; };
-  inline class IBMSDispatcher *getDispatcher() { return pDispatcher; };
+    /* access function */
+    inline class IBFabric *getFabric() { return pFabric;};
+    inline class IBMSServer *getServer() { return pServer; };
+    inline class IBMSDispatcher *getDispatcher() { return pDispatcher; };
 
-  /* Initialize the fabric server and dispatcher */
-  int init(string topoFileName, int serverPortNum, int numWorkers);
+    /* Initialize the fabric server and dispatcher */
+    int init(string topoFileName, int serverPortNum, int numWorkers);
 
-  /* get the directory name where the simulator rendezvous exists */
-  const char *getSimulatorDir();
+    /* get the directory name where the simulator rendezvous exists */
+    const char *getSimulatorDir();
 
-  /* set the random number seed */
-  int setRandomSeed( int seed );
+    /* set the random number seed */
+    int setRandomSeed( int seed );
 
-  /* get a random floating point number 0.0 - 1.0 */
-  float random();
+    /* get a random floating point number 0.0 - 1.0 */
+    float random();
 };
+
 
 #endif /* IBMS_SIM_H */
