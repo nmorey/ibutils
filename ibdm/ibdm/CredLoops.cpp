@@ -98,7 +98,7 @@ int CrdLoopDFS(VChannel* ch)
         return 0;
     // Credit loop
     if (ch->getFlag() == Open) {
-        cerr << "Found credit loop on: " << ch->pPort->getName()
+        cout << "Found credit loop on: " << ch->pPort->getName()
                  << " VL: " << ch->vl << endl;
         return 1;
     }
@@ -109,7 +109,7 @@ int CrdLoopDFS(VChannel* ch)
         VChannel* next = ch->getDependency(i);
         if (next) {
             if (CrdLoopDFS(next)) {
-                cerr << "  - BT credit loop through: " << ch->pPort->getName()
+                cout << "  - BT credit loop through: " << ch->pPort->getName()
                      << " VL: " << ch->vl << endl;
                 return 1;
             }
