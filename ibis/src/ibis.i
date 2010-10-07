@@ -139,7 +139,7 @@ ibisp_is_debug(void)
   $function;
   if (ibis_tcl_error) {
 	 Tcl_SetStringObj(Tcl_GetObjResult(interp), ibis_tcl_error_msg, -1);
- 	 return TCL_ERROR;
+	 return TCL_ERROR;
   }
 }
 
