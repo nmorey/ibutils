@@ -133,6 +133,8 @@ rm -rf $RPM_BUILD_DIR/%{name}-%{version}
 %{_prefix}/bin/ibmsquit
 %{_prefix}/bin/RunSimTest
 %{_prefix}/bin/IBMgtSim
+%{_prefix}/bin/dump2slvl.pl
+%{_prefix}/bin/dump2psl.pl
 %{_libdir}/libibmscli.so*
 %{_libdir}/libibmscli.a
 %{_libdir}/libibsysapi.so*

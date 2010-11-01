@@ -130,5 +130,5 @@ AC_MSG_NOTICE(Using FINAL_PREFIX=$with_final_prefix)
 AM_CONDITIONAL(USE_FINAL_PREFIX, test x$with_final_prefix != x)
 
 dnl Create the following Makefiles
-AC_OUTPUT(Makefile ibnl/Makefile src/Makefile ibdm/Makefile Clusters/Makefile doc/Makefile)
+AC_OUTPUT(Makefile ibnl/Makefile src/Makefile ibdm/Makefile Clusters/Makefile doc/Makefile scripts/Makefile)
 

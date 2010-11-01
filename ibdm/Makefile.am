@@ -33,7 +33,7 @@
 #AUTOMAKE_OPTIONS 	= gnits
 
 # note that order matters: make the lib first then use it
-SUBDIRS 		= ibdm src Clusters ibnl doc
+SUBDIRS 		= ibdm src Clusters ibnl doc scripts
 
 # this will control the update of the files in order
 MAINTAINERCLEANFILES = Makefile.in aclocal.m4 configure config-h.in
