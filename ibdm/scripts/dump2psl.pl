@@ -10,13 +10,13 @@ my $n;
 my $p;
 my %port2node;
 
-my $ca_port = 0x0;
+my $src_port = 0x0;
 
 while (<>) {
 
     # parse .lst file, look for node GUID <-> port GUID relationship, hash it
 
-    if (/[^C]*\{\s*CA Ports[^N]*NodeGUID:$h\s*PortGUID:$h/) {
+    if (/[^C]*\{\s*(?:CA|SW) Ports[^N]*NodeGUID:$h\s*PortGUID:$h/) {
 
 
 	$n = "0x" . $1;
@@ -37,16 +37,15 @@ while (<>) {
 
     # parse opensm-path-records.dump, reformat for ibdmchk .psl format
 
-    if (/^Channel\s+Adapter\s+$H/) {
-	$ca_port = $1;
+    if (/(?:^Channel\s+Adapter|Switch)\s+$H/) {
+	$src_port = $1;
     }
 
     if (/^\s*$H\s+:\s+$D\s+:\s+$D\s+:\s+$D\s+/) {
 
-	if (!defined($port2node{$ca_port})) {
+	if (!defined($port2node{$src_port})) {
 	    next;
 	}
-	printf "%s %d %d\n", $port2node{$ca_port}, oct($1), $2;
+	printf "%s %d %d\n", $port2node{$src_port}, oct($1), $2;
     }
 }
-
