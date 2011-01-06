@@ -31,6 +31,7 @@
 #--
 
 %{?build_ibmgtsim: %define ibmgtsim --enable-ibmgtsim}
+%{?build_ibmgtsim: %define ibmgtsim_files 1}
 
 Summary: OpenIB Mellanox InfiniBand Diagnostic Tools
 Name: ibutils
@@ -128,17 +129,20 @@ rm -rf $RPM_BUILD_DIR/%{name}-%{version}
 %{_mandir}/man1/ibdm-ibnl-file.1*
 /etc/profile.d/ibutils.sh
 /etc/profile.d/ibutils.csh
+%{_prefix}/bin/dump2slvl.pl
+%{_prefix}/bin/dump2psl.pl
+%{_libdir}/libibsysapi.so*
+%{_libdir}/libibsysapi.a
+
+# These are only installed when ibmgtsim is built
+%if %{?ibmgtsim_files:1}
 %{_prefix}/bin/mkSimNodeDir
 %{_prefix}/bin/ibmssh
 %{_prefix}/bin/ibmsquit
 %{_prefix}/bin/RunSimTest
 %{_prefix}/bin/IBMgtSim
-%{_prefix}/bin/dump2slvl.pl
-%{_prefix}/bin/dump2psl.pl
 %{_libdir}/libibmscli.so*
 %{_libdir}/libibmscli.a
-%{_libdir}/libibsysapi.so*
-%{_libdir}/libibsysapi.a
 %{_prefix}/include/ibmgtsim
 %{_prefix}/share/ibmgtsim
 %{_mandir}/man1/ibmssh.1*
@@ -146,6 +150,8 @@ rm -rf $RPM_BUILD_DIR/%{name}-%{version}
 %{_mandir}/man1/mkSimNodeDir.1*
 %{_mandir}/man1/RunSimTest.1*
 %{_mandir}/man1/IBMgtSim.1*
+%endif
+
 # END Files
 
 %changelog

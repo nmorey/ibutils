@@ -45,7 +45,7 @@ MAINTAINERCLEANFILES = Makefile.in aclocal.m4 configure config-h.in
 
 ACLOCAL			= aclocal -I $(ac_aux_dir)
 
-EXTRA_DIST = ibutils.spec.in
+EXTRA_DIST = ibutils.spec.in ibmgtsim
 
 dist-hook: ibutils.spec
 	cp ibutils.spec $(distdir)
