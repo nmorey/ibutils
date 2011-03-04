@@ -112,11 +112,11 @@ rm -rf $RPM_BUILD_DIR/%{name}-%{version}
 %{_libdir}/libibdmcom.a
 %{_libdir}/libibdm.so*
 %{_libdir}/libibdm.a
-%{_libdir}/ibis1.5.6
-%{_libdir}/ibdm1.5.6
-%{_libdir}/ibdiagnet1.5.6
-%{_libdir}/ibdiagpath1.5.6
-%{_libdir}/ibdiagui1.5.6
+%{_libdir}/ibis1.5.7
+%{_libdir}/ibdm1.5.7
+%{_libdir}/ibdiagnet1.5.7
+%{_libdir}/ibdiagpath1.5.7
+%{_libdir}/ibdiagui1.5.7
 %{_prefix}/include/ibdm
 %{_mandir}/man1/ibdiagnet.1*
 %{_mandir}/man1/ibdiagpath.1*
