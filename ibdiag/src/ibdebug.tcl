@@ -3903,7 +3903,7 @@ proc CheckPathQoS {paths} {
 	foreach {tbl numEntries values} $lowHighCtrl {
 	    set overRangeVLs {}
 	    for {set i 0} {$i < $numEntries} {incr i} {
-		set entry [lindex $values $i+1]
+		set entry [lindex $values $i]
 		set vl [expr [lindex $entry 0]]
 		set weight [lindex $entry 1]
 		if {$vl >= $opVLs} {
@@ -3936,8 +3936,8 @@ proc CheckPathQoS {paths} {
 	for {set i 0} {$i < 8} {incr i} {
 	    set sl0 [expr 2*$i]
 	    set sl1 [expr 2*$i + 1]
-	    set vl0 [expr ([lindex $SL2VL $i+1] & 0xf0) >> 4]
-	    set vl1 [expr [lindex $SL2VL $i+1] & 0xf]
+	    set vl0 [expr ([lindex $SL2VL $i] & 0xf0) >> 4]
+	    set vl1 [expr [lindex $SL2VL $i] & 0xf]
 	    if {($vl0 >= $opVLs) || ($vl0 == 15)} {
 		set BLOCKED_SL($sl0) 1
 		lappend outOfRangeVLsSLs $sl0
