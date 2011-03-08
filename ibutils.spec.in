@@ -30,8 +30,8 @@
 # SOFTWARE.
 #--
 
+%{!?build_ibmgtsim: %define build_ibmgtsim 0}
 %{?build_ibmgtsim: %define ibmgtsim --enable-ibmgtsim}
-%{?build_ibmgtsim: %define ibmgtsim_files 1}
 
 Summary: OpenIB Mellanox InfiniBand Diagnostic Tools
 Name: ibutils
@@ -136,7 +136,7 @@ rm -rf $RPM_BUILD_DIR/%{name}-%{version}
 %{_libdir}/libibsysapi.a
 
 # These are only installed when ibmgtsim is built
-%if %{?ibmgtsim_files:1}
+%if %{build_ibmgtsim}
 %{_prefix}/bin/mkSimNodeDir
 %{_prefix}/bin/ibmssh
 %{_prefix}/bin/ibmsquit
