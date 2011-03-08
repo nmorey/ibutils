@@ -42,8 +42,8 @@ Url: http://openfabrics.org/downloads/%{name}-%{version}.tar.gz
 Group: System Environment/Libraries
 Source: %{name}-%{version}.tar.gz
 BuildRoot: %{?build_root:%{build_root}}%{!?build_root:%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)}
-Requires: opensm-libs, libibumad, libibcommon, libibverbs, tk
-BuildRequires: opensm-devel, libibverbs-devel, libibumad-devel, libibcommon-devel, tk-devel
+Requires: opensm-libs, libibumad, tk
+BuildRequires: opensm-devel, libibumad-devel
 Vendor: Mellanox Technologies Ltd.
 %description
 ibutils provides IB network and path diagnostics.
