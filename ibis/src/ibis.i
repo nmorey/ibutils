@@ -385,6 +385,7 @@ ibisp_is_debug(void)
 	 static char res[128];
 	 Tcl_Obj *p_obj;
 
+    memset(attr_array, 0, MAX_LOCAL_IBPORTS*sizeof(ib_port_attr_t));
     if (!IbisObj.initialized)
     {
       Tcl_SetStringObj(
