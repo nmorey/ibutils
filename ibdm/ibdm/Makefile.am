@@ -85,7 +85,6 @@ libibdm_la_LDFLAGS = -Wl,-rpath -Wl,$(TCL_PREFIX)/lib -version-info $(LIB_VER_TR
 bin_PROGRAMS  = ibdmsh
 ibdmsh_SOURCES = ibdmsh_wrap.cpp
 ibdmsh_LDADD =  -libdmcom $(TCL_LIBS)
-ibdmsh_LDFLAGS = -static -Wl,-rpath -Wl,$(TCL_PREFIX)/lib
 ibdmsh_DEPENDENCIES=$(lib_LTLIBRARIES)
 
 $(srcdir)/Fabric.cpp: $(srcdir)/git_version.h
