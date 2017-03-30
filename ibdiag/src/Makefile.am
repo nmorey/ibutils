@@ -32,11 +32,16 @@
 
 ACLOCAL_AMFLAGS      = -I config
 
-bin_SCRIPTS = ibdiagnet ibdiagpath ibdiagui git_version.tcl
+bin_SCRIPTS = ibdiagnet ibdiagpath git_version.tcl
 EXTRA_DIST = ibdebug_if.tcl ibdebug.tcl \
 	ibdiagnet.in ibdiagnet.pkg ibdiagnet.tcl \
 	ibdiagpath.in ibdiagpath.pkg ibdiagpath.tcl \
-	ibdiagui.in ibdiagui.pkg ibdiagui.tcl git_version.tcl
+	 git_version.tcl
+
+if BUILD_IBDIAGUI
+bin_SCRIPTS += ibdiagui
+EXTRA_DIST += ibdiagui.in ibdiagui.pkg ibdiagui.tcl
+endif
 
 GIT=$(shell which git)
 
@@ -73,13 +78,15 @@ ibdiagpath: ibdiagpath.in
 	    -e 's=%with_ibis_bindir%='$(DESTDIR)$(bindir)'=' \
 	    -e 's=%with_ibis%='$(with_ibis)'=' $(srcdir)/ibdiagpath.in > ibdiagpath
 
-ibdiagui: ibdiagui.in
+if BUILD_IBDIAGUI
+ ibdiagui: ibdiagui.in
 	sed -e 's=%ibdiag_libdir%='$(DESTDIR)$(libdir)'=' \
 	    -e 's=%with_ibdm_lib%='$(with_ibdm_lib)'=' \
 	    -e 's=%with_tk_lib%='$(with_tk_lib)'=' \
 	    -e 's=%with_graphviz_lib%='$(with_graphviz_lib)'=' \
 	    -e 's=%with_ibis_bindir%='$(DESTDIR)$(bindir)'=' \
 	    -e 's=%with_ibis%='$(with_ibis)'=' $(srcdir)/ibdiagui.in > ibdiagui
+endif
 
 clean:
 	rm -f ibdiagui ibdiagnet ibdiagpath
@@ -100,9 +107,11 @@ install-exec-am: install-binSCRIPTS
 	cp $(srcdir)/ibdebug_if.tcl $(PATH_LIB_DIR)/ibdebug_if.tcl
 	cp $(srcdir)/ibdiagpath.tcl $(PATH_LIB_DIR)/ibdiagpath.tcl
 	cp $(srcdir)/git_version.tcl $(PATH_LIB_DIR)/git_version.tcl
+if BUILD_IBDIAGUI
 	mkdir -p $(UI_LIB_DIR)
 	cp $(srcdir)/ibdiagui.pkg $(UI_LIB_DIR)/pkgIndex.tcl
 	cp $(srcdir)/ibdebug.tcl $(UI_LIB_DIR)/ibdebug.tcl
 	cp $(srcdir)/ibdebug_if.tcl $(UI_LIB_DIR)/ibdebug_if.tcl
 	cp $(srcdir)/ibdiagui.tcl $(UI_LIB_DIR)/ibdiagui.tcl
 	cp $(srcdir)/git_version.tcl $(UI_LIB_DIR)/git_version.tcl
+endif
