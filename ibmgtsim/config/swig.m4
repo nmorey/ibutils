@@ -85,9 +85,9 @@ AC_DEFUN([MLX_PROG_SWIG],[
         dnl AC_MSG_INFO([SWIG executable is '$SWIG'])
         SWIG_LIB=`$SWIG -swiglib`
         dnl AC_MSG_INFO([SWIG runtime library directory is '$SWIG_LIB'])
-        AM_CONDITIONAL(HAS_SWIG,[test 1])
+        AM_CONDITIONAL([HAS_SWIG],[test 1])
    else
-        AM_CONDITIONAL(HAS_SWIG,[test 0])
+        AM_CONDITIONAL([HAS_SWIG],[test 0])
    fi
    AC_SUBST([SWIG_LIB])
 ])

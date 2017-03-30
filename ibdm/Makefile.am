@@ -37,7 +37,7 @@ SUBDIRS 		= ibdm src Clusters ibnl doc scripts
 
 # this will control the update of the files in order
 MAINTAINERCLEANFILES = Makefile.in aclocal.m4 configure config-h.in
-
+ACLOCAL_AMFLAGS      = -I config
 ACLOCAL			= aclocal -I $(ac_aux_dir)
 
 # Support cleanup of swig wrappers

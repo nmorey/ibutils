@@ -35,6 +35,8 @@
 # MAINTAINERCLEANFILES	= Makefile.in common.h stamp-common
 
 # INCLUDES		= -I$(top_builddir) -I$(top_srcdir) $(TCL_CPPFLAGS)
+ACLOCAL_AMFLAGS      = -I config
+
 pkginclude_HEADERS = ibsysapi.h
 
 AM_CPPFLAGS = -I$(top_srcdir)/ibdm

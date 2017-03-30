@@ -30,6 +30,8 @@
 # SOFTWARE.
 #--
 
+ACLOCAL_AMFLAGS      = -I config
+
 bin_SCRIPTS = ibdiagnet ibdiagpath ibdiagui git_version.tcl
 EXTRA_DIST = ibdebug_if.tcl ibdebug.tcl \
 	ibdiagnet.in ibdiagnet.pkg ibdiagnet.tcl \
