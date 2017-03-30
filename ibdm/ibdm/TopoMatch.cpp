@@ -676,6 +676,8 @@ TopoMatchSpecNodesByAdjacentNode(IBFabric *p_sFabric)
     for( list < IBNode *>::iterator nI = unMatchedWithAdjacentMatched.begin();
             nI != unMatchedWithAdjacentMatched.end(); nI++)
         numMatched += TopoMatchNodeByAdjacentMatched(*nI);
+
+    return numMatched;
 }
 
 

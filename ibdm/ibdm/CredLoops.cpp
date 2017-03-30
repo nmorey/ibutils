@@ -484,7 +484,7 @@ CrdLoopPrepare(IBFabric *p_fabric)
 }
 
 // Cleanup the data model
-int
+void
 CrdLoopCleanup(IBFabric *p_fabric)
 {
     unsigned int lidStep = 1 << p_fabric->lmc;

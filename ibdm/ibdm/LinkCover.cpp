@@ -270,7 +270,7 @@ cleanupFdbForwardPortLidTables(
     short int *outPortUsed = (*I).second;
     free(outPortUsed);
   }
-
+  return (0);
 }
 
 // Linear program does not interest me now...
@@ -543,6 +543,7 @@ cleanUpNodeMarkings(map_pnode_p_sint &switchOutPortMap)
       outPortUsed[pIdx] = 0;
     }
   }
+  return (0);
 }
 
 //////////////////////////////////////////////////////////////////////////////
