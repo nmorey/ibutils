@@ -76,6 +76,7 @@ ibis_SOURCES = ibissh_wrap.cpp
 
 # note the order of the libraries does matter as we static link
 ibis_LDADD = -L. -libiscom $(OSM_LDFLAGS) $(TCL_LIBS)
+ibis_DEPENDENCIES = libibiscom.a
 
 
 # SWIG FILES:
