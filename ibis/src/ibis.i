@@ -180,7 +180,6 @@ ibisp_is_debug(void)
 
 %{
   /* globals */
-  ibis_t    IbisObj;
   static ibis_opt_t  *ibis_opt_p;
   ibis_opt_t IbisOpts;
 
